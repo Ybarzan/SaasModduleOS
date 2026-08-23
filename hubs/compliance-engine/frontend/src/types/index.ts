@@ -444,6 +444,7 @@ export interface NotificationRule {
   webhookSecret?: string;
   filterStatus?: string;
   filterCarrierId?: string;
+  filterDataSource?: 'LIVE' | 'MANUAL' | '';
   createdAt: string;
   updatedAt?: string;
 }
@@ -460,6 +461,7 @@ export interface NotificationRuleFormData {
   webhookSecret?: string;
   filterStatus?: string;
   filterCarrierId?: string;
+  filterDataSource?: 'LIVE' | 'MANUAL' | '';
 }
 
 export interface Notification {

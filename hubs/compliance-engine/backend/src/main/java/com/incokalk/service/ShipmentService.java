@@ -194,7 +194,8 @@ public class ShipmentService {
 
         eventPublisher.shipmentStatusChanged(shipmentId, shipment.getOrderNumber(),
                 oldStatus, dto.getStatus(), companyId,
-                shipment.getUser() != null ? shipment.getUser().getId() : null);
+                shipment.getUser() != null ? shipment.getUser().getId() : null,
+                TrackingEvent.DataSource.MANUAL);
 
         return shipment;
     }
@@ -297,7 +298,8 @@ public class ShipmentService {
                 eventPublisher.shipmentStatusChanged(
                     shipment.getId(), shipment.getOrderNumber(),
                     oldStatus, newStatus.name(), companyId,
-                    shipment.getUser() != null ? shipment.getUser().getId() : null);
+                    shipment.getUser() != null ? shipment.getUser().getId() : null,
+                    TrackingEvent.DataSource.LIVE);
             }
 
             log.info("Webhook {}: {} -> status '{}'", source, trackingNumber, status);

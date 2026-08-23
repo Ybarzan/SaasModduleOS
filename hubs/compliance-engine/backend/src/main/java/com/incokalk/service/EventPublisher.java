@@ -1,5 +1,6 @@
 package com.incokalk.service;
 
+import com.incokalk.model.TrackingEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -17,9 +18,10 @@ public class EventPublisher {
 
     @Async
     public void shipmentStatusChanged(UUID shipmentId, String orderNumber,
-                                       String oldStatus, String newStatus, UUID companyId, UUID assignedUserId) {
+                                       String oldStatus, String newStatus, UUID companyId, UUID assignedUserId,
+                                       TrackingEvent.DataSource dataSource) {
         try {
-            notificationService.onShipmentStatusChange(shipmentId, orderNumber, oldStatus, newStatus, companyId);
+            notificationService.onShipmentStatusChange(shipmentId, orderNumber, oldStatus, newStatus, companyId, dataSource);
         } catch (Exception e) {
             log.warn("Failed to send notification for shipment status change: {}", e.getMessage());
         }

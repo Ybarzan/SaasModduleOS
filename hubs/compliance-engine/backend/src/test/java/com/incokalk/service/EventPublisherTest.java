@@ -33,18 +33,22 @@ class EventPublisherTest {
     @Test
     @DisplayName("shipmentStatusChanged : utilisateur assigné → notifie et pousse le mobile")
     void shipmentStatusChanged_withAssignedUser_notifiesAndPushes() {
-        eventPublisher.shipmentStatusChanged(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId, userId);
+        eventPublisher.shipmentStatusChanged(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId, userId,
+                com.incokalk.model.TrackingEvent.DataSource.LIVE);
 
-        verify(notificationService).onShipmentStatusChange(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId);
+        verify(notificationService).onShipmentStatusChange(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId,
+                com.incokalk.model.TrackingEvent.DataSource.LIVE);
         verify(pushNotificationService).sendShipmentUpdate(userId, companyId, shipmentId, "IN_TRANSIT");
     }
 
     @Test
     @DisplayName("shipmentStatusChanged : aucun utilisateur assigné → notifie mais ne pousse rien (branche assignedUserId == null)")
     void shipmentStatusChanged_noAssignedUser_notifiesWithoutPush() {
-        eventPublisher.shipmentStatusChanged(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId, null);
+        eventPublisher.shipmentStatusChanged(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId, null,
+                com.incokalk.model.TrackingEvent.DataSource.LIVE);
 
-        verify(notificationService).onShipmentStatusChange(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId);
+        verify(notificationService).onShipmentStatusChange(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId,
+                com.incokalk.model.TrackingEvent.DataSource.LIVE);
         verify(pushNotificationService, never()).sendShipmentUpdate(any(), any(), any(), anyString());
     }
 
@@ -54,18 +58,22 @@ class EventPublisherTest {
         doThrow(new RuntimeException("FCM down"))
                 .when(pushNotificationService).sendShipmentUpdate(userId, companyId, shipmentId, "IN_TRANSIT");
 
-        eventPublisher.shipmentStatusChanged(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId, userId);
+        eventPublisher.shipmentStatusChanged(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId, userId,
+                com.incokalk.model.TrackingEvent.DataSource.LIVE);
 
-        verify(notificationService).onShipmentStatusChange(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId);
+        verify(notificationService).onShipmentStatusChange(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId,
+                com.incokalk.model.TrackingEvent.DataSource.LIVE);
     }
 
     @Test
     @DisplayName("shipmentStatusChanged : échec de la notification classique → n'empêche pas le push mobile")
     void shipmentStatusChanged_notificationThrows_stillPushes() {
         doThrow(new RuntimeException("DB down"))
-                .when(notificationService).onShipmentStatusChange(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId);
+                .when(notificationService).onShipmentStatusChange(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId,
+                        com.incokalk.model.TrackingEvent.DataSource.LIVE);
 
-        eventPublisher.shipmentStatusChanged(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId, userId);
+        eventPublisher.shipmentStatusChanged(shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId, userId,
+                com.incokalk.model.TrackingEvent.DataSource.LIVE);
 
         verify(pushNotificationService).sendShipmentUpdate(userId, companyId, shipmentId, "IN_TRANSIT");
     }

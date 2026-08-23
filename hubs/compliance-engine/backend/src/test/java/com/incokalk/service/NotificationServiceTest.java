@@ -412,4 +412,62 @@ class NotificationServiceTest {
                 n.getTitle().contains("Nouvelle expédition")
         ));
     }
+
+    // ── onShipmentStatusChange / provenance LIVE-MANUAL ────────────────
+
+    @Test
+    @DisplayName("Changement de statut MANUAL — le message signale la saisie manuelle")
+    void onShipmentStatusChange_manual_appendsNoteToMessage() {
+        UUID shipmentId = UUID.randomUUID();
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
+        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service.onShipmentStatusChange(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.MANUAL);
+
+        verify(notificationRepo).save(argThat(n -> n.getMessage().contains("saisie manuelle")));
+    }
+
+    @Test
+    @DisplayName("Changement de statut LIVE — pas de mention de saisie manuelle dans le message")
+    void onShipmentStatusChange_live_noManualNote() {
+        UUID shipmentId = UUID.randomUUID();
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
+        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service.onShipmentStatusChange(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.LIVE);
+
+        verify(notificationRepo).save(argThat(n -> !n.getMessage().contains("saisie manuelle")));
+    }
+
+    @Test
+    @DisplayName("filterDataSource=LIVE — laisse passer un événement LIVE")
+    void onShipmentStatusChange_filterDataSourceLive_matchesLiveEvent() {
+        UUID shipmentId = UUID.randomUUID();
+        rule.setFilterDataSource("LIVE");
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
+        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service.onShipmentStatusChange(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.LIVE);
+
+        verify(notificationRepo).save(any());
+    }
+
+    @Test
+    @DisplayName("filterDataSource=LIVE — bloque un événement MANUAL (règle « pas d'alerte sur saisie manuelle »)")
+    void onShipmentStatusChange_filterDataSourceLive_skipsManualEvent() {
+        UUID shipmentId = UUID.randomUUID();
+        rule.setFilterDataSource("LIVE");
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+
+        service.onShipmentStatusChange(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.MANUAL);
+
+        verify(notificationRepo, never()).save(any());
+    }
 }

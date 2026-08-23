@@ -29,4 +29,6 @@ public class NotificationRuleDTO {
     private String webhookSecret;
     private String filterStatus;
     private UUID filterCarrierId;
+    /** LIVE, MANUAL, ou null (pas de filtre) -- voir TrackingEvent.DataSource. */
+    private String filterDataSource;
 }

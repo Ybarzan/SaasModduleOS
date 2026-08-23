@@ -8,6 +8,7 @@ import com.incokalk.model.Company;
 import com.incokalk.model.CompanyRole;
 import com.incokalk.model.Notification;
 import com.incokalk.model.NotificationRule;
+import com.incokalk.model.TrackingEvent;
 import com.incokalk.model.User;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.NotificationRepository;
@@ -81,10 +82,14 @@ public class NotificationService {
 
     @Transactional
     public void onShipmentStatusChange(UUID shipmentId, String orderNumber,
-                                        String oldStatus, String newStatus, UUID companyId) {
+                                        String oldStatus, String newStatus, UUID companyId,
+                                        TrackingEvent.DataSource dataSource) {
         String title = "Statut expédition mis à jour";
         String message = String.format("La commande %s est passée de %s à %s.",
                 orderNumber, oldStatus, newStatus);
+        if (dataSource == TrackingEvent.DataSource.MANUAL) {
+            message += " (saisie manuelle, non confirmée par un transporteur)";
+        }
 
         processEvent(SendNotificationDTO.builder()
                 .eventType("SHIPMENT_STATUS_CHANGE")
@@ -96,7 +101,8 @@ public class NotificationService {
                 .templateData(Map.of(
                         "orderNumber", orderNumber,
                         "oldStatus", oldStatus,
-                        "newStatus", newStatus))
+                        "newStatus", newStatus,
+                        "dataSource", dataSource != null ? dataSource.name() : ""))
                 .build());
     }
 
@@ -216,6 +222,7 @@ public class NotificationService {
                 .webhookSecret(dto.getWebhookSecret())
                 .filterStatus(dto.getFilterStatus())
                 .filterCarrierId(dto.getFilterCarrierId())
+                .filterDataSource(dto.getFilterDataSource())
                 .build();
 
         return ruleRepo.save(rule);
@@ -240,6 +247,7 @@ public class NotificationService {
         rule.setWebhookSecret(dto.getWebhookSecret());
         rule.setFilterStatus(dto.getFilterStatus());
         rule.setFilterCarrierId(dto.getFilterCarrierId());
+        rule.setFilterDataSource(dto.getFilterDataSource());
 
         return ruleRepo.save(rule);
     }
@@ -337,6 +345,15 @@ public class NotificationService {
         if (rule.getFilterStatus() != null && dto.getTemplateData() != null) {
             String newStatus = dto.getTemplateData().get("newStatus");
             if (newStatus != null && !rule.getFilterStatus().equals(newStatus)) {
+                return false;
+            }
+        }
+        if (rule.getFilterDataSource() != null && dto.getTemplateData() != null) {
+            String dataSource = dto.getTemplateData().get("dataSource");
+            // Un evenement sans dataSource (QUOTE_RECEIVED, PROVIDER_DOWN...) ne matche
+            // jamais un filtre LIVE/MANUAL -- ce filtre n'a de sens que pour les evenements
+            // qui portent effectivement cette information (SHIPMENT_STATUS_CHANGE).
+            if (dataSource == null || !rule.getFilterDataSource().equals(dataSource)) {
                 return false;
             }
         }
@@ -442,6 +459,10 @@ public class NotificationService {
             payload.put("entityType", dto.getEntityType());
             payload.put("entityId", dto.getEntityId() != null ? dto.getEntityId().toString() : null);
             payload.put("timestamp", LocalDateTime.now().toString());
+            if (dto.getTemplateData() != null && dto.getTemplateData().get("dataSource") != null
+                    && !dto.getTemplateData().get("dataSource").isBlank()) {
+                payload.put("dataSource", dto.getTemplateData().get("dataSource"));
+            }
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);

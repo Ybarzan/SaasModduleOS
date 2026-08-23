@@ -43,6 +43,7 @@ const EMPTY_FORM: NotificationRuleFormData = {
   webhookSecret: '',
   filterStatus: '',
   filterCarrierId: '',
+  filterDataSource: '',
 };
 
 // Modèles courants pour éviter de faire remplir les 12 champs bruts du formulaire
@@ -174,6 +175,7 @@ const NotificationRules = () => {
       webhookSecret: rule.webhookSecret || '',
       filterStatus: rule.filterStatus || '',
       filterCarrierId: rule.filterCarrierId || '',
+      filterDataSource: rule.filterDataSource || '',
     });
     setShowModal(true);
   };
@@ -298,7 +300,7 @@ const NotificationRules = () => {
                         </span>
                       )}
                     </div>
-                    {(rule.filterStatus || rule.filterCarrierId) && (
+                    {(rule.filterStatus || rule.filterCarrierId || rule.filterDataSource) && (
                       <div className="flex items-center gap-2 text-sm text-ink-soft">
                         <Filter size={14} />
                         {rule.filterStatus && (
@@ -307,6 +309,11 @@ const NotificationRules = () => {
                         {rule.filterCarrierId && (
                           <span>
                             Transporteur: {carriers.find((c) => c.id === rule.filterCarrierId)?.name || rule.filterCarrierId}
+                          </span>
+                        )}
+                        {rule.filterDataSource && (
+                          <span>
+                            Source: {rule.filterDataSource === 'LIVE' ? 'Live uniquement' : 'Manuel uniquement'}
                           </span>
                         )}
                       </div>
@@ -535,6 +542,21 @@ const NotificationRules = () => {
                             <option key={c.id} value={c.id}>{c.name}</option>
                           ))}
                         </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs text-ink-soft mb-1">Filtrer par provenance</label>
+                        <select
+                          value={form.filterDataSource || ''}
+                          onChange={(e) => setForm({ ...form, filterDataSource: (e.target.value || undefined) as NotificationRuleFormData['filterDataSource'] })}
+                          className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                        >
+                          <option value="">Toutes provenances</option>
+                          <option value="LIVE">Live uniquement (transporteur/webhook)</option>
+                          <option value="MANUAL">Manuel uniquement (saisie humaine)</option>
+                        </select>
+                        <p className="text-xs text-ink-soft/70 mt-1">
+                          Ne s'applique qu'aux changements de statut d'expédition
+                        </p>
                       </div>
                     </div>
                   </div>

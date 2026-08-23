@@ -64,6 +64,10 @@ public class NotificationRule {
     @Column(name = "filter_carrier_id")
     private UUID filterCarrierId;
 
+    /** LIVE, MANUAL, ou null (pas de filtre) -- voir TrackingEvent.DataSource. */
+    @Column(name = "filter_data_source", length = 10)
+    private String filterDataSource;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
