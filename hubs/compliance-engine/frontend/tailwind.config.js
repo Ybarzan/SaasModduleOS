@@ -19,6 +19,7 @@ export default {
           soft: 'rgb(var(--c-accent-soft) / <alpha-value>)',
           strong: 'rgb(var(--c-accent-strong) / <alpha-value>)',
         },
+        'accent-2': 'rgb(var(--c-accent-2) / <alpha-value>)',
         success: 'rgb(var(--c-success) / <alpha-value>)',
         warning: 'rgb(var(--c-warning) / <alpha-value>)',
         danger: 'rgb(var(--c-danger) / <alpha-value>)',
@@ -77,7 +78,8 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+        // Praxio v0.2 : une seule famille monospace pour toute l'app (docs/09-design-system.md).
+        sans: ['"JetBrains Mono"', 'ui-monospace', '"SFMono-Regular"', 'Consolas', 'monospace'],
       },
       borderRadius: {
         '2xl': '1rem',

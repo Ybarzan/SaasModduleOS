@@ -7,34 +7,40 @@
 @layer base {
   /* Triplets RGB (espaces, sans virgules) pour permettre les modificateurs
      d'opacite Tailwind (bg-accent/20, text-success/80...) via rgb(var(..) / a). */
+  /* Palette Praxio v0.2 (docs/09-design-system.md du monorepo SaasModduleOS) —
+     medina/sable/terracotta/zellige/olive/ochre/rust, remplace l'accent vert
+     precedent. --c-accent-2 (zellige) est un ajout : accent secondaire pour
+     la donnee/confiance, pas encore utilise par les composants existants. */
   :root {
-    --c-bg: 250 250 249;
-    --c-surface: 255 255 255;
-    --c-surface-2: 243 243 241;
-    --c-ink: 22 23 26;
-    --c-ink-soft: 85 87 92;
-    --c-line: 234 234 231;
-    --c-accent: 27 107 79;
-    --c-accent-soft: 233 244 239;
-    --c-accent-strong: 21 90 65;
-    --c-success: 27 107 79;
-    --c-warning: 180 116 14;
-    --c-danger: 178 59 46;
+    --c-bg: 230 224 211;
+    --c-surface: 241 236 225;
+    --c-surface-2: 234 227 213;
+    --c-ink: 33 26 21;
+    --c-ink-soft: 107 95 82;
+    --c-line: 211 203 184;
+    --c-accent: 191 78 46;
+    --c-accent-soft: 230 210 199;
+    --c-accent-strong: 158 63 36;
+    --c-accent-2: 30 107 110;
+    --c-success: 110 122 74;
+    --c-warning: 192 138 46;
+    --c-danger: 166 49 31;
   }
 
   .dark {
-    --c-bg: 12 13 15;
-    --c-surface: 20 21 24;
-    --c-surface-2: 26 28 32;
-    --c-ink: 242 242 240;
-    --c-ink-soft: 151 153 158;
-    --c-line: 33 35 39;
-    --c-accent: 52 194 140;
-    --c-accent-soft: 18 36 29;
-    --c-accent-strong: 77 218 159;
-    --c-success: 52 194 140;
-    --c-warning: 217 154 58;
-    --c-danger: 224 87 74;
+    --c-bg: 20 16 12;
+    --c-surface: 28 23 18;
+    --c-surface-2: 36 29 23;
+    --c-ink: 232 225 210;
+    --c-ink-soft: 143 130 103;
+    --c-line: 54 44 34;
+    --c-accent: 217 104 63;
+    --c-accent-soft: 62 42 32;
+    --c-accent-strong: 232 135 92;
+    --c-accent-2: 62 145 148;
+    --c-success: 150 166 107;
+    --c-warning: 217 162 78;
+    --c-danger: 199 77 52;
   }
 
   html {
