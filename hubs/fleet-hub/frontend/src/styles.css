@@ -411,6 +411,14 @@ h1, h2, h3 {
   text-shadow: 0 1px 12px rgba(var(--primary-rgb), 0.15);
 }
 
+/* Registre terminal, meme convention que compliance-engine (docs/09-design-system.md) --
+   un seul point de levier CSS pour les ~21 pages plutot qu'une modification par page. */
+.page-header h2::before {
+  content: ':: ';
+  color: var(--primary);
+  font-weight: 400;
+}
+
 .page-header p {
   color: var(--muted);
   margin-top: 3px;
@@ -667,14 +675,14 @@ h1, h2, h3 {
 
 .alert-error {
   background: var(--red-soft);
-  border-color: rgba(201, 139, 143, 0.28);
-  color: #e8cccf;
+  border-color: rgba(199, 77, 52, 0.28);
+  color: var(--red);
 }
 
 .alert-warning {
   background: var(--orange-soft);
-  border-color: rgba(201, 168, 106, 0.28);
-  color: #e6d3a9;
+  border-color: rgba(217, 162, 78, 0.28);
+  color: var(--orange);
 }
 
 .empty-state {
@@ -755,9 +763,9 @@ h1, h2, h3 {
   border: 1px solid transparent;
 }
 
-.score-pill.good { background: var(--green-soft); color: #9dcfb0; border-color: rgba(127, 185, 143, 0.3); }
-.score-pill.mid { background: var(--orange-soft); color: #e6d3a9; border-color: rgba(201, 168, 106, 0.3); }
-.score-pill.bad { background: var(--red-soft); color: #e8cccf; border-color: rgba(201, 139, 143, 0.3); }
+.score-pill.good { background: var(--green-soft); color: var(--green); border-color: rgba(150, 166, 107, 0.3); }
+.score-pill.mid { background: var(--orange-soft); color: var(--orange); border-color: rgba(217, 162, 78, 0.3); }
+.score-pill.bad { background: var(--red-soft); color: var(--red); border-color: rgba(199, 77, 52, 0.3); }
 
 .badge {
   display: inline-flex;
@@ -781,12 +789,12 @@ h1, h2, h3 {
   box-shadow: 0 0 6px currentColor;
 }
 
-.badge-green { background: var(--green-soft); color: #9dcfb0; }
-.badge-orange { background: var(--orange-soft); color: #e6d3a9; }
+.badge-green { background: var(--green-soft); color: var(--green); }
+.badge-orange { background: var(--orange-soft); color: var(--orange); }
 .badge-blue { background: var(--blue-soft); color: var(--primary-2); }
-.badge-red { background: var(--red-soft); color: #e8cccf; }
-.badge-darkred { background: rgba(153, 27, 27, 0.35); color: #fecaca; }
-.badge-gray { background: var(--surface-alt); color: #94a3b8; }
+.badge-red { background: var(--red-soft); color: var(--red); }
+.badge-darkred { background: rgba(153, 27, 27, 0.35); color: var(--red); }
+.badge-gray { background: var(--surface-alt); color: var(--muted); }
 
 /* ---------- Buttons & inputs ---------- */
 .btn {
@@ -809,7 +817,7 @@ h1, h2, h3 {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #5690b6, #8fc0de);
+  background: linear-gradient(135deg, var(--primary), var(--primary-2));
   transform: translateY(-1px);
   box-shadow: 0 4px 16px -6px rgba(var(--primary-rgb), 0.45);
 }
@@ -987,13 +995,13 @@ select:focus {
 }
 
 .btn-danger {
-  background: linear-gradient(135deg, #a0555c, #c98b8f);
+  background: linear-gradient(135deg, var(--red), var(--primary-3));
   color: #fff;
 }
 
 .btn-danger:hover:not(:disabled) {
-  background: linear-gradient(135deg, #c98b8f, #d9a1a5);
-  box-shadow: 0 2px 10px -4px rgba(201, 139, 143, 0.35);
+  background: linear-gradient(135deg, var(--primary-3), var(--red));
+  box-shadow: 0 2px 10px -4px rgba(199, 77, 52, 0.35);
 }
 
 .btn-sm {
@@ -1081,7 +1089,7 @@ select:focus {
   background:
     radial-gradient(55% 55% at 18% 12%, rgba(var(--primary-rgb), 0.06), transparent 60%),
     radial-gradient(50% 50% at 85% 88%, rgba(var(--primary-2-rgb), 0.07), transparent 60%),
-    linear-gradient(160deg, #0b0f16 0%, #0c111b 55%, #0e1420 100%);
+    linear-gradient(160deg, #0d0a07 0%, #14100c 55%, #191410 100%);
   padding: 20px;
 }
 
@@ -1400,7 +1408,7 @@ select:focus {
 
 /* Carte sombre : fond + popups du thème cyber */
 .leaflet-container {
-  background: #0a0f1c;
+  background: var(--bg);
   font-family: var(--font);
 }
 
@@ -1549,7 +1557,7 @@ select:focus {
   }
 
   .sidebar-close:active {
-    background: #132033;
+    background: var(--surface-alt);
     color: #fff;
   }
 
@@ -2042,8 +2050,8 @@ select:focus {
   font-family: var(--font-mono);
 }
 
-.trend.up { background: var(--green-soft); color: #9dcfb0; }
-.trend.down { background: var(--red-soft); color: #e8cccf; }
+.trend.up { background: var(--green-soft); color: var(--green); }
+.trend.down { background: var(--red-soft); color: var(--red); }
 .trend.flat { background: var(--surface-alt); color: var(--text-soft); }
 
 .kpi-widget-status {
@@ -2346,11 +2354,11 @@ button.kpi-widget-clickable:active {
   box-shadow: 0 0 6px currentColor;
 }
 
-.severity-1 { background: #7fb98f; color: #7fb98f; }
-.severity-2 { background: #6fae8a; color: #6fae8a; }
-.severity-3 { background: #c9b45a; color: #c9b45a; }
-.severity-4 { background: #cfa06a; color: #cfa06a; }
-.severity-5 { background: #c98b8f; color: #c98b8f; }
+.severity-1 { background: var(--green); color: var(--green); }
+.severity-2 { background: #a8a05c; color: #a8a05c; }
+.severity-3 { background: var(--orange); color: var(--orange); }
+.severity-4 { background: #c97a3f; color: #c97a3f; }
+.severity-5 { background: var(--red); color: var(--red); }
 
 /* ---------- Notifications ---------- */
 .notif-unread {
@@ -2382,7 +2390,7 @@ button.kpi-widget-clickable:active {
   background:
     radial-gradient(55% 55% at 18% 12%, rgba(var(--primary-rgb), 0.06), transparent 60%),
     radial-gradient(50% 50% at 85% 88%, rgba(var(--primary-2-rgb), 0.07), transparent 60%),
-    linear-gradient(160deg, #0b0f16 0%, #0c111b 55%, #0e1420 100%);
+    linear-gradient(160deg, #0d0a07 0%, #14100c 55%, #191410 100%);
   padding: 24px;
 }
 
@@ -2561,7 +2569,7 @@ button.kpi-widget-clickable:active {
   margin: 0;
   padding-left: 16px;
   font-size: 12px;
-  color: #e8cccf;
+  color: var(--red);
   line-height: 1.5;
 }
 

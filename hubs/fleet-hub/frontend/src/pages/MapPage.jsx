@@ -5,11 +5,11 @@ import api from '../services/api'
 import StatusBadge from '../components/StatusBadge'
 
 const statusColor = {
-  ROULAGE: { color: '#7fb98f', label: 'En roulage' },
-  ARRET: { color: '#c9a86a', label: 'À l\'arrêt' },
-  REPOS: { color: '#6d9dc2', label: 'Repos' },
-  ALERTE: { color: '#c98b8f', label: 'Alerte' },
-  IMMOBILISE: { color: '#93a2c9', label: 'Immobilisé' }
+  ROULAGE: { color: 'var(--green)', label: 'En roulage' },
+  ARRET: { color: 'var(--orange)', label: 'À l\'arrêt' },
+  REPOS: { color: 'var(--primary-2)', label: 'Repos' },
+  ALERTE: { color: 'var(--red)', label: 'Alerte' },
+  IMMOBILISE: { color: 'var(--purple)', label: 'Immobilisé' }
 }
 
 export default function MapPage() {
@@ -64,7 +64,7 @@ export default function MapPage() {
             attribution='&copy; OpenStreetMap contributors &copy; CARTO'
           />
           {vehicles.map((v) => {
-            const meta = statusColor[v.status] || { color: '#64748b', label: v.status }
+            const meta = statusColor[v.status] || { color: 'var(--muted)', label: v.status }
             return (
               <CircleMarker
                 key={v.truckId}
@@ -96,7 +96,7 @@ export default function MapPage() {
 
       <div className="map-vehicles-cards">
         {vehicles.map((v) => {
-          const meta = statusColor[v.status] || { color: '#64748b', label: v.status }
+          const meta = statusColor[v.status] || { color: 'var(--muted)', label: v.status }
           return (
             <Link key={v.truckId} to={`/trucks/${v.truckId}`} className="vehicle-card">
               <div className="truck-card-top">

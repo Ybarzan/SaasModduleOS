@@ -25,7 +25,7 @@ const MAINT_LABELS = {
   REPARATION: 'Réparation'
 }
 
-const COST_COLORS = ['#6d9dc2', '#c9a86a', '#93a2c9', '#7fb98f', '#c98b8f', '#7db2d4', '#94a3b8']
+const COST_COLORS = ['var(--primary)', 'var(--orange)', 'var(--primary-2)', 'var(--green)', 'var(--red)', 'var(--primary-3)', 'var(--purple)']
 
 const TAB_TRIPS = 'trips'
 const TAB_FUEL = 'fuel'
@@ -155,13 +155,13 @@ export default function TruckDetail() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trend} margin={{ top: 10, right: 8, left: -14, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} interval="preserveStartEnd" minTickGap={28} stroke="#32405a" />
-                <YAxis yAxisId="km" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#32405a" />
-                <YAxis yAxisId="fuel" orientation="right" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#32405a" width={40} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--muted)' }} interval="preserveStartEnd" minTickGap={28} stroke="var(--border-strong)" />
+                <YAxis yAxisId="km" tick={{ fontSize: 11, fill: 'var(--muted)' }} stroke="var(--border-strong)" />
+                <YAxis yAxisId="fuel" orientation="right" tick={{ fontSize: 11, fill: 'var(--muted)' }} stroke="var(--border-strong)" width={40} />
                 <Tooltip contentStyle={{ background: '#16202e', border: '1px solid #32405a', borderRadius: 10, color: '#dbe3ee' }} labelStyle={{ color: '#a9b6c6' }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-<Line yAxisId="km" type="monotone" dataKey="km" name="Km" stroke="#7db2d4" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
-<Line yAxisId="fuel" type="monotone" dataKey="liters" name="Litres" stroke="#c9a86a" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+<Line yAxisId="km" type="monotone" dataKey="km" name="Km" stroke="var(--primary)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+<Line yAxisId="fuel" type="monotone" dataKey="liters" name="Litres" stroke="var(--orange)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

@@ -10,10 +10,10 @@ import ScoreGauge from '../components/ScoreGauge'
 import StatCard from '../components/StatCard'
 
 const eventColors = {
-  FREINAGE_BRUSQUE: '#c98b8f',
-  ACCELERATION_FORTE: '#fb923c',
-  EXCES_VITESSE: '#c9a86a',
-  RALENTI: '#6d9dc2'
+  FREINAGE_BRUSQUE: 'var(--red)',
+  ACCELERATION_FORTE: 'var(--orange)',
+  EXCES_VITESSE: 'var(--purple)',
+  RALENTI: 'var(--primary-2)'
 }
 
 const EVENT_LABELS = {
@@ -23,7 +23,7 @@ const EVENT_LABELS = {
   RALENTI: 'Ralenti'
 }
 
-const COST_COLORS = ['#6d9dc2', '#c9a86a', '#93a2c9', '#7fb98f', '#c98b8f', '#7db2d4', '#94a3b8']
+const COST_COLORS = ['var(--primary)', 'var(--orange)', 'var(--primary-2)', 'var(--green)', 'var(--red)', 'var(--primary-3)', 'var(--purple)']
 
 const TAB_TRIPS = 'trips'
 const TAB_TACHO = 'tacho'
@@ -154,13 +154,13 @@ export default function DriverDetail() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trend} margin={{ top: 10, right: 8, left: -14, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: '#94a3b8' }} interval="preserveStartEnd" minTickGap={28} stroke="#32405a" />
-                <YAxis yAxisId="km" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#32405a" />
-                <YAxis yAxisId="cost" orientation="right" tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#32405a" width={40} />
+                <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--muted)' }} interval="preserveStartEnd" minTickGap={28} stroke="var(--border-strong)" />
+                <YAxis yAxisId="km" tick={{ fontSize: 11, fill: 'var(--muted)' }} stroke="var(--border-strong)" />
+                <YAxis yAxisId="cost" orientation="right" tick={{ fontSize: 11, fill: 'var(--muted)' }} stroke="var(--border-strong)" width={40} />
                 <Tooltip contentStyle={{ background: '#16202e', border: '1px solid #32405a', borderRadius: 10, color: '#dbe3ee' }} labelStyle={{ color: '#a9b6c6' }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-<Line yAxisId="km" type="monotone" dataKey="km" name="Km" stroke="#7db2d4" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
-<Line yAxisId="cost" type="monotone" dataKey="cost" name="Coût (€)" stroke="#93a2c9" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+<Line yAxisId="km" type="monotone" dataKey="km" name="Km" stroke="var(--primary)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+<Line yAxisId="cost" type="monotone" dataKey="cost" name="Coût (€)" stroke="var(--primary-2)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -176,8 +176,8 @@ export default function DriverDetail() {
                 margin={{ top: 4, right: 12, left: 0, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" horizontal={false} />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#32405a" />
-                <YAxis type="category" dataKey="label" width={120} tick={{ fontSize: 11, fill: '#94a3b8' }} stroke="#32405a" />
+                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--muted)' }} stroke="var(--border-strong)" />
+                <YAxis type="category" dataKey="label" width={120} tick={{ fontSize: 11, fill: 'var(--muted)' }} stroke="var(--border-strong)" />
                 <Tooltip contentStyle={{ background: '#16202e', border: '1px solid #32405a', borderRadius: 10, color: '#dbe3ee' }} labelStyle={{ color: '#a9b6c6' }} />
                 <Bar dataKey="count" name="Nombre" radius={[0, 5, 5, 0]} barSize={20}>
                   {detail.eventBreakdown.map((e) => (
