@@ -1,6 +1,10 @@
 package com.incokalk.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.incokalk.dto.shared.ShipmentStatusChangedPayload;
+import com.incokalk.model.EventOutbox;
 import com.incokalk.model.TrackingEvent;
+import com.incokalk.repository.EventOutboxRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -15,15 +19,36 @@ public class EventPublisher {
 
     private final NotificationService notificationService;
     private final PushNotificationService pushNotificationService;
+    private final EventOutboxRepository eventOutboxRepo;
+    private final ObjectMapper objectMapper;
 
-    @Async
+    /**
+     * Pas @Async : la ligne outbox doit s'ecrire dans la MEME transaction que le
+     * changement de statut qui la declenche (ShipmentService.updateStatus /
+     * processWebhookEvent, tous deux @Transactional), sinon le pattern outbox ne
+     * garantit plus rien -- voir V63 et docs/03-plan-migration.md. Le worker
+     * EventOutboxProcessor livre la notification ensuite, avec relecture/retry.
+     */
     public void shipmentStatusChanged(UUID shipmentId, String orderNumber,
                                        String oldStatus, String newStatus, UUID companyId, UUID assignedUserId,
                                        TrackingEvent.DataSource dataSource) {
         try {
-            notificationService.onShipmentStatusChange(shipmentId, orderNumber, oldStatus, newStatus, companyId, dataSource);
+            ShipmentStatusChangedPayload payload = ShipmentStatusChangedPayload.builder()
+                    .shipmentId(shipmentId)
+                    .orderNumber(orderNumber)
+                    .oldStatus(oldStatus)
+                    .newStatus(newStatus)
+                    .companyId(companyId)
+                    .assignedUserId(assignedUserId)
+                    .dataSource(dataSource)
+                    .build();
+            eventOutboxRepo.save(EventOutbox.builder()
+                    .eventType("SHIPMENT_STATUS_CHANGE")
+                    .companyId(companyId)
+                    .payload(objectMapper.writeValueAsString(payload))
+                    .build());
         } catch (Exception e) {
-            log.warn("Failed to send notification for shipment status change: {}", e.getMessage());
+            log.warn("Failed to enqueue outbox event for shipment status change: {}", e.getMessage());
         }
         if (assignedUserId != null) {
             try {
