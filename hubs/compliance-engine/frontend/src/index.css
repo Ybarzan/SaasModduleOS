@@ -118,6 +118,17 @@
     @apply bg-surface rounded-2xl border border-line p-6 text-center transition-all duration-300 hover:shadow-lg;
   }
 
+  /* Registre terminal/HUD (docs/09-design-system.md du monorepo SaasModduleOS) --
+     coins-crochets sur les cartes les plus visibles d'une page, pas un balayage
+     systematique. Le parent doit etre `relative`. */
+  .hud-corner {
+    @apply absolute w-2.5 h-2.5 border-accent/70 pointer-events-none;
+  }
+  .hud-corner-tl { @apply -top-px -left-px border-l-2 border-t-2; }
+  .hud-corner-tr { @apply -top-px -right-px border-r-2 border-t-2; }
+  .hud-corner-bl { @apply -bottom-px -left-px border-l-2 border-b-2; }
+  .hud-corner-br { @apply -bottom-px -right-px border-r-2 border-b-2; }
+
   .eyebrow {
     @apply text-xs font-bold uppercase tracking-[0.15em] text-accent;
   }

@@ -150,7 +150,7 @@ const VerticalBarChart = ({ data }: { data: { label: string; value: number }[] }
         <div key={i} className="flex-1 flex flex-col items-center">
           <div className="text-xs text-ink-soft mb-1">{item.value}</div>
           <div
-            className="w-full bg-accent rounded-t hover:bg-accent transition-all"
+            className="w-full bg-accent rounded-none hover:bg-accent transition-all"
             style={{
               height: `${(item.value / maxVal) * 100}%`,
               minHeight: item.value > 0 ? '4px' : '0',
@@ -417,7 +417,10 @@ const Dashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-ink">Tableau de bord</h1>
+            <h1 className="text-3xl font-bold text-ink">
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
+              Tableau de bord
+            </h1>
             <p className="text-ink-soft mt-1">
               Vue d'ensemble de vos activités logistiques
             </p>
@@ -425,17 +428,17 @@ const Dashboard = () => {
           <div className="flex items-center gap-3 overflow-x-auto touch-scroll">
             <button
               onClick={refreshAll}
-              className="flex items-center gap-2 px-3 py-2 text-sm text-ink-soft bg-surface border border-line rounded-lg hover:bg-surface-2 transition-colors whitespace-nowrap tap-target"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-ink-soft bg-surface border border-line rounded-none hover:bg-surface-2 transition-colors whitespace-nowrap tap-target"
             >
               <RefreshCw size={14} />
               Actualiser
             </button>
-            <div className="flex bg-surface border border-line rounded-lg p-1 whitespace-nowrap">
+            <div className="flex bg-surface border border-line rounded-none p-1 whitespace-nowrap">
               {periods.map((p) => (
                 <button
                   key={p.value}
                   onClick={() => setPeriod(p.value)}
-                  className={`px-3 py-1.5 text-sm rounded-md transition-colors tap-target ${
+                  className={`px-3 py-1.5 text-sm rounded-none transition-colors tap-target ${
                     period === p.value
                       ? 'bg-accent text-white'
                       : 'text-ink-soft hover:bg-surface-2'
@@ -457,7 +460,11 @@ const Dashboard = () => {
           </div>
         ) : stats ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-surface rounded-2xl border border-line p-6">
+            <div className="relative bg-surface rounded-none border border-line p-6">
+              <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+              <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-br" aria-hidden="true" />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-ink-soft">Expéditions totales</p>
@@ -468,13 +475,17 @@ const Dashboard = () => {
                     {formatNumber(stats.activeShipments)} actives
                   </Badge>
                 </div>
-                <div className="w-12 h-12 bg-accent-soft rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-accent-soft rounded-none flex items-center justify-center">
                   <Package className="text-accent" size={24} />
                 </div>
               </div>
             </div>
 
-            <div className="bg-surface rounded-2xl border border-line p-6">
+            <div className="relative bg-surface rounded-none border border-line p-6">
+              <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+              <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-br" aria-hidden="true" />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-ink-soft">Coût total</p>
@@ -492,13 +503,17 @@ const Dashboard = () => {
                     })}
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-accent-soft rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-accent-soft rounded-none flex items-center justify-center">
                   <DollarSign className="text-accent" size={24} />
                 </div>
               </div>
             </div>
 
-            <div className="bg-surface rounded-2xl border border-line p-6">
+            <div className="relative bg-surface rounded-none border border-line p-6">
+              <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+              <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-br" aria-hidden="true" />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-ink-soft">Transporteurs</p>
@@ -509,13 +524,17 @@ const Dashboard = () => {
                     {formatNumber(stats.activeCarriers)} actifs
                   </Badge>
                 </div>
-                <div className="w-12 h-12 bg-accent-soft rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-accent-soft rounded-none flex items-center justify-center">
                   <Truck className="text-accent" size={24} />
                 </div>
               </div>
             </div>
 
-            <div className="bg-surface rounded-2xl border border-line p-6">
+            <div className="relative bg-surface rounded-none border border-line p-6">
+              <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+              <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-br" aria-hidden="true" />
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-ink-soft">CO₂ total</p>
@@ -534,7 +553,7 @@ const Dashboard = () => {
                     kg/expédition
                   </p>
                 </div>
-                <div className="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center">
+                <div className="w-12 h-12 bg-success/10 rounded-none flex items-center justify-center">
                   <Leaf className="text-success" size={24} />
                 </div>
               </div>
@@ -551,9 +570,9 @@ const Dashboard = () => {
           </div>
         ) : stats ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-surface rounded-2xl border border-line p-4">
+            <div className="bg-surface rounded-none border border-line p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-warning/10 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-warning/10 rounded-none flex items-center justify-center">
                   <Weight className="text-warning" size={20} />
                 </div>
                 <div>
@@ -567,9 +586,9 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="bg-surface rounded-2xl border border-line p-4">
+            <div className="bg-surface rounded-none border border-line p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent/10 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent/10 rounded-none flex items-center justify-center">
                   <Box className="text-accent" size={20} />
                 </div>
                 <div>
@@ -585,9 +604,9 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="bg-surface rounded-2xl border border-line p-4">
+            <div className="bg-surface rounded-none border border-line p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent-soft rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-accent-soft rounded-none flex items-center justify-center">
                   <FileText className="text-accent" size={20} />
                 </div>
                 <div>
@@ -602,9 +621,9 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="bg-surface rounded-2xl border border-line p-4">
+            <div className="bg-surface rounded-none border border-line p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent-soft rounded-lg flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 bg-accent-soft rounded-none flex items-center justify-center shrink-0">
                   <Calculator className="text-accent" size={20} />
                 </div>
                 <div className="min-w-0">
@@ -649,17 +668,17 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
           {fxLoading ? (
             [...Array(3)].map((_, i) => (
-              <div key={i} className="bg-surface rounded-2xl border border-line p-4 animate-pulse">
+              <div key={i} className="bg-surface rounded-none border border-line p-4 animate-pulse">
                 <div className="h-4 bg-surface-2 rounded w-1/2 mb-2" />
                 <div className="h-6 bg-surface-2 rounded w-1/3" />
               </div>
             ))
           ) : fxRates && fxRates.length > 0 ? (
             fxRates.map((fx: FxRate, i: number) => (
-              <div key={i} className="bg-surface rounded-2xl border border-line p-4">
+              <div key={i} className="bg-surface rounded-none border border-line p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-warning/10 rounded-lg flex items-center justify-center">
+                    <div className="w-8 h-8 bg-warning/10 rounded-none flex items-center justify-center">
                       <ArrowLeftRight className="text-warning" size={16} />
                     </div>
                     <span className="text-xs font-medium text-ink-soft uppercase">
@@ -673,7 +692,7 @@ const Dashboard = () => {
               </div>
             ))
           ) : (
-            <div className="col-span-3 bg-surface rounded-2xl border border-line p-6 text-center text-ink-soft text-sm">
+            <div className="col-span-3 bg-surface rounded-none border border-line p-6 text-center text-ink-soft text-sm">
               Taux de change indisponible — configurez EXCHANGERATE_API_KEY
             </div>
           )}
@@ -682,7 +701,7 @@ const Dashboard = () => {
         {/* Row 3 — Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Evolution des expéditions — 2/3 */}
-          <div className="lg:col-span-2 bg-surface rounded-2xl border border-line p-6">
+          <div className="lg:col-span-2 bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-6">
               <BarChart3 className="text-ink-soft" size={20} />
               <h2 className="text-lg font-semibold text-ink">Évolution des expéditions</h2>
@@ -710,7 +729,7 @@ const Dashboard = () => {
           </div>
 
           {/* Répartition par statut — 1/3 */}
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-6">
               <TrendingUp className="text-ink-soft" size={20} />
               <h2 className="text-lg font-semibold text-ink">Répartition par statut</h2>
@@ -756,7 +775,7 @@ const Dashboard = () => {
         {/* Row 3b — Carrier cost + Mode cost */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Coût par transporteur — 2/3 */}
-          <div className="lg:col-span-2 bg-surface rounded-2xl border border-line p-6">
+          <div className="lg:col-span-2 bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-6">
               <Truck className="text-ink-soft" size={20} />
               <h2 className="text-lg font-semibold text-ink">Coût par transporteur</h2>
@@ -790,7 +809,7 @@ const Dashboard = () => {
           </div>
 
           {/* Coût par mode — 1/3 */}
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-6">
               <Globe className="text-ink-soft" size={20} />
               <h2 className="text-lg font-semibold text-ink">Coût par mode</h2>
@@ -799,7 +818,7 @@ const Dashboard = () => {
               <div className="space-y-3">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="animate-pulse">
-                    <div className="h-20 bg-surface-2 rounded-lg" />
+                    <div className="h-20 bg-surface-2 rounded-none" />
                   </div>
                 ))}
               </div>
@@ -810,11 +829,11 @@ const Dashboard = () => {
                   return (
                     <div
                       key={i}
-                      className="border border-line rounded-lg p-4"
+                      className="border border-line rounded-none p-4"
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-10 h-10 rounded-lg flex items-center justify-center ${MODE_COLORS[m.mode] || 'bg-bg0'} bg-opacity-10`}
+                          className={`w-10 h-10 rounded-none flex items-center justify-center ${MODE_COLORS[m.mode] || 'bg-bg0'} bg-opacity-10`}
                         >
                           <Icon
                             className={`${MODE_COLORS[m.mode]?.replace('bg-', 'text-') || 'text-ink-soft'}`}
@@ -856,7 +875,7 @@ const Dashboard = () => {
         {/* Row 4 — Top routes + Incoterms */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Top 5 itinéraires */}
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-6">
               <Route className="text-ink-soft" size={20} />
               <h2 className="text-lg font-semibold text-ink">Top 5 itinéraires</h2>
@@ -876,7 +895,7 @@ const Dashboard = () => {
                 {topRoutesData.map((r, i) => (
                   <div
                     key={i}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-surface-2 transition-colors"
+                    className="flex items-center gap-3 p-3 rounded-none hover:bg-surface-2 transition-colors"
                   >
                     <span className="w-8 h-8 bg-surface-2 rounded-full flex items-center justify-center text-sm font-bold text-ink-soft">
                       {i + 1}
@@ -904,7 +923,7 @@ const Dashboard = () => {
           </div>
 
           {/* Utilisation Incoterms */}
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-6">
               <FileText className="text-ink-soft" size={20} />
               <h2 className="text-lg font-semibold text-ink">Utilisation Incoterms</h2>
@@ -940,7 +959,7 @@ const Dashboard = () => {
         {/* Row 5 — Weight & Volume distributions */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Distribution poids */}
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-6">
               <Weight className="text-ink-soft" size={20} />
               <h2 className="text-lg font-semibold text-ink">Distribution poids</h2>
@@ -965,7 +984,7 @@ const Dashboard = () => {
           </div>
 
           {/* Distribution volume */}
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-6">
               <Box className="text-ink-soft" size={20} />
               <h2 className="text-lg font-semibold text-ink">Distribution volume</h2>
@@ -993,7 +1012,7 @@ const Dashboard = () => {
         {/* Row 6 — Cost Trends + Carrier Performance */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Cost Trends */}
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp size={20} className="text-success" />
               <h2 className="text-lg font-semibold text-ink">Évolution des coûts</h2>
@@ -1034,7 +1053,7 @@ const Dashboard = () => {
           </div>
 
           {/* Carrier Performance */}
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-4">
               <BarChart3 size={20} className="text-accent" />
               <h2 className="text-lg font-semibold text-ink">Performance transporteurs</h2>
@@ -1083,7 +1102,7 @@ const Dashboard = () => {
         </div>
 
         {/* ROI Calculator */}
-        <div className="bg-surface rounded-2xl border border-line p-6 mb-6">
+        <div className="bg-surface rounded-none border border-line p-6 mb-6">
           <div className="flex items-center gap-2 mb-2">
             <Calculator className="text-accent" size={20} />
             <h2 className="text-lg font-semibold text-ink">Estimez vos économies</h2>
@@ -1100,7 +1119,7 @@ const Dashboard = () => {
                 min={0}
                 value={roi.shipments}
                 onChange={setRoiField('shipments')}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
             <div>
@@ -1110,7 +1129,7 @@ const Dashboard = () => {
                 min={0}
                 value={roi.avgCost}
                 onChange={setRoiField('avgCost')}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
             <div>
@@ -1120,7 +1139,7 @@ const Dashboard = () => {
                 min={0}
                 value={roi.hoursSaved}
                 onChange={setRoiField('hoursSaved')}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
             <div>
@@ -1130,7 +1149,7 @@ const Dashboard = () => {
                 min={0}
                 value={roi.hourlyRate}
                 onChange={setRoiField('hourlyRate')}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
             <div>
@@ -1141,25 +1160,25 @@ const Dashboard = () => {
                 max={100}
                 value={roi.marginPct}
                 onChange={setRoiField('marginPct')}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-bg rounded-lg p-4">
+            <div className="bg-bg rounded-none p-4">
               <p className="text-xs text-ink-soft">Temps gagné</p>
               <p className="text-lg font-bold text-ink">{formatNumber(savingsTime)} €/mois</p>
             </div>
-            <div className="bg-bg rounded-lg p-4">
+            <div className="bg-bg rounded-none p-4">
               <p className="text-xs text-ink-soft">Marge transitaire évitée</p>
               <p className="text-lg font-bold text-ink">{formatNumber(savingsMargin, { maximumFractionDigits: 0 })} €/mois</p>
             </div>
-            <div className="bg-bg rounded-lg p-4">
+            <div className="bg-bg rounded-none p-4">
               <p className="text-xs text-ink-soft">Coût plan Pro ({proMonthly}€/mois)</p>
               <p className="text-lg font-bold text-ink">-{formatNumber(proMonthly)} €/mois</p>
             </div>
-            <div className={`rounded-lg p-4 ${netMonthly > 0 ? 'bg-success/10 border border-success/20' : 'bg-bg'}`}>
+            <div className={`rounded-none p-4 ${netMonthly > 0 ? 'bg-success/10 border border-success/20' : 'bg-bg'}`}>
               <p className="text-xs text-ink-soft">Économies nettes</p>
               <p className={`text-lg font-bold ${netMonthly > 0 ? 'text-success' : 'text-ink'}`}>
                 {netMonthly > 0 ? '+' : ''}{formatNumber(netMonthly, { maximumFractionDigits: 0 })} €/mois
@@ -1170,7 +1189,7 @@ const Dashboard = () => {
         </div>
 
         {/* Simulation History — Collapsible */}
-        <div className="bg-surface rounded-2xl border border-line overflow-hidden mb-6">
+        <div className="bg-surface rounded-none border border-line overflow-hidden mb-6">
           <button
             onClick={() => setHistoryOpen(!historyOpen)}
             className="w-full flex items-center justify-between p-6 text-left hover:bg-surface-2 transition-colors"
