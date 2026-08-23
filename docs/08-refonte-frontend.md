@@ -22,7 +22,9 @@ Appliquer le nouveau design system à la coquille applicative (navigation unifi�
 
 **Coquille compliance-engine (nav + header) faite, 2026-08-23** : tokens couleur/police (commit `544562f`) puis détails structurels — coins carrés, marqueur `>` sur l'item actif, préfixe `::` sur le titre de page, wordmark en contraste de poids (commit `d61d04e`).
 
-**Dashboard fait, 2026-08-23** (commit `520d2b9`) : coins carrés, préfixe `::`, coins-crochets HUD sur les 4 cartes KPI principales. Reste : 3-6 autres pages à fort impact (tracking, ETA, création d'expédition côté compliance-engine), plus l'équivalent côté fleet-hub (rien fait pour l'instant sur ce hub).
+**Dashboard fait, 2026-08-23** (commit `520d2b9`) : coins carrés, préfixe `::`, coins-crochets HUD sur les 4 cartes KPI principales.
+
+**Tracking, ETA et création d'expédition faits, 2026-08-23** (commit `8b41d74`) : `ShipTracker.tsx`, `EtaPredictions.tsx`, `Shipments.tsx` — même traitement, avec coins-crochets placés là où ils ont un sens (panneau flottant sur la carte, formulaire de création). **La liste de pages nommée pour l'Étape 1 côté compliance-engine est close.** Reste uniquement l'équivalent côté fleet-hub — non commencé, et ce hub n'est pas encore câblé comme cible de dev active dans ce monorepo (pas d'entrée `.claude/launch.json`, contrairement à compliance-engine).
 
 ### Étape 2 — Migration progressive du reste (continue, priorisée par usage réel)
 Le reste des pages migre au fil de l'eau, priorisé par fréquence d'usage réelle (à instrumenter si ce n'est pas déjà mesuré) plutôt que dans un ordre arbitraire — une page de configuration ouverte une fois par mois n'a pas la même urgence qu'une page de tracking ouverte quotidiennement. Chaque page migrée est une passe (nouveau design + extraction des composants dupliqués déjà identifiés dans un audit antérieur : `STATUS_CONFIG`, `COUNTRIES`, `formatMAD`) — pas une réécriture fonctionnelle : le comportement ne change pas, seulement l'habillage et la structure.
