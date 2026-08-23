@@ -20,6 +20,8 @@ C'est l'étape où faire appel à un outil de design dédié (maquettes comparat
 ### Étape 1 — Nouveau shell + pages à plus fort impact (3-4 semaines)
 Appliquer le nouveau design system à la coquille applicative (navigation unifiée entre compliance-engine et fleet-hub, dashboard d'accueil, palette de commandes déjà existante côté compliance-engine à étendre aux deux hubs) et aux 5-8 pages les plus visibles (dashboard principal, tracking, ETA, création d'expédition côté compliance-engine ; dashboard flotte, carte GPS côté fleet-hub). C'est ce qui donne la sensation immédiate d'un produit « évolué » à un client qui se connecte, sans toucher aux ~100 pages restantes.
 
+**Coquille compliance-engine (nav + header) faite, 2026-08-23** : tokens couleur/police (commit `544562f`) puis détails structurels — coins carrés, marqueur `>` sur l'item actif, préfixe `::` sur le titre de page, wordmark en contraste de poids (commit `d61d04e`). Reste : le dashboard principal et les 4-7 autres pages à fort impact listées ci-dessus, plus l'équivalent côté fleet-hub (rien fait pour l'instant sur ce hub).
+
 ### Étape 2 — Migration progressive du reste (continue, priorisée par usage réel)
 Le reste des pages migre au fil de l'eau, priorisé par fréquence d'usage réelle (à instrumenter si ce n'est pas déjà mesuré) plutôt que dans un ordre arbitraire — une page de configuration ouverte une fois par mois n'a pas la même urgence qu'une page de tracking ouverte quotidiennement. Chaque page migrée est une passe (nouveau design + extraction des composants dupliqués déjà identifiés dans un audit antérieur : `STATUS_CONFIG`, `COUNTRIES`, `formatMAD`) — pas une réécriture fonctionnelle : le comportement ne change pas, seulement l'habillage et la structure.
 
