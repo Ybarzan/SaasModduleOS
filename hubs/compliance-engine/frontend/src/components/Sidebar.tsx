@@ -67,17 +67,17 @@ const Sidebar = () => {
     >
       <div className="h-16 flex items-center justify-between px-4 border-b border-line shrink-0">
         {!collapsed && (
-          <Link to="/" className="flex items-center gap-2.5 font-extrabold text-lg">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent to-accent-strong flex items-center justify-center shadow-md shadow-accent/20">
+          <Link to="/" className="flex items-center gap-2.5 text-lg">
+            <div className="w-8 h-8 bg-gradient-to-br from-accent to-accent-strong flex items-center justify-center shadow-md shadow-accent/20">
               <Calculator size={16} className="text-white" />
             </div>
-            <span className="text-ink">Inco<span className="text-accent">Kalk</span></span>
+            <span className="text-ink font-light">Inco<span className="text-accent font-bold">Kalk</span></span>
           </Link>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
           aria-label={collapsed ? 'Déplier la navigation' : 'Replier la navigation'}
-          className="p-1.5 rounded-lg text-ink-soft hover:text-ink hover:bg-surface-2 transition-colors"
+          className="p-1.5 text-ink-soft hover:text-ink hover:bg-surface-2 transition-colors"
         >
           {collapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
         </button>
@@ -92,7 +92,7 @@ const Sidebar = () => {
               key={item.to}
               to={item.to}
               title={collapsed ? item.label : undefined}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold ${SPRING} hover:translate-x-0.5 ${
+              className={`flex items-center gap-3 px-3 py-2.5 text-sm font-semibold ${SPRING} hover:translate-x-0.5 ${
                 item.highlight
                   ? active
                     ? 'bg-accent text-white shadow-md shadow-accent/25'
@@ -103,7 +103,14 @@ const Sidebar = () => {
               } ${collapsed ? 'justify-center hover:translate-x-0' : ''}`}
             >
               <Icon size={18} />
-              {!collapsed && <span className="truncate">{item.label}</span>}
+              {!collapsed && (
+                <span className="truncate flex items-center gap-1.5">
+                  {active && (
+                    <span className={item.highlight ? 'text-white' : 'text-accent'} aria-hidden="true">&gt;</span>
+                  )}
+                  {item.label}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -157,7 +164,7 @@ function SidebarGroup({
       <button
         onClick={onToggle}
         title={collapsed ? group.label : undefined}
-        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+        className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors ${
           hasActive ? 'text-accent' : 'text-ink-soft hover:bg-surface-2 hover:text-ink'
         } ${collapsed ? 'justify-center' : 'justify-between'}`}
       >
@@ -181,7 +188,7 @@ function SidebarGroup({
                   key={item.to}
                   to="/pricing"
                   title={`Disponible avec le plan ${PLAN_DISPLAY_NAME[item.requiredPlan!]}`}
-                  className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-ink-soft/50 hover:text-ink-soft hover:bg-surface-2 transition-colors"
+                  className="flex items-center gap-3 px-3 py-2 text-sm text-ink-soft/50 hover:text-ink-soft hover:bg-surface-2 transition-colors"
                 >
                   <Icon size={15} className="text-ink-soft/50" />
                   <span className="truncate flex-1">{item.label}</span>
@@ -193,14 +200,17 @@ function SidebarGroup({
               <Link
                 key={item.to}
                 to={item.to}
-                className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm ${SPRING} hover:translate-x-0.5 ${
+                className={`flex items-center gap-3 px-3 py-2 text-sm ${SPRING} hover:translate-x-0.5 ${
                   active
                     ? 'text-accent bg-accent-soft font-semibold'
                     : 'text-ink-soft hover:text-ink hover:bg-surface-2'
                 }`}
               >
                 <Icon size={15} className={active ? 'text-accent' : 'text-ink-soft'} />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate flex items-center gap-1.5">
+                  {active && <span aria-hidden="true">&gt;</span>}
+                  {item.label}
+                </span>
               </Link>
             );
           })}

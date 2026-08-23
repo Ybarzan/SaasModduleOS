@@ -47,21 +47,24 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 shrink-0 bg-surface/95 backdrop-blur-xl border-b border-line flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
-          <h1 className="text-base font-bold text-ink truncate">{pageLabel ?? 'IncoKalk'}</h1>
+          <h1 className="text-base font-bold text-ink truncate">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            {pageLabel ?? 'IncoKalk'}
+          </h1>
           <div className="flex items-center gap-3">
             <button
               onClick={openCommandPalette}
               title="Rechercher (Ctrl+K)"
-              className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-ink-soft border border-line hover:border-accent hover:text-accent transition-colors"
+              className="hidden sm:flex items-center gap-2 px-3 py-1.5 text-sm text-ink-soft border border-line hover:border-accent hover:text-accent transition-colors"
             >
               <Search size={14} />
               <span className="hidden md:inline">Rechercher</span>
-              <kbd className="text-[10px] border border-line rounded px-1 py-0.5">Ctrl K</kbd>
+              <kbd className="text-[10px] border border-line px-1 py-0.5">Ctrl K</kbd>
             </button>
             <button
               onClick={openOnboarding}
               title="Revoir le guide de démarrage"
-              className="p-2 rounded-lg text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
+              className="p-2 text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
             >
               <HelpCircle size={16} />
             </button>
@@ -77,7 +80,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
               <button
                 onClick={handleLogout}
                 title="Déconnexion"
-                className="p-2 rounded-lg text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
+                className="p-2 text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
               >
                 <LogOut size={16} />
               </button>
