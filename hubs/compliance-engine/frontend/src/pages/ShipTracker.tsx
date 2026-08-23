@@ -300,16 +300,19 @@ const ShipTracker = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-lg transition-colors flex-shrink-0"
+              className="p-2 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-none transition-colors flex-shrink-0"
               title="Retour au tableau de bord"
             >
               <ArrowLeft size={20} />
             </button>
-            <div className="w-10 h-10 rounded-xl bg-ink-soft flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-none bg-ink-soft flex items-center justify-center flex-shrink-0">
               <Ship size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-extrabold text-ink">Ship Tracker</h1>
+              <h1 className="text-lg font-extrabold text-ink">
+                <span className="text-accent font-normal" aria-hidden="true">:: </span>
+                Ship Tracker
+              </h1>
               <p className="text-xs text-ink-soft">Suivi maritime en temps réel</p>
             </div>
             {liveData?.configured && liveData.connected && (
@@ -336,12 +339,12 @@ const ShipTracker = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Rechercher un navire (nom, MMSI)..."
-                className="w-full pl-9 pr-4 py-2 border border-line rounded-xl text-sm focus:ring-2 focus:ring-ink-soft focus:border-transparent"
+                className="w-full pl-9 pr-4 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-ink-soft focus:border-transparent"
               />
             </div>
             <button
               type="submit"
-              className="px-4 py-2 bg-ink-soft text-white rounded-xl text-sm font-semibold hover:bg-ink-soft transition-colors flex-shrink-0"
+              className="px-4 py-2 bg-ink-soft text-white rounded-none text-sm font-semibold hover:bg-ink-soft transition-colors flex-shrink-0"
             >
               Rechercher
             </button>
@@ -351,7 +354,7 @@ const ShipTracker = () => {
               refetch();
               refetchLive();
             }}
-            className="p-2 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-lg transition-colors flex-shrink-0"
+            className="p-2 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-none transition-colors flex-shrink-0"
             title="Rafraîchir"
           >
             <RefreshCw size={18} className={liveLoading ? 'animate-spin' : ''} />
@@ -363,7 +366,7 @@ const ShipTracker = () => {
         <div ref={mapRef} className="absolute inset-0 z-0" />
 
         {liveData && !liveData.configured && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-warning/10 border border-warning/30 text-warning rounded-xl shadow-lg px-4 py-2 flex items-center gap-2 max-w-md">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-warning/10 border border-warning/30 text-warning rounded-none shadow-lg px-4 py-2 flex items-center gap-2 max-w-md">
             <AlertTriangle size={16} className="flex-shrink-0" />
             <span className="text-xs font-medium">
               Suivi en direct non configuré — inscrivez-vous sur AISStream.io et renseignez la clé API (AISSTREAM_API_KEY) pour afficher les navires en temps réel.
@@ -372,7 +375,7 @@ const ShipTracker = () => {
         )}
 
         {liveData && liveData.configured && !liveData.connected && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-danger/10 border border-danger/30 text-danger rounded-xl shadow-lg px-4 py-2 flex items-center gap-2 max-w-md">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] bg-danger/10 border border-danger/30 text-danger rounded-none shadow-lg px-4 py-2 flex items-center gap-2 max-w-md">
             <AlertTriangle size={16} className="flex-shrink-0" />
             <span className="text-xs font-medium">
               Clé API AISStream.io configurée mais la connexion au flux échoue — la clé est probablement invalide ou expirée. Générez-en une nouvelle sur aisstream.io.
@@ -380,7 +383,11 @@ const ShipTracker = () => {
           </div>
         )}
 
-        <div className="absolute top-4 left-4 z-[1000] bg-surface rounded-xl shadow-lg border border-line p-3 max-w-xs">
+        <div className="absolute top-4 left-4 z-[1000] bg-surface rounded-none shadow-lg border border-line p-3 max-w-xs">
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <div className="flex items-center gap-2 mb-2">
             <Anchor size={14} className="text-ink-soft" />
             <span className="text-xs font-bold text-ink uppercase tracking-wide">Expéditions maritimes</span>
@@ -390,7 +397,7 @@ const ShipTracker = () => {
           ) : (
             <div className="space-y-1 max-h-40 overflow-y-auto">
               {maritimeShipments.slice(0, 5).map((s: TrackerShipment) => (
-                <div key={s.id} className="flex items-center gap-2 text-xs text-ink-soft py-1 px-2 rounded-lg hover:bg-surface-2">
+                <div key={s.id} className="flex items-center gap-2 text-xs text-ink-soft py-1 px-2 rounded-none hover:bg-surface-2">
                   <Ship size={12} className="text-ink-soft" />
                   <span className="truncate">{s.orderNumber}</span>
                   <span className="text-ink-soft ml-auto">{s.consigneeCity || s.consigneeCountry}</span>
@@ -400,7 +407,7 @@ const ShipTracker = () => {
           )}
         </div>
 
-        <div className="absolute bottom-4 left-4 z-[1000] bg-surface/90 backdrop-blur-sm rounded-xl shadow border border-line px-3 py-2">
+        <div className="absolute bottom-4 left-4 z-[1000] bg-surface/90 backdrop-blur-sm rounded-none shadow border border-line px-3 py-2">
           <div className="flex items-center gap-4 text-[10px] text-ink-soft">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-ink-soft" />
@@ -420,7 +427,7 @@ const ShipTracker = () => {
         </div>
 
         {isLoading && (
-          <div className="absolute top-4 right-4 z-[1000] bg-surface rounded-xl shadow-lg border border-line p-3 flex items-center gap-2">
+          <div className="absolute top-4 right-4 z-[1000] bg-surface rounded-none shadow-lg border border-line p-3 flex items-center gap-2">
             <Loader2 size={16} className="animate-spin text-ink-soft" />
             <span className="text-xs text-ink-soft">Recherche en cours...</span>
           </div>

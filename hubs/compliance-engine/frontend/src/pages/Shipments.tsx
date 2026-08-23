@@ -69,7 +69,7 @@ const ShipmentReceivingSection = ({ shipmentId }: { shipmentId: string }) => {
         </h4>
         <Link
           to={`/receivings?shipmentId=${shipmentId}&openCreate=1`}
-          className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium bg-accent text-white rounded-md hover:bg-accent-strong transition-colors"
+          className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium bg-accent text-white rounded-none hover:bg-accent-strong transition-colors"
         >
           <Plus size={12} />
           <span>Créer un bon de réception</span>
@@ -85,7 +85,7 @@ const ShipmentReceivingSection = ({ shipmentId }: { shipmentId: string }) => {
             <li key={o.id}>
               <Link
                 to="/receivings"
-                className="flex items-center justify-between gap-3 px-3 py-2 bg-surface border border-line rounded-lg hover:border-accent/60 transition-colors"
+                className="flex items-center justify-between gap-3 px-3 py-2 bg-surface border border-line rounded-none hover:border-accent/60 transition-colors"
               >
                 <span className="font-mono text-xs font-medium text-ink">{o.orderNumber}</span>
                 <span className="text-xs text-ink-soft">
@@ -111,7 +111,7 @@ const CountrySelect = ({
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
   >
     <option value="">Pays</option>
     {COUNTRIES.map((c) => (
@@ -154,14 +154,14 @@ const AddressSection = ({
       type="text"
       value={name}
       onChange={(e) => onNameChange(e.target.value)}
-      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
       placeholder="Nom / Société"
     />
     <input
       type="text"
       value={address}
       onChange={(e) => onAddressChange(e.target.value)}
-      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
       placeholder="Adresse"
     />
     <div className="grid grid-cols-3 gap-2">
@@ -169,7 +169,7 @@ const AddressSection = ({
         type="text"
         value={city}
         onChange={(e) => onCityChange(e.target.value)}
-        className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+        className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
         placeholder="Ville"
       />
       <CountrySelect value={country} onChange={onCountryChange} />
@@ -177,7 +177,7 @@ const AddressSection = ({
         type="text"
         value={postalCode}
         onChange={(e) => onPostalCodeChange(e.target.value)}
-        className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+        className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
         placeholder="Code postal"
       />
     </div>
@@ -445,7 +445,10 @@ const Shipments = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-ink mb-2">Expéditions</h1>
+            <h1 className="text-4xl font-bold text-ink mb-2">
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
+              Expéditions
+            </h1>
             <p className="text-ink-soft">Gérez vos envois et suivez leur progression</p>
           </div>
           <div className="flex items-center gap-3">
@@ -463,14 +466,14 @@ const Shipments = () => {
                   toast.success('Export téléchargé');
                 } catch { toast.error('Erreur export'); }
               }}
-              className="border border-line text-ink px-4 py-2 rounded-lg hover:bg-bg transition-colors flex items-center space-x-2"
+              className="border border-line text-ink px-4 py-2 rounded-none hover:bg-bg transition-colors flex items-center space-x-2"
             >
               <Download size={18} />
               <span>Exporter CSV</span>
             </button>
             <button
               onClick={() => { setShowForm(!showForm); setForm({ ...EMPTY_FORM }); }}
-              className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-strong transition-colors flex items-center space-x-2 tap-target"
+              className="bg-accent text-white px-4 py-2 rounded-none hover:bg-accent-strong transition-colors flex items-center space-x-2 tap-target"
             >
               <Plus size={20} />
               <span>Nouvelle expédition</span>
@@ -480,7 +483,7 @@ const Shipments = () => {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-surface rounded-lg shadow-lg p-6">
+          <div className="bg-surface rounded-none shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-3xl font-bold text-accent">{totalShipments}</div>
@@ -489,7 +492,7 @@ const Shipments = () => {
               <Package className="h-8 w-8 text-accent" />
             </div>
           </div>
-          <div className="bg-surface rounded-lg shadow-lg p-6">
+          <div className="bg-surface rounded-none shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-3xl font-bold text-warning">{inTransit}</div>
@@ -498,7 +501,7 @@ const Shipments = () => {
               <Truck className="h-8 w-8 text-warning" />
             </div>
           </div>
-          <div className="bg-surface rounded-lg shadow-lg p-6">
+          <div className="bg-surface rounded-none shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-3xl font-bold text-success">{delivered}</div>
@@ -507,7 +510,7 @@ const Shipments = () => {
               <CheckCircle className="h-8 w-8 text-success" />
             </div>
           </div>
-          <div className="bg-surface rounded-lg shadow-lg p-6">
+          <div className="bg-surface rounded-none shadow-lg p-6">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-3xl font-bold text-ink-soft">{drafts}</div>
@@ -520,8 +523,15 @@ const Shipments = () => {
 
         {/* Create Form */}
         {showForm && (
-          <div className="bg-surface rounded-lg shadow-lg p-6 mb-8">
-            <h2 className="text-xl font-bold text-ink mb-6">Nouvelle expédition</h2>
+          <div className="relative bg-surface rounded-none shadow-lg p-6 mb-8">
+            <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+            <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-br" aria-hidden="true" />
+            <h2 className="text-xl font-bold text-ink mb-6">
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
+              Nouvelle expédition
+            </h2>
             <form onSubmit={handleSubmit}>
               <div className="space-y-6">
                 <AddressSection
@@ -564,7 +574,7 @@ const Shipments = () => {
                       type="text"
                       value={form.goodsDescription}
                       onChange={(e) => setForm({ ...form, goodsDescription: e.target.value })}
-                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                       placeholder="Description des marchandises"
                     />
                     <div className="grid grid-cols-2 gap-2">
@@ -574,7 +584,7 @@ const Shipments = () => {
                         min="0"
                         value={form.goodsValue || ''}
                         onChange={(e) => setForm({ ...form, goodsValue: parseFloat(e.target.value) || 0 })}
-                        className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                        className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                         placeholder="Valeur (€)"
                       />
                       <input
@@ -583,7 +593,7 @@ const Shipments = () => {
                         min="0"
                         value={form.weightKg || ''}
                         onChange={(e) => setForm({ ...form, weightKg: parseFloat(e.target.value) || 0 })}
-                        className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                        className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                         placeholder="Poids (kg)"
                       />
                     </div>
@@ -595,7 +605,7 @@ const Shipments = () => {
                       min="0"
                       value={form.volumeM3 || ''}
                       onChange={(e) => setForm({ ...form, volumeM3: parseFloat(e.target.value) || 0 })}
-                      className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                      className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                       placeholder="Volume (m³)"
                     />
                     <input
@@ -603,20 +613,20 @@ const Shipments = () => {
                       min="1"
                       value={form.packagesCount || ''}
                       onChange={(e) => setForm({ ...form, packagesCount: parseInt(e.target.value) || 1 })}
-                      className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                      className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                       placeholder="Colis"
                     />
                     <input
                       type="text"
                       value={form.hsCode || ''}
                       onChange={(e) => setForm({ ...form, hsCode: e.target.value })}
-                      className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                      className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                       placeholder="Code SH"
                     />
                     <select
                       value={form.incotermCode || ''}
                       onChange={(e) => setForm({ ...form, incotermCode: e.target.value })}
-                      className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                      className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                     >
                       <option value="">Incoterm</option>
                       {INCOTERMS.map((i) => (
@@ -638,7 +648,7 @@ const Shipments = () => {
                       type="date"
                       value={form.requestedPickupDate || ''}
                       onChange={(e) => setForm({ ...form, requestedPickupDate: e.target.value })}
-                      className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                      className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                     />
                   </div>
                  </div>
@@ -660,7 +670,7 @@ const Shipments = () => {
                      </button>
                    </div>
                    {showItemsForm && (
-                     <div className="bg-bg rounded-lg p-4 border border-line space-y-3">
+                     <div className="bg-bg rounded-none p-4 border border-line space-y-3">
                        <div className="grid md:grid-cols-5 gap-3">
                          <input
                            type="text"
@@ -673,7 +683,7 @@ const Shipments = () => {
                              updated[last] = { ...updated[last], sku: e.target.value };
                              setForm({ ...form, items: updated });
                            }}
-                           className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                           className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                          />
                          <input
                            type="text"
@@ -686,7 +696,7 @@ const Shipments = () => {
                              updated[last] = { ...updated[last], name: e.target.value };
                              setForm({ ...form, items: updated });
                            }}
-                           className="md:col-span-2 border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                           className="md:col-span-2 border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                          />
                          <input
                            type="number"
@@ -701,7 +711,7 @@ const Shipments = () => {
                              updated[last] = { ...updated[last], quantity: parseFloat(e.target.value) || 1 };
                              setForm({ ...form, items: updated });
                            }}
-                           className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                           className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                          />
                          <select
                            value={form.items?.[form.items.length - 1]?.unit ?? 'PCS'}
@@ -712,7 +722,7 @@ const Shipments = () => {
                              updated[last] = { ...updated[last], unit: e.target.value };
                              setForm({ ...form, items: updated });
                            }}
-                           className="border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                           className="border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                          >
                            <option value="PCS">PCS</option>
                            <option value="KG">KG</option>
@@ -727,7 +737,7 @@ const Shipments = () => {
                              const updated = [...(form.items ?? []), {} as ShipmentItem];
                              setForm({ ...form, items: updated });
                            }}
-                           className="bg-accent text-white rounded-lg px-3 py-2 text-sm hover:bg-accent-strong transition-colors"
+                           className="bg-accent text-white rounded-none px-3 py-2 text-sm hover:bg-accent-strong transition-colors"
                          >
                            + Ligne
                          </button>
@@ -735,7 +745,7 @@ const Shipments = () => {
                        {items.length > 0 && (
                          <div className="space-y-2">
                            {(form.items ?? []).map((item, idx) => (
-                             <div key={idx} className="flex items-center space-x-2 bg-surface rounded-lg px-3 py-2 border border-line">
+                             <div key={idx} className="flex items-center space-x-2 bg-surface rounded-none px-3 py-2 border border-line">
                                <span className="text-sm font-mono text-ink">{item.sku || '—'}</span>
                                <span className="text-sm text-ink flex-1">{item.name || '—'}</span>
                                <span className="text-sm text-ink-soft">{item.quantity ?? 1} {item.unit || 'PCS'}</span>
@@ -786,7 +796,7 @@ const Shipments = () => {
                     </div>
 
                     {showRateSearch && (
-                      <div className="bg-bg rounded-lg p-4 border border-line">
+                      <div className="bg-bg rounded-none p-4 border border-line">
                         {loadingRates ? (
                           <div className="flex items-center justify-center py-4">
                             <Loader2 className="h-6 w-6 animate-spin text-accent mr-2" />
@@ -810,7 +820,7 @@ const Shipments = () => {
                                         carrierId: rate.carrierId || '',
                                       });
                                     }}
-                                    className={`text-left p-3 rounded-lg border-2 transition-all ${
+                                    className={`text-left p-3 rounded-none border-2 transition-all ${
                                       isSelected
                                         ? 'border-success/40 bg-success/10 ring-1 ring-success'
                                         : 'border-line hover:border-line bg-surface'
@@ -859,7 +869,7 @@ const Shipments = () => {
                       {carriers.map((c) => (
                         <label
                           key={c.id}
-                          className={`flex items-center space-x-3 p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                          className={`flex items-center space-x-3 p-3 border-2 rounded-none cursor-pointer transition-colors ${
                             form.carrierId === c.id
                               ? 'border-accent/40 bg-accent-soft'
                               : 'border-line hover:border-line'
@@ -887,14 +897,14 @@ const Shipments = () => {
                   <button
                     type="button"
                     onClick={() => setShowForm(false)}
-                    className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
+                    className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     type="submit"
                     disabled={createMutation.isPending}
-                    className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
+                    className="px-4 py-2 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
                   >
                     {createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                     <span>Créer l'expédition</span>
@@ -907,7 +917,7 @@ const Shipments = () => {
 
         {/* Shipments Table */}
         {shipments.length === 0 ? (
-          <div className="bg-surface rounded-lg shadow-lg p-12 text-center">
+          <div className="bg-surface rounded-none shadow-lg p-12 text-center">
             <Package className="h-16 w-16 text-ink-soft mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-ink mb-2">Aucune expédition</h3>
             <p className="text-ink-soft mb-6">
@@ -915,14 +925,14 @@ const Shipments = () => {
             </p>
             <button
               onClick={() => { setShowForm(true); setForm({ ...EMPTY_FORM }); }}
-              className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent-strong transition-colors inline-flex items-center space-x-2"
+              className="bg-accent text-white px-6 py-3 rounded-none hover:bg-accent-strong transition-colors inline-flex items-center space-x-2"
             >
               <Plus size={20} />
               <span>Nouvelle expédition</span>
             </button>
           </div>
         ) : (
-          <div className="bg-surface rounded-lg shadow-lg overflow-hidden">
+          <div className="bg-surface rounded-none shadow-lg overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -1089,7 +1099,7 @@ const Shipments = () => {
                                       <button
                                         onClick={() => exportCmrMutation.mutate(shipment.id)}
                                         disabled={exportCmrMutation.isPending}
-                                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium border border-line rounded-md bg-surface hover:bg-bg transition-colors disabled:opacity-50 text-ink"
+                                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium border border-line rounded-none bg-surface hover:bg-bg transition-colors disabled:opacity-50 text-ink"
                                       >
                                         <FileText size={12} />
                                         <span>CMR</span>
@@ -1103,7 +1113,7 @@ const Shipments = () => {
                                           exportDgdMutation.mutate(shipment.id);
                                         }}
                                         disabled={exportDgdMutation.isPending}
-                                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium border border-line rounded-md bg-surface hover:bg-bg transition-colors disabled:opacity-50 text-ink"
+                                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium border border-line rounded-none bg-surface hover:bg-bg transition-colors disabled:opacity-50 text-ink"
                                       >
                                         <FileText size={12} />
                                         <span>DGD</span>
@@ -1112,7 +1122,7 @@ const Shipments = () => {
                                       <button
                                         onClick={() => exportCertOrigineMutation.mutate(shipment.id)}
                                         disabled={exportCertOrigineMutation.isPending}
-                                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium border border-line rounded-md bg-surface hover:bg-bg transition-colors disabled:opacity-50 text-ink"
+                                        className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium border border-line rounded-none bg-surface hover:bg-bg transition-colors disabled:opacity-50 text-ink"
                                       >
                                         <FileText size={12} />
                                         <span>Certificat d'origine</span>
@@ -1129,14 +1139,14 @@ const Shipments = () => {
                                     <button
                                       onClick={() => shareLinkMutation.mutate(shipment.id)}
                                       disabled={shareLinkMutation.isPending}
-                                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium border border-line rounded-md bg-surface hover:bg-bg transition-colors disabled:opacity-50 text-ink"
+                                      className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium border border-line rounded-none bg-surface hover:bg-bg transition-colors disabled:opacity-50 text-ink"
                                     >
                                       <Link2 size={12} />
                                       <span>Générer un lien de suivi client</span>
                                       {shareLinkMutation.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
                                     </button>
                                     {clientLinks[shipment.id] && (
-                                      <div className="mt-2 flex items-center gap-2 bg-accent-soft rounded-lg px-3 py-2">
+                                      <div className="mt-2 flex items-center gap-2 bg-accent-soft rounded-none px-3 py-2">
                                         <input
                                           type="text"
                                           readOnly
@@ -1214,7 +1224,7 @@ const Shipments = () => {
         )}
 
         {!Array.isArray(data) && totalPages > 1 && (
-          <div className="bg-surface rounded-lg shadow-lg mt-4 py-3">
+          <div className="bg-surface rounded-none shadow-lg mt-4 py-3">
             <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         )}
@@ -1222,7 +1232,7 @@ const Shipments = () => {
         {/* Delete Confirmation */}
         {deleteId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-surface rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="bg-surface rounded-none shadow-xl w-full max-w-md mx-4 p-6">
               <h3 className="text-lg font-bold text-ink mb-4">Confirmer la suppression</h3>
               <p className="text-ink-soft mb-6">
                 Êtes-vous sûr de vouloir supprimer cette expédition ? Cette action est irréversible.
@@ -1230,14 +1240,14 @@ const Shipments = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setDeleteId(null)}
-                  className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
+                  className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={() => deleteMutation.mutate(deleteId)}
                   disabled={deleteMutation.isPending}
-                  className="px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  className="px-4 py-2 bg-danger text-white rounded-none hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
                 >
                   {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>Supprimer</span>

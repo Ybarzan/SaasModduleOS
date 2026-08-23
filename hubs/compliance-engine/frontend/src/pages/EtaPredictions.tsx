@@ -230,15 +230,22 @@ const EtaPredictions = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">Prédictions ETA</h1>
+        <h1 className="text-2xl font-bold text-ink">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Prédictions ETA
+        </h1>
         <p className="text-ink-soft mt-1">Prédiction intelligente du temps d'arrivée</p>
       </div>
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="relative bg-surface rounded-none border border-line p-5">
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
               <Package size={20} className="text-accent" />
             </div>
             <div>
@@ -247,9 +254,13 @@ const EtaPredictions = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="relative bg-surface rounded-none border border-line p-5">
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
               <TrendingUp size={20} className="text-success" />
             </div>
             <div>
@@ -260,9 +271,13 @@ const EtaPredictions = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="relative bg-surface rounded-none border border-line p-5">
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
               <CheckCircle size={20} className="text-success" />
             </div>
             <div>
@@ -273,9 +288,13 @@ const EtaPredictions = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="relative bg-surface rounded-none border border-line p-5">
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-warning/10 flex items-center justify-center">
               <Clock size={20} className="text-warning" />
             </div>
             <div>
@@ -289,7 +308,7 @@ const EtaPredictions = () => {
       </div>
 
       {/* Predict form */}
-      <div className="bg-surface rounded-xl border border-line p-6 mb-8">
+      <div className="bg-surface rounded-none border border-line p-6 mb-8">
         <h2 className="text-lg font-semibold text-ink mb-4">Nouvelle prédiction</h2>
         <form onSubmit={handlePredict} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div>
@@ -297,7 +316,7 @@ const EtaPredictions = () => {
             <select
               value={form.origin}
               onChange={(e) => setForm({ ...form, origin: e.target.value })}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               required
             >
               <option value="">Sélectionner...</option>
@@ -311,7 +330,7 @@ const EtaPredictions = () => {
             <select
               value={form.destination}
               onChange={(e) => setForm({ ...form, destination: e.target.value })}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               required
             >
               <option value="">Sélectionner...</option>
@@ -325,7 +344,7 @@ const EtaPredictions = () => {
             <select
               value={form.mode}
               onChange={(e) => setForm({ ...form, mode: e.target.value })}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               required
             >
               {modes.map((m) => (
@@ -339,7 +358,7 @@ const EtaPredictions = () => {
               type="text"
               value={form.carrierName}
               onChange={(e) => setForm({ ...form, carrierName: e.target.value })}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               placeholder="MSC, Maersk..."
             />
           </div>
@@ -347,7 +366,7 @@ const EtaPredictions = () => {
             <button
               type="submit"
               disabled={predictMutation.isPending}
-              className="w-full px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {predictMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <TrendingUp size={14} />}
               Prédire ETA
@@ -358,16 +377,16 @@ const EtaPredictions = () => {
 
       {/* Latest prediction result */}
       {predictions.length > 0 && (
-        <div className="bg-surface rounded-xl border border-line p-6 mb-8">
+        <div className="bg-surface rounded-none border border-line p-6 mb-8">
           <h2 className="text-lg font-semibold text-ink mb-4">Dernière prédiction</h2>
           {(() => {
             const latest = predictions[0];
             const ModeIcon = getModeIcon(latest.mode);
             return (
-              <div className="border border-line rounded-lg p-5">
+              <div className="border border-line rounded-none p-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-accent-soft flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-none bg-accent-soft flex items-center justify-center">
                       <ModeIcon size={24} className="text-accent" />
                     </div>
                     <div>
@@ -454,7 +473,7 @@ const EtaPredictions = () => {
 
                 {/* Detail breakdown — technique, replié par défaut */}
                 {showLatestDetail && (
-                  <div className="bg-bg rounded-lg p-4 mt-3">
+                  <div className="bg-bg rounded-none p-4 mt-3">
                     <p className="text-xs text-ink-soft mb-2">Détail</p>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-sm">
                       <div>
@@ -492,7 +511,7 @@ const EtaPredictions = () => {
 
       {/* Visualisation */}
       {predictions.length > 0 && (
-        <div className="bg-surface rounded-xl border border-line p-6 mb-8">
+        <div className="bg-surface rounded-none border border-line p-6 mb-8">
           <div className="flex items-center gap-2 mb-6">
             <BarChart3 size={18} className="text-ink-soft" />
             <h2 className="text-lg font-semibold text-ink">Visualisation</h2>
@@ -503,7 +522,7 @@ const EtaPredictions = () => {
               {accuracyData.length > 0 ? (
                 <PredictionAccuracyChart data={accuracyData} />
               ) : (
-                <div className="h-64 flex items-center justify-center text-center text-sm text-ink-soft px-6 bg-bg rounded-lg">
+                <div className="h-64 flex items-center justify-center text-center text-sm text-ink-soft px-6 bg-bg rounded-none">
                   Enregistrez une arrivée réelle sur une prédiction pour voir la précision du modèle ici.
                 </div>
               )}
@@ -532,7 +551,7 @@ const EtaPredictions = () => {
       )}
 
       {/* History table */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">Historique des prédictions</h2>
         </div>
@@ -669,7 +688,7 @@ const EtaPredictions = () => {
                                 <p className="text-xs text-ink-soft mb-1">Enregistrer l'arrivée réelle</p>
                                 <input
                                   type="date"
-                                  className="px-3 py-1 border border-line rounded-lg text-sm"
+                                  className="px-3 py-1 border border-line rounded-none text-sm"
                                   onChange={(e) => {
                                     if (e.target.value) {
                                       updateActualMutation.mutate({ id: pred.id, actualArrival: e.target.value });
