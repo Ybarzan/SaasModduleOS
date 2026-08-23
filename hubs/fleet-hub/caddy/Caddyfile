@@ -1,0 +1,25 @@
+{$DOMAIN} {
+    encode gzip
+
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=()"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://{s}.basemaps.cartocdn.com data:; connect-src 'self'; font-src 'self'"
+        -Server
+    }
+
+    @static path_regexp \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    @grafana path /grafana /grafana/*
+    handle @grafana {
+        reverse_proxy grafana:3000
+    }
+
+    # SSL automatique :
+    #  - APP_DOMAIN=localhost        -> certificat interne (test local)
+    #  - APP_DOMAIN=fleethub.example -> Let's Encrypt automatique (production)
+    reverse_proxy frontend:80
+}

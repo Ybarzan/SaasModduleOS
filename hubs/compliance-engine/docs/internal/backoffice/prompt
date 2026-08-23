@@ -1,0 +1,15 @@
+**Prompt :** "Tu es un développeur full-stack Java/Spring Boot + React. Développe une application SaaS de calcul d'Incoterms appelée IncoKalk. Voici les fonctionnalités à implémenter par ordre de priorité :
+>
+> **Phase 1 (Sprint 1-2) :** Multi-tenant avec tables companies + company_roles, RBAC (OWNER/ADMIN/MANAGER/USER), Stripe billing (plans FREE/PRO/ENTERPRISE), CI/CD avec SonarCloud.
+>
+> **Phase 2 (Sprint 3-4) :** Dashboard analytique avec endpoints /analytics/overview, /incoterms, /trends, /alerts, table daily_metrics pré-agrégée, frontend avec Recharts + Zustand, real-time SSE.
+>
+> **Phase 3 (Sprint 5-6) :** Gestion clients (CRUD), génération PDF devis avec OpenPDF, import taux de fret CSV, webhooks avec retry exponential backoff + signature HMAC.
+>
+> **Phase 4 (Sprint 7-8) :** Emails transactionnels (welcome, password-reset, quota-warning, invoice) via Spring Mail + Handlebars, notifications in-app.
+>
+> **Phase 5 (Sprint 9) :** Cache Redis, rate limiting par endpoint, cursor-based pagination.
+>
+> **Phase 6 (Sprint 10) :** SSO/SAML 2.0 (Okta, Azure AD), audit trail, IP allowlist pour API keys.
+>
+> Stack technique : Spring Boot 3, PostgreSQL, Flyway, JWT, Stripe, Redis, React + Recharts + TanStack Query + Zustand, Docker. Durée estimée : 12-15 semaines. Commence par la Phase 1."

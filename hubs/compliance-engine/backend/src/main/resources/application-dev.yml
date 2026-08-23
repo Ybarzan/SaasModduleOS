@@ -1,0 +1,52 @@
+# ===========================================
+# Profil DEVELOPPEMENT
+# ===========================================
+
+incokalk:
+  security:
+    jwt:
+      secret: dev-only-insecure-jwt-secret-not-for-production-use
+    api-key:
+      salt: "110861"
+  storage:
+    endpoint: http://localhost:9000
+    access-key: minioadmin
+    secret-key: minioadmin
+    bucket-documents: incokalk-documents
+    bucket-logos: incokalk-logos
+    public-endpoint: http://localhost:9000
+  taric:
+    sync:
+      enabled: true
+    api:
+      base-url: https://ec.europa.eu/taxation_customs/dds2/taric/api
+      key: ""
+    simulation-mode: false
+    cache:
+      ttl-hours: 24
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/incokalk
+    driver-class-name: org.postgresql.Driver
+    username: incokalk
+    password: incokalk_dev_2026
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+# Logging
+logging:
+  level:
+    com.incokalk: DEBUG
+    org.springframework.security: DEBUG

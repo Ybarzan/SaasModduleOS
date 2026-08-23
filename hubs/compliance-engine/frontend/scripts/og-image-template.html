@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+  .canvas {
+    width: 1200px;
+    height: 630px;
+    position: relative;
+    background: linear-gradient(135deg, #0F2B3E 0%, #1B4965 40%, #C8553D 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 90px 100px;
+  }
+  .glow1 {
+    position: absolute; top: -120px; right: -120px;
+    width: 500px; height: 500px; border-radius: 50%;
+    background: rgba(200,85,61,0.35); filter: blur(90px);
+  }
+  .glow2 {
+    position: absolute; bottom: -150px; left: -100px;
+    width: 450px; height: 450px; border-radius: 50%;
+    background: rgba(232,197,71,0.15); filter: blur(90px);
+  }
+  .logo-row {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 46px; position: relative; z-index: 2;
+  }
+  .logo-box {
+    width: 60px; height: 60px; border-radius: 18px;
+    background: linear-gradient(135deg, #C8553D, #A84330);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 24px rgba(200,85,61,0.4);
+  }
+  .logo-box svg { width: 32px; height: 32px; }
+  .brand {
+    font-size: 34px; font-weight: 800; color: white;
+  }
+  .brand span { color: #E8C547; }
+  h1 {
+    font-size: 58px; font-weight: 800; color: white;
+    line-height: 1.12; max-width: 880px; position: relative; z-index: 2;
+    margin-bottom: 24px;
+  }
+  h1 .accent { color: #E8C547; }
+  p {
+    font-size: 26px; color: rgba(255,255,255,0.68); max-width: 760px;
+    line-height: 1.4; position: relative; z-index: 2; font-weight: 500;
+  }
+  .badges {
+    display: flex; gap: 14px; margin-top: 40px; position: relative; z-index: 2;
+  }
+  .badge {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 999px; padding: 10px 22px; color: white;
+    font-size: 18px; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+  <div class="canvas">
+    <div class="glow1"></div>
+    <div class="glow2"></div>
+    <div class="logo-row">
+      <div class="logo-box">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="3" y="10" width="4" height="10" rx="1" fill="white"/>
+          <rect x="10" y="5" width="4" height="15" rx="1" fill="white"/>
+          <rect x="17" y="13" width="4" height="7" rx="1" fill="white"/>
+        </svg>
+      </div>
+      <div class="brand">Inco<span>Kalk</span></div>
+    </div>
+    <h1>Le bon outil, pour la bonne route <span class="accent">et la bonne décision</span></h1>
+    <p>Simulateur Incoterms 2020, comparaison de devis transport et gestion des expéditions internationales.</p>
+    <div class="badges">
+      <div class="badge">11 Incoterms 2020</div>
+      <div class="badge">190+ pays</div>
+      <div class="badge">5 min par devis</div>
+    </div>
+  </div>
+</body>
+</html>

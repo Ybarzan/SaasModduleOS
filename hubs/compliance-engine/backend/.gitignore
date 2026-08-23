@@ -1,0 +1,15 @@
+target/
+.idea/
+*.iml
+.vscode/
+*.log
+logs/
+.env
+.env.*
+*.env
+*.local
+build/
+jacoco/
+*.db
+*.sqlite
+*.factorypath

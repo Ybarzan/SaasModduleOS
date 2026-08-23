@@ -1,0 +1,107 @@
+Audit IncoKalk — Bilan Honnête
+Les Notes
+Domaine	Note	Commentaire
+Architecture Backend	B-	Structure couches classique, mais système de rôles double et confusion
+Sécurité	D	Secrets dans le git, pas de rate limiting, console H2 publique
+Qualité Code Backend	C-	Duplication massive, Map<String,Object> partout
+Base de données	B-	Migrations propres mais N+1 partout, incompatibilités H2/PG
+Backend - Tests	F	1 fichier de test sur 130+ classes. ~1-2% de couverture
+API Design	B	Versioning cohérent, mais pas de pagination, entités exposées brutes
+Frontend - Architecture	4/10	Zero lazy loading, pages monolithiques 800+ lignes
+Frontend - Code Quality	3/10	62x any, duplication partout, types dupliqués
+Frontend - Styling	7/10	Thème marocain cohérent, mais classes définies non utilisées
+Frontend - Tests	0/10	Aucun fichier de test, aucune config de test
+Frontend - Accessibilité	3/10	Pas de labels, pas de focus traps, pas d'aria
+Frontend - Performance	4/10	Bundle unique, pas de React.memo, polling brut
+Infra/Docker	B	Multi-stage correct, mais pas de security headers, pas de TLS
+CI/CD	C	Build + Docker OK, mais pas de deploy, pas de security scan
+Feature Completeness	D+	Email TODO, rate limiting TODO, compliance TODO, plan limits TODO
+Ce qui est bien
+Backend
+- Structure couches propre : controller/service/repository bien séparé, ~130 fichiers Java organisés
+- Multi-tenancy via ThreadLocal : pattern correct, TenantFilter + JwtFilter fonctionnent
+- JWT + RBAC : système complet avec hierarchy de rôles, forgot/reset password
+- Flyway migrations : 13 migrations incrémentales logiques (V1→V13), progression cohérente
+- Swagger/OpenAPI : documenté sur la plupart des endpoints
+- Client Portal : fonctionnel avec login séparé, shared links, tracking
+- Facturation Stripe : webhook controller + billing service complet
+- Export CSV : OpenCSV, preview avant import, gestion d'erreurs
+- Analytics : dashboard, 11 endpointes, cost trends, carrier performance
+- Dockerfile backend : multi-stage, non-root user, healthcheck, JVM tuning container-aware
+Frontend
+- Thème marocain cohérent : palette zellige/sable/olive/medina/terracotta bien configurée
+- Zustand + React Query : bonnes pratiques de state management
+- Layout responsive : mobile nav, safe-area insets, media queries
+- Composants réutilisables : CsvImportModal, NotificationBell
+- Types centralisés : types/index.ts avec toutes les interfaces
+Infra
+- docker-compose complet : Postgres, Redis, MinIO, backup cron, pgAdmin (dev)
+- CI pipeline : build backend + frontend + Docker push to GHCR
+- Nginx reverse proxy : rate limiting, proxy pass, SPA routing
+Ce qui est mal — Par ordre de criticité
+P0 — Bloquants / Risques réels
+1. Secrets dans le git
+backend/bdkey.env → DB_PASSWORD=1992, JWT_SECRET réel, API_KEY_SALT=110861
+Ce fichier est tracké par git. .gitignore n'exclut pas bdkey.env. Si le repo a été pushé quelque part publiquement, ces credentials sont compromis.
+2. JWT secret par défaut hardcoded
+application.yml:51 → ${JWT_SECRET:IncoKalkDevSecretKey_2024_ChangeMeForProd!}. Si JWT_SECRET n'est pas défini en prod, un attaquant peut forger n'importe quel JWT.
+3. Pas de rate limiting sur /v1/auth/login
+Bucket4j + Redis sont dans le POM mais jamais utilisés. Login brute-force possible. Aucune protection.
+4. Console H2 publique
+SecurityConfig.java:64 → /h2-console/** dans les PUBLIC endpoints. Un console SQL accessible sans auth.
+5. Incompatibilité H2/PostgreSQL dans les migrations
+V9 et V13 utilisent gen_random_uuid() et NOW() (PostgreSQL only). V1 utilise MERGE INTO et IDENTITY (H2 only). Le profild dev bypass Flyway complètement (ddl-auto: create-drop), donc on ne s'en rend jamais compte.
+P1 — Problèmes majeurs
+6. AnalyticsService charge TOUT en mémoire (AnalyticsService.java — 423 lignes)
+Chaque endpoint analytics appelle findByCompanyIdOrderByCreatedAtDesc() et charge tous les shipments en mémoire. Avec 1000 shipments → 1000+ lazy loads SQL par appel analytics. Les requêtes agrégées existent dans le repo mais ne sont jamais utilisées.
+7. Système de rôles double non réconcilié
+User.Role (ADMIN/MANAGER/OPERATOR/MEMBER/VIEWER) dans le JWT vs CompanyRole.Role (OWNER/ADMIN/MANAGER/USER) en DB. RolesAllowedAspect vérifie CompanyRole, le JWT utilise User.Role. Un ADMIN dans le JWT peut être USER en DB → passage du filtre JWT mais échec sur @RolesAllowed.
+8. Order number collision (ShipmentService.java:159-163)
+SHP-YYYYMMDD-XXXX avec new Random().nextInt(10000). Pas de vérification DB. À 10000+ shipments/jour, collisions garanties.
+9. Carrier.code unique globalement, pas par tenant
+Carrier.java:30 → unique = true sur code. Deux entreprises différentes ne peuvent pas avoir toutes les deux un transporteur "DHL".
+10. 1 test sur 130+ classes
+SimulationServiceTest.java (106 lignes, 6 tests). Zero tests pour : auth, tenant isolation, shipments, carriers, export, import, analytics, billing, client portal, team, API keys, RBAC. Couverture effective : ~1-2%.
+P2 — Problèmes significatifs
+11. Frontend : 0 tests, 0 lazy loading
+Aucun fichier .test.ts/.test.tsx. Tout le front dans un seul bundle (80+ imports dans App.tsx). Pas de React.lazy, pas de Suspense.
+12. Duplication massive côté front
+- STATUS_CONFIG copié dans 6 fichiers
+- COUNTRIES array copié dans 2 fichiers
+- timeAgo() copié dans 2 fichiers
+- formatMAD() copié dans plusieurs fichiers
+- Type User défini 2 fois (stores/auth.ts + types/index.ts)
+- 62 occurrences de any
+13. Pages monolithiques
+Dashboard, Shipments, ErpSettings font 800+ lignes chacun. Aucune extraction de sous-composants.
+14. API.ts = 350 lignes en un seul objet
+21 méthodes avec data: any malgré les types existants. Pas de hooks React Query réutilisables.
+15. Email jamais envoyé
+AuthService.java:117 → // TODO: envoyer un email. Password reset tokens générés et loggés en clair, jamais envoyés. Invitation emails idem.
+16. Pas d'enforcement des limites de plan
+Billing/plans existent (FREE/PRO/ENTERPRISE) avec des limites affichées, mais aucune vérification côté backend. Un FREE peut créer unlimited everything.
+17. Mots de passe loggés en clair
+AuthService.java:48 → log du verification token. AuthService.java:116 → log du password reset token.
+18. DOUBLE PRECISION pour les montants financiers
+V4:77,87-88 → goods_value, quoted_cost, final_cost en float. Les flottants causent des erreurs d'arrondi en finance. V1 utilise correctement NUMERIC(15,2).
+19. Docker : frontend tourne en root
+frontend/Dockerfile → pas de USER directive. Le container nginx tourne en root.
+20. Redis sans auth
+.env → REDIS_PASSWORD= vide. Redis accessible sans mot de passe sur le réseau Docker.
+P3 — Améliorations souhaitables
+21. Pas de security headers dans nginx (X-Frame-Options, CSP, HSTS)
+22. Pas de HTTPS/TLS malgré le port 443 exposé
+23. extractCompanyId() copié dans 10+ controllers
+24. Pas de pagination sur les listes (shipments, carriers, team)
+25. Pas d'i18n (tout en français hardcodé)
+26. Pas de dark mode
+27. Pas de focus traps dans les modals
+28. Pas de React.memo/useMemo/useCallback
+29. Rate limiting nginx avec nodelay (neutralisé sous attaque)
+30. Docker images non pinnées (:latest)
+Résumé en une phrase
+Le projet a une bonne vision fonctionnelle (8 phases complètes, features riches) mais une exécution technique fragile — secrets dans le git, quasi-aucun test, duplication massive, et des stubs partout là où il manque du vrai travail (email, rate limiting, compliance, enforcement des plans).
+Si je devais classer les 3 choses à faire en premier :
+1. Nettoyer les secrets du git + forcer JWT_SECRET en prod (sécurité)
+2. Écrire des tests (backend auth + tenant isolation minimum, frontend utilities)
+3. Extraire la logique dupliquée (STATUS_CONFIG, COUNTRIES, extractCompanyId, User type)

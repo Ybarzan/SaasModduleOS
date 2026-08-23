@@ -1,0 +1,49 @@
+Flexport API v2 — Synthèse générale
+Vue d'ensemble
+L'API Flexport permet d'interagir de façon programmatique avec les données fret de Flexport. Elle suit les conventions REST modernes et communique en JSON dans les deux sens (requêtes et réponses). flexport
+
+Concepts généraux
+
+Authentification — Toutes les requêtes doivent être authentifiées via un token API.
+Pagination — Les listes de ressources sont paginées, avec des paramètres dédiés pour naviguer entre les pages.
+Expansion — Il est possible d'inclure des objets liés directement dans la réponse plutôt que de faire plusieurs appels.
+Versioning — L'API est versionnée (v1, v2, v3). La v2 apporte des changements par rapport à la v1 documentés dans un changelog.
+Erreurs — Les erreurs sont retournées avec des codes HTTP standards et des messages explicites.
+Metadata — Des métadonnées personnalisées peuvent être associées aux ressources.
+Webhooks — Des endpoints peuvent être configurés pour recevoir des notifications en temps réel.
+
+
+Modules principaux
+🔔 Webhooks
+
+Notifications automatiques sur les événements clés : transit estimé/réel, événements administratifs, factures, documents, commandes fournisseurs, résultats de chargement. Les payloads sont signés via HMAC (SHA256 recommandé).
+📦 Statut des expéditions
+
+Accès aux données de suivi via quatre ressources : Container (conteneur), ContainerLeg (tronçon de transport d'un conteneur), Shipment (expédition) et ShipmentLeg (tronçon d'une expédition). Il est aussi possible de générer des URLs partageables pour le suivi.
+🛒 Commandes fournisseurs
+
+Gestion des PurchaseOrder et PurchaseOrderLineItem (lignes de commande), ainsi que des résultats de chargement (ContainerLoadResult).
+📋 Réservations (Booking)
+
+Création et consultation des Booking, des lignes de réservation (BookingLineItem), et des amendements (BookingAmendment) pour modifier des réservations existantes.
+🛃 Douanes
+
+Accès aux factures commerciales (CommercialInvoices) et aux entrées douanières (CustomsEntries).
+💳 Factures
+
+Consultation des factures Flexport (Invoices).
+📦 Produits
+
+CRUD complet sur les produits : création, consultation, mise à jour, liste.
+🏢 Réseau (Network)
+
+Gestion des entités du réseau logistique : Company, CompanyEntity, Contact, et Location — avec création, mise à jour et consultation pour chacune.
+🚢 Ports
+
+Consultation de la liste des ports disponibles.
+📄 Documents
+
+Upload, téléchargement et consultation des documents liés aux expéditions, avec support de différents types de documents.
+
+En résumé
+L'API Flexport v2 couvre l'ensemble du cycle de vie logistique : de la réservation d'une expédition jusqu'à la douane, en passant par le suivi en temps réel, la gestion des commandes fournisseurs, et la facturation. Elle est conçue pour s'intégrer dans des systèmes métier (ERP, TMS, WMS) via REST/JSON et webhooks.

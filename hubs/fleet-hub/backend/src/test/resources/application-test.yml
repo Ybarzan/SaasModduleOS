@@ -1,0 +1,9 @@
+spring:
+  config:
+    activate:
+      on-profile: test
+
+app:
+  security:
+    rate-limit:
+      enabled: false

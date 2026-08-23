@@ -1,0 +1,1 @@
+ALTER TABLE shipment_items ADD COLUMN origin_country VARCHAR(3);

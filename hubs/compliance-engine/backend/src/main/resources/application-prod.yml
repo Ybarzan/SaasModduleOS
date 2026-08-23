@@ -1,0 +1,65 @@
+# ===========================================
+# Profil PRODUCTION
+# ===========================================
+
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/incocalc}
+    username: ${DB_USER:incocalc}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 5000ms
+
+  cache:
+    type: redis
+    redis:
+      time-to-live: 3600000
+
+# Logging production
+logging:
+  level:
+    com.incokalk: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+  file:
+    name: /var/log/incocalc/application.log
+    max-size: 100MB
+    max-history: 30
+
+# ── MinIO (Object Storage) ───────────────────────────────────────
+incokalk:
+  storage:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY}
+    secret-key: ${MINIO_SECRET_KEY}
+    bucket-documents: incokalk-documents
+    bucket-logos: incokalk-logos
+    public-endpoint: ${MINIO_PUBLIC_ENDPOINT:http://localhost:9000}

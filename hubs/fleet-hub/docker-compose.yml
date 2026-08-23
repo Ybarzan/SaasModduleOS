@@ -1,0 +1,217 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: fleethub-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${APP_DOMAIN:-localhost}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+
+  db:
+    image: postgres:16-alpine
+    container_name: fleethub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fleethub
+      POSTGRES_USER: fleethub
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD (voir .env.example)}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fleethub -d fleethub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: fleethub-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: fleethub-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: fleethub
+      DB_USER: fleethub
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD (voir .env.example)}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET (voir .env.example)}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD (voir .env.example)}
+      GESTIONNAIRE_PASSWORD: ${GESTIONNAIRE_PASSWORD:?Set GESTIONNAIRE_PASSWORD (voir .env.example)}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-https://localhost}
+      APP_REGISTRATION_TRIAL_DAYS: ${APP_REGISTRATION_TRIAL_DAYS:-14}
+      APP_TRIAL_GRACE_DAYS: ${APP_TRIAL_GRACE_DAYS:-7}
+      APP_LOGIN_RATE_LIMIT: ${APP_LOGIN_RATE_LIMIT:-10}
+      APP_RATE_LIMIT_ENABLED: ${APP_RATE_LIMIT_ENABLED:-true}
+      APP_RATE_LIMIT_DEFAULT: ${APP_RATE_LIMIT_DEFAULT:-60}
+      APP_ADMIN_ALLOWED_IPS: ${APP_ADMIN_ALLOWED_IPS:-}
+      APP_SEED_ENABLED: ${APP_SEED_ENABLED:-false}
+      APP_BASE_URL: ${APP_BASE_URL:-https://localhost}
+      MAIL_ENABLED: ${MAIL_ENABLED:-false}
+      MAIL_HOST: ${MAIL_HOST:-smtp.example.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@fleethub.fr}
+      STRIPE_ENABLED: ${STRIPE_ENABLED:-false}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_STARTER: ${STRIPE_PRICE_STARTER:-}
+      STRIPE_PRICE_PRO: ${STRIPE_PRICE_PRO:-}
+      STRIPE_PRICE_ENTERPRISE: ${STRIPE_PRICE_ENTERPRISE:-}
+      STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL:-https://localhost/billing}
+      STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL:-https://localhost/billing}
+      STRIPE_PORTAL_RETURN_URL: ${STRIPE_PORTAL_RETURN_URL:-https://localhost/billing}
+      INTEGRATION_WEBHOOK_API_KEY: ${INTEGRATION_WEBHOOK_API_KEY:-}
+      INTEGRATION_SECRET_KEY: ${INTEGRATION_SECRET_KEY:?Set INTEGRATION_SECRET_KEY (voir .env.example)}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      APP_ENV: ${APP_ENV:-production}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8090/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_SENTRY_DSN: ${SENTRY_DSN_FRONTEND:-}
+    container_name: fleethub-frontend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  backup:
+    image: postgres:16-alpine
+    container_name: fleethub-backup
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_USER: fleethub
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD (voir .env.example)}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-7}
+      BACKUP_INTERVAL_HOURS: ${BACKUP_INTERVAL_HOURS:-24}
+      RCLONE_REMOTE: ${RCLONE_REMOTE:-}
+      RCLONE_CONFIG_BASE64: ${RCLONE_CONFIG_BASE64:-}
+      BACKUP_PING_URL: ${BACKUP_PING_URL:-}
+    volumes:
+      - ./backups:/backups
+      - ./backup/backup.sh:/backup.sh:ro
+    entrypoint: ["/bin/sh", "/backup.sh"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: fleethub-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-lifecycle
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheusdata:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  loki:
+    image: grafana/loki:3.1.0
+    container_name: fleethub-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki.yml
+    volumes:
+      - ./monitoring/loki.yml:/etc/loki/loki.yml:ro
+      - lokidata:/loki
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  promtail:
+    image: grafana/promtail:3.1.0
+    container_name: fleethub-promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail.yml
+    volumes:
+      - ./monitoring/promtail.yml:/etc/promtail/promtail.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      loki:
+        condition: service_healthy
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: fleethub-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./monitoring/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafanadata:/var/lib/grafana
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      prometheus:
+        condition: service_healthy
+      loki:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+  prometheusdata:
+  lokidata:
+  grafanadata:
+  caddy_data:
+  caddy_config:

@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Maven)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # Suite complete auto-suffisante (H2 en memoire, aucun service externe requis
+      # -- confirme cette session : mvn test passe sans Docker/Postgres).
+      - name: mvn test
+        run: mvn -B test
+
+      # Non lie a une phase du lifecycle (cf. pom.xml) donc jamais execute par
+      # `mvn test` ci-dessus -- sans cette etape, aucune regression SpotBugs
+      # n'aurait ete detectee en CI depuis son ajout le 2026-08-21.
+      - name: SpotBugs (analyse statique)
+        run: mvn -B spotbugs:check
+
+      - name: Publier le rapport SpotBugs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-spotbugs-report
+          path: backend/target/spotbugsXml.xml
+          retention-days: 14
+
+      - name: Publier le rapport JaCoCo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jacoco-report
+          path: backend/target/site/jacoco/
+          retention-days: 14
+
+  frontend:
+    name: Frontend (Vite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Tests unitaires (vitest)
+        run: npm test
+      - name: Typecheck + build
+        run: npm run build
+
+  mobile:
+    name: Mobile (Capacitor)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck + build
+        run: npm run build
+      # Valide la generation des projets natifs Android/iOS sans avoir besoin
+      # d'un SDK Android ni de Xcode (aucun des deux n'est disponible en CI ici).
+      - name: cap sync (validation des projets natifs)
+        run: npx cap sync
+
+  docker-backend:
+    name: Docker build (backend)
+    needs: backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build de l'image (sans push)
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: false
+          tags: incokalk-backend:ci
+
+  docker-frontend:
+    name: Docker build (frontend)
+    needs: frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - name: Build de l'image (sans push)
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: false
+          tags: incokalk-frontend:ci

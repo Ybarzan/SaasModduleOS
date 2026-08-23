@@ -1,0 +1,484 @@
+0. NOTE DE GOUVERNANCE DOCUMENTAIRE
+> Ce fichier = benchmark concurrentiel (analyse Cargoson & Cie) — référentiel de produit.
+> La feuille de route fonctionnelle priorisée (P0-P5) vit dans : IncoKalk/ROADMAP.md
+> (source unique — mettre à jour là-bas, ce fichier reste un document de référence produit.)
+
+1. POUR QUI LE FONT-ILS ? (Cibles principales)
+Fabricants (industriels, producteurs de biens)
+
+Grossistes (distributeurs, négociants)
+
+Entreprises B2B ayant une activité logistique régulière (expéditions nationales et internationales)
+
+Utilisateurs finaux au sein de ces entreprises : responsables logistiques, équipes expédition, services achats, équipes commerciales, gestionnaires d'entrepôt
+
+Clients indirects : les destinataires finaux (clients des fabricants/grossistes) qui reçoivent les notifications de suivi
+
+2. QUOI FONT-ILS ? (Périmètre fonctionnel détaillé)
+A. Centralisation et unification des données
+
+Rassemblent toutes les informations de transport dans un seul tableau de bord (web + mobile)
+
+Éliminent la navigation sur les multiples portails de transporteurs
+
+Centralisent les grilles tarifaires, les délais de transit, les documents, les statistiques et les notifications
+
+B. Intégration technique
+
+Se connectent aux ERP/WMS existants (Microsoft Business Central, Odoo, Magento, WooCommerce, Directo, Erply, iScala, Ongoing Warehouse...)
+
+Permettent un démarrage manuel sans intégration (mode "saisie manuelle")
+
+Offrent plus de 1 500 intégrations "plug-and-play" avec des transporteurs
+
+Fournissent une API ouverte pour des connexions personnalisées
+
+C. Comparaison et aide à la décision
+
+Comparent les tarifs négociés par l'entreprise (pas de prix imposés par un intermédiaire)
+
+Comparent les délais de transit entre transporteurs
+
+Comparent l'empreinte CO₂ estimée pour chaque expédition
+
+Permettent de demander des prix "spot" ponctuels aux transporteurs
+
+D. Réservation et exécution
+
+Réservent le transporteur choisi directement depuis l'interface
+
+Automatisent la réservation via des règles prédéfinies (ex : toujours le moins cher, le plus rapide, etc.)
+
+Génèrent automatiquement les documents : étiquettes, lettres de voiture (CMR), e-Waybill, DGD (marchandises dangereuses), déclarations d'exportation
+
+Gèrent les expéditions aussi bien à l'achat qu'à la vente (flux entrants et sortants)
+
+E. Suivi et visibilité en temps réel
+
+Suivent toutes les expéditions en un seul endroit (statuts, jalons, géolocalisation)
+
+Surveillent la collecte et l'arrivée des marchandises
+
+Alertent automatiquement sur les retards ou anomalies
+
+F. Communication et notifications
+
+Envoient des notifications personnalisées et "brandées" (couleurs, logo de l'entreprise)
+
+Informent les équipes internes : achats, vente, entrepôt
+
+Informent les clients et fournisseurs (lien de suivi, quel que soit le transporteur)
+
+Envoient des rapports quotidiens sur les performances et les retards
+
+G. Gestion durable
+
+Calculent et affichent l'estimation des émissions de CO₂ pour chaque expédition
+
+Aident à choisir des options de transport moins polluantes
+
+H. Contrôle financier et administratif
+
+Comparent les factures des transporteurs avec les montants pré-calculés
+
+Fournissent des statistiques et indicateurs de performance (KPI logistiques)
+
+Permettent une gestion centralisée des coûts de transport
+
+3. COMMENT LE FONT-ILS ? (Mécanismes et modes opératoires)
+1. Architecture technique
+
+Solution SaaS basée sur le cloud
+
+Accessible via application web et application mobile
+
+API REST pour connecter des systèmes sur mesure
+
+2. Intégration avec les systèmes existants
+
+Récupèrent automatiquement les commandes (ventes/achats) depuis l'ERP
+
+Synchronisent les données utilisateurs, produits, adresses, etc.
+
+Mode "plug-and-play" pour les transporteurs (pas de développement lourd)
+
+Possibilité de connecter les systèmes via des connecteurs préconstruits
+
+3. Fonctionnement pour l'utilisateur
+
+L'utilisateur se connecte à son tableau de bord
+
+Il voit ses commandes à expédier (importées automatiquement)
+
+Il compare les offres de transport (prix, délais, CO₂)
+
+Il sélectionne un transporteur et réserve en 1 clic
+
+Il suit l'expédition en temps réel depuis le même écran
+
+Il reçoit ou envoie des notifications automatisées
+
+4. Gestion des transporteurs
+
+L'entreprise conserve ses propres tarifs négociés (pas de surfacturation)
+
+L'entreprise choisit quels transporteurs activer sur son compte
+
+Les transporteurs sont intégrés via API/EDI, sans intervention manuelle
+
+Possibilité d'ajouter un transporteur non listé gratuitement
+
+5. Mode de déploiement
+
+Configuration initiale assurée par l'équipe Cargoson (prise en charge de l'engagement)
+
+Démarrage possible en mode manuel pour tester
+
+Montée en puissance progressive vers l'automatisation complète
+
+Accompagnement et support inclus
+
+6. Personnalisation
+
+Notifications aux couleurs de l'entreprise (branding)
+
+Règles de réservation automatisées paramétrables
+
+Tableau de bord adaptable aux besoins de l'utilisateur
+
+4. VALEUR AJOUTÉE UNIQUE (Différenciateurs clés)
+✅ Pas d'intermédiaire : l'entreprise garde le contrôle total sur ses tarifs et ses relations transporteurs (pas de frais de courtage)
+
+✅ Neutralité transporteur : pas de transporteur imposé, tous peuvent être intégrés
+
+✅ Centralisation absolue : toute la logistique dans un seul outil (fini les portails multiples)
+
+✅ Facilité d'utilisation : configuration simple, prise en main rapide
+
+✅ Approche durable : estimation CO₂ intégrée pour chaque décision
+
+✅ Flexibilité technique : fonctionnement avec ou sans intégration ERP
+
+✅ Mise en œuvre rapide : "plug-and-play" avec plus de 1 500 transporteurs
+
+✅ Communication simplifiée : clients et fournisseurs informés automatiquement
+
+
+
+
+
+
+
+Phase actuelle → MVP Cargoson-like
+Phase	Focus
+0 (FAIT)	Calculateur Incoterms + historique
+1	Transporteurs CRUD (gérer ses transporteurs, tarifs négociés)
+2	Comparaison multi-transporteurs (tarifs, délais, CO₂)
+3	Création de commandes d'expédition (flow entrant/sortant)
+4	Suivi temps réel (tracking, statuts, notifications)
+5	Connecteurs ERP (API/EDI webhooks)
+6	Génération documents (CMR, labels, e-Waybill)
+7	Dashboard KPI + facturation transporteurs
+Ce qu'il faut construire en premier pour devenir opérationnel
+Ajout immédiat au backend :
+- Carrier entity (nom, logo, type transport, pays, API endpoint)
+- ShippingRate (carrier → tarif par route/mode/poids)
+- ShipmentOrder (commande : expéditeur, destinataire, transporteur, statut, coût)
+- TrackingEvent (jalons de suivi par shipment)
+- NotificationRule (alertes email/webhook sur changement de statut)
+Ajout frontend :
+- Page "Transporteurs" (CRUD + activation/désactivation)
+- Page "Expéditions" (créer, lister, suivre)
+- Comparateur de tarifs multi-transporteurs
+- Notifications intégrées
+
+
+
+
+
+
+
+
+
+
+
+# IncoKalk — Roadmap Complet des Manques
+
+> Dernière mise à jour : 23/07/2026
+> Basé sur : benchmark concurrentiel 2026 (CargoWise, GoFreight, Zonos, Wove, LOG-NET, Flexport, Easyship, Freightos...)
+> Position : SaaS logistique basé en France — priorité douanes françaises/EU d'abord
+
+---
+
+## P0 — Urgent (Semaines 1-4) — Fondations douanes françaises
+
+### 1. Base tarifaire TARIC réelle
+- [ ] Intégrer les données TARIC (TARIF INTégré de la Communauté) via l'API ouverte de la DGDDI / EUR-Lex
+- [ ] Mapper les codes SH aux droits ad valorem + droits spécifiques + contingents
+- [ ] Stocker les taux par pays d'origine x code HS x régime tarifaire
+- [ ] Remplacer les 9 moyennes chapitre actuelles par des taux réels
+- [ ] Gérer les droits antidumping et compensateurs
+- [ ] Cache Redis avec TTL 24h sur les taux TARIC
+
+### 2. Régimes préférentiels EU (APE/AGP)
+- [ ] Intégrer les accords de libre-échange EU par code HS (1400+ accords bilatéraux)
+- [ ] Vérification Rules of Origin (origin criteria: WH, WO, PE, CTH, CTSH)
+- [ ] Calcul du droit préférentiel vs droit MFN (Most Favoured Nation)
+- [ ] Gestion des certificats d'origine EUR.1 / eurs.1
+- [ ] Logique de cumul bilatéral, cumul régional (ASEAN, etc.)
+
+### 3. TVA intracommunautaire
+- [ ] Règles de reverse charge pour les acquisitions intracom
+- [ ] Taux réduits, super-réduits, exonérations par pays EU
+- [ ] TVA à l'importation (TAI — Taxe Assise à l'Importation)
+- [ ] Numéro de TVA intracommunautaire (VIES) validation
+- [ ] Calcul TVA sur marge (régime de la marge pour les biens d'occasion)
+
+### 4. EORI
+- [ ] Stockage et validation du numéro EORI (format: FR + 15 chiffres)
+- [ ] Vérification en ligne via le portail EU EORI
+- [ ] Association EORI ↔ Company
+- [ ] Obligation : chaque opérateur doit avoir un EORI pour déclarer
+
+### 5. Facture douanière
+- [ ] Génération de facture douanière (commercial invoice adaptée pour la douane)
+- [ ] Champs requis : description marchandise, HS code, valeur CIF/FOB, origine, pays d'destination
+- [ ] Multi-devise avec conversion au taux BCE du jour
+- [ ] Export PDF conforme aux exigences DGDDI
+
+---
+
+## P1 — Haute Priorité (Semaines 5-10) — Documents de déclaration
+
+### 6. Document unique de douane (DUD/DAU/SAD)
+- [ ] Génération du DAU (Document Administratif Unique) au format XML EDIFACT
+- [ ] Types : import (DAU IMP), export (DAU EXP), transit (T1, T2)
+- [ ] Champs obligatoires : code bureau, régime douanier, code douanier, valeur en douane, origine
+- [ ] Mode brouillon → prêt → soumis → validé → archivé
+- [ ] Export PDF + XML pour soumission électronique
+
+### 7. Déclaration d'échanges de biens (DEB/Intrastat)
+- [ ] DEB expéditions (vendeur EU → acheteur hors EU)
+- [ ] DEB introductions (acheteur EU ← vendeur hors EU)
+- [ ] Intrastat pour les échanges intra-EU ( flux d'arrivée / flux de départ)
+- [ ] Seuil de déclaration (460 000 € pour la France en 2026)
+- [ ] Codes nomenclature combinée 8 chiffres
+- [ ] Export DEB au format XML (DGDDI / NETT declared)
+
+### 8. ICS2 (Import Control System 2)
+- [ ] Pré-déclaration de sécurité pour les importations par voie maritime
+- [ ] Données requises : shipper, consignee, HS 6-digit, poids, conteneur
+- [ ] Soumission au format ICS2 XML via le portail douanier
+- [ ] Statut : envoyé, accepté, rejeté, en attente
+
+### 9. AES / EXS (Export)
+- [ ] Déclaration de sortie (AES — Automated Export System)
+- [ ] EXS (Exit Summary Declaration) pour les marchandises quittant l'EU
+- [ ] Intégration avec le guichet unique CDS (Customs Declaration Service)
+- [ ] Statut de déclaration export : brouillon, soumise, validée
+
+### 10. Workflow de dédouanement
+- [ ] Pipeline complet : Pré-déclaration → Déclaration → Vérification → Dédouanement → Livraison
+- [ ] Statuts : DRAFT → SUBMITTED → UNDER_REVIEW → CLEARED → RELEASED → REJECTED
+- [ ] Alertes automatiques : document manquant, HS code incohérent, valeur douteuse
+- [ ] Historique complet par shipment
+- [ ] Tableau de bord des déclarations en cours
+
+---
+
+## P2 — Priorité Moyenne (Semaines 11-18) — Intelligence & Automatisation
+
+### 11. Classification HS par IA
+- [ ] OCR sur photo du produit → prédiction HS code
+- [ ] Modèle de classification entraîné sur les données TARIC
+- [ ] Score de confiance par classification
+- [ ] Suggestion alternative (top 3 codes HS possibles)
+- [ ] Validation manuelle / correction par l'utilisateur
+- [ ] Mémoire : les classifications corrigées enrichissent le modèle
+
+### 12. Landed Cost Calculator (coût complet débarqué)
+- [x] Calcul intégré dans le flux de devis (pas outil standalone)
+- [x] Breakdown : prix produit + fret + assurance + droits + taxes + frais portuaire + last-mile
+- [x] Marge réelle par commande (prix de vente - coût total débarqué)
+- [x] Simulation "what-if" : changer l'origine, l'incoterm, le mode de transport
+- [x] Partage du landed cost avec le client (lien public)
+- [x] HS Code + Transport Mode intégrés
+- [x] Tests unitaires (9 tests)
+- [x] Audit sécurité : 5 bugs fixés (stats exclusion MANAGER, route publique, what-if DB persist, shareToken leak, DTO validation)
+
+### 13. OCR / Parsing de documents
+- [ ] Facture commerciale → extraction auto (champs : vendeur, acheteur, marchandise, valeur, origine)
+- [ ] Bill of Lading → extraction (expéditeur, consignee, conteneur, poids)
+- [ ] Certificat d'origine → validation
+- [ ] Packing list → vérification quantités/poids
+- [ ] API REST pour soumettre un document et recevoir les données extraites
+- [ ] Support PDF et image (JPG, PNG)
+
+### 13. Document Parser (P2)
+- [x] Parsing 4 types : facture commerciale, BoL, certificat d'origine, packing list
+- [x] Extraction texte PDF via Apache PDFBox 3.0.3
+- [x] Parsing regex bilingual (EN/FR) : seller/vendeur, buyer/acheteur, etc.
+- [x] API REST : POST /parse/text, POST /parse/pdf, GET /history, GET /{id}, GET /type/{docType}, GET /stats
+- [x] Frontend : page DocumentParser (textarea + upload PDF + résultats + historique avec expand/collapse)
+- [x] V27 migration : parsed_documents table (JSONB parsed_data)
+- [x] Tests unitaires (14 tests : 4 types docs, français, PDF invalide, company not found, CRUD, confidence)
+
+### 14. Screening denied party (DPS)
+- [x] Vérification contre les listes EU de sanctions (Consolidated List)
+- [x] Listes OFAC (US), UN, UK sanctions (V26: 35 entités seedées)
+- [x] Screening par nom d'entreprise + personne physique
+- [x] Alertes automatiques sur match suspect (notification in-app + onDpsAlert)
+- [x] Obligation légale pour tout exportateur EU
+- [x] Tests unitaires (19 tests : algorithmes, alertes, stats, CRUD)
+- [x] Bug fixes : stats key mismatch, checkedByUserId, checkType paramétrable
+- [x] Frontend : onglet Alertes avec badge compteur
+
+### 15. Intégrations transporteurs (booking direct)
+- [ ] API booking DHL Express / DHL Freight
+- [ ] API booking DB Schenker
+- [ ] API booking CMA CGM / MSC (maritime)
+- [ ] API booking Geodis / Bolloré Logistics (France)
+- [ ] Workflow : sélection tarif → booking → confirmation → tracking
+- [ ] Génération auto du bon de transport
+
+---
+
+## P3 — Différenciation (Semaines 19-28) — Plateforme complète
+
+### 16. Gestion de facturation transporteur (AP Invoice)
+- [ ] Réception des factures transporteurs (email, EDI, upload)
+- [ ] Rapprochement automatique vs devis/tarifs négociés
+- [ ] Détection des surcharges, doublons, écarts tarifaires
+- [ ] Workflow d'approbation : à valider → approuvé → payé
+- [ ] Dashboard des écarts de facturation
+
+### 17. Portal client white-label
+- [ ] Branding complet (logo, couleurs, domaine custom)
+- [ ] Suivi tracking en temps réel avec notifications email/SMS
+- [ ] Téléchargement documents (B/L, factures, certificats)
+- [ ] Tableau de bord client avec KPIs
+- [ ] Portail multilingue (FR, EN, ES, DE, AR)
+
+### 18. Reporting financier avancé
+- [ ] P&L par expédition (marge nette)
+- [ ] Marge par lane (origine → destination)
+- [ ] Marge par client
+- [ ] Marge par transporteur
+- [ ] Export comptable (QuickBooks, Sage, Cegid)
+- [ ] Dashboard temps réel avec drill-down
+
+### 19. Intégrations e-commerce
+- [ ] Plugin Shopify (calcul landed cost au checkout)
+- [ ] Plugin WooCommerce
+- [ ] Plugin PrestaShop (fort en France)
+- [ ] Webhook push des statuts de commande
+- [ ] Synchronisation des produits (prix, poids, HS code)
+
+### 20. Multi-devise native
+- [ ] Taux de change BCE en temps réel (déjà partiellement fait)
+- [ ] Conversion automatique dans TOUTES les entités : devis, shipments, factures, carriers
+- [ ] Devise de facturation par défaut par company
+- [ ] Historique des taux de change (journalier, mensuel)
+- [ ] Rapport d'exposition aux changes
+
+### 21. ETA prediction par ML
+- [ ] Modèle prédictif basé sur l'historique des lanes
+- [ ] Données d'entrée : transporteur, mode, origine, destination, saison, jour
+- [ ] Prédiction avec intervalle de confiance
+- [ ] Alerte automatique de retard potentiel
+- [ ] Comparaison prédiction vs estimation transporteur
+
+### 22. Workflow d'email intake
+- [ ] Parsing automatique des emails de demande de devis
+- [ ] Extraction : origine, destination, marchandise, poids, volume
+- [ ] Création auto d'un brouillon de shipment
+- [ ] Matching client existant par email
+- [ ] Notification à l'équipe ops
+
+---
+
+## P4 — Enterprise (Semaines 29-40) — Scalabilité
+
+### 23. Multi-entité / Multi-branche
+- [ ] Consolidation des données entre filiales
+- [ ] Reporting centralisé avec vue agrégée
+- [ ] Transfert de marchandises entre entités
+- [ ] Rôles spécifiques par branche
+
+### 24. Workflow d'approbation
+- [ ] Purchase order → approval chain (USER → MANAGER → ADMIN)
+- [ ] Quote approval (seuil configurable)
+- [ ] Facture approval (seuil par montant)
+- [ ] Notifications d'approval (email, in-app)
+
+### 25. Supply chain finance
+- [ ] Escompte de paiement (early payment discount)
+- [ ] Affacturage / factoring intégré
+- [ ] Financement de la chaîne d'approvisionnement
+- [ ] Intégration avec les fintechs (Qonto, Spendesk, etc.)
+
+### 26. Carbon credits / Offset
+- [ ] Calcul CO2 déjà existant → offset via partenaires certifiés
+- [ ] Dashboard carbone par client/lane/transporteur
+- [ ] Certificats d'offset générés automatiquement
+- [ ] Reporting CSRD / EU Taxonomy
+
+### 27. Module formation / académie
+- [ ] Cours sur les Incoterms (video + quiz)
+- [ ] Guide des douanes françaises
+- [ ] Tutoriels utilisateurs intégrés
+- [ ] Certification IncoKalk
+
+### 28. Mobile app native
+- [ ] Suivi des shipments en temps réel
+- [ ] Notifications push (statut, retard, alerte)
+- [ ] Scan de documents (camera → OCR)
+- [ ] Approuver/rejeter les workflows depuis le mobile
+
+---
+
+## P5 — Intégrations Gouvernementales France (long terme)
+
+### 29. Guichet unique des douanes (PORTAL / SI SAGE)
+- [ ] Connexion à l'API de la DGDDI
+- [ ] Soumission électronique des DAU (format eDMS)
+- [ ] Suivi des statuts de déclaration
+- [ ] Récupération des données de dédouanement
+
+### 30. Intrastat / DEB automatique
+- [ ] Génération automatique des DEB mensuelles
+- [ ] Transmission électronique via le portail INSEE
+- [ ] Vérification croisée avec les données de facturation
+
+### 31. Fiscalité française
+- [ ] TVA sur import (TAI)
+- [ ] Accises (alcool, tabac, énergie)
+- [ ] Droits de douane additionnels (mesures de safeguard)
+- [ ] Régime de perfectionnement actif
+
+---
+
+## Résumé des efforts estimés
+
+| Phase | Semaines | nb Features | Impact |
+|---|---|---|---|
+| P0 — Fondations douanes | 1-4 | 5 | CRITIQUE — rend le produit légalement utilisable |
+| P1 — Documents déclaration | 5-10 | 5 | HAUT — transforme l'outil de calcul en outil d'opérations |
+| P2 — Intelligence & Auto | 11-18 | 5 | MOYEN — différenciation vs concurrents |
+| P3 — Plateforme complète | 19-28 | 7 | MOYEN — couvre le cycle quote → invoice complet |
+| P4 — Enterprise | 29-40 | 6 | LONG TERME — scalabilité |
+| P5 — Douanes France | 40+ | 3 | LONG TERME — intégration gouvernementale |
+| **TOTAL** | **~40 semaines** | **31 features** | |
+
+---
+
+## Priorités quick-win (features rapides à fort impact)
+
+| Feature | Effort | Impact | Sprint |
+|---|---|---|---|
+| EORI storage + validation | 2 jours | Haute | P0 |
+| Facture douanière PDF | 3 jours | Haute | P0 |
+| TVA intracom rules | 5 jours | Haute | P0 |
+| Landed cost dans devis | 5 jours | Très haute | P2 |
+| Denied Party Screening (liste EU) | 3 jours | Haute | P2 |
+| Multi-devise dans tous les flux | 3 jours | Haute | P3 |

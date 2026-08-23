@@ -1,0 +1,475 @@
+/* ==========================================================================
+   FLEET HUB — Thème clair
+   Variables + overrides pour [data-theme="light"].
+   Le dark mode reste le default (:root dans styles.css).
+   ========================================================================== */
+
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Base */
+  --bg: #f4f6f9;
+  --bg-soft: #e9edf2;
+  --card: #ffffff;
+  --card-2: #f0f3f7;
+  --surface-alt: #e5e9ef;
+  --surface-3: #d8dee8;
+
+  /* Texte */
+  --text: #1a2332;
+  --text-soft: #4a5568;
+  --muted: #8896a8;
+
+  /* Bordures */
+  --border: #d1d9e4;
+  --border-strong: #b8c4d4;
+
+  /* Accents — légèrement plus foncés pour contraste sur fond clair */
+  --primary: #3a7ca5;
+  --primary-2: #5a6d94;
+  --primary-3: #2c6a90;
+  --primary-rgb: 58, 124, 165;
+  --primary-2-rgb: 90, 109, 148;
+
+  /* Sémantiques */
+  --green: #3d8a5a;
+  --orange: #b08830;
+  --red: #b5545a;
+  --blue: #3a70a0;
+  --purple: #5a6a9e;
+
+  --green-soft: rgba(61, 138, 90, 0.1);
+  --orange-soft: rgba(176, 136, 48, 0.1);
+  --red-soft: rgba(181, 84, 90, 0.1);
+  --blue-soft: rgba(58, 112, 160, 0.1);
+  --purple-soft: rgba(90, 106, 158, 0.1);
+
+  /* Ombres — plus subtiles sur fond clair */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --shadow: 0 2px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 16px 48px -12px rgba(0, 0, 0, 0.15);
+  --shadow-primary: 0 2px 12px -4px rgba(var(--primary-rgb), 0.2);
+}
+
+/* ---------- Body ---------- */
+
+[data-theme="light"] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* Supprimer la grille technique en mode clair (trop visible) */
+[data-theme="light"] body::before {
+  background:
+    linear-gradient(rgba(var(--primary-rgb), 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--primary-rgb), 0.015) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 0%, rgba(0, 0, 0, 0.6), transparent 100%);
+}
+
+/* Supprimer le scanline overlay en mode clair */
+[data-theme="light"] body::after {
+  display: none;
+}
+
+/* ---------- Scrollbar ---------- */
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* ---------- Sidebar ---------- */
+
+[data-theme="light"] .sidebar {
+  background: var(--bg-soft) !important;
+  border-right: 1px solid var(--border) !important;
+  backdrop-filter: none;
+}
+
+[data-theme="light"] .sidebar::before {
+  background: linear-gradient(180deg,
+    rgba(var(--primary-rgb), 0.04),
+    transparent);
+}
+
+[data-theme="light"] .sidebar::after {
+  background: linear-gradient(0deg,
+    rgba(var(--primary-rgb), 0.03),
+    transparent);
+}
+
+/* ---------- Nav links ---------- */
+
+[data-theme="light"] .nav-link {
+  color: var(--text-soft) !important;
+}
+
+[data-theme="light"] .nav-link:hover {
+  color: var(--text) !important;
+}
+
+[data-theme="light"] .nav-link.active {
+  color: var(--text) !important;
+  box-shadow:
+    0 2px 12px -4px rgba(var(--primary-rgb), 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+/* ---------- Logo ---------- */
+
+[data-theme="light"] .logo-icon {
+  color: #0b1220;
+}
+
+[data-theme="light"] .logo h1 {
+  background: linear-gradient(135deg, #2c6a90, #5a6d94, #2c6a90);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+[data-theme="light"] .user-info span {
+  color: var(--muted);
+}
+
+/* ---------- Avatar ---------- */
+
+[data-theme="light"] .avatar {
+  color: #0b1220;
+}
+
+/* ---------- Page header ---------- */
+
+[data-theme="light"] .page-header h2 {
+  color: var(--text);
+  text-shadow: none;
+}
+
+/* ---------- Cards ---------- */
+
+[data-theme="light"] .card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  background-image: none;
+}
+
+[data-theme="light"] .card::before {
+  background: linear-gradient(90deg, transparent, var(--primary-2), transparent);
+  opacity: 0.35;
+}
+
+/* ---------- Stat cards ---------- */
+
+[data-theme="light"] .stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+[data-theme="light"] .stat-card::after {
+  opacity: 0.3;
+}
+
+[data-theme="light"] .stat-icon {
+  background: rgba(var(--primary-rgb), 0.08);
+  border-color: rgba(var(--primary-rgb), 0.2);
+}
+
+[data-theme="light"] .stat-card.blue .stat-icon { background: var(--blue-soft); border-color: rgba(58, 112, 160, 0.25); }
+[data-theme="light"] .stat-card.green .stat-icon { background: var(--green-soft); border-color: rgba(61, 138, 90, 0.25); }
+[data-theme="light"] .stat-card.purple .stat-icon { background: var(--purple-soft); border-color: rgba(90, 106, 158, 0.25); }
+[data-theme="light"] .stat-card.red .stat-icon { background: var(--red-soft); border-color: rgba(181, 84, 90, 0.25); }
+
+/* ---------- Buttons ---------- */
+
+[data-theme="light"] .btn-primary {
+  color: #fff !important;
+  box-shadow:
+    0 2px 10px -4px rgba(var(--primary-rgb), 0.3),
+    0 0 0 1px rgba(var(--primary-rgb), 0.15) !important;
+}
+
+[data-theme="light"] .btn-primary:hover:not(:disabled) {
+  box-shadow:
+    0 6px 20px -6px rgba(var(--primary-rgb), 0.4),
+    0 0 0 1px rgba(var(--primary-rgb), 0.2),
+    0 0 24px -8px rgba(var(--primary-rgb), 0.15) !important;
+}
+
+[data-theme="light"] .btn-outline {
+  background: rgba(var(--primary-rgb), 0.06);
+  border-color: rgba(var(--primary-rgb), 0.3);
+  color: var(--primary) !important;
+}
+
+[data-theme="light"] .btn-outline:hover {
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--primary-3) !important;
+  border-color: var(--primary) !important;
+}
+
+[data-theme="light"] .btn-danger {
+  color: #fff !important;
+}
+
+/* ---------- Inputs ---------- */
+
+[data-theme="light"] input, [data-theme="light"] select {
+  background: var(--card);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+[data-theme="light"] input::placeholder {
+  color: var(--muted);
+}
+
+/* ---------- Period selector / Tabs ---------- */
+
+[data-theme="light"] .period-selector {
+  background: var(--card-2);
+  border-color: var(--border);
+}
+
+[data-theme="light"] .period-selector button {
+  color: var(--muted);
+}
+
+[data-theme="light"] .period-selector button.active {
+  color: #fff !important;
+  box-shadow:
+    0 2px 8px -3px rgba(var(--primary-rgb), 0.3),
+    0 0 16px -6px rgba(var(--primary-rgb), 0.12) !important;
+}
+
+[data-theme="light"] .tab {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+[data-theme="light"] .tab.active {
+  color: #fff !important;
+}
+
+[data-theme="light"] .tab:hover:not(.active) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ---------- Badges ---------- */
+
+[data-theme="light"] .badge-green { background: var(--green-soft); color: var(--green); }
+[data-theme="light"] .badge-orange { background: var(--orange-soft); color: var(--orange); }
+[data-theme="light"] .badge-blue { background: var(--blue-soft); color: var(--blue); }
+[data-theme="light"] .badge-red { background: var(--red-soft); color: var(--red); }
+[data-theme="light"] .badge-darkred { background: rgba(153, 27, 27, 0.1); color: #991b1b; }
+[data-theme="light"] .badge-gray { background: var(--surface-alt); color: var(--text-soft); }
+
+/* ---------- Score pills ---------- */
+
+[data-theme="light"] .score-pill.good { background: var(--green-soft); color: var(--green); border-color: rgba(61, 138, 90, 0.25); }
+[data-theme="light"] .score-pill.mid { background: var(--orange-soft); color: var(--orange); border-color: rgba(176, 136, 48, 0.25); }
+[data-theme="light"] .score-pill.bad { background: var(--red-soft); color: var(--red); border-color: rgba(181, 84, 90, 0.25); }
+
+/* ---------- Alerts ---------- */
+
+[data-theme="light"] .alert-error { border-left-color: var(--red) !important; }
+[data-theme="light"] .alert-warning { border-left-color: var(--orange) !important; }
+
+/* ---------- Gauge ---------- */
+
+[data-theme="light"] .gauge-bg {
+  stroke: rgba(0, 0, 0, 0.08);
+}
+
+/* ---------- Detail hero ---------- */
+
+[data-theme="light"] .detail-hero {
+  background: var(--card);
+  border: 1px solid var(--border);
+  background-image: none;
+}
+
+[data-theme="light"] .detail-hero::before {
+  background: linear-gradient(90deg, transparent, var(--primary-2), transparent);
+  opacity: 0.35;
+}
+
+/* ---------- Trends ---------- */
+
+[data-theme="light"] .trend.up { background: var(--green-soft); color: var(--green); }
+[data-theme="light"] .trend.down { background: var(--red-soft); color: var(--red); }
+
+/* ---------- Tables ---------- */
+
+[data-theme="light"] .table th {
+  color: var(--text-soft);
+  border-bottom-color: var(--border);
+}
+
+[data-theme="light"] .table td {
+  border-bottom-color: var(--border);
+}
+
+/* ---------- KPI widgets ---------- */
+
+[data-theme="light"] .kpi-widget {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+/* ---------- Map ---------- */
+
+[data-theme="light"] .map-page-wrap {
+  background: var(--card);
+}
+
+/* ---------- Mobile sidebar ---------- */
+
+[data-theme="light"] .sidebar.open {
+  background: var(--bg-soft) !important;
+}
+
+/* ---------- Mobile topbar ---------- */
+
+[data-theme="light"] .mobile-topbar {
+  background: var(--bg-soft);
+  border-bottom-color: var(--border);
+}
+
+/* ---------- Link ---------- */
+
+[data-theme="light"] .link {
+  color: var(--primary);
+}
+
+/* ---------- Selection ---------- */
+
+[data-theme="light"] ::selection {
+  background: rgba(var(--primary-rgb), 0.2);
+}
+
+/* ---------- Focus ---------- */
+
+[data-theme="light"] :focus-visible {
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
+}
+
+/* ---------- Spinner ---------- */
+
+[data-theme="light"] .spinner {
+  border-color: rgba(var(--primary-rgb), 0.12);
+  border-top-color: var(--primary);
+}
+
+/* ---------- OPS tiles ---------- */
+
+[data-theme="light"] .ops-tile {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+/* ---------- Legal ---------- */
+
+[data-theme="light"] .legal-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+}
+
+[data-theme="light"] .legal-content h2 {
+  color: var(--primary);
+}
+
+/* ---------- Permissions / detail lists ---------- */
+
+[data-theme="light"] .perm-yes {
+  color: var(--green);
+}
+
+[data-theme="light"] .perm-no {
+  color: var(--red);
+}
+
+/* ==========================================================================
+   Theme toggle button
+   ========================================================================== */
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--card-2);
+  color: var(--text-soft);
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.theme-toggle:hover {
+  background: rgba(var(--primary-rgb), 0.08);
+  border-color: rgba(var(--primary-rgb), 0.25);
+  color: var(--text);
+}
+
+.theme-toggle-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Mobile topbar toggle */
+.theme-toggle-mobile {
+  width: auto;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-soft);
+  margin-left: auto;
+}
+
+.theme-toggle-mobile:hover {
+  background: rgba(var(--primary-rgb), 0.08);
+  color: var(--text);
+}
+
+[data-theme="light"] .theme-toggle {
+  background: var(--card);
+  border-color: var(--border);
+  color: var(--text-soft);
+}
+
+[data-theme="light"] .theme-toggle:hover {
+  background: rgba(var(--primary-rgb), 0.06);
+  border-color: var(--primary);
+  color: var(--text);
+}
+
+[data-theme="light"] .theme-toggle-mobile {
+  border-color: var(--border);
+  color: var(--text-soft);
+}
+
+[data-theme="light"] .theme-toggle-mobile:hover {
+  background: rgba(var(--primary-rgb), 0.06);
+  color: var(--text);
+}

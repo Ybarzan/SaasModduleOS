@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Lombok-generated equals/hashCode/toString/builders trigger noisy false positives -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
+    </Match>
+    <!-- Spring-managed beans are constructed via dependency injection, not directly instantiated -->
+    <Match>
+        <Bug pattern="URF_UNREAD_FIELD" />
+        <Class name="~.*\.config\..*" />
+    </Match>
+    <!-- Test classes: relaxed rules, JUnit/Mockito patterns commonly trip SpotBugs -->
+    <Match>
+        <Class name="~.*Test$" />
+    </Match>
+    <Match>
+        <Class name="~.*Test\$.*" />
+    </Match>
+    <!-- Stripe Java SDK's own documented init pattern: Stripe.apiKey = secretKey in a
+         @PostConstruct, called exactly once on this Spring singleton at startup. Not a bug. -->
+    <Match>
+        <Class name="com.incokalk.service.BillingService" />
+        <Bug pattern="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD" />
+    </Match>
+    <!-- .formatted() on Java text blocks generating HTML/XML/SOAP payloads: the literal
+         newlines are markup/wire-format line breaks, not console text. %n (the platform
+         line separator) does not apply here and using it would be wrong. -->
+    <Match>
+        <Bug pattern="VA_FORMAT_STRING_USES_NEWLINE" />
+    </Match>
+    <!-- Broad `catch (Exception e)` around third-party XML/JSON parsing + HTTP calls to
+         external integrations (PrestaShop, TARIC) is deliberate: it spans both checked
+         (e.g. JsonProcessingException) and unchecked failure modes from data the caller
+         does not control, and is meant to degrade gracefully rather than crash a sync. -->
+    <Match>
+        <Class name="com.incokalk.service.ecommerce.PrestaShopAdapter" />
+        <Method name="parseOrdersXml" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+    <Match>
+        <Class name="com.incokalk.service.taric.TaricApiClient" />
+        <Method name="getDescription" />
+        <Bug pattern="REC_CATCH_EXCEPTION" />
+    </Match>
+</FindBugsFilter>

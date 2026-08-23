@@ -1,0 +1,28 @@
+{
+  "name": "IncoKalk — Simulateur Incoterms 2020",
+  "short_name": "IncoKalk",
+  "description": "Plateforme de gestion logistique — Incoterms, devis, expéditions, ERP",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["business", "logistics"],
+  "lang": "fr",
+  "dir": "ltr"
+}

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">IncoKalk Mobile</string>
+    <string name="title_activity_main">IncoKalk Mobile</string>
+    <string name="package_name">com.incokalk.mobile</string>
+    <string name="custom_url_scheme">com.incokalk.mobile</string>
+</resources>

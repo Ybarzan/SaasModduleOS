@@ -1,0 +1,25 @@
+es 5 niveaux d'expansion
+Couche 1 — Données live (rapide à implémenter)
+Ce sont des appels API que tu branches directement dans les services existants.
+Taux TARIC réels : l'UE expose son API de tarifs douaniers gratuitement. Au lieu d'avoir tes taux codés en dur dans CustomsDutyService, tu appelles https://ec.europa.eu/taxation_customs/dds2/taric/taric_consultation.jsp ou l'API eutaric.eu. Ça change radicalement la précision : tes clients importent du textile CH.61 et ils obtiennent exactement 12%, pas une estimation.
+Cotations fret live : Freightos a une API REST (pay-per-call). Tu passes origin/destination/poids/volume et tu reçois des cotations réelles de Maersk, MSC, Hapag-Lloyd. Ça transforme ton estimation en vrai devis. Facturable 2-5€/cotation.
+Devises : l'API Frankfurter (ECB) est gratuite et donne les taux du jour. Un cron toutes les 6h suffit.
+Couche 2 — Modules métier (= les SaaS #2 à #5 de ta roadmap)
+Chaque module est un satellite autour d'IncoKalk qui crée de la valeur croisée.
+Scoring fournisseurs : pour chaque simulation, l'utilisateur renseigne le fournisseur. Tu stockes le pays d'origine, le délai de livraison réel vs estimé, et tu construis un score de risque automatique. Un score par pays (indice Coface/Euler Hermes) + un score fournisseur individuel. La valeur : "votre fournisseur CN-Guangzhou a un délai moyen de 23j avec 18% de retard — Incoterm recommandé : FCA plutôt que FOB pour reprendre le contrôle du transport."
+Génération de documents : à partir d'une simulation FOB validée, tu génères le PDF packing list, le proforma invoice, et la déclaration EX1 pré-remplie. Là c'est du iText/PDFBox côté Java + des templates. C'est le module le plus demandé par les PME qui font de l'export.
+Financement du trade : le crédit documentaire (LC) est calculé à partir de la valeur CIF. Tu peux afficher une simulation de coût de LC (typiquement 0.5-1.5% du montant) et envoyer une lead vers une fintech partenaire (Stenn, Modifi, Tradewind). Modèle d'affiliation.
+Couche 3 — Intégrations ERP/TMS (= passer en B2B sérieux)
+C'est là que le pricing passe de 49€/mois à 300€+/mois.
+Odoo : il y a une marketplace officielle Odoo. Tu crées un module Odoo qui appelle ton API IncoKalk pour chaque commande achat. Le bouton "Calculer Incoterm optimal" apparaît directement dans le bon de commande. C'est un use case très concret pour les PME sous Odoo.
+Plugin Cargowise/TMS : les transitaires utilisent ces TMS. Si tu leur envoies des cotations Incoterm + fret directement dans leur outil, tu deviens indispensable. Modèle white-label à 500-2000€/mois par transitaire.
+Tracking : via l'API Project44 ou 17Track, tu récupères le statut du shipment et tu recalcules les coûts réels vs estimés à chaque étape. C'est la fonctionnalité "post-simulation" — comparer ce que tu avais prévu vs ce qui s'est passé. Énorme valeur pour améliorer les prochaines simulations.
+Couche 4 — IA (différenciation forte)
+Recommandeur IA : tu as déjà la logique de recommandation dans SimulationService. Tu pousses ça plus loin avec de l'historique : "d'après vos 47 simulations précédentes sur cet axe CN→FR, vos clients choisissent FOB dans 82% des cas et économisent en moyenne 1 200€ vs CIF." C'est de l'analytique pure sur ta propre DB.
+Optimiseur de route : tu combines les cotations fret live + les taux douaniers + les délais et tu proposes : "Route directe CN→FR : 8 200€ / 28j. Route via Rotterdam : 7 400€ / 32j. Route via Tanger Med + camion : 6 100€ / 35j." Ça c'est un vrai outil de décision stratégique.
+Alertes tensions supply chain : via des flux RSS + news API + sentiment analysis, tu détectes les tensions sur les axes (grève dockers, congestion ports) et tu envoies des alertes push à tes utilisateurs : "Congestion détectée Port de Shangaï — délais +7j, réévaluation Incoterm FOB recommandée."
+Couche 5 — La vision finale : 3 produits distincts
+En connectant tout ça, IncoKalk évolue naturellement vers 3 produits :
+Import Cost Calculator (PME importatrices) : ils renseignent un produit, un fournisseur, une quantité — et obtiennent le prix de revient complet franco entrepôt France : marchandise + fret + douanes + TVA + assurance + frais de port. C'est ce que font manuellement tous les acheteurs dans un Excel. MRR cible : 79-149€/mois.
+Trade Compliance Hub (ETI export) : simulation Incoterm + génération documents export + vérification conformité (CE, REACH, RoHS par code HS) + archivage légal. MRR cible : 300-500€/mois.
+Supply Chain Cockpit (grands comptes) : tout ce qui précède + intégration ERP + tracking live + analytics coûts réels vs estimés + module scoring fournisseurs. MRR cible : 1000-3000€/mois white-label.

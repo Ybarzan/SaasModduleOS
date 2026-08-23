@@ -1,0 +1,243 @@
+ # ===========================================
+# Configuration principale - IncoCalc
+# ===========================================
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: incocalc
+
+  # Base de données
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/incokalk}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:incokalk}
+    password: ${DB_PASSWORD:incokalk_dev_2026}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+  # Configuration JSON
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    default-property-inclusion: non_null
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+    time-zone: UTC
+
+  # Cache configuration
+  cache:
+    type: simple
+    cache-names:
+      - exchange-rates
+      - customs-duties
+      - customs-duties-detailed
+      - customs-fallback-rate
+      - incoterms
+      - taric-rates
+      - taric-hs-descriptions
+      - eta-model
+      - vat-calculation
+      - mfn-rates
+      - pref-rates
+      - vies-check
+      - eori-check
+
+  # Mail configuration
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_AUTH:false}
+          starttls:
+            enable: ${MAIL_STARTTLS:false}
+
+# ===========================================
+# Configuration Incoterms
+# ===========================================
+incokalk:
+  app:
+    frontend-url: ${FRONTEND_URL:http://localhost:5173}
+
+  email:
+    from-address: ${MAIL_FROM:noreply@incokalk.com}
+
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration: 86400000
+    api-key:
+      salt: ${API_KEY_SALT}
+    mailbox-encryption:
+      key: ${MAILBOX_ENCRYPTION_KEY:${JWT_SECRET}}
+
+  rate-limiting:
+    free:
+      requests-per-day: 3000
+    starter:
+      requests-per-day: 4000
+    pro:
+      requests-per-day: 5000
+    api-starter:
+      requests-per-day: 2000
+    api-pro:
+      requests-per-day: 10000
+
+  providers:
+    shippo:
+      base-url: https://api.goshippo.com
+      api-key: ${SHIPPO_API_KEY:}
+      timeout: 10000
+    dhl:
+      base-url: https://api-eu.dhl.com/mydhlapi
+      api-key: ${DHL_API_KEY:}
+      api-secret: ${DHL_API_SECRET:}
+      timeout: 10000
+    msc:
+      base-url: ${MSC_API_URL:https://api.msc.com/booking/v1}
+      api-key: ${MSC_API_KEY:}
+    dbschenker:
+      base-url: ${DBS_API_URL:https://api.dbschenker.com/booking/v1}
+      api-key: ${DBS_API_KEY:}
+    geodis:
+      base-url: ${GEODIS_API_URL:https://api.geodis.com/booking/v1}
+      api-key: ${GEODIS_API_KEY:}
+    cache:
+      ttl-hours: 1
+
+  push:
+    firebase:
+      credentials-path: ${FIREBASE_CREDENTIALS_PATH:}
+
+  tracking:
+    vessel:
+      api-key: ${VESSEL_API_KEY:}
+      base-url: https://api.vesselapi.com
+    aviationstack:
+      api-key: ${AVIATIONSTACK_API_KEY:}
+      base-url: https://api.aviationstack.com/v1
+    aisstream:
+      api-key: ${AISSTREAM_API_KEY:}
+    ship24:
+      api-key: ${SHIP24_API_KEY:}
+      base-url: https://api.ship24.com/public/v1
+
+  exchange-rate:
+    api-key: ${EXCHANGERATE_API_KEY:}
+    base-url: https://api.exchangerate-api.com/v4
+
+  vies:
+    base-url: ${VIES_BASE_URL:https://ec.europa.eu/taxation_customs/vies/rest-api}
+    online-validation: ${VIES_ONLINE_VALIDATION:false}
+
+  eori:
+    base-url: ${EORI_BASE_URL:https://ec.europa.eu/taxation_customs/dds2/eos/validation/services}
+    online-validation: ${EORI_ONLINE_VALIDATION:false}
+
+  taric:
+    api:
+      base-url: ${TARIC_API_URL:https://ec.europa.eu/taxation_customs/dds2/taric/api}
+      key: ${TARIC_API_KEY:}
+    cache:
+      ttl-hours: 24
+    sync:
+      enabled: ${TARIC_SYNC_ENABLED:false}
+      batch-size: 50
+    simulation-mode: ${TARIC_SIMULATION_MODE:true}
+
+  customs:
+    default-duty-rate: 3.5
+    hs-code-cache-ttl: 86400000
+
+  notifications:
+    webhook:
+      timeout: 5000
+    email:
+      from-address: noreply@incokalk.com
+
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+    success-url: ${STRIPE_SUCCESS_URL:http://localhost:5173/billing?success=true}
+    cancel-url: ${STRIPE_CANCEL_URL:http://localhost:5173/pricing}
+    price-monthly-starter: ${STRIPE_PRICE_STARTER_MONTHLY:}
+    price-annual-starter: ${STRIPE_PRICE_STARTER_ANNUAL:}
+    price-monthly-pro: ${STRIPE_PRICE_PRO_MONTHLY:}
+    price-monthly-enterprise: ${STRIPE_PRICE_ENTERPRISE_MONTHLY:}
+    price-annual-pro: ${STRIPE_PRICE_PRO_ANNUAL:}
+    price-annual-enterprise: ${STRIPE_PRICE_ENTERPRISE_ANNUAL:}
+
+  fintech:
+    qonto:
+      base-url: ${QONTO_BASE_URL:https://thirdparty.qonto.com}
+      api-key: ${QONTO_API_KEY:}
+      timeout: 10000
+    spendesk:
+      base-url: ${SPENDESK_BASE_URL:https://api.spendesk.com}
+      api-key: ${SPENDESK_API_KEY:}
+      timeout: 10000
+
+  insurance:
+    base-url: ${INSURER_BASE_URL:https://api.insurer.example.com}
+    api-key: ${INSURER_API_KEY:}
+    timeout: 10000
+
+  storage:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY}
+    secret-key: ${MINIO_SECRET_KEY}
+    bucket-documents: incokalk-documents
+    bucket-logos: incokalk-logos
+    public-endpoint: ${MINIO_PUBLIC_ENDPOINT:http://localhost:9000}
+
+  ml:
+    eta:
+      base-url: ${ML_ETA_URL:http://localhost:8000}
+      enabled: ${ML_ETA_ENABLED:true}
+      timeout-ms: ${ML_ETA_TIMEOUT:5000}
+      blend-weight: ${ML_ETA_BLEND:0.7}
+
+# ===========================================
+# Configuration Swagger / OpenAPI
+# ===========================================
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+    tryItOutEnabled: true
+
+# ===========================================
+# Configuration Actuator (Monitoring)
+# ===========================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true

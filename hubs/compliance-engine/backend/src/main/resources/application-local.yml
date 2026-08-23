@@ -1,0 +1,150 @@
+# ===========================================
+# Profil LOCAL — démarre tout seul, sans Postgres/Redis/MinIO
+# Usage : mvn spring-boot:run -Dspring-boot.run.profiles=local
+# ===========================================
+
+spring:
+  datasource:
+    url: jdbc:h2:mem:incokalk;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: true
+
+  flyway:
+    enabled: false
+
+  cache:
+    type: simple
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+incokalk:
+  app:
+    frontend-url: http://localhost:5173
+
+  security:
+    jwt:
+      secret: local-only-insecure-jwt-secret-not-for-production-use-1234567890
+      expiration: 86400000
+    api-key:
+      salt: "110861"
+
+  rate-limiting:
+    free:
+      requests-per-day: 10000
+    starter:
+      requests-per-day: 20000
+    pro:
+      requests-per-day: 50000
+    api-starter:
+      requests-per-day: 20000
+    api-pro:
+      requests-per-day: 50000
+
+  providers:
+    shippo:
+      base-url: https://api.goshippo.com
+      api-key: test
+      timeout: 1000
+    dhl:
+      base-url: https://api-eu.dhl.com/mydhlapi
+      api-key: test
+      api-secret: test
+      timeout: 1000
+    msc:
+      base-url: https://api.msc.com/booking/v1
+      api-key: test
+    dbschenker:
+      base-url: https://api.dbschenker.com/booking/v1
+      api-key: test
+    geodis:
+      base-url: https://api.geodis.com/booking/v1
+      api-key: test
+    cache:
+      ttl-hours: 1
+
+  tracking:
+    vessel:
+      api-key: test
+      base-url: https://api.vesselapi.com
+    aviationstack:
+      api-key: test
+      base-url: https://api.aviationstack.com/v1
+    ship24:
+      api-key: test
+      base-url: https://api.ship24.com/public/v1
+
+  exchange-rate:
+    api-key: test
+    base-url: https://api.exchangerate-api.com/v4
+
+  vies:
+    base-url: https://ec.europa.eu/taxation_customs/vies/rest-api
+    online-validation: false
+
+  eori:
+    base-url: https://ec.europa.eu/taxation_customs/dds2/eos/validation/services
+    online-validation: false
+
+  taric:
+    api:
+      base-url: https://ec.europa.eu/taxation_customs/dds2/taric/api
+      key: ""
+    cache:
+      ttl-hours: 24
+    sync:
+      enabled: false
+      batch-size: 50
+    simulation-mode: true
+
+  customs:
+    default-duty-rate: 3.5
+    hs-code-cache-ttl: 86400000
+
+  notifications:
+    webhook:
+      timeout: 5000
+
+  stripe:
+    secret-key: sk_test_dummy
+    webhook-secret: whsec_dummy
+    success-url: http://localhost:5173/billing?success=true
+    cancel-url: http://localhost:5173/pricing
+
+  storage:
+    endpoint: http://localhost:9000
+    access-key: minioadmin
+    secret-key: minioadmin
+    bucket-documents: incokalk-documents
+    bucket-logos: incokalk-logos
+    public-endpoint: http://localhost:9000
+
+mail:
+  host: localhost
+  port: 587
+  username:
+  password:
+  properties:
+    mail.smtp.auth: false
+
+logging:
+  level:
+    com.incokalk: INFO
+    org.springframework.security: WARN

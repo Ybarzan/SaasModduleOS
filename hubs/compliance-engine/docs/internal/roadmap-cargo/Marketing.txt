@@ -1,0 +1,300 @@
+● 🎯 Stratégie Marketing Senior — IncoKalk (logistique internationale + douane FR)
+
+  Voici le plan marketing complet, structuré comme un Go-to-Market playbook senior. Ciblé sur ton ICP
+  (Ideal Customer Profile), tes 3 plans, et les leviers d'acquisition organiques qui colleront à un
+  CAC bas.
+
+  ---
+  1️⃣ Persona & ICP (Ideal Customer Profile)
+
+  Persona 1 — "Sophie, l'exportatrice PME"
+
+  - Rôle : Responsable logistique / ADV export dans une PME industrielle
+  - Taille entreprise : 5-50 personnes, 500k-10M€ CA
+  - Volume : 10-80 expéditions internationales/mois
+  - Douleur : jongle entre 4 portails transporteurs, fait ses DEB à la main, a peur des contrôles
+  douane
+  - Objectif : gagner 1 journée/semaine, éviter une amende DGDDI
+  - Budget : peut décider jusqu'à 500€/mois sans validation DG
+  - Où elle traîne : LinkedIn (groupes "Transitaires", "Douane"), forums CCI, salons SITL
+
+  Persona 2 — "Marc, le directeur supply chain"
+
+  - Rôle : Supply chain manager / Directeur des opérations
+  - Taille : 50-500 personnes, multi-sites EU
+  - Volume : 100-1000+ expéditions/mois
+  - Douleur : pas de visibilité consolidée, ERPs qui ne parlent pas, audit trail inexistant
+  - Objectif : piloter sa supply chain en temps réel, réduire les coûts de 15%, passer un audit ISO
+  - Budget : 500-2000€/mois, validation comité
+  - Où il traîne : LinkedIn Premium, salons Supply Chain Event, rapports Gartner
+
+  Persona 3 — "Karim, l'e-commerçant cross-border"
+
+  - Rôle : Fondateur / Directeur e-commerce d'une marque DTC
+  - Taille : 1-20 personnes, 100k-5M€ CA
+  - Volume : 50-500 colis/mois (B2C surtout)
+  - Douleur : clients qui demandent où est leur colis, retours SAV chronophages, calcul douane au
+  checkout flou
+  - Objectif : automatiser 100% du tracking client, calculer le landed cost précis
+  - Budget : 50-300€/mois (serré, ROI rapide exigé)
+  - Où il traîne : Twitter/X, Shopify Masters, podcasts e-commerce FR
+
+  ---
+  2️⃣ Value Proposition par plan (à coller sur le site + dans le dashboard)
+
+  Starter (29€/mois) — "Arrêtez de jongler entre 4 portails transporteurs"
+
+  ▎ "IncoKalk Starter vous donne une vision unifiée de vos expéditions, un calculateur Incoterms 2020
+  ▎ précis, et un comparateur de tarifs sur 3 transporteurs. Suffisant pour digitaliser 80% de votre
+  ▎ logistique en moins d'une heure."
+
+  Hook marketing : "Le premier dashboard logistique qui se configure en 5 minutes. Sans CB."
+
+  Pro (149€/mois) — "La conformité douanière française sans vous ruiner" ⭐
+
+  ▎ "IncoKalk Pro inclut le module douanes complet : TARIC, DEB, Intrastat, screening DPS, génération
+  ▎ CMR/DGD. Économisez 600€/mois vs un transitaire traditionnel. Conçu par des experts douane FR."
+
+  Hook marketing : "Payez votre transitaire en un clic — sauf que c'est vous qui l'êtes devenu."
+
+  Enterprise (499€/mois) — "Le contrôle total sur votre supply chain multi-entité"
+
+  ▎ "Multi-filiales, API publique, intégrations SAP/Odoo, white-label client, audit trail immutable.
+  ▎ Pour les ETI qui pilotent 1000+ expéditions/mois et passent des audits ISO."
+
+  Hook marketing : "L'outil qu'utilisent les DAF qui détestent les surprises de fin de mois."
+
+  ---
+  3️⃣ Positionnement & différenciation
+
+  Tagline principale
+
+  ▎ "La logistique internationale, sans la paperasse douanière."
+
+  Sous-titres par cible :
+  - PME : "Pour les exportateurs français qui veulent arrêter de courir après leurs DEB"
+  - Mid-market : "L'ERP logistique qui parle à votre DAF"
+  - Enterprise : "Le jumeau numérique de votre supply chain"
+
+  vs Concurrents (positionnement offensif)
+
+  ┌───────────────────┬──────────────────────────┬────────────────────────────────────────────────┐
+  │    Concurrent     │      Leur faiblesse      │                  Notre angle                   │
+  ├───────────────────┼──────────────────────────┼────────────────────────────────────────────────┤
+  │ Cargoson          │ Pas spécialisé douane FR │ "Le seul SaaS logistique avec TARIC, DEB, EORI │
+  │                   │                          │  intégrés nativement"                          │
+  ├───────────────────┼──────────────────────────┼────────────────────────────────────────────────┤
+  │ Flexport          │ US-centric, pas d'EU     │ "Conçu en France pour les exportateurs EU.     │
+  │                   │ focus                    │ DGDDI native."                                 │
+  ├───────────────────┼──────────────────────────┼────────────────────────────────────────────────┤
+  │ Easyship          │ Pas de screening DPS,    │ "Conformité douanière française en standard,   │
+  │                   │ pas de DEB               │ pas en add-on"                                 │
+  ├───────────────────┼──────────────────────────┼────────────────────────────────────────────────┤
+  │ Transitaire       │ Lent, cher, opaque       │ "Self-service 24/7, 10× moins cher,            │
+  │ classique         │                          │ traçabilité totale"                            │
+  ├───────────────────┼──────────────────────────┼────────────────────────────────────────────────┤
+  │ Excel + email     │ Tout le monde            │ "Digitalisez votre logistique en 1 heure, pas  │
+  │                   │                          │ 3 mois"                                        │
+  └───────────────────┴──────────────────────────┴────────────────────────────────────────────────┘
+
+  Piliers de contenu (SEO + LinkedIn)
+
+  1. "Guide complet DEB 2026" (pilier #1, 3000+ mots) → cible "DEB Intrastat 2026"
+  2. "TARIC : comment classifier vos produits en douane" → cible "code HS + produit"
+  3. "Comparatif 2026 : SaaS logistique France" → cible "Cargoson alternative", "Flexport Europe"
+  4. "Comment éviter une amende DGDDI : checklist 2026" → cible "amende douane France"
+  5. "Incoterms 2020 expliqués : 11 termes en 11 minutes" → cible "Incoterms 2020 simple"
+
+  ---
+  4️⃣ Plan d'acquisition (CAC < 200€)
+
+  Canal #1 — SEO long-tail (gratuit, lent mais puissant)
+
+  - 20 articles piliers (2000-3000 mots chacun) sur les douleurs douane/incoterms/logistique
+  - Cibles : "comment faire une DEB", "TARIC code HS vêtements", "CMR génération automatique"
+  - ROI attendu : 6-12 mois, mais CAC < 50€ par client
+
+  Canal #2 — LinkedIn organique (gratuit, rapide)
+
+  - Fréquence : 4 posts/semaine minimum
+  - Format :
+    - 2 posts "éducation" (ex: "3 erreurs DEB qui coûtent 1500€ aux PME")
+    - 1 post "preuve sociale" (témoignage client, capture dashboard)
+    - 1 post "behind the scenes" (feature en cours, métriques internes)
+  - Hashtags : #Logistique #Douane #Incoterms #ExportFrance #SITL2026
+  - Engagement : commenter 20 posts/jour dans les groupes ciblés (Supply Chain Magazine, CCI France)
+  - ROI attendu : 50-100 leads/mois en 6 mois
+
+  Canal #3 — Partenariats CCI & Experts-Comptables (gratuit)
+
+  - Cible : cabinets d'expertise comptable qui conseillent des exportateurs
+  - Pitch : "Recommandez IncoKalk à vos clients exportateurs, on vous reverse 20% de leur première
+  année"
+  - Programme : affiliation 20% recurring 12 mois
+  - ROI attendu : CAC ≈ 0 (le comptable est prescripteur)
+
+  Canal #4 — Freemium + Product-Led Growth (PLG)
+
+  - Starter gratuit 14 jours + version free limitée (5 shipments/mois) sans CB
+  - In-product upgrade prompts : quand l'utilisateur fait sa 5ème shipment → "Passez Pro pour
+  continuer"
+  - Self-serve onboarding : tutorial interactif 5 min dans le dashboard
+  - ROI attendu : 5-10% conversion free → paid
+
+  Canal #5 — Outbound léger (paid, ROI rapide)
+
+  - Google Ads sur 20 mots-clés longue traîne ("DEB Intrastat logiciel", "logiciel TARIC")
+  - Budget : 500€/mois max, CPA cible < 150€
+  - Ciblage : France uniquement, entreprises 5-200 personnes
+  - ROI attendu : 5-10 clients/mois
+
+  ---
+  5️⃣ Sales Playbook (comment closer)
+
+  Cycle de vente Starter (self-serve)
+
+  1. Visiteur → landing page → "Essai gratuit 14j"
+  2. Sign-up email + onboarding 5 min
+  3. Usage pendant 14 jours (tracking de l'activation : "fait son 1er shipment")
+  4. J-3 : email "Besoin d'aide ?"
+  5. J-1 : email "Votre trial se termine demain" + offre -20% Pro annuel
+  6. J0 : carte requise OU downgrade vers version free (5 shipments/mois)
+
+  Cycle de vente Pro (assisted)
+
+  1. Lead LinkedIn / SEO / Partner → démo 30 min (Calendly)
+  2. Pendant la démo : montrer le calculateur TARIC live + génération CMR
+  3. Email de suivi J+1 avec vidéo personnalisée (Loom)
+  4. Offre : "Pro 14 jours satisfait ou remboursé"
+  5. Closing : signature en ligne, onboarding guidé 1h
+
+  Cycle de vente Enterprise (sales-led)
+
+  1. Lead qualifié (50+ shipments/mois) → appel découverte 45 min
+  2. Audit gratuit de leur logistique (1h) → rapport avec 3 quick-wins
+  3. Démo personnalisée avec leurs données (anonymisées)
+  4. POC 30 jours sur 1 département
+  5. Négociation annuelle + add-ons (API, white-label)
+  6. Onboarding white-glove 1 semaine avec account manager
+
+  ---
+  6️⃣ Pricing psychologique & plans
+
+  Rappel des prix (mes recommandations précédentes)
+
+  - Starter : 29€/mois (ou 290€/an, -15%)
+  - Pro : 149€/mois (ou 1 519€/an, -15%) ⭐ Recommandé
+  - Enterprise : 499€/mois (ou 5 089€/an, -15%) ou "Sur-mesure" (sans prix affiché → contact)
+
+  Stratégies tarifaires
+
+  1. Ancrage visuel : afficher Pro au centre, badge "Recommandé", avec Starter à gauche et Enterprise
+  à droite (ratio 1:5:17)
+  2. Trial inversé : pas de carte requise, "voyez par vous-même"
+  3. Annual par défaut : faire ressortir l'économie annuelle ("Économisez 268€/an")
+  4. Volume discount Enterprise : -10% au-delà de 1000 shipments/mois, -20% au-delà de 5000
+  5. Add-ons Enterprise :
+    - API publique : +100€/mois (inclus dans Enterprise annuel)
+    - Intégration ERP custom : +200€/mois
+    - White-label : +150€/mois
+    - Account manager dédié : +300€/mois
+
+  ---
+  7️⃣ KPIs Marketing à tracker (cohérents avec ton dashboard)
+
+  KPIs d'acquisition
+
+  ┌────────────────────────┬──────────────┬──────────────┬───────────────┐
+  │        Métrique        │ Cible mois 1 │ Cible mois 6 │ Cible mois 12 │
+  ├────────────────────────┼──────────────┼──────────────┼───────────────┤
+  │ Visiteurs uniques/mois │ 1 000        │ 5 000        │ 20 000        │
+  ├────────────────────────┼──────────────┼──────────────┼───────────────┤
+  │ Trials Starter/mois    │ 30           │ 150          │ 500           │
+  ├────────────────────────┼──────────────┼──────────────┼───────────────┤
+  │ Conversion free → paid │ 5%           │ 8%           │ 12%           │
+  ├────────────────────────┼──────────────┼──────────────┼───────────────┤
+  │ CAC blended            │ < 200€       │ < 150€       │ < 100€        │
+  └────────────────────────┴──────────────┴──────────────┴───────────────┘
+
+  KPIs produit (cohérents avec ton dashboard /analytics)
+
+  - MRR : 1k€ (M1) → 15k€ (M6) → 50k€ (M12)
+  - ARR : 12k€ → 180k€ → 600k€
+  - Clients actifs : 10 → 80 → 300
+  - Churn mensuel : < 8% (M1) → < 5% (M6) → < 3% (M12)
+  - NPS : > 30 (M1) → > 50 (M6)
+  - LTV/CAC ratio : > 3 (cible saine)
+
+  KPIs par plan (cible à 12 mois)
+
+  - Starter : 180 clients (60%)
+  - Pro : 90 clients (30%) — c'est là que se fait la marge
+  - Enterprise : 30 clients (10%) — c'est là que se fait le CA
+
+  ---
+  8️⃣ Roadmap marketing 90 jours
+
+  Mois 1 — Fondations
+
+  - [ ] Site web avec landing pages par plan (3 pages + blog)
+  - [ ] Programme d'affiliation experts-comptables (script + portail)
+  - [ ] 5 articles SEO piliers publiés (DEB, TARIC, Incoterms, CMR, EORI)
+  - [ ] Setup analytics : Plausible + UTM tracking
+  - [ ] Page LinkedIn entreprise + 20 posts
+
+  Mois 2 — Acquisition
+
+  - [ ] Google Ads en ligne (500€/mois budget test)
+  - [ ] Calendly + CRM (HubSpot free tier)
+  - [ ] 10 articles SEO additionnels
+  - [ ] Partenariat signé avec 3 CCI (Marseille, Lyon, Lille)
+  - [ ] Premier webinaire "DEB 2026 : ce qui change"
+
+  Mois 3 — Conversion & rétention
+
+  - [ ] Onboarding in-product guidé (5 étapes)
+  - [ ] Emails de nurture (5 séquences : trial → paid)
+  - [ ] Programme de referral client (1 mois gratuit pour chaque filleul)
+  - [ ] Premier cas client publié (témoignage + métriques)
+  - [ ] Premier webinar Enterprise (sales-led)
+
+  ---
+  9️⃣ Idées tactiques bonus (quick wins)
+
+  Tactique "Le calculator qui convertit"
+
+  - Calculateur CO₂ gratuit sur le site (1 input : volume + distance) → affiche "avec IncoKalk vous
+  économiseriez X tonnes de CO₂/an"
+  - Capture email avant l'affichage du résultat → lead qualifié SEO
+
+  Tactique "Le comparateur en mode duel"
+
+  - Page "/cargoson-alternative" : comparatif détaillé (prix, features, lacunes Cargoson)
+  - Idem "/flexport-france", "/easyship-france"
+  - SEO hyper-ciblé sur les alternes
+
+  Tactique "Le podcast des exportateurs"
+
+  - Format : 30 min, 1 invité/client, 1 sujet (ex: "Comment Sophie a digitalisé sa DEB en 1 semaine")
+  - Diffusion : Spotify, Apple, YouTube
+  - ROI : brand awareness, preuve sociale, contenu repurposable
+
+  Tactique "Le benchmark gratuit"
+
+  - Outil interactif : "Votre score logistique 2026" (10 questions → rapport PDF personnalisé)
+  - Capture email + qualifie le lead (small/medium/large)
+  - CTA final : "Recevez votre plan d'action personnalisé"
+
+  ---
+  🔟 Action immédiate dans le dashboard
+
+  Si tu valides cette stratégie, je peux :
+
+  1. Mettre à jour le dashboard / avec les nouveaux prix (29 / 149 / 499 €) + les 3 value props
+  ci-dessus au-dessus de chaque card
+  2. Ajouter une page /pricing-comparison (alternative à Cargoson, Easyship…) pour le SEO offensif
+  3. Ajouter une section "🎯 ROI Calculator" dans /analytics qui montre à chaque client "Vous
+  économisez X€/mois vs votre ancienne méthode"
+
+  Dis-moi quelle tactique tu veux que je code en premier — ou si tu veux que j'applique tout le
+  wording ci-dessus au dashboard existant.

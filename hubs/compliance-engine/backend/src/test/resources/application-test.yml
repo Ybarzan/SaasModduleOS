@@ -1,0 +1,120 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+
+  flyway:
+    enabled: false
+
+  cache:
+    type: simple
+    cache-names:
+      - exchange-rates
+      - customs-duties
+      - customs-duties-detailed
+      - customs-fallback-rate
+      - incoterms
+      - taric-rates
+      - taric-hs-descriptions
+      - eta-model
+      - vat-calculation
+      - mfn-rates
+      - pref-rates
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+incokalk:
+  security:
+    jwt:
+      secret: ${JWT_SECRET:test-secret-key-test-secret-key-test-secret-key-test}
+      expiration: 86400000
+    api-key:
+      salt: ${API_KEY_SALT:test-salt}
+
+  rate-limiting:
+    free:
+      requests-per-day: 10000
+    starter:
+      requests-per-day: 20000
+    pro:
+      requests-per-day: 50000
+
+  providers:
+    shippo:
+      api-key: ${SHIPPO_API_KEY:test}
+      timeout: 1000
+    dhl:
+      api-key: ${DHL_API_KEY:test}
+      api-secret: ${DHL_API_SECRET:test}
+      timeout: 1000
+    msc:
+      api-key: ${MSC_API_KEY:test}
+    dbschenker:
+      api-key: ${DBSCHENKER_API_KEY:test}
+    geodis:
+      api-key: ${GEODIS_API_KEY:test}
+    cache:
+      ttl-hours: 1
+
+  tracking:
+    vessel:
+      api-key: ${VESSEL_API_KEY:test}
+    aviationstack:
+      api-key: ${AVIATIONSTACK_API_KEY:test}
+    ship24:
+      api-key: ${SHIP24_API_KEY:test}
+
+  exchange-rate:
+    api-key: ${EXCHANGE_RATE_API_KEY:test}
+
+  taric:
+    api:
+      key: ${TARIC_API_KEY:test}
+    simulation-mode: true
+
+  customs:
+    default-duty-rate: 3.5
+
+  notifications:
+    webhook:
+      timeout: 5000
+
+  stripe:
+    secret-key: ${STRIPE_SECRET_KEY:sk_test_dummy}
+    webhook-secret: ${STRIPE_WEBHOOK_SECRET:whsec_dummy}
+
+  storage:
+    endpoint: http://localhost:9000
+    access-key: ${STORAGE_ACCESS_KEY:test}
+    secret-key: ${STORAGE_SECRET_KEY:test}
+    bucket-documents: test-documents
+    bucket-logos: test-logos
+
+mail:
+  host: localhost
+  port: 587
+  username:
+  password:
+  properties:
+    mail.smtp.auth: false
+
+logging:
+  level:
+    com.incokalk: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: INFO
+    org.hibernate.orm.jdbc.bind: INFO

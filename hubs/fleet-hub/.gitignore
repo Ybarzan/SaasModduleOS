@@ -1,0 +1,25 @@
+# Backend
+backend/target/
+backend/app.log
+backend/*.log
+backend/.mvn/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/vite.log
+frontend/*.log
+frontend/playwright-report/
+frontend/test-results/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Base de données / déploiement
+.env
+docker-compose.override.yml
+backups/
+caddy/*.json

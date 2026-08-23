@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Applique le thème stocké avant le premier rendu, pour éviter un flash du mauvais thème -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('incokalk-theme');
+          var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="theme-color" content="#1B6B4F" />
+    <meta name="description" content="IncoKalk — Simulateur Incoterms 2020, comparaison de devis transport et gestion des expéditions internationales pour exportateurs et importateurs." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="IncoKalk" />
+    <link rel="apple-touch-icon" href="/icons/icon.svg" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>IncoKalk — Logistique & Incoterms</title>
+
+    <!-- Open Graph / partage réseaux sociaux (valeurs par défaut, statiques :
+         les robots de partage social ne chargent pas le JS, donc ne voient
+         jamais les balises injectées dynamiquement page par page) -->
+    <meta property="og:site_name" content="IncoKalk" />
+    <meta property="og:title" content="IncoKalk — Logistique & Incoterms" />
+    <meta property="og:description" content="Simulateur Incoterms 2020, comparaison de devis transport et gestion des expéditions internationales pour exportateurs et importateurs." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.incokalk.com/" />
+    <meta property="og:image" content="https://www.incokalk.com/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="IncoKalk — Logistique & Incoterms" />
+    <meta name="twitter:description" content="Simulateur Incoterms 2020, comparaison de devis transport et gestion des expéditions internationales." />
+    <meta name="twitter:image" content="https://www.incokalk.com/og-image.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "IncoKalk",
+        "url": "https://www.incokalk.com",
+        "logo": "https://www.incokalk.com/favicon.svg",
+        "description": "Logiciel de calcul de coûts Incoterms 2020, comparaison de devis transport et gestion des expéditions internationales.",
+        "email": "contact@incokalk.com",
+        "sameAs": []
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator && location.protocol === 'https:') {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((reg) => console.log('SW registered:', reg.scope))
+            .catch((err) => console.log('SW registration failed:', err));
+        });
+      }
+    </script>
+  </body>
+</html>
