@@ -43,6 +43,7 @@ public class DHLAdapter implements CarrierAdapter {
 
         BookingResponse resp = new BookingResponse();
         resp.setAccepted(true);
+        resp.setSimulated(true);
         resp.setCarrierReference(carrierReference);
         resp.setAdditionalData(Map.of("currentStatus", "IN_TRANSIT", "lastScan", "Hub Rotterdam"));
         return resp;
@@ -87,6 +88,7 @@ public class DHLAdapter implements CarrierAdapter {
 
         BookingResponse resp = new BookingResponse();
         resp.setAccepted(true);
+        resp.setSimulated(true);
         resp.setCarrierReference(ref);
         resp.setTrackingNumber(tracking);
         resp.setQuotedCost(baseCost);

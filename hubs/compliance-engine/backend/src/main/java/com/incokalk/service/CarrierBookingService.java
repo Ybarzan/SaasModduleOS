@@ -108,6 +108,8 @@ public class CarrierBookingService {
                 booking
             );
 
+            booking.setSimulated(response.isSimulated());
+
             if (response.isAccepted()) {
                 booking.setCarrierBookingStatus(CarrierBookingRequest.BookingStatus.CONFIRMED);
                 booking.setCarrierReference(response.getCarrierReference());

@@ -165,6 +165,55 @@ class CarrierBookingServiceTest {
     }
 
     @Test
+    void submitBooking_simulated_propagatesFlagToBooking() {
+        CarrierBookingRequest booking = new CarrierBookingRequest();
+        booking.setId(UUID.randomUUID());
+        booking.setCarrier(carrier);
+        booking.setShipmentOrder(shipment);
+        booking.setCompany(company);
+        booking.setCarrierBookingStatus(CarrierBookingRequest.BookingStatus.PENDING);
+
+        when(bookingRepo.findByIdAndCompanyId(eq(booking.getId()), eq(companyId)))
+            .thenReturn(Optional.of(booking));
+
+        BookingResponse resp = new BookingResponse();
+        resp.setAccepted(true);
+        resp.setSimulated(true);
+        resp.setCarrierReference("DHL-SIM123");
+        when(dhlAdapter.supports("DHL")).thenReturn(true);
+        when(dhlAdapter.submitBooking(any(), any(), any())).thenReturn(resp);
+        when(bookingRepo.save(any())).thenReturn(booking);
+
+        CarrierBookingRequest result = service.submitBooking(booking.getId());
+
+        assertThat(result.isSimulated()).isTrue();
+    }
+
+    @Test
+    void submitBooking_realResponse_notSimulated() {
+        CarrierBookingRequest booking = new CarrierBookingRequest();
+        booking.setId(UUID.randomUUID());
+        booking.setCarrier(carrier);
+        booking.setShipmentOrder(shipment);
+        booking.setCompany(company);
+        booking.setCarrierBookingStatus(CarrierBookingRequest.BookingStatus.PENDING);
+
+        when(bookingRepo.findByIdAndCompanyId(eq(booking.getId()), eq(companyId)))
+            .thenReturn(Optional.of(booking));
+
+        BookingResponse resp = new BookingResponse();
+        resp.setAccepted(true);
+        resp.setCarrierReference("DHL-REAL456");
+        when(dhlAdapter.supports("DHL")).thenReturn(true);
+        when(dhlAdapter.submitBooking(any(), any(), any())).thenReturn(resp);
+        when(bookingRepo.save(any())).thenReturn(booking);
+
+        CarrierBookingRequest result = service.submitBooking(booking.getId());
+
+        assertThat(result.isSimulated()).isFalse();
+    }
+
+    @Test
     void submitBooking_rejected() {
         CarrierBookingRequest booking = new CarrierBookingRequest();
         booking.setId(UUID.randomUUID());

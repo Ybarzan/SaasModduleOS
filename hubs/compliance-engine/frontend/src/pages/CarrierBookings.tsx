@@ -23,6 +23,7 @@ interface CarrierBooking {
   estimatedDeliveryDate: string;
   quotedCost: number;
   quotedCostCurrency: string;
+  simulated: boolean;
   createdAt: string;
   shipmentOrder?: { id: string; orderNumber: string };
   carrier?: { id: string; name: string; code: string };
@@ -250,7 +251,19 @@ const CarrierBookings = () => {
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-ink">{b.carrier?.name || '—'}</td>
                     <td className="px-6 py-4 text-sm text-ink-soft">{b.shipmentOrder?.orderNumber || '—'}</td>
-                    <td className="px-6 py-4 text-sm font-mono text-ink-soft">{b.carrierReference || '—'}</td>
+                    <td className="px-6 py-4 text-sm font-mono text-ink-soft">
+                      <div className="flex items-center gap-2">
+                        <span>{b.carrierReference || '—'}</span>
+                        {b.simulated && (
+                          <span
+                            title="Réponse simulée : aucune clé API transporteur configurée, ces données sont indicatives"
+                            className="text-[10px] uppercase tracking-wide text-ink-soft/70 border border-line rounded px-1.5 py-0.5 shrink-0"
+                          >
+                            Simulé
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-sm text-ink">
                       {b.quotedCost != null ? `${formatNumber(b.quotedCost, { minimumFractionDigits: 2 })} ${b.quotedCostCurrency || 'EUR'}` : '—'}
                     </td>

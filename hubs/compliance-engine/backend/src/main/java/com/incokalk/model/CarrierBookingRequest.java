@@ -102,6 +102,12 @@ public class CarrierBookingRequest {
     @Builder.Default
     private String quotedCostCurrency = "EUR";
 
+    /** true si la reponse transporteur vient d'un fallback simule (pas de cle API
+     * configuree, ou echec de l'appel reel), false si elle vient vraiment du transporteur. */
+    @Column(name = "is_simulated", nullable = false)
+    @Builder.Default
+    private boolean simulated = false;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "container_type", length = 30)
     private ShipmentOrder.ContainerType containerType;

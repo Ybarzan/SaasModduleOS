@@ -42,6 +42,7 @@ public class MSCAdapter implements CarrierAdapter {
 
         BookingResponse resp = new BookingResponse();
         resp.setAccepted(true);
+        resp.setSimulated(true);
         resp.setCarrierReference(carrierReference);
         resp.setAdditionalData(Map.of("currentStatus", "IN_TRANSIT", "vesselPosition", "3.2N 101.5E"));
         return resp;
@@ -81,6 +82,7 @@ public class MSCAdapter implements CarrierAdapter {
 
         BookingResponse resp = new BookingResponse();
         resp.setAccepted(true);
+        resp.setSimulated(true);
         resp.setCarrierReference(ref);
         resp.setTrackingNumber(blNumber);
         resp.setQuotedCost(baseCost);

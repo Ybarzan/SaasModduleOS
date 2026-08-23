@@ -45,6 +45,7 @@ public class CmaCgmAdapter implements CarrierAdapter {
 
         BookingResponse resp = new BookingResponse();
         resp.setAccepted(true);
+        resp.setSimulated(true);
         resp.setCarrierReference(carrierReference);
         resp.setAdditionalData(Map.of("currentStatus", "IN_TRANSIT", "vesselPosition", "36.8N 10.2E"));
         return resp;
@@ -92,6 +93,7 @@ public class CmaCgmAdapter implements CarrierAdapter {
 
         BookingResponse resp = new BookingResponse();
         resp.setAccepted(true);
+        resp.setSimulated(true);
         resp.setCarrierReference(ref);
         resp.setTrackingNumber(blNumber);
         resp.setQuotedCost(baseCost);

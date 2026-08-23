@@ -44,6 +44,7 @@ public class DBSchenkerAdapter implements CarrierAdapter {
 
         BookingResponse resp = new BookingResponse();
         resp.setAccepted(true);
+        resp.setSimulated(true);
         resp.setCarrierReference(carrierReference);
         resp.setAdditionalData(Map.of("currentStatus", "IN_TRANSIT", "lastCheckpoint", "Nürnberg Terminal"));
         return resp;
@@ -88,6 +89,7 @@ public class DBSchenkerAdapter implements CarrierAdapter {
 
         BookingResponse resp = new BookingResponse();
         resp.setAccepted(true);
+        resp.setSimulated(true);
         resp.setCarrierReference(ref);
         resp.setTrackingNumber(proNumber);
         resp.setQuotedCost(baseCost);

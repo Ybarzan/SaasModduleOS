@@ -42,6 +42,7 @@ public class GeodisAdapter implements CarrierAdapter {
 
         BookingResponse resp = new BookingResponse();
         resp.setAccepted(true);
+        resp.setSimulated(true);
         resp.setCarrierReference(carrierReference);
         resp.setAdditionalData(Map.of("currentStatus", "IN_TRANSIT", "lastCheckpoint", "Paris物流Hub"));
         return resp;
@@ -85,6 +86,7 @@ public class GeodisAdapter implements CarrierAdapter {
 
         BookingResponse resp = new BookingResponse();
         resp.setAccepted(true);
+        resp.setSimulated(true);
         resp.setCarrierReference(ref);
         resp.setTrackingNumber(proNumber);
         resp.setQuotedCost(baseCost);

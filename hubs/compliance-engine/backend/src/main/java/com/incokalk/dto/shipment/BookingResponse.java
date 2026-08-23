@@ -15,6 +15,8 @@ public class BookingResponse {
     private String estimatedDeliveryDate;
     private String errorMessage;
     private Map<String, Object> additionalData;
+    /** true si cette reponse vient d'un fallback simule, pas d'un vrai appel transporteur. */
+    private boolean simulated;
 
     public BookingResponse() {}
 
@@ -38,4 +40,6 @@ public class BookingResponse {
     public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
     public Map<String, Object> getAdditionalData() { return additionalData; }
     public void setAdditionalData(Map<String, Object> additionalData) { this.additionalData = additionalData; }
+    public boolean isSimulated() { return simulated; }
+    public void setSimulated(boolean simulated) { this.simulated = simulated; }
 }
