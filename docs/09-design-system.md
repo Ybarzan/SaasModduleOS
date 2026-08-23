@@ -20,22 +20,24 @@ Angle de différenciation délibéré : les plateformes de visibilité supply ch
 | `--ochre` | `#C08A2E` | Sémantique avertissement |
 | `--rust` | `#A6311F` | Sémantique critique — volontairement plus saturé/rouge que `--terracotta` pour rester distinguable |
 
-## Typographie
+## Typographie (v0.2 — révisée après retour utilisateur : "simpliste cybernétique")
 
-Trois rôles, pas deux — le rôle "chiffre" est traité à part parce que dans ce produit, **le chiffre est le contenu héros** (ETA en jours, score de confiance en %, coût débarqué) :
+**Une seule famille : JetBrains Mono.** Pas de duo serif/sans — la hiérarchie vient du poids (200 pour les grands nombres, 400 pour le corps, 700 en majuscules pour les titres) et de l'espacement, pas d'un changement de caractère. Ce choix sert directement le positionnement Couche 3 : un système d'orchestration autonome a plus de sens visuel en registre terminal/HUD ("le système surveille et agit") qu'en registre document officiel — la première version (Fraunces + IBM Plex Sans, référence "manifeste douanier") a été abandonnée pour ça.
 
-- **Chiffres/statistiques** — *Fraunces* (axe optical size poussé haut), réservée exclusivement à l'affichage de grands nombres (ETA, confiance, coûts). Pas utilisée en titre de page — c'est un choix de contenu, pas un choix de style héroïque générique.
-- **Titres, navigation, labels** — *IBM Plex Sans*, registre technique/document plutôt que la neutralité par défaut d'un Inter/Roboto.
-- **Corps de texte et tableaux** — *IBM Plex Sans* (poids régulier, tailles resserrées pour la densité de données).
-- **Codes, identifiants, données tabulaires** (codes HS, numéros de suivi, montants) — *IBM Plex Mono*, `font-variant-numeric: tabular-nums` — référence directe au registre du document officiel (manifeste, connaissement).
+- **Chiffres/statistiques** — poids 200 (ultra-léger), grande taille — ETA, score de confiance, coûts. Toujours en `tabular-nums`.
+- **Titres** — poids 700, majuscules, espacement de lettres — labels de section, titres de carte.
+- **Corps de texte** — poids 400, interligne 1.6-1.7 (le monospace a besoin de plus d'air qu'un sans-serif en paragraphe).
+- **Codes, identifiants, données tabulaires** — poids 500, `tabular-nums` — déjà natif au monospace, pas de rupture de registre avec le reste.
+
+Conventions typographiques empruntées au terminal, utilisées avec sens (pas en décoration) : `::` comme séparateur, `>` comme marqueur d'item actif/de commande, curseur clignotant sur le wordmark (respecte `prefers-reduced-motion`), tags bordés `[LIVE]`/`[SIMULÉ]`/`[AGI]` plutôt que des pastilles colorées pleines.
 
 ## Layout
 
-Composition "manifeste de contrôle" : cartes aux proportions plus larges que hautes avec une double bordure fine évoquant un tampon/sceau officiel (pas de card bubbly à coins très arrondis), rail de navigation traité comme un registre (règles fines, numérotation en IBM Plex Mono), motif géométrique zellige abstrait utilisé uniquement en texture basse opacité sur les zones d'accueil/état vide — jamais sur un écran dense en données, où il ajouterait du bruit plutôt que du sens.
+Composition "terminal de contrôle" : cartes à coins carrés (zéro `border-radius`) avec des coins-crochets fins façon réticule HUD (au lieu d'une bordure double façon tampon), rail de navigation traité comme une console (règles fines, marqueur `>` sur l'item actif), grille de fond basse opacité utilisée uniquement sur les zones d'accueil/état vide — lisible à la fois comme trame technique et comme écho abstrait du zellige, jamais sur un écran dense en données où elle ajouterait du bruit plutôt que du sens.
 
 ## Ce que ce n'est pas
 
-Explicitement pas la dérive "IA générique" : pas de crème + serif + terracotta seul (le piège le plus commun) — la teinte sarcelle et le traitement "document officiel" (IBM Plex Mono tabulaire, doubles bordures façon tampon) sont les deux éléments qui sortent Praxio de ce registre. Pas de dégradé violet-bleu, pas de grille d'icônes à 3 colonnes, pas de `rounded-lg` partout.
+Explicitement pas la dérive "IA générique" : pas de crème + serif + terracotta seul (le piège le plus commun, c'est d'ailleurs la direction v0.1 initialement proposée puis écartée), pas de `rounded-lg` partout, pas de pastilles colorées pleines comme seul vecteur de statut. La teinte sarcelle et le registre terminal (une seule famille mono, tags bordés, marqueurs `>`/`::`) sont ce qui sort Praxio du générique.
 
 ## Aperçu
 
