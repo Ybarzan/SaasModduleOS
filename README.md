@@ -39,6 +39,7 @@ L'audit du code existant (voir [docs/01-audit-existant.md](docs/01-audit-existan
 | [docs/06-positionnement-gtm.md](docs/06-positionnement-gtm.md) | Nouveau pitch, propositions de nom, segmentation tarifaire, stratégie de mise sur le marché |
 | [docs/07-integration-fleet-hub.md](docs/07-integration-fleet-hub.md) | Pourquoi et comment intégrer fleet-hub comme un Hub à part entière (architecture, pas fusion de code) |
 | [docs/08-refonte-frontend.md](docs/08-refonte-frontend.md) | Scope réaliste et priorisation de la refonte frontend (nouveau design system, unification des deux apps) |
+| [docs/09-design-system.md](docs/09-design-system.md) | Étape 0 livrée : palette, typographie, layout — [aperçu visuel](https://claude.ai/code/artifact/3bd4f46d-4895-434c-ab3d-476bd56b284b) (palette, composants, maquette de la nouvelle coquille) |
 
 ## Architecture cible en un coup d'œil
 
