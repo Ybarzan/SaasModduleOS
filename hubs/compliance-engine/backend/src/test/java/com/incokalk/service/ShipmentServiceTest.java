@@ -1,11 +1,13 @@
 package com.incokalk.service;
 
 import com.incokalk.dto.shipment.ShipmentOrderDTO;
+import com.incokalk.dto.shipment.ShipmentStatusUpdateDTO;
 import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.Carrier;
 import com.incokalk.model.Company;
 import com.incokalk.model.ShipmentOrder;
 import com.incokalk.model.ShippingRate;
+import com.incokalk.model.TrackingEvent;
 import com.incokalk.model.User;
 import com.incokalk.repository.CarrierRepository;
 import com.incokalk.repository.ClientUserRepository;
@@ -20,6 +22,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -105,6 +108,45 @@ class ShipmentServiceTest {
                 .hasMessageContaining("Transporteur");
 
         verify(shipmentRepo, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("updateStatus crée un TrackingEvent marqué MANUAL (saisie humaine, pas un provider)")
+    void updateStatus_createsManualTrackingEvent() {
+        UUID shipmentId = UUID.randomUUID();
+        ShipmentOrder shipment = new ShipmentOrder();
+        shipment.setId(shipmentId);
+        shipment.setCompany(company);
+        shipment.setStatus(ShipmentOrder.Status.DRAFT);
+        when(shipmentRepo.findById(shipmentId)).thenReturn(Optional.of(shipment));
+
+        ShipmentStatusUpdateDTO dto = ShipmentStatusUpdateDTO.builder()
+                .status("DRAFT")
+                .location("Entrepôt Le Havre")
+                .build();
+
+        service.updateStatus(shipmentId, dto, companyId);
+
+        ArgumentCaptor<TrackingEvent> captor = ArgumentCaptor.forClass(TrackingEvent.class);
+        verify(trackingEventRepo).save(captor.capture());
+        assertThat(captor.getValue().getDataSource()).isEqualTo(TrackingEvent.DataSource.MANUAL);
+    }
+
+    @Test
+    @DisplayName("processWebhookEvent crée un TrackingEvent marqué LIVE (push transporteur entrant)")
+    void processWebhookEvent_createsLiveTrackingEvent() {
+        ShipmentOrder shipment = new ShipmentOrder();
+        shipment.setId(UUID.randomUUID());
+        shipment.setCompany(company);
+        shipment.setStatus(ShipmentOrder.Status.BOOKED);
+        when(shipmentRepo.findByOrderNumber("EXP-2026-0001")).thenReturn(Optional.of(shipment));
+
+        service.processWebhookEvent("EXP-2026-0001", "IN_TRANSIT", "Rotterdam", "Départ hub", "DHL");
+
+        ArgumentCaptor<TrackingEvent> captor = ArgumentCaptor.forClass(TrackingEvent.class);
+        verify(trackingEventRepo).save(captor.capture());
+        assertThat(captor.getValue().getDataSource()).isEqualTo(TrackingEvent.DataSource.LIVE);
+        assertThat(captor.getValue().getSource()).isEqualTo("DHL");
     }
 
     @Test

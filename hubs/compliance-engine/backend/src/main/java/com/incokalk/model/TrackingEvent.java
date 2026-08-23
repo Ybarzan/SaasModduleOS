@@ -42,7 +42,22 @@ public class TrackingEvent {
     @Column(length = 100)
     private String source;
 
+    /** LIVE = venu d'un provider externe verifie (AviationStack/VesselAPI/Ship24) ou
+     * d'un webhook transporteur entrant. MANUAL = saisi a la main par un utilisateur
+     * via le changement de statut. Pas de valeur "SIMULATED" ici : contrairement aux
+     * adaptateurs de reservation transporteur, aucun provider de tracking ne fabrique
+     * de fausses donnees -- ils renvoient une liste vide en cas d'echec/absence de cle. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "data_source", nullable = false, length = 10)
+    @Builder.Default
+    private DataSource dataSource = DataSource.MANUAL;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    public enum DataSource {
+        LIVE,
+        MANUAL
+    }
 }

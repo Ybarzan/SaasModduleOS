@@ -208,6 +208,14 @@ const TrackingTimeline = ({ events }: { events: TrackingEvent[] }) => (
               <span className="text-xs text-ink-soft">
                 {new Date(event.eventTime).toLocaleString('fr-FR')}
               </span>
+              {event.dataSource === 'MANUAL' && (
+                <span
+                  title="Saisi manuellement, pas confirmé par un transporteur ou un flux de tracking"
+                  className="text-[10px] uppercase tracking-wide text-ink-soft/70 border border-line rounded px-1.5 py-0.5 shrink-0"
+                >
+                  Manuel
+                </span>
+              )}
             </div>
             {event.location && (
               <div className="text-sm text-ink-soft flex items-center space-x-1 mt-1">

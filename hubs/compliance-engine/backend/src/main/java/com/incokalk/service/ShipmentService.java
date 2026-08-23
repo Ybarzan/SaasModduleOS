@@ -187,6 +187,7 @@ public class ShipmentService {
                 .longitude(dto.getLongitude())
                 .description(dto.getDescription())
                 .source(dto.getSource() != null ? dto.getSource() : "manual")
+                .dataSource(TrackingEvent.DataSource.MANUAL)
                 .build();
 
         trackingEventRepo.save(event);
@@ -265,7 +266,7 @@ public class ShipmentService {
 
     @Transactional
     public TrackingEvent addTrackingEvent(ShipmentOrder shipment, String status, String location,
-                                           String description, String source) {
+                                           String description, String source, TrackingEvent.DataSource dataSource) {
         TrackingEvent event = TrackingEvent.builder()
             .shipment(shipment)
             .status(status)
@@ -273,6 +274,7 @@ public class ShipmentService {
             .description(description)
             .eventTime(LocalDateTime.now())
             .source(source)
+            .dataSource(dataSource)
             .build();
         return trackingEventRepo.save(event);
     }
@@ -285,7 +287,7 @@ public class ShipmentService {
             if (companyId == null) return;
 
             TenantContext.set(companyId);
-            addTrackingEvent(shipment, status, location, description, source);
+            addTrackingEvent(shipment, status, location, description, source, TrackingEvent.DataSource.LIVE);
 
             String oldStatus = shipment.getStatus().name();
             ShipmentOrder.Status newStatus = mapWebhookStatus(status);

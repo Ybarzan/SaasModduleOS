@@ -99,6 +99,7 @@ public class LiveTrackingService {
                     .description(update.getDescription())
                     .eventTime(update.getEventTime())
                     .source(update.getSource())
+                    .dataSource(TrackingEvent.DataSource.LIVE)
                     .build();
             trackingEventRepo.save(event);
         }

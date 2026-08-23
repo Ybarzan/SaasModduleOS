@@ -365,6 +365,7 @@ export interface TrackingEvent {
   description?: string;
   eventTime: string;
   source?: string;
+  dataSource?: 'LIVE' | 'MANUAL';
 }
 
 export interface ShipmentFormData {
