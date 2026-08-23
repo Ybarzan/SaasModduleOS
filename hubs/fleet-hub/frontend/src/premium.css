@@ -216,7 +216,7 @@
 }
 
 .logo h1 {
-  background: linear-gradient(135deg, #93bfd9 0%, #b8a5d4 50%, #93bfd9 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 50%, var(--primary) 100%);
   background-size: 200% 200%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -314,7 +314,7 @@
     radial-gradient(ellipse 80% 60% at 18% 12%, rgba(var(--primary-rgb), 0.08), transparent 55%),
     radial-gradient(ellipse 70% 50% at 85% 88%, rgba(var(--primary-2-rgb), 0.09), transparent 55%),
     radial-gradient(ellipse 40% 40% at 50% 50%, rgba(var(--primary-rgb), 0.04), transparent 60%),
-    linear-gradient(160deg, #080c14 0%, #0b0f16 40%, #0d1219 100%) !important;
+    linear-gradient(160deg, #0d0a07 0%, #14100c 40%, #191410 100%) !important;
 }
 
 /* Floating orbs behind login card */
@@ -370,7 +370,7 @@
 }
 
 .login-card h1 {
-  background: linear-gradient(135deg, #93bfd9 0%, #c4b5e0 30%, #93bfd9 60%, #b8c8e0 100%) !important;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-2) 30%, var(--primary) 60%, var(--primary-3) 100%) !important;
   background-size: 200% 200% !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
@@ -816,7 +816,7 @@ html {
 :focus-visible {
   outline: 2px solid var(--primary) !important;
   outline-offset: 3px !important;
-  border-radius: 6px !important;
+  border-radius: 0 !important;
   box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.25);
 }
 
@@ -936,7 +936,7 @@ html {
     radial-gradient(ellipse 80% 60% at 18% 12%, rgba(var(--primary-rgb), 0.05), transparent 55%),
     radial-gradient(ellipse 70% 50% at 85% 88%, rgba(var(--primary-2-rgb), 0.06), transparent 55%),
     radial-gradient(ellipse 40% 40% at 50% 50%, rgba(var(--primary-rgb), 0.025), transparent 60%),
-    linear-gradient(160deg, #eef1f5 0%, #e8ecf1 40%, #e2e7ee 100%) !important;
+    linear-gradient(160deg, #f1ece1 0%, #eae3d5 40%, #e6e0d3 100%) !important;
 }
 
 [data-theme="light"] .login-card {
@@ -958,7 +958,7 @@ html {
 }
 
 [data-theme="light"] .login-card h1 {
-  background: linear-gradient(135deg, #2c6a90 0%, #5a6d94 30%, #2c6a90 60%, #3a7ca5 100%) !important;
+  background: linear-gradient(135deg, var(--primary-3) 0%, var(--primary-2) 30%, var(--primary-3) 60%, var(--primary) 100%) !important;
   background-size: 200% 200% !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;

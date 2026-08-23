@@ -7,42 +7,43 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  /* Base */
-  --bg: #f4f6f9;
-  --bg-soft: #e9edf2;
-  --card: #ffffff;
-  --card-2: #f0f3f7;
-  --surface-alt: #e5e9ef;
-  --surface-3: #d8dee8;
+  /* Base -- palette Praxio v0.2, meme principe que le mode sombre : sable/pierre,
+     pas la creme jaune par defaut. */
+  --bg: #e6e0d3;
+  --bg-soft: #eae3d5;
+  --card: #f1ece1;
+  --card-2: #eae3d5;
+  --surface-alt: #dcd4c2;
+  --surface-3: #d3cbb8;
 
   /* Texte */
-  --text: #1a2332;
-  --text-soft: #4a5568;
-  --muted: #8896a8;
+  --text: #211a15;
+  --text-soft: #4a3f35;
+  --muted: #6b5f52;
 
   /* Bordures */
-  --border: #d1d9e4;
-  --border-strong: #b8c4d4;
+  --border: #d3cbb8;
+  --border-strong: #bcaf97;
 
-  /* Accents — légèrement plus foncés pour contraste sur fond clair */
-  --primary: #3a7ca5;
-  --primary-2: #5a6d94;
-  --primary-3: #2c6a90;
-  --primary-rgb: 58, 124, 165;
-  --primary-2-rgb: 90, 109, 148;
+  /* Accents -- terracotta (primaire) + zellige (secondaire) */
+  --primary: #bf4e2e;
+  --primary-2: #1e6b6e;
+  --primary-3: #9e3f24;
+  --primary-rgb: 191, 78, 46;
+  --primary-2-rgb: 30, 107, 110;
 
-  /* Sémantiques */
-  --green: #3d8a5a;
-  --orange: #b08830;
-  --red: #b5545a;
-  --blue: #3a70a0;
-  --purple: #5a6a9e;
+  /* Semantiques -- olive/ochre/rust */
+  --green: #6e7a4a;
+  --orange: #c08a2e;
+  --red: #a6311f;
+  --blue: #4a7a8c;
+  --purple: #8c6b7a;
 
-  --green-soft: rgba(61, 138, 90, 0.1);
-  --orange-soft: rgba(176, 136, 48, 0.1);
-  --red-soft: rgba(181, 84, 90, 0.1);
-  --blue-soft: rgba(58, 112, 160, 0.1);
-  --purple-soft: rgba(90, 106, 158, 0.1);
+  --green-soft: rgba(110, 122, 74, 0.1);
+  --orange-soft: rgba(192, 138, 46, 0.1);
+  --red-soft: rgba(166, 49, 31, 0.1);
+  --blue-soft: rgba(74, 122, 140, 0.1);
+  --purple-soft: rgba(140, 107, 122, 0.1);
 
   /* Ombres — plus subtiles sur fond clair */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -130,7 +131,7 @@
 }
 
 [data-theme="light"] .logo h1 {
-  background: linear-gradient(135deg, #2c6a90, #5a6d94, #2c6a90);
+  background: linear-gradient(135deg, var(--primary-3), var(--primary-2), var(--primary-3));
   background-size: 200% 200%;
   -webkit-background-clip: text;
   background-clip: text;

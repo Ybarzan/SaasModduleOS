@@ -1,60 +1,67 @@
 /* ==========================================================================
-   FLEET HUB — Design system « Cyber épuré »
-   Thème sombre sobre : aciers bleutés, accents doux, aucun néon criard.
-   L'esprit technique est conservé (Orbitron, mono, grille discrète).
+   FLEET HUB — Praxio v0.2 (docs/09-design-system.md du monorepo SaasModduleOS)
+   Palette medina/terracotta/zellige partagee avec compliance-engine, une
+   seule famille monospace (JetBrains Mono), coins carres. L'esprit technique
+   deja present ici (mono, grille discrète) etait deja proche de ce registre --
+   voir docs/07-integration-fleet-hub.md pour le principe d'unification.
    Toutes les classes existantes de l'app sont conservées.
    ========================================================================== */
 
 :root {
-  /* Base */
-  --bg: #0b0f16;
-  --bg-soft: #0e141d;
-  --card: #121a26;
-  --card-2: #16202e;
-  --surface-alt: #1a2434;
-  --surface-3: #202b3d;
+  /* Base -- palette Praxio v0.2 (docs/09-design-system.md du monorepo
+     SaasModduleOS), partagee avec compliance-engine pour que les deux hubs
+     se lisent comme une seule plateforme. Medina au crepuscule. */
+  --bg: #14100c;
+  --bg-soft: #191410;
+  --card: #1c1712;
+  --card-2: #241d17;
+  --surface-alt: #2a2119;
+  --surface-3: #362c22;
 
   /* Texte */
-  --text: #dbe3ee;
-  --text-soft: #a9b6c6;
-  --muted: #67758a;
+  --text: #e8e1d2;
+  --text-soft: #cfc5b2;
+  --muted: #8f8267;
 
   /* Bordures */
-  --border: #232e3f;
-  --border-strong: #32405a;
+  --border: #362c22;
+  --border-strong: #4a3c2c;
 
-  /* Accents (doux) */
-  --primary: #7db2d4;
-  --primary-2: #9aa5c8;
-  --primary-3: #5e94ba;
-  --primary-rgb: 125, 178, 212;
-  --primary-2-rgb: 154, 165, 200;
+  /* Accents -- terracotta (primaire) + zellige (secondaire) */
+  --primary: #d9683f;
+  --primary-2: #3e9194;
+  --primary-3: #b3502e;
+  --primary-rgb: 217, 104, 63;
+  --primary-2-rgb: 62, 145, 148;
 
-  /* Sémantiques (teintes douces) */
-  --green: #7fb98f;
-  --orange: #c9a86a;
-  --red: #c98b8f;
-  --blue: #6d9dc2;
-  --purple: #8f9cc4;
+  /* Semantiques -- olive/ochre/rust, meme famille chaude que l'accent */
+  --green: #96a66b;
+  --orange: #d9a24e;
+  --red: #c74d34;
+  --blue: #5e93a6;
+  --purple: #a67f94;
 
-  --green-soft: rgba(127, 185, 143, 0.1);
-  --orange-soft: rgba(201, 168, 106, 0.1);
-  --red-soft: rgba(201, 139, 143, 0.1);
-  --blue-soft: rgba(109, 157, 194, 0.1);
-  --purple-soft: rgba(143, 156, 196, 0.1);
+  --green-soft: rgba(150, 166, 107, 0.1);
+  --orange-soft: rgba(217, 162, 78, 0.1);
+  --red-soft: rgba(199, 77, 52, 0.1);
+  --blue-soft: rgba(94, 147, 166, 0.1);
+  --purple-soft: rgba(166, 127, 148, 0.1);
 
-  --radius-sm: 8px;
-  --radius: 14px;
-  --radius-lg: 20px;
+  /* Registre terminal/HUD : coins carres partout, pas de card bubbly. */
+  --radius-sm: 0px;
+  --radius: 0px;
+  --radius-lg: 0px;
 
   --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.35);
   --shadow: 0 4px 16px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.02);
   --shadow-lg: 0 24px 60px -18px rgba(0, 0, 0, 0.8);
   --shadow-primary: 0 2px 14px -6px rgba(var(--primary-rgb), 0.3);
 
-  --font: 'Inter Variable', 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Share Tech Mono', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
-  --font-display: 'Orbitron', 'Inter Variable', system-ui, sans-serif;
+  /* Une seule famille monospace pour toute l'app, comme sur compliance-engine
+     (retour utilisateur : "simpliste cybernetique", pas de duo serif/sans). */
+  --font: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  --font-display: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
 
   color-scheme: dark;
 }
@@ -156,7 +163,7 @@ h1, h2, h3 {
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 /* Scrollbar fine (Chromium/Edge) */
@@ -237,7 +244,7 @@ h1, h2, h3 {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 0;
   background: linear-gradient(135deg, var(--primary-3), var(--primary-2));
   color: #0b1220;
   box-shadow: 0 4px 14px -6px rgba(var(--primary-rgb), 0.35);
@@ -248,7 +255,7 @@ h1, h2, h3 {
   content: '';
   position: absolute;
   inset: -3px;
-  border-radius: 14px;
+  border-radius: 0;
   border: 1px solid rgba(var(--primary-rgb), 0.25);
 }
 
@@ -258,7 +265,7 @@ h1, h2, h3 {
   font-family: var(--font-display);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  background: linear-gradient(90deg, #93bfd9, #93a2c9);
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -285,7 +292,7 @@ h1, h2, h3 {
   align-items: center;
   gap: 11px;
   padding: 9px 12px;
-  border-radius: 9px;
+  border-radius: 0;
   color: var(--text-soft);
   text-decoration: none;
   font-weight: 500;
@@ -321,7 +328,7 @@ h1, h2, h3 {
   top: 8px;
   bottom: 8px;
   width: 3px;
-  border-radius: 2px;
+  border-radius: 0;
   background: var(--primary);
   box-shadow: 0 0 8px rgba(var(--primary-rgb), 0.5);
 }
@@ -343,7 +350,7 @@ h1, h2, h3 {
 .avatar {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 0;
   background: linear-gradient(135deg, var(--primary-3), var(--primary-2));
   color: #0b1220;
   display: flex;
@@ -400,7 +407,7 @@ h1, h2, h3 {
   font-family: var(--font-display);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #dbe7f3;
+  color: var(--text);
   text-shadow: 0 1px 12px rgba(var(--primary-rgb), 0.15);
 }
 
@@ -499,7 +506,7 @@ h1, h2, h3 {
 .stat-icon {
   width: 44px;
   height: 44px;
-  border-radius: 11px;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -740,7 +747,7 @@ h1, h2, h3 {
 .score-pill {
   display: inline-block;
   padding: 3px 11px;
-  border-radius: 6px;
+  border-radius: 0;
   font-weight: 700;
   font-size: 13px;
   font-variant-numeric: tabular-nums;
@@ -757,7 +764,7 @@ h1, h2, h3 {
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  border-radius: 6px;
+  border-radius: 0;
   font-size: 11.5px;
   font-weight: 700;
   font-family: var(--font-mono);
@@ -776,7 +783,7 @@ h1, h2, h3 {
 
 .badge-green { background: var(--green-soft); color: #9dcfb0; }
 .badge-orange { background: var(--orange-soft); color: #e6d3a9; }
-.badge-blue { background: var(--blue-soft); color: #93c5fd; }
+.badge-blue { background: var(--blue-soft); color: var(--primary-2); }
 .badge-red { background: var(--red-soft); color: #e8cccf; }
 .badge-darkred { background: rgba(153, 27, 27, 0.35); color: #fecaca; }
 .badge-gray { background: var(--surface-alt); color: #94a3b8; }
@@ -820,7 +827,7 @@ h1, h2, h3 {
 .btn-outline {
   background: rgba(var(--primary-rgb), 0.05);
   border: 1px solid rgba(var(--primary-rgb), 0.35);
-  color: #8fb6d2;
+  color: var(--primary-2);
 }
 
 .btn-outline:hover {
@@ -863,7 +870,7 @@ input:focus {
   display: inline-flex;
   background: var(--card-2);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 3px;
 }
 
@@ -871,7 +878,7 @@ input:focus {
   border: none;
   background: transparent;
   padding: 7px 16px;
-  border-radius: 6px;
+  border-radius: 0;
   font-weight: 650;
   cursor: pointer;
   color: var(--muted);
@@ -902,7 +909,7 @@ input:focus {
   background: var(--card);
   color: var(--muted);
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
   font-weight: 650;
   font-size: 13px;
@@ -1009,7 +1016,7 @@ select:focus {
 .form-select {
   padding: 5px 8px;
   font-size: 13px;
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 .admin-actions {
@@ -1041,7 +1048,7 @@ select:focus {
   word-break: break-all;
   overflow-wrap: anywhere;
   font-family: var(--font-mono);
-  color: #8fb6d2;
+  color: var(--primary-2);
 }
 
 .webhook-info {
@@ -1132,7 +1139,7 @@ select:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16px;
+  border-radius: 0;
   background: linear-gradient(135deg, var(--primary-3), var(--primary-2));
   color: #0b1220;
   box-shadow: 0 4px 16px -6px rgba(var(--primary-rgb), 0.3);
@@ -1143,7 +1150,7 @@ select:focus {
   content: '';
   position: absolute;
   inset: -4px;
-  border-radius: 18px;
+  border-radius: 0;
   border: 1px solid rgba(var(--primary-rgb), 0.25);
 }
 
@@ -1155,7 +1162,7 @@ select:focus {
   text-transform: uppercase;
   letter-spacing: 0.14em;
   font-size: 22px;
-  background: linear-gradient(90deg, #93bfd9, #93a2c9);
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -1266,7 +1273,7 @@ select:focus {
 .kpi-item {
   background: var(--surface-alt);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 12px;
   display: flex;
   flex-direction: column;
@@ -1336,7 +1343,7 @@ select:focus {
 .cost-legend-dot {
   width: 12px;
   height: 12px;
-  border-radius: 3px;
+  border-radius: 0;
   flex-shrink: 0;
 }
 
@@ -1402,7 +1409,7 @@ select:focus {
   color: var(--text);
   border: 1px solid var(--border-strong);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-  border-radius: 10px;
+  border-radius: 0;
 }
 
 .leaflet-popup-tip {
@@ -1478,10 +1485,10 @@ select:focus {
     width: 44px;
     height: 44px;
     border: none;
-    border-radius: 10px;
+    border-radius: 0;
     background: var(--card);
     border: 1px solid rgba(var(--primary-rgb), 0.4);
-    color: #8fb6d2;
+    color: var(--primary-2);
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease;
   }
@@ -1500,7 +1507,7 @@ select:focus {
     font-family: var(--font-display);
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #8fb6d2;
+    color: var(--primary-2);
   }
 
   .mobile-brand svg {
@@ -1535,7 +1542,7 @@ select:focus {
     margin-left: auto;
     background: var(--card);
     border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 9px;
+    border-radius: 0;
     color: var(--muted);
     cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
@@ -1736,7 +1743,7 @@ select:focus {
 }
 
 .ops-tile {
-  --tile-c: #8fb6d2;
+  --tile-c: var(--primary-2);
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1829,7 +1836,7 @@ select:focus {
   color: var(--muted);
   width: 30px;
   height: 30px;
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 14px;
   cursor: pointer;
 }
@@ -1850,7 +1857,7 @@ select:focus {
   padding: 12px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
 }
 
 .ov-main {
@@ -1910,7 +1917,7 @@ select:focus {
   color: var(--green);
   background: var(--green-soft);
   border: 1px solid rgba(52, 211, 153, 0.3);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 3px 10px;
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -2029,7 +2036,7 @@ select:focus {
   font-size: 12px;
   font-weight: 700;
   padding: 2px 7px;
-  border-radius: 6px;
+  border-radius: 0;
   background: var(--surface-alt);
   color: var(--text-soft);
   font-family: var(--font-mono);
@@ -2102,7 +2109,7 @@ select:focus {
 .couple-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 0;
   flex-shrink: 0;
   background: linear-gradient(135deg, var(--primary-3), var(--primary-2));
   color: #0b1220;
@@ -2246,8 +2253,8 @@ button.kpi-widget-clickable:active {
 /* ---------- Alerte info (focus) ---------- */
 .alert-info {
   background: var(--blue-soft);
-  border: 1px solid rgba(109, 157, 194, 0.3);
-  color: #b3cfe4;
+  border: 1px solid rgba(94, 147, 166, 0.3);
+  color: var(--blue);
 }
 
 .alert-close {
@@ -2293,7 +2300,7 @@ button.kpi-widget-clickable:active {
   gap: 12px;
   background: var(--surface-alt);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 10px 14px;
   font-size: 13px;
 }
@@ -2303,7 +2310,7 @@ button.kpi-widget-clickable:active {
   color: var(--primary);
   background: rgba(var(--primary-rgb), 0.1);
   border: 1px solid rgba(var(--primary-rgb), 0.3);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 2px 10px;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
@@ -2323,7 +2330,7 @@ button.kpi-widget-clickable:active {
   gap: 2px;
   padding: 16px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
   background: var(--surface-alt);
   min-width: 140px;
 }
@@ -2468,7 +2475,7 @@ button.kpi-widget-clickable:active {
   font-size: 12px;
   word-break: break-all;
   user-select: all;
-  color: #8fb6d2;
+  color: var(--primary-2);
 }
 
 /* ---------- Zone native (Capacitor) ---------- */
@@ -2519,7 +2526,7 @@ button.kpi-widget-clickable:active {
   font-family: var(--font-mono);
   font-size: 20px;
   font-weight: 800;
-  color: #93c5fd;
+  color: var(--primary-2);
   letter-spacing: 0.01em;
   margin-bottom: 4px;
 }
@@ -2566,7 +2573,7 @@ button.kpi-widget-clickable:active {
   gap: 12px;
   padding: 40px 20px;
   border: 2px dashed var(--border);
-  border-radius: 12px;
+  border-radius: 0;
   background: var(--bg-soft);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
