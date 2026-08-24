@@ -31,40 +31,43 @@ const VolumetricWeight = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-accent/10 mb-4">
             <Scale size={32} className="text-accent" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">Poids volumétrique</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Poids volumétrique
+          </h1>
           <p className="text-ink-soft max-w-xl mx-auto">Comparez poids réel vs poids volumétrique pour déterminer le poids facturable.</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Formulaire */}
-          <div className="bg-surface rounded-2xl shadow-sm border border-line p-6 space-y-5">
+          <div className="bg-surface rounded-none shadow-sm border border-line p-6 space-y-5">
             <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider">Dimensions du colis</h2>
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="text-xs text-ink-soft mb-1 block">Longueur (cm)</label>
-                <input type="number" value={length} onChange={e => setLength(Number(e.target.value))} className="w-full px-3 py-2.5 border border-line rounded-lg text-sm bg-bg text-center font-mono" />
+                <input type="number" value={length} onChange={e => setLength(Number(e.target.value))} className="w-full px-3 py-2.5 border border-line rounded-none text-sm bg-bg text-center font-mono" />
               </div>
               <div>
                 <label className="text-xs text-ink-soft mb-1 block">Largeur (cm)</label>
-                <input type="number" value={width} onChange={e => setWidth(Number(e.target.value))} className="w-full px-3 py-2.5 border border-line rounded-lg text-sm bg-bg text-center font-mono" />
+                <input type="number" value={width} onChange={e => setWidth(Number(e.target.value))} className="w-full px-3 py-2.5 border border-line rounded-none text-sm bg-bg text-center font-mono" />
               </div>
               <div>
                 <label className="text-xs text-ink-soft mb-1 block">Hauteur (cm)</label>
-                <input type="number" value={height} onChange={e => setHeight(Number(e.target.value))} className="w-full px-3 py-2.5 border border-line rounded-lg text-sm bg-bg text-center font-mono" />
+                <input type="number" value={height} onChange={e => setHeight(Number(e.target.value))} className="w-full px-3 py-2.5 border border-line rounded-none text-sm bg-bg text-center font-mono" />
               </div>
             </div>
 
             <div>
               <label className="text-xs text-ink-soft mb-1 block">Poids réel (kg)</label>
-              <input type="number" value={actualWeight} onChange={e => setActualWeight(Number(e.target.value))} className="w-full px-3 py-2.5 border border-line rounded-lg text-sm bg-bg" />
-              <input type="range" value={actualWeight} onChange={e => setActualWeight(Number(e.target.value))} className="w-full h-1.5 bg-surface-2 rounded-lg appearance-none cursor-pointer accent-accent mt-2" min="0.1" max="1000" step="0.1" />
+              <input type="number" value={actualWeight} onChange={e => setActualWeight(Number(e.target.value))} className="w-full px-3 py-2.5 border border-line rounded-none text-sm bg-bg" />
+              <input type="range" value={actualWeight} onChange={e => setActualWeight(Number(e.target.value))} className="w-full h-1.5 bg-surface-2 rounded-none appearance-none cursor-pointer accent-accent mt-2" min="0.1" max="1000" step="0.1" />
             </div>
 
             <div>
               <label className="text-xs text-ink-soft mb-1 block">Mode de transport</label>
               <div className="grid grid-cols-3 gap-2">
                 {(['AIR', 'SEA', 'ROAD'] as const).map(mode => (
-                  <button key={mode} onClick={() => setCarrierType(mode.toLowerCase() as 'air' | 'sea' | 'road')} className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${carrierType === mode.toLowerCase() ? 'bg-accent text-white' : 'bg-surface-2 text-ink-soft hover:bg-surface-2'}`}>
+                  <button key={mode} onClick={() => setCarrierType(mode.toLowerCase() as 'air' | 'sea' | 'road')} className={`py-2.5 rounded-none text-sm font-medium transition-colors ${carrierType === mode.toLowerCase() ? 'bg-accent text-white' : 'bg-surface-2 text-ink-soft hover:bg-surface-2'}`}>
                     {mode === 'AIR' ? 'Aérien' : mode === 'SEA' ? 'Maritime' : 'Routier'}
                   </button>
                 ))}
@@ -75,21 +78,25 @@ const VolumetricWeight = () => {
 
           {/* Résultats */}
           <div className="space-y-4">
-            <div className="bg-surface rounded-2xl shadow-sm border border-line p-6">
+            <div className="relative bg-surface rounded-none shadow-sm border border-line p-6">
+              <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+              <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-br" aria-hidden="true" />
               <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-4">Comparaison</h2>
               <div className="flex items-center gap-4 mb-6">
-                <div className={`flex-1 rounded-xl p-4 text-center ${!isVolumetric ? 'bg-accent/10 border-2 border-accent/40' : 'bg-bg border border-line'}`}>
+                <div className={`flex-1 rounded-none p-4 text-center ${!isVolumetric ? 'bg-accent/10 border-2 border-accent/40' : 'bg-bg border border-line'}`}>
                   <div className="text-3xl font-bold text-ink">{actualWeight.toFixed(1)}</div>
                   <div className="text-xs text-ink-soft">kg réels</div>
                 </div>
                 <ArrowRight size={24} className="text-ink-soft flex-shrink-0" />
-                <div className={`flex-1 rounded-xl p-4 text-center ${isVolumetric ? 'bg-accent/10 border-2 border-accent/40' : 'bg-bg border border-line'}`}>
+                <div className={`flex-1 rounded-none p-4 text-center ${isVolumetric ? 'bg-accent/10 border-2 border-accent/40' : 'bg-bg border border-line'}`}>
                   <div className="text-3xl font-bold text-ink">{volumetricWeight.toFixed(1)}</div>
                   <div className="text-xs text-ink-soft">kg volumétriques</div>
                 </div>
               </div>
 
-              <div className="bg-bg rounded-xl p-4 text-center mb-4">
+              <div className="bg-bg rounded-none p-4 text-center mb-4">
                 <div className="text-xs text-ink-soft mb-1">Poids facturable</div>
                 <div className="text-4xl font-extrabold text-accent-strong">{chargeableWeight.toFixed(1)} kg</div>
                 <div className="text-xs text-ink-soft mt-1">
@@ -98,11 +105,11 @@ const VolumetricWeight = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="bg-bg rounded-lg p-3">
+                <div className="bg-bg rounded-none p-3">
                   <div className="text-[10px] text-ink-soft uppercase">Volume</div>
                   <div className="font-bold text-ink">{volumeM3.toFixed(4)} m³</div>
                 </div>
-                <div className="bg-bg rounded-lg p-3">
+                <div className="bg-bg rounded-none p-3">
                   <div className="text-[10px] text-ink-soft uppercase">Différence</div>
                   <div className={`font-bold ${isVolumetric ? 'text-warning' : 'text-success'}`}>{difference.toFixed(1)} kg</div>
                 </div>
@@ -110,7 +117,7 @@ const VolumetricWeight = () => {
             </div>
 
             {isVolumetric && (
-              <div className="bg-warning/10 border border-warning/40 rounded-xl p-4">
+              <div className="bg-warning/10 border border-warning/40 rounded-none p-4">
                 <div className="text-sm font-bold text-warning">⚠️ Poids volumétrique plus élevé</div>
                 <div className="text-xs text-warning mt-1">
                   Vous serez facturé sur le poids volumétrique ({volumetricWeight.toFixed(1)} kg) plutôt que le poids réel ({actualWeight} kg).
@@ -123,7 +130,7 @@ const VolumetricWeight = () => {
                 CO2 (même unité, même concept) -- éviter la ressaisie manuelle. */}
             <Link
               to={`/co2?weight=${Math.round(chargeableWeight)}`}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-accent-soft text-accent-strong rounded-lg text-sm font-medium hover:bg-accent/20 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-accent-soft text-accent-strong rounded-none text-sm font-medium hover:bg-accent/20 transition-colors"
             >
               <Leaf size={16} />
               Calculer l'impact CO₂ de ce poids

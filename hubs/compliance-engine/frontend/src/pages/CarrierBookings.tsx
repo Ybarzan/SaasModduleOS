@@ -113,12 +113,15 @@ const CarrierBookings = () => {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Réservations transporteurs</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Réservations transporteurs
+          </h1>
           <p className="text-ink-soft mt-1">Gérez les réservations auprès de vos transporteurs</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-accent text-white px-4 py-2.5 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+          className="flex items-center gap-2 bg-accent text-white px-4 py-2.5 rounded-none font-medium hover:bg-accent-strong transition-colors"
         >
           <Plus size={18} />
           Nouvelle réservation
@@ -128,7 +131,7 @@ const CarrierBookings = () => {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="bg-surface rounded-xl shadow-xl w-full max-w-lg mx-4 p-6">
+          <div className="bg-surface rounded-none shadow-xl w-full max-w-lg mx-4 p-6">
             <h2 className="text-lg font-semibold mb-4">Nouvelle réservation</h2>
             <div className="space-y-4">
               <div>
@@ -136,7 +139,7 @@ const CarrierBookings = () => {
                 <select
                   value={form.shipmentOrderId}
                   onChange={(e) => setForm({ ...form, shipmentOrderId: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none text-sm"
                 >
                   <option value="">Sélectionner...</option>
                   {shipments.map((s) => (
@@ -149,7 +152,7 @@ const CarrierBookings = () => {
                 <select
                   value={form.carrierId}
                   onChange={(e) => setForm({ ...form, carrierId: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none text-sm"
                 >
                   <option value="">Sélectionner...</option>
                   {carriers.filter((c) => c.active).map((c) => (
@@ -163,7 +166,7 @@ const CarrierBookings = () => {
                   type="text"
                   value={form.serviceType}
                   onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none text-sm"
                   placeholder="EXPRESS, STANDARD, ECONOMY..."
                 />
               </div>
@@ -173,7 +176,7 @@ const CarrierBookings = () => {
                   type="date"
                   value={form.requestedPickupDate}
                   onChange={(e) => setForm({ ...form, requestedPickupDate: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none text-sm"
                 />
               </div>
               <div>
@@ -182,21 +185,21 @@ const CarrierBookings = () => {
                   value={form.specialInstructions}
                   onChange={(e) => setForm({ ...form, specialInstructions: e.target.value })}
                   rows={3}
-                  className="w-full px-3 py-2 border border-line rounded-lg text-sm resize-none"
+                  className="w-full px-3 py-2 border border-line rounded-none text-sm resize-none"
                 />
               </div>
             </div>
             <div className="flex items-center justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowCreate(false)}
-                className="px-4 py-2 text-sm font-medium text-ink-soft hover:bg-surface-2 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-ink-soft hover:bg-surface-2 rounded-none transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={() => createMutation.mutate(form)}
                 disabled={createMutation.isPending || !form.shipmentOrderId || !form.carrierId}
-                className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-accent-strong disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium text-sm hover:bg-accent-strong disabled:opacity-50 transition-colors"
               >
                 {createMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
                 Créer
@@ -211,7 +214,7 @@ const CarrierBookings = () => {
         {Object.entries(STATUS_CONFIG).map(([key, cfg]) => {
           const count = bookings.filter((b) => b.carrierBookingStatus === key).length;
           return (
-            <div key={key} className="bg-surface rounded-lg border border-line p-3 text-center">
+            <div key={key} className="bg-surface rounded-none border border-line p-3 text-center">
               <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${cfg.color}`}>{cfg.label}</span>
               <p className="text-xl font-bold text-ink mt-1">{count}</p>
             </div>
@@ -228,7 +231,7 @@ const CarrierBookings = () => {
           <p>Aucune réservation</p>
         </div>
       ) : (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="bg-surface rounded-none border border-line overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -273,7 +276,7 @@ const CarrierBookings = () => {
                           <button
                             onClick={() => submitMutation.mutate(b.id)}
                             disabled={submitMutation.isPending}
-                            className="flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent-strong px-2.5 py-1.5 rounded-lg hover:bg-accent-soft transition-colors"
+                            className="flex items-center gap-1.5 text-xs font-medium text-accent hover:text-accent-strong px-2.5 py-1.5 rounded-none hover:bg-accent-soft transition-colors"
                           >
                             <Send size={14} />
                             Soumettre
@@ -283,7 +286,7 @@ const CarrierBookings = () => {
                           <button
                             onClick={() => cancelMutation.mutate(b.id)}
                             disabled={cancelMutation.isPending}
-                            className="flex items-center gap-1.5 text-xs font-medium text-danger hover:text-danger px-2.5 py-1.5 rounded-lg hover:bg-danger/10 transition-colors"
+                            className="flex items-center gap-1.5 text-xs font-medium text-danger hover:text-danger px-2.5 py-1.5 rounded-none hover:bg-danger/10 transition-colors"
                           >
                             <XCircle size={14} />
                             Annuler
@@ -311,8 +314,8 @@ const CarrierBookings = () => {
             <div className="flex items-center justify-between px-6 py-4 border-t border-line">
               <span className="text-sm text-ink-soft">Page {page + 1} / {totalPages}</span>
               <div className="flex gap-2">
-                <button disabled={page <= 0} onClick={() => setPage(page - 1)} className="px-3 py-1.5 text-sm border border-line rounded-lg disabled:opacity-50 hover:bg-bg">Précédent</button>
-                <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="px-3 py-1.5 text-sm border border-line rounded-lg disabled:opacity-50 hover:bg-bg">Suivant</button>
+                <button disabled={page <= 0} onClick={() => setPage(page - 1)} className="px-3 py-1.5 text-sm border border-line rounded-none disabled:opacity-50 hover:bg-bg">Précédent</button>
+                <button disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)} className="px-3 py-1.5 text-sm border border-line rounded-none disabled:opacity-50 hover:bg-bg">Suivant</button>
               </div>
             </div>
           )}

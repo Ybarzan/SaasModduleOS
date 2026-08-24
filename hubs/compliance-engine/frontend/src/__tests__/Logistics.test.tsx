@@ -43,7 +43,7 @@ function renderPage() {
 
 function addItem(sku: string, container: HTMLElement) {
   fireEvent.change(screen.getByPlaceholderText("SKU"), { target: { value: sku } });
-  fireEvent.click(container.querySelector("button.bg-accent.text-white.px-3.py-2.rounded-lg.hover\\:bg-accent-strong.flex-shrink-0")!);
+  fireEvent.click(container.querySelector("button.bg-accent.text-white.px-3.py-2.rounded-none.hover\\:bg-accent-strong.flex-shrink-0")!);
 }
 
 describe("Logistics page", () => {

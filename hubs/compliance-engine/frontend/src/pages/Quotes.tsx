@@ -84,7 +84,7 @@ const CountrySelect = ({
   <select
     value={value}
     onChange={(e) => onChange(e.target.value)}
-    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
   >
     <option value="">{placeholder}</option>
     {COUNTRIES.map((c) => (
@@ -174,12 +174,15 @@ const Quotes = () => {
     <div className="min-h-screen bg-bg py-12">
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-ink mb-2">Comparaison de devis</h1>
+          <h1 className="text-4xl font-bold text-ink mb-2">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Comparaison de devis
+          </h1>
           <p className="text-ink-soft">Comparez les tarifs de transport entre transporteurs</p>
         </div>
 
         {/* Search Form */}
-        <div className="bg-surface rounded-lg shadow-lg p-6 mb-8">
+        <div className="bg-surface rounded-none shadow-lg p-6 mb-8">
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <div>
@@ -209,7 +212,7 @@ const Quotes = () => {
                 <select
                   value={form.transportMode || ''}
                   onChange={(e) => setForm({ ...form, transportMode: e.target.value })}
-                  className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                  className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 >
                   {TRANSPORT_MODES.map((m) => (
                     <option key={m.value} value={m.value}>{m.label}</option>
@@ -227,7 +230,7 @@ const Quotes = () => {
                     min="0"
                     value={form.weightKg || ''}
                     onChange={(e) => setForm({ ...form, weightKg: parseFloat(e.target.value) || 0 })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                     placeholder="0"
                   />
                 </div>
@@ -241,7 +244,7 @@ const Quotes = () => {
                     min="0"
                     value={form.volumeM3 || ''}
                     onChange={(e) => setForm({ ...form, volumeM3: parseFloat(e.target.value) || 0 })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                     placeholder="0"
                   />
                 </div>
@@ -258,7 +261,7 @@ const Quotes = () => {
                   min="0"
                   value={form.goodsValue || ''}
                   onChange={(e) => setForm({ ...form, goodsValue: parseFloat(e.target.value) || 0 })}
-                  className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                  className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                   placeholder="0.00"
                 />
               </div>
@@ -270,7 +273,7 @@ const Quotes = () => {
                   type="text"
                   value={form.hsCode || ''}
                   onChange={(e) => setForm({ ...form, hsCode: e.target.value })}
-                  className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                  className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                   placeholder="Ex: 8471.30"
                 />
               </div>
@@ -283,7 +286,7 @@ const Quotes = () => {
                   <select
                     value={form.currency || 'EUR'}
                     onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                    className="w-full border border-line rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                    className="w-full border border-line rounded-none pl-9 pr-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                   >
                     {DISPLAY_CURRENCIES.map((c) => (
                       <option key={c.value} value={c.value}>{c.label}</option>
@@ -295,7 +298,7 @@ const Quotes = () => {
                 <button
                   type="submit"
                   disabled={quoteMutation.isPending}
-                  className="w-full bg-accent text-white px-6 py-2 rounded-lg hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+                  className="w-full bg-accent text-white px-6 py-2 rounded-none hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
                 >
                   {quoteMutation.isPending ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -313,7 +316,7 @@ const Quotes = () => {
         {quoteMutation.isPending && (
           <div className="grid md:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-surface rounded-lg shadow-lg p-6 animate-pulse">
+              <div key={i} className="bg-surface rounded-none shadow-lg p-6 animate-pulse">
                 <div className="flex items-center space-x-3 mb-4">
                   <div className="w-12 h-12 bg-surface-2 rounded-full" />
                   <div className="space-y-2">
@@ -354,7 +357,7 @@ const Quotes = () => {
               <button
                 onClick={() => exportPdfMutation.mutate(form)}
                 disabled={exportPdfMutation.isPending}
-                className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2 text-sm"
+                className="bg-accent text-white px-4 py-2 rounded-none hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2 text-sm"
               >
                 {exportPdfMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -367,7 +370,7 @@ const Quotes = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               {cheapest && (
-                <div className="bg-success/10 border-2 border-success/40 rounded-lg p-4 text-center">
+                <div className="bg-success/10 border-2 border-success/40 rounded-none p-4 text-center">
                   <Trophy className="h-8 w-8 text-success mx-auto mb-2" />
                   <div className="text-sm font-medium text-success">MEILLEUR TARIF</div>
                   <div className="text-lg font-bold text-success">
@@ -377,7 +380,7 @@ const Quotes = () => {
                 </div>
               )}
               {fastest && (
-                <div className="bg-accent-soft border-2 border-accent/20 rounded-lg p-4 text-center">
+                <div className="bg-accent-soft border-2 border-accent/20 rounded-none p-4 text-center">
                   <Zap className="h-8 w-8 text-accent mx-auto mb-2" />
                   <div className="text-sm font-medium text-accent-strong">LE PLUS RAPIDE</div>
                   <div className="text-lg font-bold text-accent-strong">
@@ -387,7 +390,7 @@ const Quotes = () => {
                 </div>
               )}
               {greenest && (
-                <div className="bg-success/10 border-2 border-success/40 rounded-lg p-4 text-center">
+                <div className="bg-success/10 border-2 border-success/40 rounded-none p-4 text-center">
                   <Leaf className="h-8 w-8 text-success mx-auto mb-2" />
                   <div className="text-sm font-medium text-success">LE PLUS ÉCO</div>
                   <div className="text-lg font-bold text-success">
@@ -409,10 +412,18 @@ const Quotes = () => {
                   return (
                     <div
                       key={idx}
-                      className={`bg-surface rounded-lg shadow-lg p-6 transition-shadow hover:shadow-xl ${
+                      className={`relative bg-surface rounded-none shadow-lg p-6 transition-shadow hover:shadow-xl ${
                         isCheapest ? 'ring-2 ring-success' : ''
                       }`}
                     >
+                      {isCheapest && (
+                        <>
+                          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+                          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+                          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+                          <span className="hud-corner hud-corner-br" aria-hidden="true" />
+                        </>
+                      )}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center space-x-3">
                           <div className="w-12 h-12 bg-surface-2 rounded-full flex items-center justify-center overflow-hidden">
@@ -526,7 +537,7 @@ const Quotes = () => {
 
         {/* Empty State */}
         {!quoteMutation.isPending && results.length === 0 && (
-          <div className="bg-surface rounded-lg shadow-lg p-12 text-center">
+          <div className="bg-surface rounded-none shadow-lg p-12 text-center">
             <Search className="h-16 w-16 text-ink-soft mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-ink mb-2">
               Recherchez des devis de transport

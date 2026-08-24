@@ -109,6 +109,7 @@ const LogisticsDashboard = () => {
             <Package size={32} className="text-accent" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Dashboard Logistique
           </h1>
           <p className="text-ink-soft max-w-2xl mx-auto">
@@ -117,7 +118,7 @@ const LogisticsDashboard = () => {
         </div>
 
         {/* Form */}
-        <div className="bg-surface rounded-2xl shadow-lg border border-line p-6 mb-8">
+        <div className="bg-surface rounded-none shadow-lg border border-line p-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Route */}
             <div className="space-y-4">
@@ -125,7 +126,7 @@ const LogisticsDashboard = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-ink-soft mb-1 block">Origine</label>
-                  <select value={origin} onChange={e => setOrigin(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                  <select value={origin} onChange={e => setOrigin(e.target.value)} className="w-full px-3 py-2 border rounded-none text-sm">
                     <option value="CN">Chine</option><option value="US">États-Unis</option><option value="DE">Allemagne</option>
                     <option value="JP">Japon</option><option value="MA">Maroc</option><option value="TR">Turquie</option>
                     <option value="IN">Inde</option><option value="VN">Vietnam</option><option value="FR">France</option>
@@ -133,7 +134,7 @@ const LogisticsDashboard = () => {
                 </div>
                 <div>
                   <label className="text-xs text-ink-soft mb-1 block">Destination</label>
-                  <select value={destination} onChange={e => setDestination(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                  <select value={destination} onChange={e => setDestination(e.target.value)} className="w-full px-3 py-2 border rounded-none text-sm">
                     <option value="FR">France</option><option value="US">États-Unis</option><option value="DE">Allemagne</option>
                     <option value="GB">Royaume-Uni</option><option value="ES">Espagne</option><option value="IT">Italie</option>
                     <option value="NL">Pays-Bas</option><option value="BE">Belgique</option>
@@ -146,15 +147,15 @@ const LogisticsDashboard = () => {
             <div className="space-y-4">
               <h3 className="font-bold text-ink flex items-center gap-2"><Box size={18} /> Résumé</h3>
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-accent-soft rounded-lg p-3 text-center">
+                <div className="bg-accent-soft rounded-none p-3 text-center">
                   <div className="text-2xl font-bold text-accent-strong">{items.length}</div>
                   <div className="text-xs text-ink-soft">Articles</div>
                 </div>
-                <div className="bg-success/10 rounded-lg p-3 text-center">
+                <div className="bg-success/10 rounded-none p-3 text-center">
                   <div className="text-2xl font-bold text-success">{totalWeight.toFixed(1)}</div>
                   <div className="text-xs text-ink-soft">kg</div>
                 </div>
-                <div className="bg-accent/10 rounded-lg p-3 text-center">
+                <div className="bg-accent/10 rounded-none p-3 text-center">
                   <div className="text-2xl font-bold text-accent-strong">{totalVolume.toFixed(3)}</div>
                   <div className="text-xs text-ink-soft">m³</div>
                 </div>
@@ -168,7 +169,7 @@ const LogisticsDashboard = () => {
             {items.length > 0 && (
               <div className="space-y-2 mb-4">
                 {items.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 bg-surface-2 rounded-lg p-3 text-sm">
+                  <div key={idx} className="flex items-center gap-3 bg-surface-2 rounded-none p-3 text-sm">
                     <span className="text-ink-soft w-6 text-center">{idx + 1}</span>
                     <span className="font-medium flex-1">{item.sku}</span>
                     <span className="text-ink-soft">{item.quantity}×</span>
@@ -182,17 +183,17 @@ const LogisticsDashboard = () => {
               </div>
             )}
             <div className="flex gap-2 items-end flex-wrap">
-              <input placeholder="SKU" value={newItem.sku} onChange={e => setNewItem({ ...newItem, sku: e.target.value })} className="flex-1 min-w-[120px] px-3 py-2 border rounded-lg text-sm" />
-              <input type="number" placeholder="L" value={newItem.lengthCm} onChange={e => setNewItem({ ...newItem, lengthCm: Number(e.target.value) })} className="w-20 px-2 py-2 border rounded-lg text-sm" />
-              <input type="number" placeholder="l" value={newItem.widthCm} onChange={e => setNewItem({ ...newItem, widthCm: Number(e.target.value) })} className="w-20 px-2 py-2 border rounded-lg text-sm" />
-              <input type="number" placeholder="H" value={newItem.heightCm} onChange={e => setNewItem({ ...newItem, heightCm: Number(e.target.value) })} className="w-20 px-2 py-2 border rounded-lg text-sm" />
-              <input type="number" placeholder="kg" value={newItem.weightKg} onChange={e => setNewItem({ ...newItem, weightKg: Number(e.target.value) })} className="w-20 px-2 py-2 border rounded-lg text-sm" />
-              <input type="number" placeholder="Qté" value={newItem.quantity} onChange={e => setNewItem({ ...newItem, quantity: Math.max(1, Number(e.target.value)) })} className="w-16 px-2 py-2 border rounded-lg text-sm" />
-              <button onClick={addItem} className="bg-accent text-white px-3 py-2 rounded-lg hover:bg-accent-strong flex-shrink-0"><Plus size={18} /></button>
+              <input placeholder="SKU" value={newItem.sku} onChange={e => setNewItem({ ...newItem, sku: e.target.value })} className="flex-1 min-w-[120px] px-3 py-2 border rounded-none text-sm" />
+              <input type="number" placeholder="L" value={newItem.lengthCm} onChange={e => setNewItem({ ...newItem, lengthCm: Number(e.target.value) })} className="w-20 px-2 py-2 border rounded-none text-sm" />
+              <input type="number" placeholder="l" value={newItem.widthCm} onChange={e => setNewItem({ ...newItem, widthCm: Number(e.target.value) })} className="w-20 px-2 py-2 border rounded-none text-sm" />
+              <input type="number" placeholder="H" value={newItem.heightCm} onChange={e => setNewItem({ ...newItem, heightCm: Number(e.target.value) })} className="w-20 px-2 py-2 border rounded-none text-sm" />
+              <input type="number" placeholder="kg" value={newItem.weightKg} onChange={e => setNewItem({ ...newItem, weightKg: Number(e.target.value) })} className="w-20 px-2 py-2 border rounded-none text-sm" />
+              <input type="number" placeholder="Qté" value={newItem.quantity} onChange={e => setNewItem({ ...newItem, quantity: Math.max(1, Number(e.target.value)) })} className="w-16 px-2 py-2 border rounded-none text-sm" />
+              <button onClick={addItem} className="bg-accent text-white px-3 py-2 rounded-none hover:bg-accent-strong flex-shrink-0"><Plus size={18} /></button>
             </div>
           </div>
 
-          <button onClick={calculateAll} disabled={loadingPack || items.length === 0} className="mt-6 w-full bg-gradient-to-r from-accent to-accent-strong text-white py-3 px-6 rounded-xl font-bold hover:from-accent-strong hover:to-accent-strong disabled:opacity-50 flex items-center justify-center gap-2 text-lg">
+          <button onClick={calculateAll} disabled={loadingPack || items.length === 0} className="mt-6 w-full bg-gradient-to-r from-accent to-accent-strong text-white py-3 px-6 rounded-none font-bold hover:from-accent-strong hover:to-accent-strong disabled:opacity-50 flex items-center justify-center gap-2 text-lg">
             {(loadingPack || loadingTruck) ? <><Loader2 className="animate-spin" /> Calcul en cours...</> : <>Calculer le packaging & les tarifs</>}
           </button>
         </div>
@@ -201,20 +202,24 @@ const LogisticsDashboard = () => {
         {packagingResult && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Packaging */}
-            <div className="bg-surface rounded-2xl shadow-lg border border-line p-6">
+            <div className="relative bg-surface rounded-none shadow-lg border border-line p-6">
+              <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+              <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-br" aria-hidden="true" />
               <h3 className="font-bold text-ink text-lg mb-4 flex items-center gap-2"><Package size={20} className="text-accent" /> Résultat packaging</h3>
               <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="bg-accent-soft rounded-xl p-4 text-center">
+                <div className="bg-accent-soft rounded-none p-4 text-center">
                   <div className="text-3xl font-bold text-accent-strong">{packagingResult.totalBoxes}</div>
                   <div className="text-sm text-ink-soft">Colis</div>
                 </div>
-                <div className="bg-success/10 rounded-xl p-4 text-center">
+                <div className="bg-success/10 rounded-none p-4 text-center">
                   <div className="text-3xl font-bold text-success">{packagingResult.utilizationPercent}%</div>
                   <div className="text-sm text-ink-soft">Remplissage</div>
                 </div>
               </div>
               {packagingResult.boxes.map((box: PackedBox, idx: number) => (
-                <div key={idx} className="border border-line rounded-lg p-3 mb-2">
+                <div key={idx} className="border border-line rounded-none p-3 mb-2">
                   <div className="flex justify-between items-center">
                     <span className="font-medium text-sm">{box.boxRef}</span>
                     <span className="text-sm text-ink-soft">{box.lengthCm}×{box.widthCm}×{box.heightCm}cm</span>
@@ -229,7 +234,7 @@ const LogisticsDashboard = () => {
                 </div>
               ))}
               {(packagingResult.unpackedItems?.length ?? 0) > 0 && (
-                <div className="mt-3 p-3 bg-danger/10 rounded-lg text-sm text-danger">
+                <div className="mt-3 p-3 bg-danger/10 rounded-none text-sm text-danger">
                   ⚠️ {packagingResult.unpackedItems?.length} article(s) non placé(s)
                 </div>
               )}
@@ -237,12 +242,12 @@ const LogisticsDashboard = () => {
 
             {/* Tarifs transport */}
             {truckingResult && (
-              <div className="bg-surface rounded-2xl shadow-lg border border-line p-6">
+              <div className="bg-surface rounded-none shadow-lg border border-line p-6">
                 <h3 className="font-bold text-ink text-lg mb-4 flex items-center gap-2"><Truck size={20} className="text-success" /> Tarifs transport</h3>
                 <p className="text-sm text-ink-soft mb-4">{truckingResult.estimatedPallets} palette{truckingResult.estimatedPallets > 1 ? 's' : ''} — {truckingResult.totalWeightKg} kg — {truckingResult.totalVolumeM3} m³</p>
                 <div className="space-y-3">
                   {truckingResult.options.map((opt: TruckOption) => (
-                    <div key={opt.mode} className={`rounded-xl p-4 ${opt.recommended ? 'bg-success/10 border-2 border-success/40' : 'bg-surface-2 border border-line'}`}>
+                    <div key={opt.mode} className={`rounded-none p-4 ${opt.recommended ? 'bg-success/10 border-2 border-success/40' : 'bg-surface-2 border border-line'}`}>
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="flex items-center gap-2">

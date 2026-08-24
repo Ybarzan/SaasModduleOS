@@ -174,29 +174,32 @@ const CustomsDashboard = () => {
     { id: 'rates' as const, label: 'Taux TVA par pays', icon: Globe },
   ];
 
-  const inputClass = 'w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm';
-  const selectClass = 'w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface';
+  const inputClass = 'w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm';
+  const selectClass = 'w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface';
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Douanes & Réglementation</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Douanes & Réglementation
+          </h1>
           <p className="text-ink-soft mt-1">Calcul de droits, TVA et accords commerciaux</p>
         </div>
-        <div className="flex items-center gap-2 bg-accent-soft text-accent-strong px-3 py-1.5 rounded-lg">
+        <div className="flex items-center gap-2 bg-accent-soft text-accent-strong px-3 py-1.5 rounded-none">
           <Shield size={16} />
           <span className="text-sm font-medium">Données TARIC 2026</span>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-surface-2 p-1 rounded-lg mb-8">
+      <div className="flex gap-1 bg-surface-2 p-1 rounded-none mb-8">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex-1 justify-center ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-none text-sm font-medium transition-colors flex-1 justify-center ${
               activeTab === id
                 ? 'bg-surface text-accent shadow-sm'
                 : 'text-ink-soft hover:text-ink'
@@ -211,7 +214,7 @@ const CustomsDashboard = () => {
       {/* Section 1: Simulateur de droits */}
       {activeTab === 'duty' && (
         <div className="grid lg:grid-cols-2 gap-6">
-          <div className="bg-surface rounded-xl border border-line p-6 space-y-5">
+          <div className="bg-surface rounded-none border border-line p-6 space-y-5">
             <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider">Paramètres</h2>
 
             <div>
@@ -287,7 +290,7 @@ const CustomsDashboard = () => {
             <button
               onClick={handleDutyCalculate}
               disabled={dutyMutation.isPending || tariffMutation.isPending}
-              className="w-full bg-accent text-white px-4 py-2.5 rounded-lg font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-accent text-white px-4 py-2.5 rounded-none font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {(dutyMutation.isPending || tariffMutation.isPending) && <Loader2 size={16} className="animate-spin" />}
               <Calculator size={16} />
@@ -298,16 +301,20 @@ const CustomsDashboard = () => {
           <div className="space-y-4">
             {dutyResult ? (
               <>
-                <div className="bg-surface rounded-xl border border-line p-6">
+                <div className="relative bg-surface rounded-none border border-line p-6">
+                  <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-br" aria-hidden="true" />
                   <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-4">Résultat</h2>
                   <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="bg-accent-soft rounded-xl p-4 text-center">
+                    <div className="bg-accent-soft rounded-none p-4 text-center">
                       <div className="text-3xl font-bold text-accent-strong">
                         {dutyResult.dutyRate.toFixed(1)}%
                       </div>
                       <div className="text-xs text-ink-soft">Taux appliqué</div>
                     </div>
-                    <div className="bg-success/10 rounded-xl p-4 text-center">
+                    <div className="bg-success/10 rounded-none p-4 text-center">
                       <div className="text-3xl font-bold text-success">
                         {formatEur(dutyResult.dutyAmount)}
                       </div>
@@ -316,7 +323,7 @@ const CustomsDashboard = () => {
                   </div>
 
                   {dutyResult.isPrefential && dutyResult.savings > 0 && (
-                    <div className="mb-4 bg-success/10 border border-success/40 rounded-lg px-4 py-3 flex items-center gap-3">
+                    <div className="mb-4 bg-success/10 border border-success/40 rounded-none px-4 py-3 flex items-center gap-3">
                       <div className="flex items-center gap-1.5">
                         <Check size={16} className="text-success" />
                         <span className="text-sm font-semibold text-success">Préférentiel</span>
@@ -352,7 +359,7 @@ const CustomsDashboard = () => {
                 </div>
 
                 {tariffResult?.availableAgreements && tariffResult.availableAgreements.length > 0 && (
-                  <div className="bg-surface rounded-xl border border-line p-6">
+                  <div className="bg-surface rounded-none border border-line p-6">
                     <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-3">Accords disponibles</h2>
                     <div className="space-y-2">
                       {tariffResult.availableAgreements.map((agreement) => (
@@ -367,14 +374,14 @@ const CustomsDashboard = () => {
                 )}
 
                 {dutyResult.notes && (
-                  <div className="bg-bg border border-line rounded-xl p-4 flex items-start gap-3">
+                  <div className="bg-bg border border-line rounded-none p-4 flex items-start gap-3">
                     <Info size={18} className="text-ink-soft mt-0.5 flex-shrink-0" />
                     <p className="text-sm text-ink-soft">{dutyResult.notes}</p>
                   </div>
                 )}
               </>
             ) : (
-              <div className="bg-surface rounded-xl border border-line p-12 text-center">
+              <div className="bg-surface rounded-none border border-line p-12 text-center">
                 <Calculator size={32} className="mx-auto mb-3 text-ink-soft" />
                 <p className="text-sm text-ink-soft">Remplissez le formulaire pour calculer les droits de douane</p>
               </div>
@@ -386,7 +393,7 @@ const CustomsDashboard = () => {
       {/* Section 2: Simulateur TVA */}
       {activeTab === 'vat' && (
         <div className="grid lg:grid-cols-2 gap-6">
-          <div className="bg-surface rounded-xl border border-line p-6 space-y-5">
+          <div className="bg-surface rounded-none border border-line p-6 space-y-5">
             <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider">Paramètres TVA</h2>
 
             <div className="grid grid-cols-2 gap-4">
@@ -488,7 +495,7 @@ const CustomsDashboard = () => {
             <button
               onClick={handleVatCalculate}
               disabled={vatMutation.isPending}
-              className="w-full bg-accent text-white px-4 py-2.5 rounded-lg font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+              className="w-full bg-accent text-white px-4 py-2.5 rounded-none font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {vatMutation.isPending && <Loader2 size={16} className="animate-spin" />}
               <Calculator size={16} />
@@ -499,16 +506,16 @@ const CustomsDashboard = () => {
           <div className="space-y-4">
             {vatResult ? (
               <>
-                <div className="bg-surface rounded-xl border border-line p-6">
+                <div className="bg-surface rounded-none border border-line p-6">
                   <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-4">Résultat TVA</h2>
                   <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="bg-accent-soft rounded-xl p-4 text-center">
+                    <div className="bg-accent-soft rounded-none p-4 text-center">
                       <div className="text-3xl font-bold text-accent-strong">
                         {formatEur(vatResult.vatAmount)}
                       </div>
                       <div className="text-xs text-ink-soft">Montant TVA</div>
                     </div>
-                    <div className="bg-success/10 rounded-xl p-4 text-center">
+                    <div className="bg-success/10 rounded-none p-4 text-center">
                       <div className="text-3xl font-bold text-success">
                         {vatResult.vatRate.toFixed(1)}%
                       </div>
@@ -526,13 +533,13 @@ const CustomsDashboard = () => {
                       <span className="font-medium">{vatResult.regime}</span>
                     </div>
                     {vatResult.reverseCharge && (
-                      <div className="flex items-center gap-2 bg-warning/10 border border-warning/40 rounded-lg px-3 py-2 mt-2">
+                      <div className="flex items-center gap-2 bg-warning/10 border border-warning/40 rounded-none px-3 py-2 mt-2">
                         <ArrowRightLeft size={14} className="text-warning" />
                         <span className="text-sm font-medium text-warning">Reverse charge applicable</span>
                       </div>
                     )}
                     {vatResult.isExempt && (
-                      <div className="flex items-center gap-2 bg-success/10 border border-success/40 rounded-lg px-3 py-2 mt-2">
+                      <div className="flex items-center gap-2 bg-success/10 border border-success/40 rounded-none px-3 py-2 mt-2">
                         <Check size={14} className="text-success" />
                         <span className="text-sm font-medium text-success">Exonéré de TVA</span>
                       </div>
@@ -541,14 +548,14 @@ const CustomsDashboard = () => {
                 </div>
 
                 {vatResult.notes && (
-                  <div className="bg-bg border border-line rounded-xl p-4 flex items-start gap-3">
+                  <div className="bg-bg border border-line rounded-none p-4 flex items-start gap-3">
                     <Info size={18} className="text-ink-soft mt-0.5 flex-shrink-0" />
                     <p className="text-sm text-ink-soft">{vatResult.notes}</p>
                   </div>
                 )}
               </>
             ) : (
-              <div className="bg-surface rounded-xl border border-line p-12 text-center">
+              <div className="bg-surface rounded-none border border-line p-12 text-center">
                 <FileText size={32} className="mx-auto mb-3 text-ink-soft" />
                 <p className="text-sm text-ink-soft">Remplissez le formulaire pour calculer la TVA à l'import</p>
               </div>
@@ -559,7 +566,7 @@ const CustomsDashboard = () => {
 
       {/* Section 3: Taux de TVA par pays EU */}
       {activeTab === 'rates' && (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="bg-surface rounded-none border border-line overflow-hidden">
           <div className="px-6 py-4 border-b border-line flex items-center justify-between">
             <h2 className="text-lg font-semibold text-ink">Taux de TVA standard par pays EU</h2>
             <button

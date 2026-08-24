@@ -95,7 +95,10 @@ const TradeAgreements = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">Accords commerciaux</h1>
+        <h1 className="text-2xl font-bold text-ink">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Accords commerciaux
+        </h1>
         <p className="text-ink-soft mt-1">Accords de libre-échange et régimes préférentiels UE</p>
       </div>
 
@@ -108,7 +111,7 @@ const TradeAgreements = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher par nom, code ou pays..."
-            className="w-full pl-10 pr-4 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
           />
         </div>
         <div className="flex gap-2">
@@ -118,7 +121,7 @@ const TradeAgreements = () => {
               <button
                 key={t}
                 onClick={() => setTypeFilter(typeFilter === t ? null : t)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 py-2 rounded-none text-sm font-medium transition-colors ${
                   typeFilter === t
                     ? `${cfg.bg} ${cfg.color} ring-1 ring-current`
                     : 'bg-surface-2 text-ink-soft hover:bg-surface-2'
@@ -153,7 +156,7 @@ const TradeAgreements = () => {
             return (
               <div
                 key={agreement.id}
-                className="bg-surface rounded-xl border border-line overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-surface rounded-none border border-line overflow-hidden hover:shadow-md transition-shadow"
               >
                 {/* Card Header */}
                 <button

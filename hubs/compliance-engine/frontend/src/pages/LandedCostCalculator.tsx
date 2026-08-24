@@ -200,19 +200,22 @@ const LandedCostCalculator = () => {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Landed Cost Calculator</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Landed Cost Calculator
+          </h1>
           <p className="text-ink-soft mt-1">Calcul du coût complet débarqué</p>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab('calculate')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'calculate' ? 'bg-accent text-white' : 'bg-surface-2 text-ink-soft hover:bg-line'}`}
+            className={`px-4 py-2 rounded-none text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'calculate' ? 'bg-accent text-white' : 'bg-surface-2 text-ink-soft hover:bg-line'}`}
           >
             <Calculator size={16} /> Calculer
           </button>
           <button
             onClick={() => setActiveTab('what-if')}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'what-if' ? 'bg-accent text-white' : 'bg-surface-2 text-ink-soft hover:bg-line'}`}
+            className={`px-4 py-2 rounded-none text-sm font-medium transition-colors flex items-center gap-2 ${activeTab === 'what-if' ? 'bg-accent text-white' : 'bg-surface-2 text-ink-soft hover:bg-line'}`}
           >
             <GitCompare size={16} /> What-If
           </button>
@@ -221,9 +224,9 @@ const LandedCostCalculator = () => {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
               <Calculator size={20} className="text-accent" />
             </div>
             <div>
@@ -232,9 +235,9 @@ const LandedCostCalculator = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-warning/10 flex items-center justify-center">
               <Receipt size={20} className="text-warning" />
             </div>
             <div>
@@ -245,9 +248,9 @@ const LandedCostCalculator = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
               <BarChart3 size={20} className="text-success" />
             </div>
             <div>
@@ -265,7 +268,7 @@ const LandedCostCalculator = () => {
         {/* Left: Form */}
         <div className="lg:col-span-2">
           <div className="lg:sticky lg:top-8">
-            <div className="bg-surface rounded-xl border border-line p-6">
+            <div className="bg-surface rounded-none border border-line p-6">
               <h2 className="text-lg font-semibold text-ink mb-4">Nouveau calcul</h2>
               <form onSubmit={handleCalculate} className="space-y-4">
                 <div>
@@ -274,7 +277,7 @@ const LandedCostCalculator = () => {
                     type="text"
                     value={form.calculationName}
                     onChange={(e) => updateField('calculationName', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     placeholder="Optionnel"
                   />
                 </div>
@@ -285,7 +288,7 @@ const LandedCostCalculator = () => {
                     <select
                       value={form.originCountry}
                       onChange={(e) => updateField('originCountry', e.target.value)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     >
                       {COUNTRIES.map((c) => (
                         <option key={c.code} value={c.code}>{c.code} / {c.name}</option>
@@ -297,7 +300,7 @@ const LandedCostCalculator = () => {
                     <select
                       value={form.destinationCountry}
                       onChange={(e) => updateField('destinationCountry', e.target.value)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     >
                       {COUNTRIES.map((c) => (
                         <option key={c.code} value={c.code}>{c.code} / {c.name}</option>
@@ -312,7 +315,7 @@ const LandedCostCalculator = () => {
                     <select
                       value={form.incoterm}
                       onChange={(e) => updateField('incoterm', e.target.value)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     >
                       {INCOTERMS.map((i) => (
                         <option key={i} value={i}>{i}</option>
@@ -324,7 +327,7 @@ const LandedCostCalculator = () => {
                     <select
                       value={form.currency}
                       onChange={(e) => updateField('currency', e.target.value)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     >
                       {CURRENCIES.map((c) => (
                         <option key={c} value={c}>{c}</option>
@@ -340,7 +343,7 @@ const LandedCostCalculator = () => {
                       type="text"
                       value={form.hsCode}
                       onChange={(e) => updateField('hsCode', e.target.value)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       placeholder="ex: 620443"
                     />
                   </div>
@@ -349,7 +352,7 @@ const LandedCostCalculator = () => {
                     <select
                       value={form.transportMode}
                       onChange={(e) => updateField('transportMode', e.target.value)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     >
                       {TRANSPORT_MODES.map((m) => (
                         <option key={m} value={m}>{m === 'SEA' ? 'Maritime' : m === 'AIR' ? 'Aérien' : 'Routier'}</option>
@@ -366,7 +369,7 @@ const LandedCostCalculator = () => {
                     min="0"
                     value={form.productValue || ''}
                     onChange={(e) => updateField('productValue', parseFloat(e.target.value) || 0)}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     placeholder="0.00"
                     required
                   />
@@ -381,7 +384,7 @@ const LandedCostCalculator = () => {
                       min="0"
                       value={form.freightCost || ''}
                       onChange={(e) => updateField('freightCost', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       placeholder="0.00"
                     />
                   </div>
@@ -393,7 +396,7 @@ const LandedCostCalculator = () => {
                       min="0"
                       value={form.insuranceCost || ''}
                       onChange={(e) => updateField('insuranceCost', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       placeholder="0.00"
                     />
                   </div>
@@ -408,7 +411,7 @@ const LandedCostCalculator = () => {
                       min="0"
                       value={form.portCharges || ''}
                       onChange={(e) => updateField('portCharges', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       placeholder="0.00"
                     />
                   </div>
@@ -420,7 +423,7 @@ const LandedCostCalculator = () => {
                       min="0"
                       value={form.customsFees || ''}
                       onChange={(e) => updateField('customsFees', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       placeholder="0.00"
                     />
                   </div>
@@ -435,7 +438,7 @@ const LandedCostCalculator = () => {
                       min="0"
                       value={form.handlingFees || ''}
                       onChange={(e) => updateField('handlingFees', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       placeholder="0.00"
                     />
                   </div>
@@ -447,7 +450,7 @@ const LandedCostCalculator = () => {
                       min="0"
                       value={form.lastMileCost || ''}
                       onChange={(e) => updateField('lastMileCost', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       placeholder="0.00"
                     />
                   </div>
@@ -462,7 +465,7 @@ const LandedCostCalculator = () => {
                       min="1"
                       value={form.unitCount || ''}
                       onChange={(e) => updateField('unitCount', parseInt(e.target.value) || 1)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       placeholder="1"
                     />
                   </div>
@@ -474,7 +477,7 @@ const LandedCostCalculator = () => {
                       min="0"
                       value={form.sellingPrice || ''}
                       onChange={(e) => updateField('sellingPrice', parseFloat(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       placeholder="Optionnel"
                     />
                   </div>
@@ -486,7 +489,7 @@ const LandedCostCalculator = () => {
                     value={form.notes}
                     onChange={(e) => updateField('notes', e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm resize-none"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm resize-none"
                     placeholder="Optionnel"
                   />
                 </div>
@@ -494,7 +497,7 @@ const LandedCostCalculator = () => {
                 <button
                   type="submit"
                   disabled={calculateMutation.isPending}
-                  className="w-full px-4 py-2.5 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2.5 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {calculateMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Calculator size={16} />}
                   Calculer
@@ -509,7 +512,11 @@ const LandedCostCalculator = () => {
           {r ? (
             <>
               {/* Cost breakdown */}
-              <div className="bg-surface rounded-xl border border-line p-6">
+              <div className="relative bg-surface rounded-none border border-line p-6">
+                <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+                <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+                <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+                <span className="hud-corner hud-corner-br" aria-hidden="true" />
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <Package size={20} className="text-accent" />
@@ -519,7 +526,7 @@ const LandedCostCalculator = () => {
                     <button
                       onClick={() => shareMutation.mutate(r.id)}
                       disabled={shareMutation.isPending}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 text-accent rounded-lg text-xs font-medium hover:bg-accent/20 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-accent/10 text-accent rounded-none text-xs font-medium hover:bg-accent/20 transition-colors"
                     >
                       <Share2 size={14} />
                       Partager
@@ -527,7 +534,7 @@ const LandedCostCalculator = () => {
                   )}
                 </div>
                 {shareUrl && (
-                  <div className="mb-4 flex items-center gap-2 bg-accent/10 rounded-lg p-3">
+                  <div className="mb-4 flex items-center gap-2 bg-accent/10 rounded-none p-3">
                     <input type="text" readOnly value={shareUrl} className="flex-1 text-xs bg-transparent text-accent-strong outline-none" />
                     <button onClick={() => { navigator.clipboard.writeText(shareUrl); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="p-1 hover:bg-accent/20 rounded">
                       {copied ? <Check size={14} className="text-success" /> : <Copy size={14} className="text-accent" />}
@@ -593,7 +600,7 @@ const LandedCostCalculator = () => {
                     <span className="font-bold text-ink">{fmt(r.totalLandedCost)} {r.currency}</span>
                   </div>
                   {r.unitCount > 1 && (
-                    <div className="flex justify-between py-2 text-sm bg-accent-soft -mx-6 px-6 rounded-b-xl">
+                    <div className="flex justify-between py-2 text-sm bg-accent-soft -mx-6 px-6 rounded-none">
                       <span className="font-medium text-accent-strong">Coût par unité</span>
                       <span className="font-bold text-accent-strong">{fmt(r.totalLandedCostPerUnit)} {r.currency}</span>
                     </div>
@@ -603,7 +610,7 @@ const LandedCostCalculator = () => {
 
               {/* Margin card */}
               {r.sellingPrice > 0 && (
-                <div className="bg-surface rounded-xl border border-line p-6">
+                <div className="bg-surface rounded-none border border-line p-6">
                   <div className="flex items-center gap-2 mb-4">
                     {r.margin >= 0 ? (
                       <TrendingUp size={20} className="text-success" />
@@ -635,19 +642,19 @@ const LandedCostCalculator = () => {
                   naturellement à créer l'expédition ou l'assurer, mais rien dans
                   le produit ne le suggérait avant : le lien logique existait
                   entre les pages, pas dans l'UI. */}
-              <div className="bg-surface rounded-xl border border-line p-6">
+              <div className="bg-surface rounded-none border border-line p-6">
                 <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wide mb-3">Prochaine étape</h2>
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link
                     to="/shipments"
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong transition-colors"
                   >
                     <Truck size={16} />
                     Créer l'expédition
                   </Link>
                   <Link
                     to="/assurance-cargo"
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-accent-soft text-accent-strong rounded-lg text-sm font-medium hover:bg-accent/20 transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-accent-soft text-accent-strong rounded-none text-sm font-medium hover:bg-accent/20 transition-colors"
                   >
                     <ShieldCheck size={16} />
                     Assurer la marchandise
@@ -656,14 +663,14 @@ const LandedCostCalculator = () => {
               </div>
             </>
           ) : (
-            <div className="bg-surface rounded-xl border border-line p-12 text-center">
+            <div className="bg-surface rounded-none border border-line p-12 text-center">
               <Calculator size={40} className="mx-auto mb-3 text-ink-soft" />
               <p className="text-ink-soft">Remplissez le formulaire et cliquez sur "Calculer" pour voir les résultats</p>
             </div>
           )}
 
           {/* Previous calculations table */}
-          <div className="bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="bg-surface rounded-none border border-line overflow-hidden">
             <div className="px-6 py-4 border-b border-line">
               <h2 className="text-lg font-semibold text-ink">Calculs précédents</h2>
             </div>
@@ -738,7 +745,7 @@ const LandedCostCalculator = () => {
                           ) : (
                             <button
                               onClick={() => setDeleteConfirm(calc.id)}
-                              className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                              className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                               title="Supprimer"
                             >
                               <Trash2 size={16} />
@@ -757,11 +764,11 @@ const LandedCostCalculator = () => {
       ) : (
       /* What-If Tab */
       <div className="space-y-6">
-        <div className="bg-surface rounded-xl border border-line p-6">
+        <div className="bg-surface rounded-none border border-line p-6">
           <h2 className="text-lg font-semibold text-ink mb-4">Comparaison de scénarios</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {scenarios.map((scenario, idx) => (
-              <div key={idx} className="bg-surface-2 rounded-lg p-4 space-y-3">
+              <div key={idx} className="bg-surface-2 rounded-none p-4 space-y-3">
                 <h3 className="font-semibold text-ink-soft">{scenario.calculationName || `Scénario ${String.fromCharCode(65 + idx)}`}</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -846,19 +853,19 @@ const LandedCostCalculator = () => {
           </div>
           <div className="flex items-center gap-2 mt-4">
             {scenarios.length < 4 && (
-              <button onClick={() => setScenarios([...scenarios, { ...DEFAULT_FORM, calculationName: `Scénario ${String.fromCharCode(65 + scenarios.length)}` }])} className="px-3 py-1.5 text-sm bg-surface-2 text-ink-soft rounded-lg hover:bg-line">
+              <button onClick={() => setScenarios([...scenarios, { ...DEFAULT_FORM, calculationName: `Scénario ${String.fromCharCode(65 + scenarios.length)}` }])} className="px-3 py-1.5 text-sm bg-surface-2 text-ink-soft rounded-none hover:bg-line">
                 + Ajouter un scénario
               </button>
             )}
             {scenarios.length > 2 && (
-              <button onClick={() => setScenarios(scenarios.slice(0, -1))} className="px-3 py-1.5 text-sm bg-surface-2 text-ink-soft rounded-lg hover:bg-line">
+              <button onClick={() => setScenarios(scenarios.slice(0, -1))} className="px-3 py-1.5 text-sm bg-surface-2 text-ink-soft rounded-none hover:bg-line">
                 − Retirer
               </button>
             )}
             <button
               onClick={() => whatIfMutation.mutate(scenarios)}
               disabled={whatIfMutation.isPending}
-              className="ml-auto px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 flex items-center gap-2"
+              className="ml-auto px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 flex items-center gap-2"
             >
               {whatIfMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <GitCompare size={16} />}
               Comparer les scénarios
@@ -867,7 +874,7 @@ const LandedCostCalculator = () => {
         </div>
 
         {comparisonResults && comparisonResults.length > 0 && (
-          <div className="bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="bg-surface rounded-none border border-line overflow-hidden">
             <div className="px-6 py-4 border-b border-line">
               <h3 className="text-lg font-semibold text-ink">Résultats de la comparaison</h3>
             </div>

@@ -115,17 +115,20 @@ const HsClassification = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">Classification HS</h1>
+        <h1 className="text-2xl font-bold text-ink">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Classification HS
+        </h1>
         <p className="text-ink-soft mt-1">Classification tarifaire automatisée par intelligence artificielle</p>
       </div>
 
       {/* Suggestion form */}
-      <div className="bg-surface rounded-xl border border-line p-6 mb-8">
+      <div className="bg-surface rounded-none border border-line p-6 mb-8">
         {/* Mode toggle */}
-        <div className="flex items-center gap-1 mb-6 bg-surface-2 p-1 rounded-lg w-fit">
+        <div className="flex items-center gap-1 mb-6 bg-surface-2 p-1 rounded-none w-fit">
           <button
             onClick={() => setInputMode('text')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-none text-sm font-medium transition-colors ${
               inputMode === 'text' ? 'bg-surface text-accent-strong shadow-sm' : 'text-ink-soft hover:text-ink'
             }`}
           >
@@ -134,7 +137,7 @@ const HsClassification = () => {
           </button>
           <button
             onClick={() => setInputMode('image')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-none text-sm font-medium transition-colors ${
               inputMode === 'image' ? 'bg-surface text-accent-strong shadow-sm' : 'text-ink-soft hover:text-ink'
             }`}
           >
@@ -151,7 +154,7 @@ const HsClassification = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="w-full px-4 py-3 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm resize-none"
+                className="w-full px-4 py-3 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm resize-none"
                 placeholder="Décrivez votre produit en détail pour une classification précise..."
                 required
               />
@@ -161,7 +164,7 @@ const HsClassification = () => {
               <label className="block text-sm font-medium text-ink mb-1">Image du produit ou document</label>
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-line rounded-lg p-8 text-center cursor-pointer hover:border-accent/60 hover:bg-accent-soft/30 transition-colors"
+                className="border-2 border-dashed border-line rounded-none p-8 text-center cursor-pointer hover:border-accent/60 hover:bg-accent-soft/30 transition-colors"
               >
                 <input
                   ref={fileInputRef}
@@ -190,7 +193,7 @@ const HsClassification = () => {
             <button
               type="submit"
               disabled={activeMutation.isPending || (inputMode === 'text' ? !description.trim() : !selectedFile)}
-              className="flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-lg font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 bg-accent text-white px-5 py-2.5 rounded-none font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
             >
               {activeMutation.isPending ? (
                 <Loader2 size={18} className="animate-spin" />
@@ -218,12 +221,20 @@ const HsClassification = () => {
               return (
                 <div
                   key={s.rank}
-                  className={`rounded-xl border-2 p-5 transition-all ${
+                  className={`relative rounded-none border-2 p-5 transition-all ${
                     isTop
                       ? 'border-accent bg-accent-soft/30 shadow-md'
                       : 'border-line bg-surface'
                   }`}
                 >
+                  {isTop && (
+                    <>
+                      <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+                      <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+                      <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+                      <span className="hud-corner hud-corner-br" aria-hidden="true" />
+                    </>
+                  )}
                   {isTop && (
                     <span className="inline-block bg-accent text-white text-xs font-medium px-2 py-0.5 rounded-full mb-3">
                       Meilleure suggestion
@@ -271,7 +282,7 @@ const HsClassification = () => {
                   </div>
 
                   {isSelected ? (
-                    <div className="flex items-center gap-2 bg-success/10 text-success px-4 py-2 rounded-lg font-medium text-sm">
+                    <div className="flex items-center gap-2 bg-success/10 text-success px-4 py-2 rounded-none font-medium text-sm">
                       <CheckCircle2 size={16} />
                       Sélectionné
                     </div>
@@ -279,7 +290,7 @@ const HsClassification = () => {
                     <button
                       onClick={() => confirmMutation.mutate({ id: result.id, selectedCode: s.code })}
                       disabled={confirmMutation.isPending}
-                      className="w-full bg-accent text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-accent-strong disabled:opacity-50 transition-colors"
+                      className="w-full bg-accent text-white px-4 py-2 rounded-none font-medium text-sm hover:bg-accent-strong disabled:opacity-50 transition-colors"
                     >
                       {confirmMutation.isPending ? (
                         <Loader2 size={14} className="animate-spin mx-auto" />
@@ -296,7 +307,7 @@ const HsClassification = () => {
       )}
 
       {/* History */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-ink flex items-center gap-2">
             <Clock size={20} className="text-ink-soft" />
@@ -309,7 +320,7 @@ const HsClassification = () => {
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               placeholder="Filtrer par description..."
-              className="w-full pl-9 pr-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full pl-9 pr-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
             />
           </div>
         </div>

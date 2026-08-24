@@ -125,14 +125,17 @@ const RateComparison = () => {
     <div className="min-h-screen bg-bg py-12">
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-ink mb-2">Comparateur de tarifs multi-transporteurs</h1>
+          <h1 className="text-4xl font-bold text-ink mb-2">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Comparateur de tarifs multi-transporteurs
+          </h1>
           <p className="text-ink-soft">
             Comparez les tarifs de vos transporteurs pour un trajet donné et trouvez la meilleure option
           </p>
         </div>
 
         {/* Search Form */}
-        <div className="bg-surface rounded-lg shadow-lg p-6 mb-8">
+        <div className="bg-surface rounded-none shadow-lg p-6 mb-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
@@ -140,7 +143,7 @@ const RateComparison = () => {
                 <select
                   value={form.originCountry}
                   onChange={(e) => setForm({ ...form, originCountry: e.target.value })}
-                  className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                  className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 >
                   <option value="">Sélectionner...</option>
                   {COUNTRIES.map((c) => (
@@ -158,7 +161,7 @@ const RateComparison = () => {
                 <select
                   value={form.destinationCountry}
                   onChange={(e) => setForm({ ...form, destinationCountry: e.target.value })}
-                  className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                  className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 >
                   <option value="">Sélectionner...</option>
                   {COUNTRIES.map((c) => (
@@ -172,7 +175,7 @@ const RateComparison = () => {
                 <select
                   value={form.transportMode}
                   onChange={(e) => setForm({ ...form, transportMode: e.target.value })}
-                  className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                  className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                 >
                   <option value="">Sélectionner...</option>
                   {TRANSPORT_MODES.map((m) => (
@@ -201,7 +204,7 @@ const RateComparison = () => {
                     min="0"
                     value={form.weightKg}
                     onChange={(e) => setForm({ ...form, weightKg: e.target.value })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                     placeholder="Ex: 100"
                   />
                 </div>
@@ -213,7 +216,7 @@ const RateComparison = () => {
                     min="0"
                     value={form.volumeM3}
                     onChange={(e) => setForm({ ...form, volumeM3: e.target.value })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                     placeholder="Ex: 2.5"
                   />
                 </div>
@@ -223,7 +226,7 @@ const RateComparison = () => {
             <div className="flex items-center space-x-4">
               <button
                 type="submit"
-                className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent-strong transition-colors flex items-center space-x-2 font-medium"
+                className="bg-accent text-white px-6 py-3 rounded-none hover:bg-accent-strong transition-colors flex items-center space-x-2 font-medium"
               >
                 <Filter size={20} />
                 <span>Comparer les tarifs</span>
@@ -231,7 +234,7 @@ const RateComparison = () => {
               <button
                 type="button"
                 onClick={clearForm}
-                className="text-ink-soft hover:text-ink px-4 py-2 border border-line rounded-lg transition-colors"
+                className="text-ink-soft hover:text-ink px-4 py-2 border border-line rounded-none transition-colors"
               >
                 <X size={18} className="mr-1" />
                 Effacer
@@ -263,7 +266,7 @@ const RateComparison = () => {
             <button
               onClick={() => exportPdfMutation.mutate()}
               disabled={exportPdfMutation.isPending}
-              className="bg-surface border border-line text-ink px-4 py-2 rounded-lg hover:bg-bg transition-colors flex items-center space-x-2 text-sm font-medium shadow-sm disabled:opacity-50"
+              className="bg-surface border border-line text-ink px-4 py-2 rounded-none hover:bg-bg transition-colors flex items-center space-x-2 text-sm font-medium shadow-sm disabled:opacity-50"
             >
               {exportPdfMutation.isPending ? (
                 <Loader2 size={16} className="animate-spin" />
@@ -289,7 +292,7 @@ const RateComparison = () => {
         )}
 
         {comparison && comparison.length === 0 && form.originCountry && (
-          <div className="bg-surface rounded-lg shadow-lg p-12 text-center">
+          <div className="bg-surface rounded-none shadow-lg p-12 text-center">
             <AlertTriangle className="h-16 w-16 text-warning mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-ink mb-2">Aucun tarif trouvé</h3>
             <p className="text-ink-soft mb-6">
@@ -302,7 +305,7 @@ const RateComparison = () => {
         )}
 
         {activeCarriers.length === 0 && !comparison && (
-          <div className="bg-surface rounded-lg shadow-lg p-12 text-center">
+          <div className="bg-surface rounded-none shadow-lg p-12 text-center">
             <Truck className="h-16 w-16 text-ink-soft mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-ink mb-2">Aucun transporteur configuré</h3>
             <p className="text-ink-soft mb-6">
@@ -327,7 +330,15 @@ const RateCard = ({ result, rank, expandedId, onToggleExpand }: RateCardProps) =
   const isBest = rank === 1;
 
   return (
-    <div className={`bg-surface rounded-lg shadow-lg p-6 ${isBest ? 'ring-2 ring-warning' : ''} transition-shadow hover:shadow-xl`}>
+    <div className={`relative bg-surface rounded-none shadow-lg p-6 ${isBest ? 'ring-2 ring-warning' : ''} transition-shadow hover:shadow-xl`}>
+      {isBest && (
+        <>
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
+        </>
+      )}
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
@@ -355,7 +366,7 @@ const RateCard = ({ result, rank, expandedId, onToggleExpand }: RateCardProps) =
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-bg rounded-lg">
+      <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-bg rounded-none">
         <div className="text-center">
           <div className="text-2xl font-bold text-ink">{result.transitDaysAvg} j</div>
           <div className="text-xs text-ink-soft">Délai moyen</div>

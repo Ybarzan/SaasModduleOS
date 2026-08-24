@@ -192,7 +192,10 @@ const Carriers = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-ink mb-2">Transporteurs</h1>
+            <h1 className="text-4xl font-bold text-ink mb-2">
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
+              Transporteurs
+            </h1>
             <p className="text-ink-soft">Gérez vos compagnies de transport</p>
           </div>
           <div className="flex items-center gap-3">
@@ -210,21 +213,21 @@ const Carriers = () => {
                   toast.success('Export téléchargé');
                 } catch { toast.error('Erreur export'); }
               }}
-              className="border border-line text-ink-soft px-4 py-2 rounded-lg hover:bg-surface-2 transition-colors flex items-center space-x-2"
+              className="border border-line text-ink-soft px-4 py-2 rounded-none hover:bg-surface-2 transition-colors flex items-center space-x-2"
             >
               <Download size={18} />
               <span>Exporter</span>
             </button>
             <button
               onClick={() => setShowImport(true)}
-              className="border border-line text-ink-soft px-4 py-2 rounded-lg hover:bg-surface-2 transition-colors flex items-center space-x-2"
+              className="border border-line text-ink-soft px-4 py-2 rounded-none hover:bg-surface-2 transition-colors flex items-center space-x-2"
             >
               <Upload size={18} />
               <span>Importer CSV</span>
             </button>
             <button
               onClick={openCreate}
-              className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-strong transition-colors flex items-center space-x-2 tap-target"
+              className="bg-accent text-white px-4 py-2 rounded-none hover:bg-accent-strong transition-colors flex items-center space-x-2 tap-target"
             >
               <Plus size={20} />
               <span>Ajouter un transporteur</span>
@@ -233,7 +236,7 @@ const Carriers = () => {
         </div>
 
         {carriers.length === 0 ? (
-          <div className="bg-surface rounded-lg shadow-lg p-12 text-center">
+          <div className="bg-surface rounded-none shadow-lg p-12 text-center">
             <Truck className="h-16 w-16 text-ink-soft mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-ink-soft mb-2">Aucun transporteur</h3>
             <p className="text-ink-soft mb-6">
@@ -241,7 +244,7 @@ const Carriers = () => {
             </p>
             <button
               onClick={openCreate}
-              className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent-strong transition-colors inline-flex items-center space-x-2"
+              className="bg-accent text-white px-6 py-3 rounded-none hover:bg-accent-strong transition-colors inline-flex items-center space-x-2"
             >
               <Plus size={20} />
               <span>Ajouter un transporteur</span>
@@ -254,7 +257,7 @@ const Carriers = () => {
               return (
                 <div
                   key={carrier.id}
-                  className="bg-surface rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow"
+                  className="bg-surface rounded-none shadow-lg p-6 hover:shadow-xl transition-shadow"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center space-x-3">
@@ -326,14 +329,14 @@ const Carriers = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => openEdit(carrier)}
-                        className="p-2 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-lg transition-colors"
+                        className="p-2 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-none transition-colors"
                         title="Modifier"
                       >
                         <Pencil size={16} />
                       </button>
                       <button
                         onClick={() => setDeleteId(carrier.id)}
-                        className="p-2 text-ink-soft hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                        className="p-2 text-ink-soft hover:text-danger hover:bg-danger/10 rounded-none transition-colors"
                         title="Supprimer"
                       >
                         <Trash2 size={16} />
@@ -347,7 +350,7 @@ const Carriers = () => {
         )}
 
         {!Array.isArray(data) && totalPages > 1 && (
-          <div className="bg-surface rounded-lg shadow-lg mt-4 py-3">
+          <div className="bg-surface rounded-none shadow-lg mt-4 py-3">
             <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
           </div>
         )}
@@ -355,7 +358,7 @@ const Carriers = () => {
         {/* Create/Edit Modal */}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-surface rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="bg-surface rounded-none shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <h2 className="text-xl font-bold text-ink mb-6">
                   {editing ? 'Modifier le transporteur' : 'Ajouter un transporteur'}
@@ -367,7 +370,7 @@ const Carriers = () => {
                       type="text"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       placeholder="Nom du transporteur"
                     />
                   </div>
@@ -377,7 +380,7 @@ const Carriers = () => {
                       type="text"
                       value={form.code}
                       onChange={(e) => setForm({ ...form, code: e.target.value })}
-                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       placeholder="Ex: DHL, FedEx..."
                     />
                   </div>
@@ -394,7 +397,7 @@ const Carriers = () => {
                             key={m.value}
                             type="button"
                             onClick={() => toggleMode(m.value)}
-                            className={`inline-flex items-center space-x-2 px-3 py-2 rounded-lg border-2 transition-colors ${
+                            className={`inline-flex items-center space-x-2 px-3 py-2 rounded-none border-2 transition-colors ${
                               selected
                                 ? 'border-accent bg-accent-soft text-accent-strong'
                                 : 'border-line text-ink-soft hover:border-line'
@@ -412,7 +415,7 @@ const Carriers = () => {
                     <select
                       value={form.country || ''}
                       onChange={(e) => setForm({ ...form, country: e.target.value })}
-                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                     >
                       <option value="">Sélectionner un pays</option>
                       {COUNTRIES.map((c) => (
@@ -426,7 +429,7 @@ const Carriers = () => {
                       type="text"
                       value={form.contactName || ''}
                       onChange={(e) => setForm({ ...form, contactName: e.target.value })}
-                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       placeholder="Nom du contact"
                     />
                   </div>
@@ -437,7 +440,7 @@ const Carriers = () => {
                         type="email"
                         value={form.contactEmail || ''}
                         onChange={(e) => setForm({ ...form, contactEmail: e.target.value })}
-                        className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                         placeholder="email@exemple.com"
                       />
                     </div>
@@ -447,7 +450,7 @@ const Carriers = () => {
                         type="tel"
                         value={form.contactPhone || ''}
                         onChange={(e) => setForm({ ...form, contactPhone: e.target.value })}
-                        className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                         placeholder="+33 1 23 45 67 89"
                       />
                     </div>
@@ -458,7 +461,7 @@ const Carriers = () => {
                       type="url"
                       value={form.logoUrl || ''}
                       onChange={(e) => setForm({ ...form, logoUrl: e.target.value })}
-                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       placeholder="https://..."
                     />
                   </div>
@@ -466,14 +469,14 @@ const Carriers = () => {
                     <button
                       type="button"
                       onClick={closeModal}
-                      className="px-4 py-2 text-ink-soft bg-surface-2 rounded-lg hover:bg-line transition-colors"
+                      className="px-4 py-2 text-ink-soft bg-surface-2 rounded-none hover:bg-line transition-colors"
                     >
                       Annuler
                     </button>
                     <button
                       type="submit"
                       disabled={createMutation.isPending || updateMutation.isPending}
-                      className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
+                      className="px-4 py-2 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
                     >
                       {(createMutation.isPending || updateMutation.isPending) && (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -490,7 +493,7 @@ const Carriers = () => {
         {/* Delete Confirmation */}
         {deleteId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-surface rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="bg-surface rounded-none shadow-xl w-full max-w-md mx-4 p-6">
               <h3 className="text-lg font-bold text-ink mb-4">Confirmer la suppression</h3>
               <p className="text-ink-soft mb-6">
                 Êtes-vous sûr de vouloir supprimer ce transporteur ? Cette action est irréversible.
@@ -498,14 +501,14 @@ const Carriers = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setDeleteId(null)}
-                  className="px-4 py-2 text-ink-soft bg-surface-2 rounded-lg hover:bg-line transition-colors"
+                  className="px-4 py-2 text-ink-soft bg-surface-2 rounded-none hover:bg-line transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={() => deleteMutation.mutate(deleteId)}
                   disabled={deleteMutation.isPending}
-                  className="px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  className="px-4 py-2 bg-danger text-white rounded-none hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
                 >
                   {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>Supprimer</span>
