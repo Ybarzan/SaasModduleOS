@@ -153,4 +153,26 @@ class FleetHubConfigServiceTest {
         assertThat(result).isFalse();
         assertThat(existing.getLastError()).isEqualTo("Connexion refusée");
     }
+
+    @Test
+    @DisplayName("listVehicles : délègue au client pour la config appartenant à l'entreprise")
+    void listVehicles_delegatesToClient() {
+        FleetHubConfig existing = FleetHubConfig.builder().id(configId).company(company).build();
+        when(configRepo.findByIdAndCompanyId(configId, companyId)).thenReturn(Optional.of(existing));
+        FleetHubVehicle vehicle = FleetHubVehicle.builder().registration("AB-123-CD").build();
+        when(client.getVehicles(existing)).thenReturn(List.of(vehicle));
+
+        List<FleetHubVehicle> result = service.listVehicles(configId, companyId);
+
+        assertThat(result).containsExactly(vehicle);
+    }
+
+    @Test
+    @DisplayName("listVehicles : config d'une autre entreprise -> ResourceNotFoundException")
+    void listVehicles_wrongCompany_throws() {
+        when(configRepo.findByIdAndCompanyId(configId, companyId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.listVehicles(configId, companyId))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
 }

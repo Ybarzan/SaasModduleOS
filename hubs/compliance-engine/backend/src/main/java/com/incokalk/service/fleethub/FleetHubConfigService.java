@@ -81,6 +81,14 @@ public class FleetHubConfigService {
         }
     }
 
+    /** Liste des véhicules de la flotte, avec leur position GPS courante --
+     * utilisée par l'UI pour confirmer que l'intégration fonctionne et pour
+     * peupler un sélecteur de camion lors de l'assignation à une expédition. */
+    public List<FleetHubVehicle> listVehicles(UUID id, UUID companyId) {
+        FleetHubConfig config = getOwnedConfig(id, companyId);
+        return client.getVehicles(config);
+    }
+
     private FleetHubConfig getOwnedConfig(UUID id, UUID companyId) {
         return configRepo.findByIdAndCompanyId(id, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Configuration fleet-hub non trouvée"));

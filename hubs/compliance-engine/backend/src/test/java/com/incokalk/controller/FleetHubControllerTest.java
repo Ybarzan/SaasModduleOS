@@ -123,4 +123,18 @@ class FleetHubControllerTest extends ControllerTestBase {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }
+
+    @Test
+    @DisplayName("GET /v1/fleethub/{id}/vehicles → 200 pour un rôle USER")
+    void listVehicles_allowedForUser() throws Exception {
+        jwtToken = generateJwtToken(userId, companyId, CompanyRole.Role.USER);
+        UUID id = UUID.randomUUID();
+        com.incokalk.service.fleethub.FleetHubVehicle vehicle =
+                com.incokalk.service.fleethub.FleetHubVehicle.builder().registration("AB-123-CD").build();
+        when(configService.listVehicles(any(), any())).thenReturn(List.of(vehicle));
+
+        mockMvc.perform(get("/v1/fleethub/" + id + "/vehicles").header("Authorization", authHeader()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].registration").value("AB-123-CD"));
+    }
 }

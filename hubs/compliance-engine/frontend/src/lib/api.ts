@@ -373,6 +373,16 @@ export const incokalkAPI = {
     contacts: (id: string) => api.get(`/v1/erp/${id}/contacts`),
   },
 
+  // Fleet Hub (flotte propre du client — docs/07-integration-fleet-hub.md)
+  fleetHub: {
+    getAll: () => api.get('/v1/fleethub'),
+    create: (data: unknown) => api.post('/v1/fleethub', data),
+    update: (id: string, data: unknown) => api.put(`/v1/fleethub/${id}`, data),
+    delete: (id: string) => api.delete(`/v1/fleethub/${id}`),
+    test: (id: string) => api.post(`/v1/fleethub/${id}/test`),
+    vehicles: (id: string) => api.get(`/v1/fleethub/${id}/vehicles`),
+  },
+
   // Audit
   audit: {
     getAll: (page = 0, size = 20) => api.get(`/v1/audit?page=${page}&size=${size}`),

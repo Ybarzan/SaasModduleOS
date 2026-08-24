@@ -36,6 +36,7 @@ const Notifications = lazy(() => import('./pages/Notifications'));
 const NotificationRules = lazy(() => import('./pages/NotificationRules'));
 const Team = lazy(() => import('./pages/Team'));
 const ErpSettings = lazy(() => import('./pages/ErpSettings'));
+const FleetHubSettings = lazy(() => import('./pages/FleetHubSettings'));
 const AuditLog = lazy(() => import('./pages/AuditLog'));
 const Clients = lazy(() => import('./pages/Clients'));
 const SharedLinks = lazy(() => import('./pages/SharedLinks'));
@@ -258,6 +259,7 @@ function AppRoutes() {
               {/* Protected Routes — MANAGER+ can manage team/ERP */}
               <Route path="/team" element={<ProtectedRoute requiredRole="USER"><Team /></ProtectedRoute>} />
                 <Route path="/erp" element={<ProtectedRoute requiredRole="USER"><ErpSettings /></ProtectedRoute>} />
+                <Route path="/fleethub" element={<ProtectedRoute requiredRole="MANAGER"><FleetHubSettings /></ProtectedRoute>} />
 
               {/* Protected Routes — Customs & Trade (MANAGER+) */}
               <Route path="/customs" element={<ProtectedRoute requiredRole="MANAGER"><CustomsDashboard /></ProtectedRoute>} />

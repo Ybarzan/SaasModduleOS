@@ -5,6 +5,7 @@ import com.incokalk.model.CompanyRole;
 import com.incokalk.model.FleetHubConfig;
 import com.incokalk.security.RolesAllowed;
 import com.incokalk.service.fleethub.FleetHubConfigService;
+import com.incokalk.service.fleethub.FleetHubVehicle;
 import com.incokalk.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -66,5 +67,12 @@ public class FleetHubController {
     public ResponseEntity<Map<String, Boolean>> testConnection(@PathVariable UUID id) {
         boolean success = configService.testConnection(id, TenantContext.get());
         return ResponseEntity.ok(Map.of("success", success));
+    }
+
+    @GetMapping("/{id}/vehicles")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER, CompanyRole.Role.USER})
+    @Operation(summary = "Lister les véhicules de la flotte avec leur position GPS courante")
+    public ResponseEntity<List<FleetHubVehicle>> listVehicles(@PathVariable UUID id) {
+        return ResponseEntity.ok(configService.listVehicles(id, TenantContext.get()));
     }
 }

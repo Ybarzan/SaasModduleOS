@@ -589,6 +589,39 @@ export interface ErpConfig {
   updatedAt?: string;
 }
 
+export interface FleetHubConfig {
+  id: string;
+  name: string;
+  baseUrl: string;
+  username: string;
+  isActive: boolean;
+  lastError?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface FleetHubConfigFormData {
+  name: string;
+  baseUrl: string;
+  username: string;
+  password?: string;
+  isActive?: boolean;
+}
+
+export interface FleetHubVehicle {
+  truckId: number;
+  registration: string;
+  brand?: string;
+  model?: string;
+  driverName?: string;
+  assignmentId?: number;
+  latitude: number;
+  longitude: number;
+  speedKph: number;
+  status: string;
+  lastGpsUpdate?: string;
+}
+
 export interface ErpConfigFormData {
   erpType: string;
   name: string;

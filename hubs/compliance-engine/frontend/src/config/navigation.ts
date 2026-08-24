@@ -159,6 +159,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/api-keys', icon: KeyRound, label: 'Clés API', requiredRole: 'ADMIN' },
       { to: '/webhooks', icon: Webhook, label: 'Webhooks', requiredRole: 'ADMIN' },
       { to: '/erp', icon: Database, label: 'Intégrations ERP' },
+      { to: '/fleethub', icon: Truck, label: 'Fleet Hub', requiredRole: 'MANAGER' },
       { to: '/ecommerce', icon: ShoppingCart, label: 'E-Commerce', requiredRole: 'MANAGER' },
       { to: '/providers', icon: Wifi, label: 'Fournisseurs' },
       { to: '/notifications', icon: Bell, label: 'Notifications' },
