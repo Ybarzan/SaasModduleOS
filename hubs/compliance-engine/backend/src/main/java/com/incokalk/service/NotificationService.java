@@ -95,9 +95,11 @@ public class NotificationService {
     }
 
     /**
-     * Cree une proposition d'action -- ne l'execute jamais. L'executeur reel
-     * (appel a ErpProvider.exportOrders etc.) est un chantier separe, pas encore
-     * construit ; voir V65 et le risque R1 de docs/05-estimation-couts-risques.md.
+     * Cree une proposition d'action, toujours PENDING_APPROVAL -- ne l'execute
+     * jamais elle-meme. L'execution reelle (appel a ErpProvider.exportOrders)
+     * n'a lieu que si un humain approuve ensuite (OrchestrationSuggestionService
+     * -> OrchestrationExecutor). Voir V65/V66 et le risque R1 de
+     * docs/05-estimation-couts-risques.md.
      */
     private void createSuggestion(NotificationRule rule, SendNotificationDTO dto) {
         try {
