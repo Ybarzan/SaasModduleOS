@@ -81,21 +81,27 @@ public class NotificationRule {
     @Column(name = "action_type", length = 50)
     private String actionType;
 
-    /** Reserve pour l'executeur d'actions (pas encore construit) : quand celui-ci
-     * existera, une regle a requiresApproval=false pourra sauter la validation
-     * humaine. Sans executeur, ce champ n'a encore aucun effet -- toute suggestion
-     * reste PENDING_APPROVAL quelle que soit sa valeur. */
+    /** Destine a permettre a une regle de sauter la validation humaine
+     * (requiresApproval=false). OrchestrationExecutor existe desormais mais ne lit
+     * jamais ce champ -- toute suggestion reste PENDING_APPROVAL quelle que soit sa
+     * valeur, contrairement a maxBudgetAmount/allowedCarrierIds ci-dessous qui sont,
+     * eux, reellement verifies a l'execution. Champ toujours sans effet, mais plus
+     * pour la meme raison ("executeur pas construit") -- c'est desormais un choix
+     * deliberement non implemente (R1 : jamais de saut de validation humaine sans
+     * decision produit explicite), pas un manque technique. */
     @Column(name = "requires_approval", nullable = false)
     @Builder.Default
     private boolean requiresApproval = true;
 
-    /** Plafond de gouvernance (ex: n'agir que si l'impact cout estime reste sous ce
-     * montant) -- pas encore verifie par le code, prepare pour l'executeur. */
+    /** Plafond de gouvernance (n'execute pas si le cout de l'expedition depasse ce
+     * montant) -- reellement verifie par OrchestrationExecutor.checkGovernance()
+     * avant tout appel externe (V66). */
     @Column(name = "max_budget_amount", precision = 15, scale = 2)
     private java.math.BigDecimal maxBudgetAmount;
 
     /** UUID de transporteurs autorises, separes par des virgules, ou null (tous
-     * autorises) -- perimetre de gouvernance de l'action, pas encore verifie. */
+     * autorises) -- perimetre de gouvernance de l'action, reellement verifie par
+     * OrchestrationExecutor.checkGovernance() avant tout appel externe (V66). */
     @Column(name = "allowed_carrier_ids", columnDefinition = "TEXT")
     private String allowedCarrierIds;
 
