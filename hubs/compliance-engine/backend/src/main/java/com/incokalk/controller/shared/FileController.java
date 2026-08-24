@@ -16,6 +16,14 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Stockage générique de documents (pas les logos -- voir BrandingController,
+ * qui a sa propre logique d'upload de logo intégrée à la mise à jour du
+ * branding, seule voie réellement utilisée par le produit aujourd'hui).
+ * /download/{bucket}/{key} est délibérément public (SecurityConfig) : conçu
+ * pour permettre un futur partage de document externe (facture, certificat...)
+ * sans authentification, à la manière de /v1/shared/**.
+ */
 @RestController
 @RequestMapping("/v1/files")
 @RequiredArgsConstructor
@@ -24,32 +32,6 @@ public class FileController {
 
     private final FileStorageService fileStorage;
     private final StorageConfig storageConfig;
-
-    @PostMapping("/upload/logo")
-    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
-    @Operation(summary = "Upload un logo de company")
-    public ResponseEntity<Map<String, String>> uploadCompanyLogo(
-            @RequestParam("file") MultipartFile file,
-            HttpServletRequest req) {
-
-        extractUserId(req); // ensures the caller is authenticated
-        UUID companyId = extractCompanyId(req);
-        if (companyId == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Company non trouvée"));
-        }
-
-        validateImage(file);
-        try {
-            String key = fileStorage.uploadLogo(companyId, file.getOriginalFilename(),
-                file.getBytes(), file.getContentType());
-
-            String url = fileStorage.getPublicUrl(storageConfig.getBucketLogos(), key);
-            return ResponseEntity.ok(Map.of("key", key, "url", url));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                .body(Map.of("error", "Erreur upload: " + e.getMessage()));
-        }
-    }
 
     @PostMapping("/upload/document")
     @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
@@ -94,19 +76,7 @@ public class FileController {
 
     // ── Validation ────────────────────────────────────────────────────
 
-    private static final long MAX_LOGO_SIZE = 5 * 1024 * 1024;
     private static final long MAX_DOC_SIZE = 20 * 1024 * 1024;
-
-    private void validateImage(MultipartFile file) {
-        if (file.isEmpty()) throw new IllegalArgumentException("Fichier vide");
-        if (file.getSize() > MAX_LOGO_SIZE) {
-            throw new IllegalArgumentException("Logo trop volumineux (max 5 Mo)");
-        }
-        String ct = file.getContentType();
-        if (ct == null || (!ct.startsWith("image/"))) {
-            throw new IllegalArgumentException("Type non supporté (images uniquement)");
-        }
-    }
 
     private void validateDocument(MultipartFile file) {
         if (file.isEmpty()) throw new IllegalArgumentException("Fichier vide");
@@ -124,12 +94,6 @@ public class FileController {
     private UUID extractUserId(HttpServletRequest req) {
         Object id = req.getAttribute("userId");
         if (id == null) throw new RuntimeException("Non authentifié");
-        return id instanceof UUID u ? u : UUID.fromString(id.toString());
-    }
-
-    private UUID extractCompanyId(HttpServletRequest req) {
-        Object id = req.getAttribute("companyId");
-        if (id == null) return null;
         return id instanceof UUID u ? u : UUID.fromString(id.toString());
     }
 }

@@ -1,7 +1,5 @@
 package com.incokalk.controller;
 
-import com.incokalk.model.CompanyRole;
-import com.incokalk.repository.CompanyRoleRepository;
 import com.incokalk.service.FileStorageService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -11,7 +9,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Duration;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -28,120 +25,6 @@ class FileControllerTest extends ControllerTestBase {
 
     @MockBean
     private FileStorageService fileStorage;
-    @MockBean
-    private CompanyRoleRepository companyRoleRepository;
-
-    // La résolution du tenant (attribut de requête "companyId") passe par TenantFilter,
-    // qui exige un header X-Tenant-ID + une ligne CompanyRole en base pour l'utilisateur.
-    // On simule cette ligne pour les scénarios où la company doit être trouvée.
-    private void mockTenantFound() {
-        when(companyRoleRepository.findByCompanyIdAndUserId(companyId, userId))
-            .thenReturn(Optional.of(CompanyRole.builder().role(CompanyRole.Role.OWNER).build()));
-    }
-
-    // ── POST /v1/files/upload/logo ──────────────────────────────────────
-
-    @Test
-    @DisplayName("POST /v1/files/upload/logo → 400 si company non trouvée (pas de tenant résolu)")
-    void uploadLogo_companyNotFound() throws Exception {
-        MockMultipartFile file = new MockMultipartFile("file", "logo.png", "image/png", "content".getBytes());
-
-        mockMvc.perform(multipart("/v1/files/upload/logo")
-                .file(file)
-                .header("Authorization", authHeader()))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.error").value("Company non trouvée"));
-    }
-
-    @Test
-    @DisplayName("POST /v1/files/upload/logo → 400 si fichier vide")
-    void uploadLogo_emptyFile() throws Exception {
-        mockTenantFound();
-        MockMultipartFile file = new MockMultipartFile("file", "logo.png", "image/png", new byte[0]);
-
-        mockMvc.perform(multipart("/v1/files/upload/logo")
-                .file(file)
-                .header("Authorization", authHeader())
-                .header("X-Tenant-ID", companyId.toString()))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("Fichier vide"));
-    }
-
-    @Test
-    @DisplayName("POST /v1/files/upload/logo → 400 si logo trop volumineux")
-    void uploadLogo_tooLarge() throws Exception {
-        mockTenantFound();
-        byte[] big = new byte[5 * 1024 * 1024 + 1];
-        MockMultipartFile file = new MockMultipartFile("file", "logo.png", "image/png", big);
-
-        mockMvc.perform(multipart("/v1/files/upload/logo")
-                .file(file)
-                .header("Authorization", authHeader())
-                .header("X-Tenant-ID", companyId.toString()))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("Logo trop volumineux (max 5 Mo)"));
-    }
-
-    @Test
-    @DisplayName("POST /v1/files/upload/logo → 400 si content-type absent")
-    void uploadLogo_nullContentType() throws Exception {
-        mockTenantFound();
-        MockMultipartFile file = new MockMultipartFile("file", "logo.png", null, "content".getBytes());
-
-        mockMvc.perform(multipart("/v1/files/upload/logo")
-                .file(file)
-                .header("Authorization", authHeader())
-                .header("X-Tenant-ID", companyId.toString()))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("Type non supporté (images uniquement)"));
-    }
-
-    @Test
-    @DisplayName("POST /v1/files/upload/logo → 400 si type non-image")
-    void uploadLogo_wrongContentType() throws Exception {
-        mockTenantFound();
-        MockMultipartFile file = new MockMultipartFile("file", "logo.pdf", "application/pdf", "content".getBytes());
-
-        mockMvc.perform(multipart("/v1/files/upload/logo")
-                .file(file)
-                .header("Authorization", authHeader())
-                .header("X-Tenant-ID", companyId.toString()))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("Type non supporté (images uniquement)"));
-    }
-
-    @Test
-    @DisplayName("POST /v1/files/upload/logo → 200 succès")
-    void uploadLogo_success() throws Exception {
-        mockTenantFound();
-        MockMultipartFile file = new MockMultipartFile("file", "logo.png", "image/png", "content".getBytes());
-        when(fileStorage.uploadLogo(eq(companyId), any(), any(), any())).thenReturn("logos/key.png");
-        when(fileStorage.getPublicUrl(any(), eq("logos/key.png"))).thenReturn("http://cdn/logos/key.png");
-
-        mockMvc.perform(multipart("/v1/files/upload/logo")
-                .file(file)
-                .header("Authorization", authHeader())
-                .header("X-Tenant-ID", companyId.toString()))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.key").value("logos/key.png"))
-            .andExpect(jsonPath("$.url").value("http://cdn/logos/key.png"));
-    }
-
-    @Test
-    @DisplayName("POST /v1/files/upload/logo → 500 si le stockage échoue")
-    void uploadLogo_storageError() throws Exception {
-        mockTenantFound();
-        MockMultipartFile file = new MockMultipartFile("file", "logo.png", "image/png", "content".getBytes());
-        when(fileStorage.uploadLogo(any(), any(), any(), any()))
-            .thenThrow(new RuntimeException("MinIO indisponible"));
-
-        mockMvc.perform(multipart("/v1/files/upload/logo")
-                .file(file)
-                .header("Authorization", authHeader())
-                .header("X-Tenant-ID", companyId.toString()))
-            .andExpect(status().isInternalServerError())
-            .andExpect(jsonPath("$.error").value("Erreur upload: MinIO indisponible"));
-    }
 
     // ── POST /v1/files/upload/document ──────────────────────────────────
 
