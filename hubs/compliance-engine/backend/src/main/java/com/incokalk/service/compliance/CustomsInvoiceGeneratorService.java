@@ -71,7 +71,8 @@ public class CustomsInvoiceGeneratorService {
 
         for (int i = 0; i < items.size(); i++) {
             ShipmentItem item = items.get(i);
-            CustomsInvoice.InvoiceItem invoiceItem = buildInvoiceItem(item, companyId, i + 1);
+            CustomsInvoice.InvoiceItem invoiceItem = buildInvoiceItem(item, companyId, i + 1,
+                    shipment.getConsigneeCountry());
             invoiceItem.setInvoice(invoice);
             invoice.getItems().add(invoiceItem);
             totalDuty = totalDuty.add(invoiceItem.getDutyAmount());
@@ -90,14 +91,15 @@ public class CustomsInvoiceGeneratorService {
         return invoice;
     }
 
-    private CustomsInvoice.InvoiceItem buildInvoiceItem(ShipmentItem item, UUID companyId, int lineNumber) {
+    private CustomsInvoice.InvoiceItem buildInvoiceItem(ShipmentItem item, UUID companyId, int lineNumber,
+            String destinationCountry) {
         BigDecimal dutyRate = BigDecimal.ZERO;
         String dutyType = "AD";
         boolean isPreferential = false;
 
         if (item.getHsCode() != null && !item.getHsCode().isBlank()) {
             List<TaricRate> rates = taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry(
-                    item.getHsCode(), "FR", "FR");
+                    item.getHsCode(), item.getOriginCountry(), destinationCountry);
             if (!rates.isEmpty()) {
                 TaricRate rate = rates.get(0);
                 dutyRate = BigDecimal.valueOf(rate.getDutyRate());

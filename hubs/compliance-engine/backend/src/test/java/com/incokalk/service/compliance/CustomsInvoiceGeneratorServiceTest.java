@@ -148,7 +148,7 @@ class CustomsInvoiceGeneratorServiceTest {
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.of(eori));
         when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "FR"))
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "CN", "GB"))
                 .thenReturn(List.of(rate));
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
@@ -274,7 +274,7 @@ class CustomsInvoiceGeneratorServiceTest {
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
         when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "FR"))
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "CN", "GB"))
                 .thenReturn(Collections.emptyList());
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
@@ -304,7 +304,7 @@ class CustomsInvoiceGeneratorServiceTest {
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
         when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "FR"))
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "CN", "GB"))
                 .thenReturn(List.of(rate));
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
@@ -313,6 +313,41 @@ class CustomsInvoiceGeneratorServiceTest {
         assertThat(invoiceItem.getDutyRate()).isEqualByComparingTo("8.5");
         assertThat(invoiceItem.getDutyType()).isEqualTo("MIX");
         assertThat(invoiceItem.isPreferential()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Recherche TARIC utilise le vrai couple origine marchandise / destination expédition, pas FR/FR codé en dur")
+    void generateInvoice_taricLookup_usesRealOriginAndDestination_notHardcodedFrFr() {
+        ShipmentOrder shipment = baseShipment()
+                .consigneeCountry("DE")
+                .build();
+        ShipmentItem item = baseItem()
+                .originCountry("VN")
+                .build();
+        TaricRate rate = TaricRate.builder()
+                .hsCode("6109100000")
+                .originCountry("VN")
+                .destinationCountry("DE")
+                .dutyRate(9.5)
+                .dutyType("AD")
+                .isPrefential(false)
+                .build();
+
+        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+        when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
+        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "VN", "DE"))
+                .thenReturn(List.of(rate));
+
+        CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
+
+        verify(taricRepo).findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "VN", "DE");
+        verify(taricRepo, never()).findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "FR");
+
+        CustomsInvoice.InvoiceItem invoiceItem = invoice.getItems().get(0);
+        assertThat(invoiceItem.getDutyRate()).isEqualByComparingTo("9.5");
+        assertThat(invoiceItem.getDutyType()).isEqualTo("AD");
     }
 
     // ---------------------------------------------------------------
@@ -360,7 +395,7 @@ class CustomsInvoiceGeneratorServiceTest {
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
         when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item1, item2));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "FR"))
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "CN", "GB"))
                 .thenReturn(List.of(rate));
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
@@ -383,7 +418,7 @@ class CustomsInvoiceGeneratorServiceTest {
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
         when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "FR"))
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "CN", "GB"))
                 .thenReturn(Collections.emptyList());
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
