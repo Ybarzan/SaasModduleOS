@@ -358,6 +358,14 @@ export const incokalkAPI = {
     stats: () => api.get('/v1/team/stats'),
   },
 
+  // Factures douanières
+  customsInvoices: {
+    list: (status?: string) => api.get('/v1/compliance/customs-invoice', { params: status ? { status } : undefined }),
+    get: (id: string) => api.get(`/v1/compliance/customs-invoice/${id}`),
+    getByShipment: (shipmentId: string) => api.get(`/v1/compliance/customs-invoice/shipment/${shipmentId}`),
+    generate: (shipmentId: string) => api.post('/v1/compliance/customs-invoice', { shipmentId }),
+  },
+
   // ERP
   erp: {
     getAll: () => api.get('/v1/erp'),

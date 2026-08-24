@@ -106,6 +106,7 @@ const PaymentTerms = lazy(() => import('./pages/PaymentTerms'));
 const TaricData = lazy(() => import('./pages/TaricData'));
 const FrenchFiscal = lazy(() => import('./pages/FrenchFiscal'));
 const Eur1Certificates = lazy(() => import('./pages/Eur1Certificates'));
+const CustomsInvoices = lazy(() => import('./pages/CustomsInvoices'));
 const Compliance = lazy(() => import('./pages/Compliance'));
 const Warehouses = lazy(() => import('./pages/Warehouses'));
 const WarehouseDetail = lazy(() => import('./pages/WarehouseDetail'));
@@ -307,6 +308,7 @@ function AppRoutes() {
               <Route path="/taric" element={<ProtectedRoute requiredRole="MANAGER"><TaricData /></ProtectedRoute>} />
               <Route path="/french-fiscal" element={<ProtectedRoute requireAdmin><FrenchFiscal /></ProtectedRoute>} />
               <Route path="/eur1" element={<ProtectedRoute requiredRole="MANAGER"><Eur1Certificates /></ProtectedRoute>} />
+              <Route path="/customs-invoices" element={<ProtectedRoute requiredRole="MANAGER"><CustomsInvoices /></ProtectedRoute>} />
               <Route path="/compliance" element={<ProtectedRoute requireAdmin><Compliance /></ProtectedRoute>} />
 
               {/* Warehousing & Réception (P1) */}

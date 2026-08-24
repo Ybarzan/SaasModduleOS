@@ -573,6 +573,61 @@ export interface ChartData {
   unit: string;
 }
 
+// === Customs Invoice Types ===
+export interface CustomsInvoiceItem {
+  id: string;
+  lineNumber: number;
+  sku?: string;
+  name?: string;
+  description?: string;
+  hsCode?: string;
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+  totalValue: number;
+  countryOfOrigin?: string;
+  dutyRate: number;
+  dutyType: string;
+  isPreferential: boolean;
+  dutyAmount: number;
+  vatRate: number;
+  vatAmount: number;
+}
+
+export interface CustomsInvoice {
+  id: string;
+  companyId: string;
+  shipmentId?: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  shipperName?: string;
+  shipperAddress?: string;
+  shipperCity?: string;
+  shipperCountry?: string;
+  shipperPostalCode?: string;
+  consigneeName?: string;
+  consigneeAddress?: string;
+  consigneeCity?: string;
+  consigneeCountry?: string;
+  consigneePostalCode?: string;
+  eoriNumber?: string;
+  goodsDescription?: string;
+  currency: string;
+  totalGoodsValue: number;
+  totalWeightKg: number;
+  totalPackages: number;
+  incotermCode?: string;
+  totalDuty: number;
+  totalVat: number;
+  totalAmount: number;
+  status: string;
+  pdfUrl?: string;
+  notes?: string;
+  items: CustomsInvoiceItem[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
 // === ERP Types ===
 export interface ErpConfig {
   id: string;

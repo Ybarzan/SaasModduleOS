@@ -69,6 +69,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/taric', icon: Database, label: 'Données TARIC', requiredRole: 'MANAGER', requiredPlan: 'PRO' },
       { to: '/declarations', icon: FileCheck, label: 'Déclarations douane', requiredRole: 'MANAGER', requiredPlan: 'PRO' },
       { to: '/eur1', icon: FileText, label: 'Certificats EUR.1', requiredRole: 'MANAGER', requiredPlan: 'PRO' },
+      { to: '/customs-invoices', icon: Receipt, label: 'Factures douanières', requiredRole: 'MANAGER', requiredPlan: 'PRO' },
       { to: '/eori', icon: Globe, label: 'Configuration EORI', requiredRole: 'MANAGER', requiredPlan: 'PRO' },
       { to: '/dps', icon: ShieldAlert, label: 'Screening parties', requiredRole: 'MANAGER', requiredPlan: 'PRO' },
       { to: '/french-fiscal', icon: Euro, label: 'Fiscalité FR', requiredRole: 'ADMIN', requiredPlan: 'PRO' },
