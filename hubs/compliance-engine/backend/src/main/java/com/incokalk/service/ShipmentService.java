@@ -90,6 +90,7 @@ public class ShipmentService {
                 .orderNumber(orderNumber)
                 .status(ShipmentOrder.Status.DRAFT)
                 .carrier(carrier)
+                .fleetHubTruckRegistration(dto.getFleetHubTruckRegistration())
                 .shippingRate(shippingRate)
                 .shipperName(dto.getShipperName())
                 .shipperAddress(dto.getShipperAddress())

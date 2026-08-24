@@ -175,4 +175,43 @@ class FleetHubConfigServiceTest {
         assertThatThrownBy(() -> service.listVehicles(configId, companyId))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
+
+    @Test
+    @DisplayName("listAllActiveVehicles : agrège les véhicules de toutes les configs actives")
+    void listAllActiveVehicles_aggregatesAcrossConfigs() {
+        FleetHubConfig first = FleetHubConfig.builder().id(UUID.randomUUID()).company(company).isActive(true).build();
+        FleetHubConfig second = FleetHubConfig.builder().id(UUID.randomUUID()).company(company).isActive(true).build();
+        when(configRepo.findByCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of(first, second));
+        FleetHubVehicle v1 = FleetHubVehicle.builder().registration("AB-123-CD").build();
+        FleetHubVehicle v2 = FleetHubVehicle.builder().registration("EF-456-GH").build();
+        when(client.getVehicles(first)).thenReturn(List.of(v1));
+        when(client.getVehicles(second)).thenReturn(List.of(v2));
+
+        List<FleetHubVehicle> result = service.listAllActiveVehicles(companyId);
+
+        assertThat(result).containsExactlyInAnyOrder(v1, v2);
+    }
+
+    @Test
+    @DisplayName("listAllActiveVehicles : une config en échec n'empêche pas de renvoyer les véhicules des autres")
+    void listAllActiveVehicles_oneConfigFails_returnsOthers() {
+        FleetHubConfig first = FleetHubConfig.builder().id(UUID.randomUUID()).company(company).isActive(true).build();
+        FleetHubConfig second = FleetHubConfig.builder().id(UUID.randomUUID()).company(company).isActive(true).build();
+        when(configRepo.findByCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of(first, second));
+        when(client.getVehicles(first)).thenThrow(new FleetHubClient.FleetHubException("Connexion refusée"));
+        FleetHubVehicle v2 = FleetHubVehicle.builder().registration("EF-456-GH").build();
+        when(client.getVehicles(second)).thenReturn(List.of(v2));
+
+        List<FleetHubVehicle> result = service.listAllActiveVehicles(companyId);
+
+        assertThat(result).containsExactly(v2);
+    }
+
+    @Test
+    @DisplayName("listAllActiveVehicles : aucune config active -> liste vide")
+    void listAllActiveVehicles_noActiveConfig_empty() {
+        when(configRepo.findByCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
+
+        assertThat(service.listAllActiveVehicles(companyId)).isEmpty();
+    }
 }

@@ -325,6 +325,9 @@ export interface ShipmentOrder {
   status: 'DRAFT' | 'QUOTED' | 'BOOKED' | 'IN_TRANSIT' | 'DELIVERED' | 'CANCELLED';
   carrierId?: string;
   carrierName?: string;
+  /** Immatriculation du camion fleet-hub assigné, si livrée par la flotte propre
+   * plutôt qu'un transporteur tiers (carrierId). Voir docs/07-integration-fleet-hub.md. */
+  fleetHubTruckRegistration?: string;
   shipperName?: string;
   shipperAddress?: string;
   shipperCity?: string;
@@ -370,6 +373,7 @@ export interface TrackingEvent {
 
 export interface ShipmentFormData {
    carrierId?: string;
+   fleetHubTruckRegistration?: string;
    shippingRateId?: string;
    shipperName: string;
    shipperAddress: string;

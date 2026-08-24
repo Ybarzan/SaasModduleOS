@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -87,6 +88,23 @@ public class FleetHubConfigService {
     public List<FleetHubVehicle> listVehicles(UUID id, UUID companyId) {
         FleetHubConfig config = getOwnedConfig(id, companyId);
         return client.getVehicles(config);
+    }
+
+    /** Véhicules de toutes les configurations actives de l'entreprise, sans exposer
+     * les configurations elles-mêmes (identifiants) -- utilisée par le formulaire de
+     * création d'expédition (accessible à USER, contrairement à listConfigs/
+     * listVehicles(id) réservés à MANAGER+) pour peupler un sélecteur de camion. Une
+     * config en échec n'empêche pas de renvoyer les véhicules des autres. */
+    public List<FleetHubVehicle> listAllActiveVehicles(UUID companyId) {
+        List<FleetHubVehicle> vehicles = new ArrayList<>();
+        for (FleetHubConfig config : configRepo.findByCompanyIdAndIsActiveTrue(companyId)) {
+            try {
+                vehicles.addAll(client.getVehicles(config));
+            } catch (Exception e) {
+                log.warn("[FleetHub] Échec récupération véhicules ({}): {}", config.getName(), e.getMessage());
+            }
+        }
+        return vehicles;
     }
 
     private FleetHubConfig getOwnedConfig(UUID id, UUID companyId) {

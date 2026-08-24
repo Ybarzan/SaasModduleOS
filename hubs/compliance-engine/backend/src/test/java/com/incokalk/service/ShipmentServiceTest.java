@@ -197,6 +197,21 @@ class ShipmentServiceTest {
     }
 
     @Test
+    @DisplayName("createShipment propage l'immatriculation fleet-hub, même sans transporteur")
+    void createShipment_withFleetHubTruck_setsFleetHubTruckRegistration() {
+        ShipmentOrderDTO dto = ShipmentOrderDTO.builder()
+                .fleetHubTruckRegistration("AB-123-CD")
+                .shipperName("ACME")
+                .consigneeName("Globex")
+                .build();
+
+        ShipmentOrder result = service.createShipment(dto, userId, companyId);
+
+        assertThat(result.getFleetHubTruckRegistration()).isEqualTo("AB-123-CD");
+        assertThat(result.getCarrier()).isNull();
+    }
+
+    @Test
     @DisplayName("createShipment refuse un clientId appartenant à une autre entreprise (fuite inter-tenant)")
     void createShipment_clientFromOtherTenant_rejected() {
         UUID foreignClientId = UUID.randomUUID();

@@ -75,4 +75,11 @@ public class FleetHubController {
     public ResponseEntity<List<FleetHubVehicle>> listVehicles(@PathVariable UUID id) {
         return ResponseEntity.ok(configService.listVehicles(id, TenantContext.get()));
     }
+
+    @GetMapping("/vehicles")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER, CompanyRole.Role.USER})
+    @Operation(summary = "Lister les véhicules de toutes les configurations actives, sans exposer les configurations elles-mêmes")
+    public ResponseEntity<List<FleetHubVehicle>> listAllActiveVehicles() {
+        return ResponseEntity.ok(configService.listAllActiveVehicles(TenantContext.get()));
+    }
 }

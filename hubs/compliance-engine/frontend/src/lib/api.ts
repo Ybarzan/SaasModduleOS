@@ -381,6 +381,7 @@ export const incokalkAPI = {
     delete: (id: string) => api.delete(`/v1/fleethub/${id}`),
     test: (id: string) => api.post(`/v1/fleethub/${id}/test`),
     vehicles: (id: string) => api.get(`/v1/fleethub/${id}/vehicles`),
+    allVehicles: () => api.get('/v1/fleethub/vehicles'),
   },
 
   // Audit

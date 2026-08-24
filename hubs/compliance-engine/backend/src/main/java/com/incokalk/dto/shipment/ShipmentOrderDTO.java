@@ -20,6 +20,9 @@ import java.util.UUID;
 public class ShipmentOrderDTO {
 
     private UUID carrierId;
+    /** Immatriculation du camion fleet-hub assigné, si livrée par la flotte propre
+     * plutôt qu'un transporteur tiers (carrierId). Voir docs/07-integration-fleet-hub.md. */
+    private String fleetHubTruckRegistration;
     private UUID shippingRateId;
 
     // Compte client du portail à qui rattacher cette expédition (optionnel).

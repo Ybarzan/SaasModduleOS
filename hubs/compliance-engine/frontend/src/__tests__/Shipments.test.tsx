@@ -11,6 +11,7 @@ vi.mock("../lib/api", () => ({
     shipments: { getPage: vi.fn(), create: vi.fn(), updateStatus: vi.fn(), delete: vi.fn() },
     carriers: { getAll: vi.fn() },
     shippingRates: { getAll: vi.fn() },
+    fleetHub: { allVehicles: vi.fn() },
     export: { shippingLabelPdf: vi.fn(), cmrPdf: vi.fn(), dgdPdf: vi.fn(), certificateOfOriginPdf: vi.fn(), csv: { shipments: vi.fn() } },
     receivings: { list: vi.fn() },
     sharedLinks: { create: vi.fn() },
@@ -40,6 +41,7 @@ function mockDefaults() {
   vi.mocked(incokalkAPI.shipments.getPage).mockResolvedValue({ data: shipments } as never);
   vi.mocked(incokalkAPI.carriers.getAll).mockResolvedValue({ data: [] } as never);
   vi.mocked(incokalkAPI.shippingRates.getAll).mockResolvedValue({ data: [] } as never);
+  vi.mocked(incokalkAPI.fleetHub.allVehicles).mockResolvedValue({ data: [] } as never);
   Object.defineProperty(navigator, "clipboard", {
     value: { writeText: vi.fn().mockResolvedValue(undefined) },
     configurable: true,
@@ -115,6 +117,40 @@ describe("Shipments page", () => {
       );
     });
     expect(toast.success).toHaveBeenCalledWith("Expédition créée");
+  });
+
+  it("shows a fleet-hub truck picker and includes the selection when creating a shipment", async () => {
+    vi.mocked(incokalkAPI.fleetHub.allVehicles).mockResolvedValue({
+      data: [{ truckId: 1, registration: "AB-123-CD", driverName: "Jean Dupont", latitude: 0, longitude: 0, speedKph: 0, status: "ROULAGE" }],
+    } as never);
+    vi.mocked(incokalkAPI.shipments.create).mockResolvedValue({} as never);
+    renderPage();
+    await waitFor(() => screen.getByText("ORD-001"));
+    fireEvent.click(screen.getByText("Nouvelle expédition"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Camion de la flotte propre (optionnel)")).toBeInTheDocument();
+    });
+
+    const nameInputs = screen.getAllByPlaceholderText("Nom / Société");
+    fireEvent.change(nameInputs[0], { target: { value: "Acme SARL" } });
+    fireEvent.change(nameInputs[1], { target: { value: "Client GmbH" } });
+    fireEvent.change(screen.getByDisplayValue("Aucun camion assigné"), { target: { value: "AB-123-CD" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer l'expédition" }));
+
+    await waitFor(() => {
+      expect(incokalkAPI.shipments.create).toHaveBeenCalledWith(
+        expect.objectContaining({ fleetHubTruckRegistration: "AB-123-CD" })
+      );
+    });
+  });
+
+  it("hides the fleet-hub truck picker when no vehicle is available", async () => {
+    renderPage();
+    await waitFor(() => screen.getByText("ORD-001"));
+    fireEvent.click(screen.getByText("Nouvelle expédition"));
+
+    expect(screen.queryByText("Camion de la flotte propre (optionnel)")).not.toBeInTheDocument();
   });
 
   it("advances a draft shipment's status to booked", async () => {

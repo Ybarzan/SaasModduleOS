@@ -8,7 +8,7 @@ import {
   Eye, Trash2, ChevronDown, Circle, Loader2, ArrowRight, FileText, Download, Scale, Search, ClipboardList,
   Link2, Copy, ExternalLink, Check,
 } from 'lucide-react';
-import type { ShipmentOrder, ShipmentFormData, ShipmentItem, TrackingEvent, Carrier, ShippingRate } from '../types';
+import type { ShipmentOrder, ShipmentFormData, ShipmentItem, TrackingEvent, Carrier, ShippingRate, FleetHubVehicle } from '../types';
 import LiveTrackingPanel from '../components/LiveTrackingPanel';
 import Pagination from '../components/Pagination';
 import { STATUS_CONFIG, INCOTERMS, COUNTRIES } from '@/lib/constants';
@@ -262,6 +262,14 @@ const Shipments = () => {
     queryFn: async () => {
       const res = await incokalkAPI.carriers.getAll();
       return res.data as Carrier[];
+    },
+  });
+
+  const { data: fleetHubVehicles = [] } = useQuery({
+    queryKey: ['fleethub-all-vehicles'],
+    queryFn: async () => {
+      const res = await incokalkAPI.fleetHub.allVehicles();
+      return (res.data as FleetHubVehicle[]) || [];
     },
   });
 
@@ -890,6 +898,30 @@ const Shipments = () => {
                         </label>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {fleetHubVehicles.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="font-semibold text-ink flex items-center space-x-2">
+                      <MapPin size={16} />
+                      <span>Camion de la flotte propre (optionnel)</span>
+                    </h4>
+                    <p className="text-xs text-ink-soft">
+                      À renseigner si cette expédition est livrée par votre flotte fleet-hub plutôt que par un transporteur tiers.
+                    </p>
+                    <select
+                      value={form.fleetHubTruckRegistration || ''}
+                      onChange={(e) => setForm({ ...form, fleetHubTruckRegistration: e.target.value || undefined })}
+                      className="w-full md:w-1/2 border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
+                    >
+                      <option value="">Aucun camion assigné</option>
+                      {fleetHubVehicles.map((v) => (
+                        <option key={v.truckId} value={v.registration}>
+                          {v.registration}{v.driverName ? ` — ${v.driverName}` : ''}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 )}
 
