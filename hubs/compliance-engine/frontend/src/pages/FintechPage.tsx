@@ -120,13 +120,14 @@ const FintechPage = () => {
         <div>
           <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
             <Building2 size={24} className="text-accent" />
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Intégrations fintech
           </h1>
           <p className="text-ink-soft mt-1">Connectez Qonto ou Spendesk pour synchroniser comptes, transactions et dépenses.</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong transition-colors"
         >
           <Plus size={16} />
           Connecter un fournisseur
@@ -138,7 +139,7 @@ const FintechPage = () => {
           <Loader2 size={24} className="animate-spin mr-2" /> Chargement...
         </div>
       ) : connections.length === 0 ? (
-        <div className="bg-surface rounded-xl border border-line p-16 text-center text-ink-soft">
+        <div className="bg-surface rounded-none border border-line p-16 text-center text-ink-soft">
           <Building2 size={40} className="mx-auto mb-3 text-ink-soft" />
           <p>Aucune connexion fintech. Connectez votre banque ou outil de dépenses.</p>
         </div>
@@ -148,10 +149,10 @@ const FintechPage = () => {
             const meta = PROVIDER_META[conn.provider] ?? PROVIDER_META.QONTO;
             const test = testResults[conn.id];
             return (
-              <div key={conn.id} className={`bg-surface rounded-xl border p-5 ${conn.active ? 'border-line' : 'border-line opacity-70'}`}>
+              <div key={conn.id} className={`bg-surface rounded-none border p-5 ${conn.active ? 'border-line' : 'border-line opacity-70'}`}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className={`w-11 h-11 rounded-lg ${meta.color} flex items-center justify-center`}>
+                    <div className={`w-11 h-11 rounded-none ${meta.color} flex items-center justify-center`}>
                       <Landmark size={22} />
                     </div>
                     <div>
@@ -169,7 +170,7 @@ const FintechPage = () => {
                     onClick={() => {
                       if (window.confirm(`Supprimer ${conn.name} ?`)) deleteMutation.mutate(conn.id);
                     }}
-                    className="p-2 text-ink-soft hover:text-danger rounded-lg hover:bg-danger/10 transition-colors"
+                    className="p-2 text-ink-soft hover:text-danger rounded-none hover:bg-danger/10 transition-colors"
                     title="Supprimer"
                   >
                     <Trash2 size={16} />
@@ -177,7 +178,7 @@ const FintechPage = () => {
                 </div>
 
                 {test && (
-                  <div className={`mt-3 text-xs flex items-center gap-2 rounded-lg px-3 py-2 ${test.ok ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
+                  <div className={`mt-3 text-xs flex items-center gap-2 rounded-none px-3 py-2 ${test.ok ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}`}>
                     {test.ok ? <CheckCircle2 size={14} /> : <XCircle size={14} />} {test.message}
                   </div>
                 )}
@@ -186,26 +187,26 @@ const FintechPage = () => {
                   <button
                     onClick={() => testMutation.mutate(conn.id)}
                     disabled={testMutation.isPending}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-ink bg-surface-2 rounded-lg hover:bg-surface-2 disabled:opacity-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-ink bg-surface-2 rounded-none hover:bg-surface-2 disabled:opacity-50 transition-colors"
                   >
                     {testMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : <Plug size={13} />} Tester
                   </button>
                   <button
                     onClick={() => syncMutation.mutate(conn.id)}
                     disabled={syncMutation.isPending}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent rounded-lg hover:bg-accent-strong disabled:opacity-50 transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-accent rounded-none hover:bg-accent-strong disabled:opacity-50 transition-colors"
                   >
                     {syncMutation.isPending ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />} Synchroniser
                   </button>
                   <button
                     onClick={() => setDataFor(conn.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-accent bg-accent/10 rounded-lg hover:bg-accent-soft transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-accent bg-accent/10 rounded-none hover:bg-accent-soft transition-colors"
                   >
                     <Eye size={13} /> Données
                   </button>
                   <button
                     onClick={() => toggleMutation.mutate({ id: conn.id, active: !conn.active })}
-                    className={`ml-auto px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${conn.active ? 'text-ink-soft bg-surface-2 hover:bg-surface-2' : 'text-success bg-success/10 hover:bg-success/20'}`}
+                    className={`ml-auto px-3 py-1.5 text-xs font-medium rounded-none transition-colors ${conn.active ? 'text-ink-soft bg-surface-2 hover:bg-surface-2' : 'text-success bg-success/10 hover:bg-success/20'}`}
                   >
                     {conn.active ? 'Désactiver' : 'Activer'}
                   </button>
@@ -228,7 +229,7 @@ const FintechPage = () => {
       {/* Data modal */}
       {dataFor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setDataFor(null)}>
-          <div className="bg-surface rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface rounded-none shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-line">
               <h2 className="text-lg font-bold text-ink">Données synchronisées</h2>
               <button onClick={() => setDataFor(null)} className="text-ink-soft hover:text-ink-soft"><XCircle size={22} /></button>
@@ -251,7 +252,7 @@ const DataSection = ({ title, icon, rows }: { title: string; icon: React.ReactNo
   return (
     <div>
       <h3 className="text-sm font-semibold text-ink mb-2 flex items-center gap-2">{icon} {title} <span className="text-ink-soft font-normal">({rows.length})</span></h3>
-      <div className="overflow-x-auto rounded-xl border border-line">
+      <div className="overflow-x-auto rounded-none border border-line">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-bg border-b border-line">
@@ -301,13 +302,13 @@ const CreateConnectionModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
-      <form onSubmit={submit} className="bg-surface rounded-2xl shadow-xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
+      <form onSubmit={submit} className="bg-surface rounded-none shadow-xl w-full max-w-md p-6" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-bold text-ink mb-4">Connecter un fournisseur</h2>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             {(['QONTO', 'SPENDESK'] as const).map((p) => (
               <button key={p} type="button" onClick={() => setForm({ ...form, provider: p })}
-                className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`py-2.5 rounded-none text-sm font-medium transition-colors ${
                   form.provider === p ? 'bg-accent text-white' : 'bg-surface-2 text-ink-soft hover:bg-surface-2'
                 }`}>
                 {PROVIDER_META[p].label}
@@ -315,12 +316,12 @@ const CreateConnectionModal = ({
             ))}
           </div>
           <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Nom de la connexion *" required className="w-full px-3 py-2.5 border border-line rounded-lg text-sm" />
+            placeholder="Nom de la connexion *" required className="w-full px-3 py-2.5 border border-line rounded-none text-sm" />
           <input value={form.apiKey} onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
             placeholder={form.provider === 'QONTO' ? 'Clé API (slug:secret) ou login' : 'Clé API'}
-            className="w-full px-3 py-2.5 border border-line rounded-lg text-sm" />
+            className="w-full px-3 py-2.5 border border-line rounded-none text-sm" />
           <input value={form.apiSecret} onChange={(e) => setForm({ ...form, apiSecret: e.target.value })}
-            placeholder="Secret (optionnel)" className="w-full px-3 py-2.5 border border-line rounded-lg text-sm" />
+            placeholder="Secret (optionnel)" className="w-full px-3 py-2.5 border border-line rounded-none text-sm" />
           <p className="text-xs text-ink-soft">
             {form.provider === 'QONTO'
               ? 'Format Qonto : "login:secretKey" ou "slug:secretKey".'
@@ -328,11 +329,11 @@ const CreateConnectionModal = ({
           </p>
         </div>
         <div className="flex justify-end gap-3 mt-6">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-ink-soft hover:bg-surface-2 rounded-lg transition-colors">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-ink-soft hover:bg-surface-2 rounded-none transition-colors">
             Annuler
           </button>
           <button type="submit" disabled={pending}
-            className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong disabled:opacity-50 transition-colors">
+            className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong disabled:opacity-50 transition-colors">
             {pending ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />} Connecter
           </button>
         </div>

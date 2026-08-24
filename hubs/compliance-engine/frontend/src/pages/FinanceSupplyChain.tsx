@@ -148,7 +148,10 @@ const FinanceSupplyChain = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">Supply Chain Finance</h1>
+        <h1 className="text-2xl font-bold text-ink">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Supply Chain Finance
+        </h1>
         <p className="text-ink-soft mt-1">Gestion du financement de factures et escomptes P4.25</p>
       </div>
 
@@ -160,9 +163,9 @@ const FinanceSupplyChain = () => {
         </div>
       ) : stats ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
                 <DollarSign size={20} className="text-accent" />
               </div>
               <div>
@@ -171,9 +174,9 @@ const FinanceSupplyChain = () => {
               </div>
             </div>
           </div>
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-warning/10 flex items-center justify-center">
                 <Clock size={20} className="text-warning" />
               </div>
               <div>
@@ -182,9 +185,9 @@ const FinanceSupplyChain = () => {
               </div>
             </div>
           </div>
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
                 <ArrowUpRight size={20} className="text-success" />
               </div>
               <div>
@@ -193,9 +196,9 @@ const FinanceSupplyChain = () => {
               </div>
             </div>
           </div>
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-accent/10 flex items-center justify-center">
                 <TrendingDown size={20} className="text-accent" />
               </div>
               <div>
@@ -208,13 +211,13 @@ const FinanceSupplyChain = () => {
       ) : null}
 
       {/* Financing request form */}
-      <div className="bg-surface rounded-xl border border-line p-6 mb-6">
+      <div className="bg-surface rounded-none border border-line p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-ink">Demande de financement</h2>
           {canEdit() && (
             <button
               onClick={() => setShowForm(!showForm)}
-              className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong transition-colors"
             >
               <Plus size={16} />
               Nouvelle demande
@@ -222,14 +225,14 @@ const FinanceSupplyChain = () => {
           )}
         </div>
         {showForm && (
-          <form onSubmit={handleSubmitRequest} className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 p-4 bg-bg rounded-lg">
+          <form onSubmit={handleSubmitRequest} className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4 p-4 bg-bg rounded-none">
             <div>
               <label className="block text-sm font-medium text-ink mb-1">Référence facture</label>
               <input
                 type="text"
                 value={invoiceId}
                 onChange={(e) => setInvoiceId(e.target.value)}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="INV-001"
                 required
               />
@@ -240,7 +243,7 @@ const FinanceSupplyChain = () => {
                 type="number"
                 value={reqAmount}
                 onChange={(e) => setReqAmount(e.target.value)}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="10000"
                 min={0}
                 step="0.01"
@@ -251,7 +254,7 @@ const FinanceSupplyChain = () => {
               <button
                 type="submit"
                 disabled={createRequest.isPending}
-                className="px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong disabled:opacity-50 transition-colors"
+                className="px-4 py-2 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong disabled:opacity-50 transition-colors"
               >
                 {createRequest.isPending ? 'Envoi...' : 'Soumettre'}
               </button>
@@ -261,7 +264,7 @@ const FinanceSupplyChain = () => {
       </div>
 
       {/* Financing requests list */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden mb-8">
+      <div className="bg-surface rounded-none border border-line overflow-hidden mb-8">
         <div className="px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">Demandes de financement</h2>
         </div>
@@ -313,7 +316,7 @@ const FinanceSupplyChain = () => {
                             <button
                               onClick={() => approveRequest.mutate(req.id)}
                               disabled={approveRequest.isPending}
-                              className="px-3 py-1.5 bg-accent text-white text-xs font-medium rounded-lg hover:bg-accent-strong disabled:opacity-50 transition-colors"
+                              className="px-3 py-1.5 bg-accent text-white text-xs font-medium rounded-none hover:bg-accent-strong disabled:opacity-50 transition-colors"
                             >
                               Approuver
                             </button>
@@ -322,7 +325,7 @@ const FinanceSupplyChain = () => {
                             <button
                               onClick={() => fundRequest.mutate(req.id)}
                               disabled={fundRequest.isPending}
-                              className="px-3 py-1.5 bg-success text-white text-xs font-medium rounded-lg hover:bg-success/90 disabled:opacity-50 transition-colors"
+                              className="px-3 py-1.5 bg-success text-white text-xs font-medium rounded-none hover:bg-success/90 disabled:opacity-50 transition-colors"
                             >
                               Financer
                             </button>
@@ -331,7 +334,7 @@ const FinanceSupplyChain = () => {
                             <button
                               onClick={() => repayRequest.mutate(req.id)}
                               disabled={repayRequest.isPending}
-                              className="px-3 py-1.5 bg-ink-soft text-white text-xs font-medium rounded-lg hover:bg-ink disabled:opacity-50 transition-colors"
+                              className="px-3 py-1.5 bg-ink-soft text-white text-xs font-medium rounded-none hover:bg-ink disabled:opacity-50 transition-colors"
                             >
                               Rembourser
                             </button>
@@ -348,7 +351,7 @@ const FinanceSupplyChain = () => {
       </div>
 
       {/* Early payment discount calculator */}
-      <div className="bg-surface rounded-xl border border-line p-6">
+      <div className="bg-surface rounded-none border border-line p-6">
         <h2 className="text-lg font-semibold text-ink mb-4">Calculateur d'escompte</h2>
         <form onSubmit={handleCalcDiscount} className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div>
@@ -357,7 +360,7 @@ const FinanceSupplyChain = () => {
               type="text"
               value={discInvoiceId}
               onChange={(e) => setDiscInvoiceId(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               placeholder="INV-001"
               required
             />
@@ -368,7 +371,7 @@ const FinanceSupplyChain = () => {
               type="number"
               value={discAmount}
               onChange={(e) => setDiscAmount(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               placeholder="10000"
               min={0}
               step="0.01"
@@ -379,7 +382,7 @@ const FinanceSupplyChain = () => {
             <button
               type="submit"
               disabled={discLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong disabled:opacity-50 transition-colors"
             >
               {discLoading ? <Loader2 size={16} className="animate-spin" /> : <TrendingDown size={16} />}
               Calculer
@@ -387,7 +390,7 @@ const FinanceSupplyChain = () => {
           </div>
         </form>
         {discount && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-success/10 rounded-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-success/10 rounded-none">
             <div>
               <p className="text-sm text-ink-soft">Montant de l'escompte</p>
               <p className="text-lg font-bold text-success">{formatEUR(discount.discountAmount)}</p>

@@ -88,11 +88,14 @@ const AuditLog = () => {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-none bg-accent/10 flex items-center justify-center">
             <ScrollText size={20} className="text-accent" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-ink">Journal d'activité</h1>
+            <h1 className="text-2xl font-bold text-ink">
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
+              Journal d'activité
+            </h1>
             <p className="text-ink-soft text-sm">Historique des actions effectuées dans votre entreprise</p>
           </div>
         </div>
@@ -100,9 +103,9 @@ const AuditLog = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent/10 flex items-center justify-center">
               <Activity size={20} className="text-accent" />
             </div>
             <div>
@@ -111,9 +114,9 @@ const AuditLog = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
               <Package size={20} className="text-success" />
             </div>
             <div>
@@ -124,9 +127,9 @@ const AuditLog = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
               <Truck size={20} className="text-accent" />
             </div>
             <div>
@@ -145,7 +148,7 @@ const AuditLog = () => {
           <button
             key={key}
             onClick={() => { setActiveTab(key); setPage(0); }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded-none text-sm font-medium transition-colors ${
               activeTab === key
                 ? 'bg-accent text-white'
                 : 'bg-surface border border-line text-ink-soft hover:bg-bg'
@@ -158,7 +161,11 @@ const AuditLog = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="relative bg-surface rounded-none border border-line overflow-hidden">
+        <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+        <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-br" aria-hidden="true" />
         <div className="px-6 py-4 border-b border-line flex items-center justify-between">
           <h2 className="text-lg font-semibold text-ink">Activité récente</h2>
           <span className="text-sm text-ink-soft">{totalElements} entrées</span>
@@ -236,14 +243,14 @@ const AuditLog = () => {
               <button
                 onClick={() => setPage(Math.max(0, page - 1))}
                 disabled={page === 0}
-                className="p-2 rounded-lg border border-line text-ink-soft hover:bg-bg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-none border border-line text-ink-soft hover:bg-bg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
                 disabled={page >= totalPages - 1}
-                className="p-2 rounded-lg border border-line text-ink-soft hover:bg-bg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                className="p-2 rounded-none border border-line text-ink-soft hover:bg-bg disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               >
                 <ChevronRight size={16} />
               </button>

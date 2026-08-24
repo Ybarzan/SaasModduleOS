@@ -111,13 +111,16 @@ const RoleManagement = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Gestion des rôles</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Gestion des rôles
+          </h1>
           <p className="text-ink-soft mt-1">Définissez les permissions par rôle</p>
         </div>
         {isAdmin && (
           <button
             onClick={openAddForm}
-            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
           >
             <Plus size={18} />
             Nouveau rôle
@@ -131,7 +134,7 @@ const RoleManagement = () => {
           Chargement...
         </div>
       ) : roles.length === 0 ? (
-        <div className="bg-surface rounded-xl border border-line px-6 py-12 text-center text-ink-soft">
+        <div className="bg-surface rounded-none border border-line px-6 py-12 text-center text-ink-soft">
           <Shield size={32} className="mx-auto mb-3 text-ink-soft" />
           <p>Aucun rôle défini</p>
         </div>
@@ -140,10 +143,10 @@ const RoleManagement = () => {
           {roles.map((role) => {
             const isExpanded = expandedRole === role.id;
             return (
-              <div key={role.id} className="bg-surface rounded-xl border border-line overflow-hidden">
+              <div key={role.id} className="bg-surface rounded-none border border-line overflow-hidden">
                 <div className="px-6 py-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
                       {role.isSystem ? <ShieldCheck size={20} className="text-accent" /> : <Shield size={20} className="text-accent" />}
                     </div>
                     <div>
@@ -178,14 +181,14 @@ const RoleManagement = () => {
                           <>
                             <button
                               onClick={() => openEditForm(role)}
-                              className="p-1.5 rounded-lg text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
+                              className="p-1.5 rounded-none text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
                               title="Modifier"
                             >
                               <ShieldCheck size={16} />
                             </button>
                             <button
                               onClick={() => setDeleteConfirm(role.id)}
-                              className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                              className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                               title="Supprimer"
                             >
                               <Trash2 size={16} />
@@ -209,7 +212,7 @@ const RoleManagement = () => {
                         const perms = getModulePermissions(module);
                         const selected = perms.filter((p) => role.permissions.includes(p.key)).length;
                         return (
-                          <div key={module} className="bg-surface rounded-lg border border-line p-3">
+                          <div key={module} className="bg-surface rounded-none border border-line p-3">
                             <h4 className="text-xs font-semibold text-ink uppercase mb-2">{module}</h4>
                             <div className="space-y-1.5">
                               {perms.map((perm) => (
@@ -240,7 +243,7 @@ const RoleManagement = () => {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowForm(false)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-2xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-ink mb-4">
               {editingRole ? 'Modifier le rôle' : 'Nouveau rôle'}
             </h3>
@@ -252,7 +255,7 @@ const RoleManagement = () => {
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     placeholder="Ex: Manager"
                     required
                   />
@@ -263,7 +266,7 @@ const RoleManagement = () => {
                     type="text"
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     placeholder="Description du rôle"
                     required
                   />
@@ -277,7 +280,7 @@ const RoleManagement = () => {
                     const perms = getModulePermissions(module);
                     const allSelected = perms.every((p) => form.permissions.includes(p.key));
                     return (
-                      <div key={module} className="border border-line rounded-lg p-3">
+                      <div key={module} className="border border-line rounded-none p-3">
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="text-xs font-semibold text-ink uppercase">{module}</h4>
                           <button
@@ -324,14 +327,14 @@ const RoleManagement = () => {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={saveMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {saveMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   {editingRole ? 'Mettre à jour' : 'Créer le rôle'}

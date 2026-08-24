@@ -143,12 +143,15 @@ const Webhooks = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Webhooks</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Webhooks
+          </h1>
           <p className="text-ink-soft mt-1">Configuration des notifications HTTP</p>
         </div>
         <button
           onClick={() => setAddOpen(true)}
-          className="flex items-center gap-2 bg-terra-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-terra-700 transition-colors"
+          className="flex items-center gap-2 bg-terra-600 text-white px-4 py-2 rounded-none font-medium hover:bg-terra-700 transition-colors"
         >
           <Plus size={18} />
           Ajouter un webhook
@@ -156,7 +159,11 @@ const Webhooks = () => {
       </div>
 
       {/* Webhooks table */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="relative bg-surface rounded-none border border-line overflow-hidden">
+        <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+        <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-br" aria-hidden="true" />
         <div className="px-6 py-4 border-b border-line flex items-center gap-2">
           <Webhook size={18} className="text-terra-500" />
           <h2 className="text-lg font-semibold text-ink">Webhooks configurés</h2>
@@ -236,7 +243,7 @@ const Webhooks = () => {
                           <button
                             onClick={() => testMutation.mutate({ webhookUrl: wh.url, webhookSecret: wh.secret })}
                             disabled={testMutation.isPending}
-                            className="p-1.5 rounded-lg text-ink-soft hover:text-terra-600 hover:bg-terra-50 transition-colors disabled:opacity-50"
+                            className="p-1.5 rounded-none text-ink-soft hover:text-terra-600 hover:bg-terra-50 transition-colors disabled:opacity-50"
                             title="Tester le webhook"
                           >
                             {testMutation.isPending ? (
@@ -264,7 +271,7 @@ const Webhooks = () => {
                           ) : (
                             <button
                               onClick={() => setDeleteConfirm(wh.id)}
-                              className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                              className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                               title="Supprimer"
                             >
                               <Trash2 size={14} />
@@ -285,12 +292,12 @@ const Webhooks = () => {
       {addOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setAddOpen(false)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-lg mx-4 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-ink">Ajouter un webhook</h3>
               <button
                 onClick={() => setAddOpen(false)}
-                className="p-1.5 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-lg transition-colors"
+                className="p-1.5 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-none transition-colors"
               >
                 <X size={18} />
               </button>
@@ -303,7 +310,7 @@ const Webhooks = () => {
                   type="url"
                   value={form.url}
                   onChange={(e) => setForm({ ...form, url: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-terra-500 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-terra-500 focus:border-transparent text-sm"
                   placeholder="https://votre-serveur.com/webhook"
                   required
                 />
@@ -315,7 +322,7 @@ const Webhooks = () => {
                   {AVAILABLE_EVENTS.map((event) => (
                     <label
                       key={event}
-                      className={`flex items-center gap-2 p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                      className={`flex items-center gap-2 p-2.5 rounded-none border cursor-pointer transition-colors ${
                         form.events.includes(event)
                           ? 'border-terra-300 bg-terra-50'
                           : 'border-line hover:border-line'
@@ -339,7 +346,7 @@ const Webhooks = () => {
                   type="text"
                   value={form.secret}
                   onChange={(e) => setForm({ ...form, secret: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-terra-500 focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-terra-500 focus:border-transparent text-sm"
                   placeholder="Clé secrète pour signer les payloads"
                 />
                 <p className="text-xs text-ink-soft mt-1">Utilisé pour vérifier l'authenticité des notifications</p>
@@ -350,14 +357,14 @@ const Webhooks = () => {
               <button
                 type="button"
                 onClick={() => setAddOpen(false)}
-                className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={handleAdd}
                 disabled={createMutation.isPending}
-                className="flex-1 px-4 py-2 bg-terra-600 text-white rounded-lg text-sm font-medium hover:bg-terra-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-terra-600 text-white rounded-none text-sm font-medium hover:bg-terra-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                 Créer le webhook

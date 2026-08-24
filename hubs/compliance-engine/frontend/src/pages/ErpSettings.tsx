@@ -292,7 +292,10 @@ const ErpSettings = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-ink mb-2">Intégrations ERP</h1>
+          <h1 className="text-4xl font-bold text-ink mb-2">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Intégrations ERP
+          </h1>
           <p className="text-ink-soft">Connectez votre système ERP pour synchroniser les données</p>
         </div>
 
@@ -306,14 +309,14 @@ const ErpSettings = () => {
             return (
               <div
                 key={def.type}
-                className={`bg-surface rounded-lg shadow-lg border-2 ${
+                className={`bg-surface rounded-none shadow-lg border-2 ${
                   isConnected ? def.borderColor : 'border-transparent'
                 } hover:shadow-xl transition-shadow overflow-hidden`}
               >
                 {/* Card Header */}
                 <div className={`${def.headerBg} px-6 py-5`}>
                   <div className="flex items-center space-x-3">
-                    <div className={`w-14 h-14 ${def.iconBg} rounded-xl flex items-center justify-center`}>
+                    <div className={`w-14 h-14 ${def.iconBg} rounded-none flex items-center justify-center`}>
                       <span className={`text-2xl font-bold ${def.iconText}`}>
                         {def.name.charAt(0)}
                       </span>
@@ -382,7 +385,7 @@ const ErpSettings = () => {
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => setConnectedPanel(config.id)}
-                        className={`flex-1 px-3 py-2 ${def.btnLight} rounded-lg transition-colors text-sm font-medium flex items-center justify-center space-x-1`}
+                        className={`flex-1 px-3 py-2 ${def.btnLight} rounded-none transition-colors text-sm font-medium flex items-center justify-center space-x-1`}
                       >
                         <Settings size={14} />
                         <span>Gérer</span>
@@ -390,7 +393,7 @@ const ErpSettings = () => {
                       <button
                         onClick={() => testMutation.mutate(config.id)}
                         disabled={testMutation.isPending}
-                        className="px-3 py-2 bg-surface-2 text-ink rounded-lg hover:bg-surface-2 transition-colors text-sm font-medium disabled:opacity-50"
+                        className="px-3 py-2 bg-surface-2 text-ink rounded-none hover:bg-surface-2 transition-colors text-sm font-medium disabled:opacity-50"
                         title="Tester la connexion"
                       >
                         {testMutation.isPending ? (
@@ -401,7 +404,7 @@ const ErpSettings = () => {
                       </button>
                       <button
                         onClick={() => setDeleteId(config.id)}
-                        className="px-3 py-2 bg-danger/10 text-danger rounded-lg hover:bg-danger/10 transition-colors text-sm font-medium"
+                        className="px-3 py-2 bg-danger/10 text-danger rounded-none hover:bg-danger/10 transition-colors text-sm font-medium"
                         title="Déconnecter"
                       >
                         <Unlink size={14} />
@@ -410,7 +413,7 @@ const ErpSettings = () => {
                   ) : (
                     <button
                       onClick={() => openConnectModal(def.type)}
-                      className={`w-full px-4 py-2.5 ${def.btnBg} text-white rounded-lg transition-colors font-medium flex items-center justify-center space-x-2`}
+                      className={`w-full px-4 py-2.5 ${def.btnBg} text-white rounded-none transition-colors font-medium flex items-center justify-center space-x-2`}
                     >
                       <LinkIcon size={16} />
                       <span>Connecter</span>
@@ -424,7 +427,7 @@ const ErpSettings = () => {
 
         {/* Empty State */}
         {erpConfigs.length === 0 && (
-          <div className="bg-surface rounded-lg shadow-lg p-12 mb-10 text-center">
+          <div className="bg-surface rounded-none shadow-lg p-12 mb-10 text-center">
             <Database className="h-16 w-16 text-ink-soft mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-ink mb-2">Aucune intégration ERP configurée</h3>
             <p className="text-ink-soft mb-6">
@@ -435,7 +438,7 @@ const ErpSettings = () => {
                 <button
                   key={def.type}
                   onClick={() => openConnectModal(def.type)}
-                  className={`px-4 py-2 ${def.btnBg} text-white rounded-lg transition-colors text-sm font-medium flex items-center space-x-2`}
+                  className={`px-4 py-2 ${def.btnBg} text-white rounded-none transition-colors text-sm font-medium flex items-center space-x-2`}
                 >
                   <span className={`text-lg font-bold`}>{def.name.charAt(0)}</span>
                   <span>Connecter {def.name.split(' ')[0]}</span>
@@ -453,11 +456,15 @@ const ErpSettings = () => {
           const logs = getLogsForConfig(config.id);
 
           return (
-            <div className="bg-surface rounded-lg shadow-lg overflow-hidden mb-10">
+            <div className="relative bg-surface rounded-none shadow-lg overflow-hidden mb-10">
+              <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+              <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-br" aria-hidden="true" />
               {/* Panel Header */}
               <div className={`${def?.headerBg || 'bg-bg'} px-6 py-4 border-b border-line flex items-center justify-between`}>
                 <div className="flex items-center space-x-3">
-                  <div className={`w-10 h-10 ${def?.iconBg || 'bg-surface-2'} rounded-lg flex items-center justify-center`}>
+                  <div className={`w-10 h-10 ${def?.iconBg || 'bg-surface-2'} rounded-none flex items-center justify-center`}>
                     <span className={`text-lg font-bold ${def?.iconText || 'text-ink-soft'}`}>
                       {config.name.charAt(0)}
                     </span>
@@ -469,7 +476,7 @@ const ErpSettings = () => {
                 </div>
                 <button
                   onClick={() => setConnectedPanel(null)}
-                  className="p-1.5 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-lg transition-colors"
+                  className="p-1.5 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-none transition-colors"
                 >
                   <X size={18} />
                 </button>
@@ -512,13 +519,13 @@ const ErpSettings = () => {
                           data: { syncType: st.key, direction: st.direction },
                         })}
                         disabled={syncMutation.isPending || config.syncStatus === 'SYNCING'}
-                        className={`p-4 rounded-lg border-2 border-dashed ${
+                        className={`p-4 rounded-none border-2 border-dashed ${
                           st.direction === 'OUTBOUND'
                             ? 'border-warning/40 bg-warning/10 hover:bg-warning/10 text-warning'
                             : 'border-line bg-bg hover:bg-surface-2 text-ink'
                         } transition-colors flex items-center space-x-4 disabled:opacity-50`}
                       >
-                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                        <div className={`w-10 h-10 rounded-none flex items-center justify-center ${
                           st.direction === 'OUTBOUND' ? 'bg-warning/10' : 'bg-accent-soft'
                         }`}>
                           {syncMutation.isPending ? (
@@ -607,7 +614,7 @@ const ErpSettings = () => {
 
         {/* Health Dashboard */}
         {healthList.length > 0 && (
-          <div className="bg-surface rounded-lg shadow-lg overflow-hidden mb-10">
+          <div className="bg-surface rounded-none shadow-lg overflow-hidden mb-10">
             <div className="px-6 py-4 border-b border-line flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Server size={20} className="text-ink" />
@@ -617,7 +624,7 @@ const ErpSettings = () => {
                 <span className="text-sm text-ink-soft">Mise à jour auto. 30s</span>
                 <button
                   onClick={() => queryClient.invalidateQueries({ queryKey: ['erp-health'] })}
-                  className="p-1.5 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-lg transition-colors"
+                  className="p-1.5 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-none transition-colors"
                   title="Rafraîchir"
                 >
                   <RefreshCw size={16} />
@@ -630,7 +637,7 @@ const ErpSettings = () => {
                 return (
                   <div key={h.erpType} className="px-6 py-5">
                     <div className="flex items-center space-x-3 mb-3">
-                      <div className={`w-8 h-8 ${def?.iconBg || 'bg-surface-2'} rounded-lg flex items-center justify-center`}>
+                      <div className={`w-8 h-8 ${def?.iconBg || 'bg-surface-2'} rounded-none flex items-center justify-center`}>
                         <span className={`text-sm font-bold ${def?.iconText || 'text-ink-soft'}`}>
                           {h.name.charAt(0)}
                         </span>
@@ -670,7 +677,7 @@ const ErpSettings = () => {
         {/* Connect Modal */}
         {connectModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-surface rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div className="bg-surface rounded-none shadow-xl w-full max-w-md mx-4">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-ink">
@@ -678,7 +685,7 @@ const ErpSettings = () => {
                   </h2>
                   <button
                     onClick={closeConnectModal}
-                    className="p-1.5 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-lg transition-colors"
+                    className="p-1.5 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-none transition-colors"
                   >
                     <X size={18} />
                   </button>
@@ -694,7 +701,7 @@ const ErpSettings = () => {
                       type="text"
                       value={formName}
                       onChange={(e) => setFormName(e.target.value)}
-                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       placeholder="Ma connexion Odoo"
                     />
                   </div>
@@ -708,7 +715,7 @@ const ErpSettings = () => {
                       type="url"
                       value={formEndpoint}
                       onChange={(e) => setFormEndpoint(e.target.value)}
-                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       placeholder={
                         connectModal === 'ODOO'
                           ? 'https://votre-odoo.com'
@@ -729,7 +736,7 @@ const ErpSettings = () => {
                         type="text"
                         value={formDb}
                         onChange={(e) => setFormDb(e.target.value)}
-                        className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                         placeholder={connectModal === 'SAP' ? 'Ma Société SAP' : 'odoo_db'}
                       />
                     </div>
@@ -745,7 +752,7 @@ const ErpSettings = () => {
                         type="text"
                         value={formUser}
                         onChange={(e) => setFormUser(e.target.value)}
-                        className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                         placeholder="admin"
                       />
                     </div>
@@ -761,7 +768,7 @@ const ErpSettings = () => {
                         type={showPassword ? 'text' : 'password'}
                         value={formPassword}
                         onChange={(e) => setFormPassword(e.target.value)}
-                        className="w-full border border-line rounded-lg px-3 pr-10 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none px-3 pr-10 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                         placeholder={connectModal === 'QUICKBOOKS' ? 'Entrez votre Access Token' : 'Entrez le mot de passe ou la clé API'}
                       />
                       <button
@@ -784,7 +791,7 @@ const ErpSettings = () => {
                         type="password"
                         value=""
                         readOnly
-                        className="w-full border border-line rounded-lg px-3 py-2 bg-bg text-ink-soft"
+                        className="w-full border border-line rounded-none px-3 py-2 bg-bg text-ink-soft"
                         placeholder="Généré automatiquement après connexion"
                       />
                     </div>
@@ -794,14 +801,14 @@ const ErpSettings = () => {
                 <div className="flex justify-end space-x-3 pt-6">
                   <button
                     onClick={closeConnectModal}
-                    className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
+                    className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     onClick={handleConnect}
                     disabled={createMutation.isPending}
-                    className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
+                    className="px-4 py-2 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
                   >
                     {createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                     <span>Sauvegarder</span>
@@ -815,7 +822,7 @@ const ErpSettings = () => {
         {/* Delete Confirmation */}
         {deleteId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-surface rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="bg-surface rounded-none shadow-xl w-full max-w-md mx-4 p-6">
               <h3 className="text-lg font-bold text-ink mb-4">Confirmer la déconnexion</h3>
               <p className="text-ink-soft mb-6">
                 Êtes-vous sûr de vouloir déconnecter cette intégration ERP ? La synchronisation des données sera interrompue.
@@ -823,14 +830,14 @@ const ErpSettings = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setDeleteId(null)}
-                  className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
+                  className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={() => deleteMutation.mutate(deleteId)}
                   disabled={deleteMutation.isPending}
-                  className="px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  className="px-4 py-2 bg-danger text-white rounded-none hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
                 >
                   {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>Déconnecter</span>
@@ -944,7 +951,7 @@ function DataSection({
         )}
       </div>
       {displayItems.length > 0 ? (
-        <div className="overflow-x-auto border border-line rounded-lg">
+        <div className="overflow-x-auto border border-line rounded-none">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-bg text-left">
@@ -969,7 +976,7 @@ function DataSection({
           </table>
         </div>
       ) : (
-        <div className="text-center py-6 text-ink-soft text-sm border border-dashed border-line rounded-lg">
+        <div className="text-center py-6 text-ink-soft text-sm border border-dashed border-line rounded-none">
           {emptyText}
         </div>
       )}

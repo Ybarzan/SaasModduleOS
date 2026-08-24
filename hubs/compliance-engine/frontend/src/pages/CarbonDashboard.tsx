@@ -151,12 +151,15 @@ const CarbonDashboard = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Dashboard carbone</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Dashboard carbone
+          </h1>
           <p className="text-ink-soft mt-1">Suivi des émissions CO2 et crédits d'offset</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
         >
           <Plus size={18} />
           {showForm ? 'Annuler' : 'Nouvel enregistrement'}
@@ -165,9 +168,9 @@ const CarbonDashboard = () => {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-danger/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-danger/10 flex items-center justify-center">
               <TrendingUp size={20} className="text-danger" />
             </div>
             <div>
@@ -176,9 +179,9 @@ const CarbonDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
               <Leaf size={20} className="text-accent" />
             </div>
             <div>
@@ -187,9 +190,9 @@ const CarbonDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
               <TrendingDown size={20} className="text-success" />
             </div>
             <div>
@@ -198,9 +201,9 @@ const CarbonDashboard = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-warning/10 flex items-center justify-center">
               <AlertCircle size={20} className="text-warning" />
             </div>
             <div>
@@ -214,7 +217,7 @@ const CarbonDashboard = () => {
       </div>
 
       {/* Progress bar */}
-      <div className="bg-surface rounded-xl border border-line p-5 mb-8">
+      <div className="bg-surface rounded-none border border-line p-5 mb-8">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-medium text-ink">Progression de l'offset</h3>
           <span className="text-sm font-semibold text-ink">{stats?.offsetPercent?.toFixed(1) ?? '0'}%</span>
@@ -228,9 +231,9 @@ const CarbonDashboard = () => {
       </div>
 
       {/* Cost summary */}
-      <div className="bg-surface rounded-xl border border-line p-5 mb-8">
+      <div className="bg-surface rounded-none border border-line p-5 mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-none bg-accent/10 flex items-center justify-center">
             <DollarSign size={20} className="text-accent" />
           </div>
           <div>
@@ -242,7 +245,7 @@ const CarbonDashboard = () => {
 
       {/* Create form */}
       {showForm && (
-        <div className="bg-surface rounded-xl border border-line p-6 mb-8">
+        <div className="bg-surface rounded-none border border-line p-6 mb-8">
           <h2 className="text-lg font-semibold text-ink mb-4">Nouvel enregistrement carbone</h2>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -251,7 +254,7 @@ const CarbonDashboard = () => {
                 type="number"
                 value={form.co2EmissionsKg}
                 onChange={(e) => setForm({ ...form, co2EmissionsKg: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 placeholder="0"
                 required
               />
@@ -262,7 +265,7 @@ const CarbonDashboard = () => {
                 type="number"
                 value={form.offsetCreditsPurchased}
                 onChange={(e) => setForm({ ...form, offsetCreditsPurchased: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 placeholder="0"
               />
             </div>
@@ -272,7 +275,7 @@ const CarbonDashboard = () => {
                 type="text"
                 value={form.offsetProvider}
                 onChange={(e) => setForm({ ...form, offsetProvider: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 placeholder="Nom du fournisseur"
                 required
               />
@@ -283,7 +286,7 @@ const CarbonDashboard = () => {
                 type="text"
                 value={form.offsetProjectName}
                 onChange={(e) => setForm({ ...form, offsetProjectName: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 placeholder="Nom du projet"
                 required
               />
@@ -293,7 +296,7 @@ const CarbonDashboard = () => {
               <select
                 value={form.offsetProjectType}
                 onChange={(e) => setForm({ ...form, offsetProjectType: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               >
                 <option value="reforestation">Reforestation</option>
                 <option value="solaire">Solaire</option>
@@ -308,7 +311,7 @@ const CarbonDashboard = () => {
                 type="number"
                 value={form.offsetCostPerTon}
                 onChange={(e) => setForm({ ...form, offsetCostPerTon: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 placeholder="0.00"
                 step="0.01"
               />
@@ -319,7 +322,7 @@ const CarbonDashboard = () => {
                 type="number"
                 value={form.offsetTotalCost}
                 onChange={(e) => setForm({ ...form, offsetTotalCost: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 placeholder="0.00"
                 step="0.01"
               />
@@ -330,7 +333,7 @@ const CarbonDashboard = () => {
                 type="text"
                 value={form.offsetCurrency}
                 onChange={(e) => setForm({ ...form, offsetCurrency: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 placeholder="EUR"
               />
             </div>
@@ -340,7 +343,7 @@ const CarbonDashboard = () => {
                 type="text"
                 value={form.certificationId}
                 onChange={(e) => setForm({ ...form, certificationId: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 placeholder="ID de certification"
               />
             </div>
@@ -349,7 +352,7 @@ const CarbonDashboard = () => {
               <textarea
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 rows={3}
                 placeholder="Notes supplémentaires..."
               />
@@ -358,14 +361,14 @@ const CarbonDashboard = () => {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
               >
                 Annuler
               </button>
               <button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                 Enregistrer
@@ -376,7 +379,7 @@ const CarbonDashboard = () => {
       )}
 
       {/* History table */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">Historique des offsets</h2>
         </div>
@@ -447,7 +450,7 @@ const CarbonDashboard = () => {
                       ) : (
                         <button
                           onClick={() => setDeleteConfirm(offset.id)}
-                          className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                          className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                           title="Supprimer"
                         >
                           <Trash2 size={16} />

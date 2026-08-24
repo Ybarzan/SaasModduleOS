@@ -103,13 +103,16 @@ const ApiKeys = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Clés API</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Clés API
+          </h1>
           <p className="text-ink-soft mt-1">Gérez vos clés d'accès API</p>
         </div>
         {isAdmin && (
           <button
             onClick={() => setGenerateOpen(true)}
-            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
           >
             <Plus size={18} />
             Generate New Key
@@ -118,7 +121,11 @@ const ApiKeys = () => {
       </div>
 
       {/* Keys table */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="relative bg-surface rounded-none border border-line overflow-hidden">
+        <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+        <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-br" aria-hidden="true" />
         <div className="px-6 py-4 border-b border-line flex items-center gap-2">
           <Key size={18} className="text-accent" />
           <h2 className="text-lg font-semibold text-ink">Clés d'API</h2>
@@ -191,7 +198,7 @@ const ApiKeys = () => {
                           ) : (
                             <button
                               onClick={() => setDeleteConfirm(keyItem.id)}
-                              className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                              className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                               title="Révoquer"
                             >
                               <Trash2 size={16} />
@@ -212,21 +219,21 @@ const ApiKeys = () => {
       {generateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={closeGenerateModal} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-md mx-4 p-6">
             {generatedKey ? (
               <>
                 <h3 className="text-lg font-semibold text-ink mb-2">Clé API générée</h3>
                 <p className="text-sm text-ink-soft mb-4">
                   Copiez cette clé maintenant. Elle ne sera plus jamais affichée.
                 </p>
-                <div className="bg-surface-2 border border-line rounded-lg p-4 mb-4">
+                <div className="bg-surface-2 border border-line rounded-none p-4 mb-4">
                   <div className="flex items-center justify-between gap-2">
                     <code className="text-sm font-mono text-ink break-all select-all">
                       {generatedKey}
                     </code>
                     <button
                       onClick={() => handleCopy(generatedKey)}
-                      className="p-2 bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors flex-shrink-0"
+                      className="p-2 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors flex-shrink-0"
                       title="Copier"
                     >
                       <Copy size={16} />
@@ -235,7 +242,7 @@ const ApiKeys = () => {
                 </div>
                 <button
                   onClick={closeGenerateModal}
-                  className="w-full px-4 py-2 bg-surface-2 text-ink-soft rounded-lg hover:bg-line transition-colors text-sm font-medium"
+                  className="w-full px-4 py-2 bg-surface-2 text-ink-soft rounded-none hover:bg-line transition-colors text-sm font-medium"
                 >
                   Fermer
                 </button>
@@ -250,7 +257,7 @@ const ApiKeys = () => {
                       type="text"
                       value={newKeyName}
                       onChange={(e) => setNewKeyName(e.target.value)}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       placeholder="Production, Développement, ..."
                       required
                     />
@@ -260,14 +267,14 @@ const ApiKeys = () => {
                   <button
                     type="button"
                     onClick={closeGenerateModal}
-                    className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
+                    className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     onClick={handleGenerate}
                     disabled={generateMutation.isPending}
-                    className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                   >
                     {generateMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                     Générer
@@ -283,7 +290,7 @@ const ApiKeys = () => {
       {deleteConfirm && !generateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setDeleteConfirm(null)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-md mx-4 p-6">
             <h3 className="text-lg font-semibold text-ink mb-2">Révoquer la clé API</h3>
             <p className="text-sm text-ink-soft mb-4">
               Êtes-vous sûr de vouloir révoquer cette clé ? Les applications utilisant cette clé ne pourront plus accéder à l'API.
@@ -291,14 +298,14 @@ const ApiKeys = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
+                className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={() => revokeMutation.mutate(deleteConfirm)}
                 disabled={revokeMutation.isPending}
-                className="flex-1 px-4 py-2 bg-danger text-white rounded-lg text-sm font-medium hover:bg-danger/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-danger text-white rounded-none text-sm font-medium hover:bg-danger/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {revokeMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                 Révoquer

@@ -184,20 +184,23 @@ const ECommerce = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Intégrations E-Commerce</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Intégrations E-Commerce
+          </h1>
           <p className="text-ink-soft mt-1">Connectez Shopify, WooCommerce & PrestaShop</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowSyncLog(!showSyncLog)}
-            className="flex items-center gap-2 bg-surface border border-line text-ink-soft px-4 py-2 rounded-lg font-medium hover:bg-surface-2 transition-colors"
+            className="flex items-center gap-2 bg-surface border border-line text-ink-soft px-4 py-2 rounded-none font-medium hover:bg-surface-2 transition-colors"
           >
             <Clock size={18} />
             Historique sync
           </button>
           <button
             onClick={() => setCreateOpen(true)}
-            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
           >
             <Plus size={18} />
             Ajouter une intégration
@@ -212,13 +215,13 @@ const ECommerce = () => {
           Chargement...
         </div>
       ) : !integrations || integrations.length === 0 ? (
-        <div className="bg-surface rounded-xl border border-line p-12 text-center">
+        <div className="bg-surface rounded-none border border-line p-12 text-center">
           <ShoppingCart size={48} className="mx-auto mb-4 text-ink-soft" />
           <p className="text-ink-soft text-lg mb-2">Aucune intégration</p>
           <p className="text-ink-soft text-sm mb-6">Connectez votre première boutique e-commerce</p>
           <button
             onClick={() => setCreateOpen(true)}
-            className="inline-flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+            className="inline-flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
           >
             <Plus size={18} />
             Ajouter une intégration
@@ -231,11 +234,11 @@ const ECommerce = () => {
             return (
               <div
                 key={integration.id}
-                className="bg-surface rounded-xl border border-line p-6 hover:shadow-md transition-shadow"
+                className="bg-surface rounded-none border border-line p-6 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${getPlatformColor(integration.platform)}`}>
+                    <div className={`w-10 h-10 rounded-none flex items-center justify-center ${getPlatformColor(integration.platform)}`}>
                       {getPlatformIcon(integration.platform, 'w-5 h-5')}
                     </div>
                     <div>
@@ -268,14 +271,14 @@ const ECommerce = () => {
                   <button
                     onClick={() => syncMutation.mutate(integration.id)}
                     disabled={syncMutation.isPending}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-accent-soft text-accent-strong rounded-lg text-sm font-medium hover:bg-accent-soft transition-colors disabled:opacity-50"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-accent-soft text-accent-strong rounded-none text-sm font-medium hover:bg-accent-soft transition-colors disabled:opacity-50"
                   >
                     <RefreshCw size={14} className={syncMutation.isPending ? 'animate-spin' : ''} />
                     Sync
                   </button>
                   <button
                     onClick={() => openEdit(integration)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-2 text-ink-soft rounded-lg text-sm font-medium hover:bg-line transition-colors"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-2 text-ink-soft rounded-none text-sm font-medium hover:bg-line transition-colors"
                   >
                     <ExternalLink size={14} />
                     Modifier
@@ -299,7 +302,7 @@ const ECommerce = () => {
                   ) : (
                     <button
                       onClick={() => setDeleteConfirm(integration.id)}
-                      className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                      className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                       title="Supprimer"
                     >
                       <Trash2 size={16} />
@@ -314,7 +317,7 @@ const ECommerce = () => {
 
       {/* Sync Log Section */}
       {showSyncLog && (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden mb-8">
+        <div className="bg-surface rounded-none border border-line overflow-hidden mb-8">
           <div className="px-6 py-4 border-b border-line flex items-center justify-between">
             <h2 className="text-lg font-semibold text-ink">Historique des synchronisations</h2>
             <button onClick={() => setShowSyncLog(false)} className="text-ink-soft hover:text-ink">
@@ -344,7 +347,7 @@ const ECommerce = () => {
                     <tr key={entry.id} className="hover:bg-surface-2 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className={`w-7 h-7 rounded-md flex items-center justify-center ${getPlatformColor(entry.platform)}`}>
+                          <span className={`w-7 h-7 rounded-none flex items-center justify-center ${getPlatformColor(entry.platform)}`}>
                             {getPlatformIcon(entry.platform, 'w-3.5 h-3.5')}
                           </span>
                           <span className="text-sm font-medium text-ink">
@@ -378,7 +381,7 @@ const ECommerce = () => {
       {(createOpen || editTarget) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={closeForm} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-lg mx-4 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-ink">
                 {editTarget ? "Modifier l'intégration" : 'Nouvelle intégration'}
@@ -393,7 +396,7 @@ const ECommerce = () => {
                 <select
                   value={form.platform}
                   onChange={(e) => setForm({ ...form, platform: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 >
                   <option value="SHOPIFY">Shopify</option>
                   <option value="WOOCOMMERCE">WooCommerce</option>
@@ -406,7 +409,7 @@ const ECommerce = () => {
                   type="url"
                   value={form.storeUrl}
                   onChange={(e) => setForm({ ...form, storeUrl: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   placeholder="https://maboutique.myshopify.com"
                   required
                 />
@@ -417,7 +420,7 @@ const ECommerce = () => {
                   type="text"
                   value={form.apiKey}
                   onChange={(e) => setForm({ ...form, apiKey: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   required
                 />
               </div>
@@ -427,7 +430,7 @@ const ECommerce = () => {
                   type="password"
                   value={form.apiSecret}
                   onChange={(e) => setForm({ ...form, apiSecret: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   required
                 />
               </div>
@@ -437,7 +440,7 @@ const ECommerce = () => {
                   type="password"
                   value={form.webhookSecret}
                   onChange={(e) => setForm({ ...form, webhookSecret: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 />
               </div>
               <div>
@@ -450,21 +453,21 @@ const ECommerce = () => {
                   step={5}
                   value={form.syncFrequencyMin}
                   onChange={(e) => setForm({ ...form, syncFrequencyMin: parseInt(e.target.value) || 60 })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 />
               </div>
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={closeForm}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {(createMutation.isPending || updateMutation.isPending) && (
                     <Loader2 size={14} className="animate-spin" />

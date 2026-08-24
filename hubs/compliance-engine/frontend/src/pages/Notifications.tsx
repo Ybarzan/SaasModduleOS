@@ -127,7 +127,7 @@ const Notifications = () => {
         <div className="container mx-auto px-4">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-surface rounded-lg shadow-lg p-6 animate-pulse">
+              <div key={i} className="bg-surface rounded-none shadow-lg p-6 animate-pulse">
                 <div className="flex items-start gap-4">
                   <div className="w-12 h-12 bg-surface-2 rounded-full" />
                   <div className="flex-1 space-y-3">
@@ -149,7 +149,10 @@ const Notifications = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-ink mb-2">Centre de notifications</h1>
+            <h1 className="text-4xl font-bold text-ink mb-2">
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
+              Centre de notifications
+            </h1>
             <p className="text-ink-soft">
               {unreadCount > 0 ? `${unreadCount} non lu(s)` : 'Toutes vos notifications sont lues'}
             </p>
@@ -158,7 +161,7 @@ const Notifications = () => {
             <button
               onClick={() => markAllReadMutation.mutate()}
               disabled={markAllReadMutation.isPending}
-              className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-strong transition-colors flex items-center space-x-2 disabled:opacity-50"
+              className="bg-accent text-white px-4 py-2 rounded-none hover:bg-accent-strong transition-colors flex items-center space-x-2 disabled:opacity-50"
             >
               {markAllReadMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -171,12 +174,12 @@ const Notifications = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-surface rounded-lg shadow-sm p-1 inline-flex">
+        <div className="flex gap-1 mb-6 bg-surface rounded-none shadow-sm p-1 inline-flex">
           {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-none text-sm font-medium transition-colors ${
                 activeTab === tab.key
                   ? 'bg-accent text-white'
                   : 'text-ink-soft hover:bg-surface-2'
@@ -189,7 +192,7 @@ const Notifications = () => {
 
         {/* Notifications list */}
         {filtered.length === 0 ? (
-          <div className="bg-surface rounded-lg shadow-lg p-12 text-center">
+          <div className="bg-surface rounded-none shadow-lg p-12 text-center">
             <Bell className="h-16 w-16 text-ink-soft mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-ink mb-2">
               {activeTab === 'UNREAD'
@@ -216,7 +219,7 @@ const Notifications = () => {
               return (
                 <div
                   key={notif.id}
-                  className={`bg-surface rounded-lg shadow-lg p-5 hover:shadow-xl transition-shadow flex items-start gap-4 ${isUnread ? 'border-l-4 border-accent' : ''}`}
+                  className={`bg-surface rounded-none shadow-lg p-5 hover:shadow-xl transition-shadow flex items-start gap-4 ${isUnread ? 'border-l-4 border-accent' : ''}`}
                 >
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 ${colorClass}`}>
                     <Icon size={22} />
@@ -259,7 +262,7 @@ const Notifications = () => {
                           <button
                             onClick={() => markReadMutation.mutate([notif.id])}
                             disabled={markReadMutation.isPending}
-                            className="p-1.5 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-lg transition-colors disabled:opacity-50"
+                            className="p-1.5 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-none transition-colors disabled:opacity-50"
                             title="Marquer comme lu"
                           >
                             <Eye size={14} />
@@ -269,7 +272,7 @@ const Notifications = () => {
                           <button
                             onClick={() => archiveMutation.mutate(notif.id)}
                             disabled={archiveMutation.isPending}
-                            className="p-1.5 text-ink-soft hover:text-warning hover:bg-warning/10 rounded-lg transition-colors disabled:opacity-50"
+                            className="p-1.5 text-ink-soft hover:text-warning hover:bg-warning/10 rounded-none transition-colors disabled:opacity-50"
                             title="Archiver"
                           >
                             <Archive size={14} />
@@ -277,7 +280,7 @@ const Notifications = () => {
                         )}
                         <button
                           onClick={() => setDeleteId(notif.id)}
-                          className="p-1.5 text-ink-soft hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                          className="p-1.5 text-ink-soft hover:text-danger hover:bg-danger/10 rounded-none transition-colors"
                           title="Supprimer"
                         >
                           <Trash2 size={14} />
@@ -296,7 +299,7 @@ const Notifications = () => {
         {/* Delete Confirmation */}
         {deleteId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-surface rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="bg-surface rounded-none shadow-xl w-full max-w-md mx-4 p-6">
               <h3 className="text-lg font-bold text-ink mb-4">Confirmer la suppression</h3>
               <p className="text-ink-soft mb-6">
                 Êtes-vous sûr de vouloir supprimer cette notification ? Cette action est irréversible.
@@ -304,14 +307,14 @@ const Notifications = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setDeleteId(null)}
-                  className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
+                  className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={() => deleteMutation.mutate(deleteId)}
                   disabled={deleteMutation.isPending}
-                  className="px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  className="px-4 py-2 bg-danger text-white rounded-none hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
                 >
                   {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>Supprimer</span>

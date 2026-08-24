@@ -62,14 +62,17 @@ const CsrdReport = () => {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Reporting CSRD</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Reporting CSRD
+          </h1>
           <p className="text-ink-soft mt-1">Conformité CSRD & Taxonomie EU P4.26</p>
         </div>
         {canEdit() && (
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong disabled:opacity-50 transition-colors"
           >
             <RefreshCw size={16} className={isFetching ? 'animate-spin' : ''} />
             Actualiser
@@ -83,12 +86,12 @@ const CsrdReport = () => {
           Chargement du rapport CSRD...
         </div>
       ) : isError ? (
-        <div className="bg-danger/10 border border-danger/40 rounded-xl p-8 text-center">
+        <div className="bg-danger/10 border border-danger/40 rounded-none p-8 text-center">
           <AlertTriangle size={40} className="mx-auto mb-3 text-danger" />
           <p className="text-danger font-medium">Erreur lors du chargement du rapport</p>
           <button
             onClick={() => refetch()}
-            className="mt-4 px-4 py-2 bg-danger text-white text-sm font-medium rounded-lg hover:bg-danger/90 transition-colors"
+            className="mt-4 px-4 py-2 bg-danger text-white text-sm font-medium rounded-none hover:bg-danger/90 transition-colors"
           >
             Réessayer
           </button>
@@ -96,9 +99,9 @@ const CsrdReport = () => {
       ) : report ? (
         <>
           {/* Report meta */}
-          <div className="bg-surface rounded-xl border border-line p-5 mb-6">
+          <div className="bg-surface rounded-none border border-line p-5 mb-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-accent/10 flex items-center justify-center">
                 <FileText size={20} className="text-accent" />
               </div>
               <div>
@@ -115,7 +118,7 @@ const CsrdReport = () => {
           </div>
 
           {/* ESRS E1 badge */}
-          <div className={`mb-6 p-4 rounded-xl border ${
+          <div className={`mb-6 p-4 rounded-none border ${
             report.esrsE1Compliant
               ? 'bg-success/10 border-success/40'
               : 'bg-warning/10 border-warning/40'
@@ -138,9 +141,13 @@ const CsrdReport = () => {
           </div>
 
           {/* Total CO2 */}
-          <div className="bg-surface rounded-xl border border-line p-6 mb-6">
+          <div className="relative bg-surface rounded-none border border-line p-6 mb-6">
+            <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+            <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-br" aria-hidden="true" />
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
                 <Leaf size={20} className="text-success" />
               </div>
               <h2 className="text-lg font-semibold text-ink">Émissions CO₂</h2>
@@ -189,7 +196,7 @@ const CsrdReport = () => {
           </div>
 
           {/* Emissions by lane */}
-          <div className="bg-surface rounded-xl border border-line overflow-hidden mb-6">
+          <div className="bg-surface rounded-none border border-line overflow-hidden mb-6">
             <div className="px-6 py-4 border-b border-line">
               <h2 className="text-lg font-semibold text-ink">Émissions par lane</h2>
             </div>
@@ -224,9 +231,9 @@ const CsrdReport = () => {
 
           {/* Offsets & net emissions */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            <div className="bg-surface rounded-xl border border-line p-5">
+            <div className="bg-surface rounded-none border border-line p-5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
                   <Leaf size={20} className="text-success" />
                 </div>
                 <div>
@@ -235,9 +242,9 @@ const CsrdReport = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-surface rounded-xl border border-line p-5">
+            <div className="bg-surface rounded-none border border-line p-5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+                <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
                   <CheckCircle size={20} className="text-accent" />
                 </div>
                 <div>
@@ -246,9 +253,9 @@ const CsrdReport = () => {
                 </div>
               </div>
             </div>
-            <div className="bg-surface rounded-xl border border-line p-5">
+            <div className="bg-surface rounded-none border border-line p-5">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-none bg-warning/10 flex items-center justify-center">
                   <TrendingDown size={20} className="text-warning" />
                 </div>
                 <div>
@@ -260,7 +267,7 @@ const CsrdReport = () => {
           </div>
 
           {/* Recommendations */}
-          <div className="bg-surface rounded-xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <h2 className="text-lg font-semibold text-ink mb-4">Recommandations</h2>
             {report.recommendations.length === 0 ? (
               <p className="text-ink-soft text-sm">Aucune recommandation</p>

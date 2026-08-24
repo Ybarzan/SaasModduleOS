@@ -190,12 +190,15 @@ const ClientInvoicing = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Facturation clients</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Facturation clients
+          </h1>
           <p className="text-ink-soft mt-1">Comptabilité et facturation client (Accounts Receivable)</p>
         </div>
         <button
           onClick={() => setCreateOpen(true)}
-          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
         >
           <Plus size={18} />
           Nouvelle facture
@@ -204,9 +207,9 @@ const ClientInvoicing = () => {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
               <FileText size={20} className="text-accent" />
             </div>
             <div>
@@ -215,9 +218,9 @@ const ClientInvoicing = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-warning/10 flex items-center justify-center">
               <Clock size={20} className="text-warning" />
             </div>
             <div>
@@ -226,9 +229,9 @@ const ClientInvoicing = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
               <CheckCircle size={20} className="text-success" />
             </div>
             <div>
@@ -237,9 +240,9 @@ const ClientInvoicing = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-danger/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-danger/10 flex items-center justify-center">
               <AlertTriangle size={20} className="text-danger" />
             </div>
             <div>
@@ -251,7 +254,7 @@ const ClientInvoicing = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">Factures</h2>
         </div>
@@ -344,7 +347,7 @@ const ClientInvoicing = () => {
                           <button
                             onClick={() => updateStatusMutation.mutate({ id: inv.id, status: 'CANCELLED' })}
                             disabled={updateStatusMutation.isPending}
-                            className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                            className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                             title="Annuler"
                           >
                             <XCircle size={16} />
@@ -370,7 +373,7 @@ const ClientInvoicing = () => {
                           ) : (
                             <button
                               onClick={() => setDeleteConfirm(inv.id)}
-                              className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                              className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                               title="Supprimer"
                             >
                               <Trash2 size={16} />
@@ -391,7 +394,7 @@ const ClientInvoicing = () => {
       {createOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setCreateOpen(false)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-2xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-ink">Nouvelle facture</h3>
               <button onClick={() => setCreateOpen(false)} className="text-ink-soft hover:text-ink-soft">
@@ -406,7 +409,7 @@ const ClientInvoicing = () => {
                     type="text"
                     value={form.invoiceNumber}
                     onChange={(e) => setForm({ ...form, invoiceNumber: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     required
                   />
                 </div>
@@ -415,7 +418,7 @@ const ClientInvoicing = () => {
                   <select
                     value={form.currency}
                     onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   >
                     <option value="EUR">EUR</option>
                     <option value="USD">USD</option>
@@ -429,7 +432,7 @@ const ClientInvoicing = () => {
                     type="date"
                     value={form.invoiceDate}
                     onChange={(e) => setForm({ ...form, invoiceDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     required
                   />
                 </div>
@@ -439,7 +442,7 @@ const ClientInvoicing = () => {
                     type="date"
                     value={form.dueDate}
                     onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     required
                   />
                 </div>
@@ -449,7 +452,7 @@ const ClientInvoicing = () => {
                     type="text"
                     value={form.clientName}
                     onChange={(e) => setForm({ ...form, clientName: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     required
                   />
                 </div>
@@ -459,7 +462,7 @@ const ClientInvoicing = () => {
                     type="email"
                     value={form.clientEmail}
                     onChange={(e) => setForm({ ...form, clientEmail: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     required
                   />
                 </div>
@@ -478,7 +481,7 @@ const ClientInvoicing = () => {
                         const subtotal = parseFloat(e.target.value) || 0;
                         setForm({ ...form, subtotal, totalAmount: subtotal + form.vatAmount });
                       }}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       required
                     />
                   </div>
@@ -492,7 +495,7 @@ const ClientInvoicing = () => {
                         const vatAmount = parseFloat(e.target.value) || 0;
                         setForm({ ...form, vatAmount, totalAmount: form.subtotal + vatAmount });
                       }}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -502,7 +505,7 @@ const ClientInvoicing = () => {
                       step="0.01"
                       value={form.totalAmount || ''}
                       onChange={(e) => setForm({ ...form, totalAmount: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       required
                     />
                   </div>
@@ -516,7 +519,7 @@ const ClientInvoicing = () => {
                     <select
                       value={''}
                       onChange={(e) => setForm({ ...form, notes: e.target.value ? `Condition: ${e.target.value}\n${form.notes}` : form.notes })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     >
                       <option value="">—</option>
                       <option value="Net 30">Net 30 jours</option>
@@ -533,7 +536,7 @@ const ClientInvoicing = () => {
                       step="0.01"
                       value={form.earlyPaymentDiscountAmount || ''}
                       onChange={(e) => setForm({ ...form, earlyPaymentDiscountAmount: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -542,7 +545,7 @@ const ClientInvoicing = () => {
                       type="date"
                       value={form.earlyPaymentDiscountDeadline}
                       onChange={(e) => setForm({ ...form, earlyPaymentDiscountDeadline: e.target.value })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div className="sm:col-span-2">
@@ -550,7 +553,7 @@ const ClientInvoicing = () => {
                     <textarea
                       value={form.notes}
                       onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       rows={3}
                       placeholder="Notes ou commentaires..."
                     />
@@ -562,14 +565,14 @@ const ClientInvoicing = () => {
                 <button
                   type="button"
                   onClick={() => setCreateOpen(false)}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   Créer la facture
@@ -584,14 +587,14 @@ const ClientInvoicing = () => {
       {paymentTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => { setPaymentTarget(null); setPaymentAmount(0); setPaymentReference(''); }} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-md mx-4 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-ink">Enregistrer un paiement</h3>
               <button onClick={() => { setPaymentTarget(null); setPaymentAmount(0); setPaymentReference(''); }} className="text-ink-soft hover:text-ink-soft">
                 <X size={20} />
               </button>
             </div>
-            <div className="bg-bg rounded-lg p-4 mb-4">
+            <div className="bg-bg rounded-none p-4 mb-4">
               <p className="text-sm text-ink-soft">Facture</p>
               <p className="text-sm font-medium text-ink">{paymentTarget.invoiceNumber} — {paymentTarget.clientName}</p>
               <p className="text-sm text-ink-soft mt-1">Solde dû : <span className="font-medium text-danger">{formatCurrency(paymentTarget.balanceDue, paymentTarget.currency)}</span></p>
@@ -605,7 +608,7 @@ const ClientInvoicing = () => {
                   min="0"
                   value={paymentAmount || ''}
                   onChange={(e) => setPaymentAmount(parseFloat(e.target.value) || 0)}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   required
                 />
               </div>
@@ -615,7 +618,7 @@ const ClientInvoicing = () => {
                   type="text"
                   value={paymentReference}
                   onChange={(e) => setPaymentReference(e.target.value)}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   placeholder="Ex: VIR-2024-001"
                 />
               </div>
@@ -624,14 +627,14 @@ const ClientInvoicing = () => {
               <button
                 type="button"
                 onClick={() => { setPaymentTarget(null); setPaymentAmount(0); setPaymentReference(''); }}
-                className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={handleRecordPayment}
                 disabled={recordPaymentMutation.isPending || paymentAmount <= 0}
-                className="flex-1 px-4 py-2 bg-success text-white rounded-lg text-sm font-medium hover:bg-success/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-success text-white rounded-none text-sm font-medium hover:bg-success/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {recordPaymentMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                 Enregistrer le paiement

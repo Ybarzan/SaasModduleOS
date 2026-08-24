@@ -136,7 +136,10 @@ const FinancialReports = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">Reporting financier</h1>
+        <h1 className="text-2xl font-bold text-ink">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Reporting financier
+        </h1>
         <p className="text-ink-soft mt-1">P&L par expédition, transporteur et lane</p>
       </div>
 
@@ -149,9 +152,9 @@ const FinancialReports = () => {
       ) : dashboard ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
           {/* Total Revenue */}
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
                 <Euro size={20} className="text-accent" />
               </div>
               <div>
@@ -162,9 +165,9 @@ const FinancialReports = () => {
           </div>
 
           {/* Total Cost */}
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-warning/10 flex items-center justify-center">
                 <TrendingDown size={20} className="text-warning" />
               </div>
               <div>
@@ -175,9 +178,9 @@ const FinancialReports = () => {
           </div>
 
           {/* Total Margin */}
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
                 <TrendingUp size={20} className={dashboard.totalMargin >= 0 ? 'text-success' : 'text-danger'} />
               </div>
               <div>
@@ -190,9 +193,9 @@ const FinancialReports = () => {
           </div>
 
           {/* Margin % */}
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-accent/10 flex items-center justify-center">
                 <BarChart3 size={20} className="text-accent" />
               </div>
               <div>
@@ -203,9 +206,9 @@ const FinancialReports = () => {
           </div>
 
           {/* Shipment count */}
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-accent/10 flex items-center justify-center">
                 <Package size={20} className="text-accent" />
               </div>
               <div>
@@ -216,9 +219,9 @@ const FinancialReports = () => {
           </div>
 
           {/* Avg margin per shipment */}
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
                 <Euro size={20} className="text-success" />
               </div>
               <div>
@@ -260,7 +263,7 @@ const FinancialReports = () => {
         </div>
       ) : activeTab === 'carrier' ? (
         /* Par transporteur */
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="bg-surface rounded-none border border-line overflow-hidden">
           <div className="px-6 py-4 border-b border-line">
             <h2 className="text-lg font-semibold text-ink">Performance par transporteur</h2>
           </div>
@@ -304,7 +307,7 @@ const FinancialReports = () => {
         </div>
       ) : activeTab === 'lane' ? (
         /* Par lane */
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="bg-surface rounded-none border border-line overflow-hidden">
           <div className="px-6 py-4 border-b border-line">
             <h2 className="text-lg font-semibold text-ink">Performance par lane</h2>
           </div>
@@ -348,7 +351,7 @@ const FinancialReports = () => {
         </div>
       ) : (
         /* Par expédition */
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="bg-surface rounded-none border border-line overflow-hidden">
           <div className="px-6 py-4 border-b border-line">
             <h2 className="text-lg font-semibold text-ink">Détail par expédition</h2>
           </div>

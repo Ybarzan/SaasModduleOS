@@ -167,10 +167,17 @@ const Academy = () => {
           Retour aux modules
         </button>
 
-        <div className="bg-surface rounded-xl border border-line p-6 mb-6">
+        <div className="relative bg-surface rounded-none border border-line p-6 mb-6">
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-ink">{moduleDetail.title}</h1>
+              <h1 className="text-2xl font-bold text-ink">
+                <span className="text-accent font-normal" aria-hidden="true">:: </span>
+                {moduleDetail.title}
+              </h1>
               <div className="flex items-center gap-3 mt-2">
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${difficultyColors[moduleDetail.difficulty]}`}>
                   {moduleDetail.difficulty}
@@ -215,7 +222,7 @@ const Academy = () => {
           )}
 
           {isPassed && moduleDetail.enrollmentId && (
-            <div className="mt-6 p-4 bg-accent-soft rounded-lg border border-accent/30">
+            <div className="mt-6 p-4 bg-accent-soft rounded-none border border-accent/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Award size={20} className="text-accent" />
@@ -223,7 +230,7 @@ const Academy = () => {
                 </div>
                 <button
                   onClick={() => handleDownloadCertificate(moduleDetail.enrollmentId!)}
-                  className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-strong transition-colors"
+                  className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none text-sm font-medium hover:bg-accent-strong transition-colors"
                 >
                   <GraduationCap size={16} />
                   Télécharger le certificat
@@ -234,7 +241,7 @@ const Academy = () => {
         </div>
 
         {hasQuiz && (
-          <div className="bg-surface rounded-xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <h2 className="text-lg font-semibold text-ink mb-4">Quiz</h2>
             <div className="space-y-6">
               {quiz.map((q, i) => (
@@ -246,7 +253,7 @@ const Academy = () => {
                     {q.options.map((opt) => (
                       <label
                         key={opt}
-                        className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        className={`flex items-center gap-3 p-3 rounded-none border cursor-pointer transition-colors ${
                           quizAnswers[q.id] === opt
                             ? 'border-accent bg-accent-soft'
                             : 'border-line hover:border-ink-soft'
@@ -270,7 +277,7 @@ const Academy = () => {
             <button
               onClick={handleSubmitQuiz}
               disabled={!allAnswered || submitQuizMutation.isPending}
-              className="mt-6 flex items-center gap-2 bg-success text-white px-6 py-2.5 rounded-lg font-medium hover:bg-success/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="mt-6 flex items-center gap-2 bg-success text-white px-6 py-2.5 rounded-none font-medium hover:bg-success/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {submitQuizMutation.isPending && <Loader2 size={16} className="animate-spin" />}
               Soumettre le quiz
@@ -286,14 +293,17 @@ const Academy = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">IncoKalk Academy</h1>
+        <h1 className="text-2xl font-bold text-ink">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          IncoKalk Academy
+        </h1>
         <p className="text-ink-soft mt-1">Formation Incoterms 2020 & Trade Compliance</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-warning/10 flex items-center justify-center">
               <BookOpen size={20} className="text-warning" />
             </div>
             <div>
@@ -302,9 +312,9 @@ const Academy = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
               <Users size={20} className="text-accent" />
             </div>
             <div>
@@ -313,9 +323,9 @@ const Academy = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
               <CheckCircle size={20} className="text-success" />
             </div>
             <div>
@@ -324,9 +334,9 @@ const Academy = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent/10 flex items-center justify-center">
               <BarChart3 size={20} className="text-accent" />
             </div>
             <div>
@@ -340,12 +350,12 @@ const Academy = () => {
       <h2 className="text-lg font-semibold text-ink mb-4">Modules de formation</h2>
 
       {modulesLoading ? (
-        <div className="bg-surface rounded-xl border border-line px-6 py-12 text-center text-ink-soft">
+        <div className="bg-surface rounded-none border border-line px-6 py-12 text-center text-ink-soft">
           <Loader2 size={24} className="animate-spin mx-auto mb-2 text-ink-soft" />
           Chargement...
         </div>
       ) : modules.length === 0 ? (
-        <div className="bg-surface rounded-xl border border-line px-6 py-12 text-center text-ink-soft">
+        <div className="bg-surface rounded-none border border-line px-6 py-12 text-center text-ink-soft">
           <BookOpen size={32} className="mx-auto mb-3 text-ink-soft" />
           <p>Aucun module disponible</p>
         </div>
@@ -354,7 +364,7 @@ const Academy = () => {
           {modules.map((mod) => (
             <div
               key={mod.id}
-              className="bg-surface rounded-xl border border-line p-5 hover:shadow-md transition-shadow cursor-pointer flex flex-col"
+              className="bg-surface rounded-none border border-line p-5 hover:shadow-md transition-shadow cursor-pointer flex flex-col"
               onClick={() => handleViewModule(mod)}
             >
               <div className="flex items-start justify-between mb-3">

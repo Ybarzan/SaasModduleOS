@@ -179,7 +179,10 @@ const Providers = () => {
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-ink mb-2">Fournisseurs de tarifs</h1>
+          <h1 className="text-4xl font-bold text-ink mb-2">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Fournisseurs de tarifs
+          </h1>
           <p className="text-ink-soft">Connectez vos API de transport pour des devis en temps réel</p>
         </div>
 
@@ -206,12 +209,12 @@ const Providers = () => {
             return (
               <div
                 key={def.type}
-                className={`bg-surface rounded-lg shadow-lg p-6 border-2 ${isConnected || isInternal ? def.borderColor : 'border-transparent'} hover:shadow-xl transition-shadow`}
+                className={`bg-surface rounded-none shadow-lg p-6 border-2 ${isConnected || isInternal ? def.borderColor : 'border-transparent'} hover:shadow-xl transition-shadow`}
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
-                    <div className={`w-14 h-14 ${def.iconBg} rounded-xl flex items-center justify-center`}>
+                    <div className={`w-14 h-14 ${def.iconBg} rounded-none flex items-center justify-center`}>
                       {isInternal ? (
                         <Server className={`h-7 w-7 ${def.iconText}`} />
                       ) : (
@@ -274,7 +277,7 @@ const Providers = () => {
                               setConnectModal(def.type);
                             }
                           }}
-                          className="flex-1 px-3 py-2 bg-accent-soft text-accent-strong rounded-lg hover:bg-accent-soft transition-colors text-sm font-medium flex items-center justify-center space-x-1"
+                          className="flex-1 px-3 py-2 bg-accent-soft text-accent-strong rounded-none hover:bg-accent-soft transition-colors text-sm font-medium flex items-center justify-center space-x-1"
                         >
                           <Wifi size={14} />
                           <span>Reconnecter</span>
@@ -284,7 +287,7 @@ const Providers = () => {
                             <button
                               onClick={() => testMutation.mutate(config.id)}
                               disabled={testMutation.isPending}
-                              className="px-3 py-2 bg-surface-2 text-ink rounded-lg hover:bg-surface-2 transition-colors text-sm font-medium disabled:opacity-50"
+                              className="px-3 py-2 bg-surface-2 text-ink rounded-none hover:bg-surface-2 transition-colors text-sm font-medium disabled:opacity-50"
                               title="Tester la connexion"
                             >
                               {testMutation.isPending ? (
@@ -295,7 +298,7 @@ const Providers = () => {
                             </button>
                             <button
                               onClick={() => setDeleteId(config.id)}
-                              className="px-3 py-2 bg-danger/10 text-danger rounded-lg hover:bg-danger/10 transition-colors text-sm font-medium"
+                              className="px-3 py-2 bg-danger/10 text-danger rounded-none hover:bg-danger/10 transition-colors text-sm font-medium"
                               title="Déconnecter"
                             >
                               <Trash2 size={14} />
@@ -311,7 +314,7 @@ const Providers = () => {
                           setPriority(5);
                           setConnectModal(def.type);
                         }}
-                        className="w-full px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors font-medium flex items-center justify-center space-x-2"
+                        className="w-full px-4 py-2.5 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors font-medium flex items-center justify-center space-x-2"
                       >
                         <LinkIcon size={16} />
                         <span>Connecter</span>
@@ -325,7 +328,11 @@ const Providers = () => {
         </div>
 
         {/* Health Status Panel */}
-        <div className="bg-surface rounded-lg shadow-lg overflow-hidden">
+        <div className="relative bg-surface rounded-none shadow-lg overflow-hidden">
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <div className="px-6 py-4 border-b border-line flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Activity size={20} className="text-ink" />
@@ -334,7 +341,7 @@ const Providers = () => {
             <button
               onClick={() => healthCheckMutation.mutate()}
               disabled={healthCheckMutation.isPending}
-              className="px-3 py-1.5 bg-surface-2 text-ink rounded-lg hover:bg-surface-2 transition-colors text-sm font-medium flex items-center space-x-1.5 disabled:opacity-50"
+              className="px-3 py-1.5 bg-surface-2 text-ink rounded-none hover:bg-surface-2 transition-colors text-sm font-medium flex items-center space-x-1.5 disabled:opacity-50"
             >
               {healthCheckMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -364,7 +371,7 @@ const Providers = () => {
                       <tr key={h.providerType} className="hover:bg-bg transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center space-x-3">
-                            <div className={`w-8 h-8 ${def?.iconBg || 'bg-surface-2'} rounded-lg flex items-center justify-center`}>
+                            <div className={`w-8 h-8 ${def?.iconBg || 'bg-surface-2'} rounded-none flex items-center justify-center`}>
                               {h.providerType === 'INTERNAL' ? (
                                 <Server size={16} className={def?.iconText || 'text-ink-soft'} />
                               ) : (
@@ -408,7 +415,7 @@ const Providers = () => {
                                 <button
                                   onClick={() => testMutation.mutate(config.id)}
                                   disabled={testMutation.isPending}
-                                  className="p-1.5 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-lg transition-colors disabled:opacity-50"
+                                  className="p-1.5 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-none transition-colors disabled:opacity-50"
                                   title="Tester"
                                 >
                                   <Wifi size={14} />
@@ -416,7 +423,7 @@ const Providers = () => {
                                 {!h.active && (
                                   <button
                                     onClick={() => setDeleteId(config.id)}
-                                    className="p-1.5 text-ink-soft hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                                    className="p-1.5 text-ink-soft hover:text-danger hover:bg-danger/10 rounded-none transition-colors"
                                     title="Supprimer"
                                   >
                                     <Trash2 size={14} />
@@ -444,7 +451,7 @@ const Providers = () => {
         {/* Connect Modal */}
         {connectModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-surface rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div className="bg-surface rounded-none shadow-xl w-full max-w-md mx-4">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-ink">
@@ -452,7 +459,7 @@ const Providers = () => {
                   </h2>
                   <button
                     onClick={closeConnectModal}
-                    className="p-1.5 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-lg transition-colors"
+                    className="p-1.5 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-none transition-colors"
                   >
                     <X size={18} />
                   </button>
@@ -469,7 +476,7 @@ const Providers = () => {
                         type={showKey ? 'text' : 'password'}
                         value={apiKey}
                         onChange={(e) => setApiKey(e.target.value)}
-                        className="w-full border border-line rounded-lg pl-10 pr-10 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none pl-10 pr-10 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                         placeholder="Entrez votre clé API"
                       />
                       <button
@@ -493,7 +500,7 @@ const Providers = () => {
                           type={showSecret ? 'text' : 'password'}
                           value={apiSecret}
                           onChange={(e) => setApiSecret(e.target.value)}
-                          className="w-full border border-line rounded-lg pl-10 pr-10 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                          className="w-full border border-line rounded-none pl-10 pr-10 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                           placeholder="Clé secrète DHL"
                         />
                         <button
@@ -529,14 +536,14 @@ const Providers = () => {
                 <div className="flex justify-end space-x-3 pt-6">
                   <button
                     onClick={closeConnectModal}
-                    className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
+                    className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     onClick={handleConnect}
                     disabled={createMutation.isPending}
-                    className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
+                    className="px-4 py-2 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
                   >
                     {createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                     <span>Sauvegarder</span>
@@ -550,7 +557,7 @@ const Providers = () => {
         {/* Delete Confirmation */}
         {deleteId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-surface rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="bg-surface rounded-none shadow-xl w-full max-w-md mx-4 p-6">
               <h3 className="text-lg font-bold text-ink mb-4">Confirmer la déconnexion</h3>
               <p className="text-ink-soft mb-6">
                 Êtes-vous sûr de vouloir déconnecter ce fournisseur ? Les devis de cette source ne seront plus disponibles.
@@ -558,14 +565,14 @@ const Providers = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setDeleteId(null)}
-                  className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
+                  className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={() => deleteMutation.mutate(deleteId)}
                   disabled={deleteMutation.isPending}
-                  className="px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  className="px-4 py-2 bg-danger text-white rounded-none hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
                 >
                   {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>Déconnecter</span>

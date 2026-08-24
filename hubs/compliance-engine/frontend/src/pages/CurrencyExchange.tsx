@@ -191,6 +191,7 @@ const CurrencyExchange = () => {
             <DollarSign size={32} className="text-warning" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Taux de change
           </h1>
           <p className="text-ink-soft max-w-xl mx-auto">
@@ -210,14 +211,18 @@ const CurrencyExchange = () => {
         </div>
 
         {/* Converter */}
-        <div className="bg-surface rounded-2xl shadow-sm border border-line p-6 mb-6">
+        <div className="relative bg-surface rounded-none shadow-sm border border-line p-6 mb-6">
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <div className="grid grid-cols-[1fr,auto,1fr] gap-4 items-end">
             <div>
               <label className="text-xs text-ink-soft mb-1 block">De</label>
               <select
                 value={from}
                 onChange={e => { setFrom(e.target.value); setConvertedValue(null); setUsedRate(null); }}
-                className="w-full px-3 py-2.5 border border-line rounded-lg text-sm bg-bg focus:outline-none focus:ring-2 focus:ring-warning"
+                className="w-full px-3 py-2.5 border border-line rounded-none text-sm bg-bg focus:outline-none focus:ring-2 focus:ring-warning"
               >
                 {CURRENCY_GROUPS.map(group => (
                   <optgroup key={group.label} label={group.label}>
@@ -231,7 +236,7 @@ const CurrencyExchange = () => {
                 type="number"
                 value={amount}
                 onChange={e => setAmount(Number(e.target.value))}
-                className="w-full mt-2 px-3 py-2.5 border border-line rounded-lg text-lg font-bold bg-bg focus:outline-none focus:ring-2 focus:ring-warning"
+                className="w-full mt-2 px-3 py-2.5 border border-line rounded-none text-lg font-bold bg-bg focus:outline-none focus:ring-2 focus:ring-warning"
               />
             </div>
             <button
@@ -245,7 +250,7 @@ const CurrencyExchange = () => {
               <select
                 value={to}
                 onChange={e => { setTo(e.target.value); setConvertedValue(null); setUsedRate(null); }}
-                className="w-full px-3 py-2.5 border border-line rounded-lg text-sm bg-bg focus:outline-none focus:ring-2 focus:ring-warning"
+                className="w-full px-3 py-2.5 border border-line rounded-none text-sm bg-bg focus:outline-none focus:ring-2 focus:ring-warning"
               >
                 {CURRENCY_GROUPS.map(group => (
                   <optgroup key={group.label} label={group.label}>
@@ -256,7 +261,7 @@ const CurrencyExchange = () => {
                 ))}
               </select>
               {convertedValue != null && (
-                <div className="mt-2 px-3 py-2.5 border border-success/40 bg-success/10 rounded-lg text-lg font-bold text-success">
+                <div className="mt-2 px-3 py-2.5 border border-success/40 bg-success/10 rounded-none text-lg font-bold text-success">
                   {convertedValue} {to}
                 </div>
               )}
@@ -265,7 +270,7 @@ const CurrencyExchange = () => {
           <button
             onClick={handleConvert}
             disabled={loading}
-            className="mt-4 w-full bg-warning text-white py-3 rounded-xl font-semibold hover:bg-warning/90 disabled:opacity-50 flex items-center justify-center gap-2 text-sm transition-colors"
+            className="mt-4 w-full bg-warning text-white py-3 rounded-none font-semibold hover:bg-warning/90 disabled:opacity-50 flex items-center justify-center gap-2 text-sm transition-colors"
           >
             {loading ? <><Loader2 className="animate-spin" /> Conversion en cours...</> : 'Convertir'}
           </button>
@@ -281,7 +286,7 @@ const CurrencyExchange = () => {
         </div>
 
         {/* Taux du moment */}
-        <div className="bg-surface rounded-2xl shadow-sm border border-line p-6 mb-6">
+        <div className="bg-surface rounded-none shadow-sm border border-line p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider">
@@ -303,7 +308,7 @@ const CurrencyExchange = () => {
             {POPULAR_PAIRS.map((p, i) => {
               const rate = getPopularDisplayRate(p);
               return (
-                <div key={i} className="bg-bg rounded-xl p-3 text-center">
+                <div key={i} className="bg-bg rounded-none p-3 text-center">
                   <div className="text-xs text-ink-soft mb-1">
                     {getFlag(p.from)} {p.from} → {getFlag(p.to)} {p.to}
                   </div>
@@ -317,7 +322,7 @@ const CurrencyExchange = () => {
         </div>
 
         {/* Table de référence */}
-        <div className="bg-surface rounded-2xl shadow-sm border border-line p-6">
+        <div className="bg-surface rounded-none shadow-sm border border-line p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Activity size={16} className="text-warning" />
@@ -342,7 +347,7 @@ const CurrencyExchange = () => {
               return (
                 <div
                   key={c.code}
-                  className="flex items-center justify-between px-3 py-2 bg-bg rounded-lg hover:bg-warning/10 transition-colors"
+                  className="flex items-center justify-between px-3 py-2 bg-bg rounded-none hover:bg-warning/10 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{c.flag}</span>

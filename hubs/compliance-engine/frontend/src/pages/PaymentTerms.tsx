@@ -116,13 +116,16 @@ const PaymentTerms = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Conditions de paiement</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Conditions de paiement
+          </h1>
           <p className="text-ink-soft mt-1">Gérez les termes de paiement</p>
         </div>
         {isAdmin && (
           <button
             onClick={openAddForm}
-            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
           >
             <Plus size={18} />
             Nouveau terme
@@ -130,7 +133,7 @@ const PaymentTerms = () => {
         )}
       </div>
 
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">Liste des conditions</h2>
         </div>
@@ -164,7 +167,7 @@ const PaymentTerms = () => {
                   <tr key={term.id} className="hover:bg-bg transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-none bg-success/10 flex items-center justify-center">
                           <DollarSign size={16} className="text-success" />
                         </div>
                         <div>
@@ -207,7 +210,7 @@ const PaymentTerms = () => {
                             <button
                               onClick={() => setDefaultMutation.mutate(term)}
                               disabled={setDefaultMutation.isPending}
-                              className="p-1.5 rounded-lg text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
+                              className="p-1.5 rounded-none text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
                               title="Définir par défaut"
                             >
                               <CheckCircle size={16} />
@@ -215,7 +218,7 @@ const PaymentTerms = () => {
                           )}
                           <button
                             onClick={() => openEditForm(term)}
-                            className="p-1.5 rounded-lg text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
+                            className="p-1.5 rounded-none text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
                             title="Modifier"
                           >
                             <Percent size={16} />
@@ -239,7 +242,7 @@ const PaymentTerms = () => {
                           ) : (
                             <button
                               onClick={() => setDeleteConfirm(term.id)}
-                              className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                              className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                               title="Supprimer"
                             >
                               <Trash2 size={16} />
@@ -260,7 +263,7 @@ const PaymentTerms = () => {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowForm(false)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-md mx-4 p-6">
             <h3 className="text-lg font-semibold text-ink mb-4">
               {editingTerm ? 'Modifier la condition' : 'Nouvelle condition de paiement'}
             </h3>
@@ -272,7 +275,7 @@ const PaymentTerms = () => {
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     placeholder="30 jours net"
                     required
                   />
@@ -283,7 +286,7 @@ const PaymentTerms = () => {
                     type="text"
                     value={form.code}
                     onChange={(e) => setForm({ ...form, code: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     placeholder="NET30"
                     required
                   />
@@ -296,7 +299,7 @@ const PaymentTerms = () => {
                     type="number"
                     value={form.daysUntilDue}
                     onChange={(e) => setForm({ ...form, daysUntilDue: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     min={0}
                     required
                   />
@@ -307,7 +310,7 @@ const PaymentTerms = () => {
                     type="number"
                     value={form.earlyPaymentDiscountPercent}
                     onChange={(e) => setForm({ ...form, earlyPaymentDiscountPercent: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     min={0}
                     max={100}
                     step={0.1}
@@ -321,7 +324,7 @@ const PaymentTerms = () => {
                     type="number"
                     value={form.earlyPaymentDiscountDays}
                     onChange={(e) => setForm({ ...form, earlyPaymentDiscountDays: parseInt(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     min={0}
                   />
                 </div>
@@ -341,14 +344,14 @@ const PaymentTerms = () => {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={saveMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {saveMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   {editingTerm ? 'Mettre à jour' : 'Créer'}

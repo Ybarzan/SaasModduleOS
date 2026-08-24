@@ -195,12 +195,15 @@ const CarrierInvoicing = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Facturation transporteurs</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Facturation transporteurs
+          </h1>
           <p className="text-ink-soft mt-1">Gestion des factures transporteurs (Accounts Payable)</p>
         </div>
         <button
           onClick={() => setCreateOpen(true)}
-          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
         >
           <Plus size={18} />
           Nouvelle facture
@@ -209,9 +212,9 @@ const CarrierInvoicing = () => {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
               <FileText size={20} className="text-accent" />
             </div>
             <div>
@@ -220,9 +223,9 @@ const CarrierInvoicing = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-warning/10 flex items-center justify-center">
               <Clock size={20} className="text-warning" />
             </div>
             <div>
@@ -231,9 +234,9 @@ const CarrierInvoicing = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
               <CheckCircle size={20} className="text-success" />
             </div>
             <div>
@@ -242,9 +245,9 @@ const CarrierInvoicing = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent/10 flex items-center justify-center">
               <DollarSign size={20} className="text-accent" />
             </div>
             <div>
@@ -256,7 +259,7 @@ const CarrierInvoicing = () => {
       </div>
 
       {/* Table */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">Factures</h2>
         </div>
@@ -316,7 +319,7 @@ const CarrierInvoicing = () => {
                           <button
                             onClick={() => updateStatusMutation.mutate({ id: inv.id, status: 'UNDER_REVIEW' })}
                             disabled={updateStatusMutation.isPending}
-                            className="p-1.5 rounded-lg text-accent hover:text-accent-strong hover:bg-accent-soft transition-colors"
+                            className="p-1.5 rounded-none text-accent hover:text-accent-strong hover:bg-accent-soft transition-colors"
                             title="Soumettre"
                           >
                             <Send size={16} />
@@ -327,7 +330,7 @@ const CarrierInvoicing = () => {
                             <button
                               onClick={() => updateStatusMutation.mutate({ id: inv.id, status: 'APPROVED' })}
                               disabled={updateStatusMutation.isPending}
-                              className="p-1.5 rounded-lg text-success hover:text-success hover:bg-success/10 transition-colors"
+                              className="p-1.5 rounded-none text-success hover:text-success hover:bg-success/10 transition-colors"
                               title="Approuver"
                             >
                               <CheckCircle size={16} />
@@ -335,7 +338,7 @@ const CarrierInvoicing = () => {
                             <button
                               onClick={() => updateStatusMutation.mutate({ id: inv.id, status: 'REJECTED' })}
                               disabled={updateStatusMutation.isPending}
-                              className="p-1.5 rounded-lg text-danger hover:text-danger hover:bg-danger/10 transition-colors"
+                              className="p-1.5 rounded-none text-danger hover:text-danger hover:bg-danger/10 transition-colors"
                               title="Rejeter"
                             >
                               <XCircle size={16} />
@@ -346,7 +349,7 @@ const CarrierInvoicing = () => {
                           <button
                             onClick={() => updateStatusMutation.mutate({ id: inv.id, status: 'PAID' })}
                             disabled={updateStatusMutation.isPending}
-                            className="p-1.5 rounded-lg text-success hover:text-success hover:bg-success/10 transition-colors"
+                            className="p-1.5 rounded-none text-success hover:text-success hover:bg-success/10 transition-colors"
                             title="Marquer payé"
                           >
                             <DollarSign size={16} />
@@ -355,7 +358,7 @@ const CarrierInvoicing = () => {
                         {inv.status !== 'DRAFT' && inv.status !== 'PAID' && inv.status !== 'REJECTED' && (
                           <button
                             onClick={() => setDisputeTarget(inv.id)}
-                            className="p-1.5 rounded-lg text-warning hover:text-warning hover:bg-warning/10 transition-colors"
+                            className="p-1.5 rounded-none text-warning hover:text-warning hover:bg-warning/10 transition-colors"
                             title="Signaler un litige"
                           >
                             <AlertTriangle size={16} />
@@ -381,7 +384,7 @@ const CarrierInvoicing = () => {
                           ) : (
                             <button
                               onClick={() => setDeleteConfirm(inv.id)}
-                              className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                              className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                               title="Supprimer"
                             >
                               <Trash2 size={16} />
@@ -390,7 +393,7 @@ const CarrierInvoicing = () => {
                         )}
                         <button
                           onClick={() => setSelectedInvoice(inv)}
-                          className="p-1.5 rounded-lg text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
+                          className="p-1.5 rounded-none text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
                           title="Voir les détails"
                         >
                           <Eye size={16} />
@@ -411,7 +414,7 @@ const CarrierInvoicing = () => {
       {createOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setCreateOpen(false)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-2xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-2xl mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-ink">Nouvelle facture</h3>
               <button onClick={() => setCreateOpen(false)} className="text-ink-soft hover:text-ink-soft">
@@ -426,7 +429,7 @@ const CarrierInvoicing = () => {
                     type="text"
                     value={form.invoiceNumber}
                     onChange={(e) => setForm({ ...form, invoiceNumber: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     required
                   />
                 </div>
@@ -436,7 +439,7 @@ const CarrierInvoicing = () => {
                     type="text"
                     value={form.carrierName}
                     onChange={(e) => setForm({ ...form, carrierName: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     required
                   />
                 </div>
@@ -446,7 +449,7 @@ const CarrierInvoicing = () => {
                     type="date"
                     value={form.invoiceDate}
                     onChange={(e) => setForm({ ...form, invoiceDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     required
                   />
                 </div>
@@ -456,7 +459,7 @@ const CarrierInvoicing = () => {
                     type="date"
                     value={form.dueDate}
                     onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   />
                 </div>
                 <div>
@@ -465,7 +468,7 @@ const CarrierInvoicing = () => {
                     type="text"
                     value={form.carrierReference}
                     onChange={(e) => setForm({ ...form, carrierReference: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   />
                 </div>
                 <div>
@@ -474,7 +477,7 @@ const CarrierInvoicing = () => {
                     type="text"
                     value={form.shipmentReference}
                     onChange={(e) => setForm({ ...form, shipmentReference: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   />
                 </div>
               </div>
@@ -489,7 +492,7 @@ const CarrierInvoicing = () => {
                       step="0.01"
                       value={form.totalAmount || ''}
                       onChange={(e) => setForm({ ...form, totalAmount: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       required
                     />
                   </div>
@@ -498,7 +501,7 @@ const CarrierInvoicing = () => {
                     <select
                       value={form.currency}
                       onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     >
                       <option value="USD">USD</option>
                       <option value="EUR">EUR</option>
@@ -513,7 +516,7 @@ const CarrierInvoicing = () => {
                       step="0.01"
                       value={form.totalAmountEur || ''}
                       onChange={(e) => setForm({ ...form, totalAmountEur: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                 </div>
@@ -529,7 +532,7 @@ const CarrierInvoicing = () => {
                       step="0.01"
                       value={form.freightAmount || ''}
                       onChange={(e) => setForm({ ...form, freightAmount: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -539,7 +542,7 @@ const CarrierInvoicing = () => {
                       step="0.01"
                       value={form.fuelSurcharge || ''}
                       onChange={(e) => setForm({ ...form, fuelSurcharge: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -549,7 +552,7 @@ const CarrierInvoicing = () => {
                       step="0.01"
                       value={form.securityFee || ''}
                       onChange={(e) => setForm({ ...form, securityFee: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -559,7 +562,7 @@ const CarrierInvoicing = () => {
                       step="0.01"
                       value={form.handlingFee || ''}
                       onChange={(e) => setForm({ ...form, handlingFee: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -569,7 +572,7 @@ const CarrierInvoicing = () => {
                       step="0.01"
                       value={form.customsFee || ''}
                       onChange={(e) => setForm({ ...form, customsFee: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -579,7 +582,7 @@ const CarrierInvoicing = () => {
                       step="0.01"
                       value={form.otherCharges || ''}
                       onChange={(e) => setForm({ ...form, otherCharges: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                 </div>
@@ -590,7 +593,7 @@ const CarrierInvoicing = () => {
                       type="text"
                       value={form.otherChargesDescription}
                       onChange={(e) => setForm({ ...form, otherChargesDescription: e.target.value })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                 )}
@@ -605,7 +608,7 @@ const CarrierInvoicing = () => {
                       step="0.01"
                       value={form.negotiatedRate || ''}
                       onChange={(e) => setForm({ ...form, negotiatedRate: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -614,7 +617,7 @@ const CarrierInvoicing = () => {
                       type="text"
                       value={form.reconciliationNotes}
                       onChange={(e) => setForm({ ...form, reconciliationNotes: e.target.value })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                 </div>
@@ -624,14 +627,14 @@ const CarrierInvoicing = () => {
                 <button
                   type="button"
                   onClick={() => setCreateOpen(false)}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   Créer la facture
@@ -646,14 +649,14 @@ const CarrierInvoicing = () => {
       {disputeTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => { setDisputeTarget(null); setDisputeReason(''); }} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-md mx-4 p-6">
             <h3 className="text-lg font-semibold text-ink mb-4">Signaler un litige</h3>
             <div>
               <label className="block text-sm font-medium text-ink-soft mb-1">Raison du litige</label>
               <textarea
                 value={disputeReason}
                 onChange={(e) => setDisputeReason(e.target.value)}
-                className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 rows={3}
                 placeholder="Décrivez le motif du litige..."
               />
@@ -662,14 +665,14 @@ const CarrierInvoicing = () => {
               <button
                 type="button"
                 onClick={() => { setDisputeTarget(null); setDisputeReason(''); }}
-                className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
+                className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={() => disputeMutation.mutate({ id: disputeTarget, status: 'DISPUTED', reason: disputeReason })}
                 disabled={disputeMutation.isPending}
-                className="flex-1 px-4 py-2 bg-warning text-white rounded-lg text-sm font-medium hover:bg-warning/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-warning text-white rounded-none text-sm font-medium hover:bg-warning/90 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {disputeMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                 Signaler le litige
@@ -683,7 +686,7 @@ const CarrierInvoicing = () => {
       {selectedInvoice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setSelectedInvoice(null)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-3xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-surface border-b border-line px-6 py-4 flex items-center justify-between z-10">
               <div>
                 <h3 className="text-lg font-semibold text-ink">
@@ -733,7 +736,7 @@ const CarrierInvoicing = () => {
               {/* Invoice Breakdown */}
               <div className="border-t border-line pt-4">
                 <h4 className="text-sm font-medium text-ink-soft mb-3">Ventilation de la facture</h4>
-                <div className="bg-surface-2 rounded-lg p-4 space-y-2">
+                <div className="bg-surface-2 rounded-none p-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-ink-soft">Fret</span>
                     <span className="font-medium text-ink">{formatCurrency(selectedInvoice.freightAmount, selectedInvoice.currency)}</span>
@@ -777,17 +780,17 @@ const CarrierInvoicing = () => {
               <div className="border-t border-line pt-4">
                 <h4 className="text-sm font-medium text-ink-soft mb-3">Réconciliation</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="bg-surface-2 rounded-lg p-4">
+                  <div className="bg-surface-2 rounded-none p-4">
                     <p className="text-xs text-ink-soft">Taux négocié</p>
                     <p className="text-lg font-bold text-ink">
                       {selectedInvoice.negotiatedRate ? formatCurrency(selectedInvoice.negotiatedRate, selectedInvoice.currency) : '—'}
                     </p>
                   </div>
-                  <div className="bg-surface-2 rounded-lg p-4">
+                  <div className="bg-surface-2 rounded-none p-4">
                     <p className="text-xs text-ink-soft">Montant facturé</p>
                     <p className="text-lg font-bold text-ink">{formatCurrency(selectedInvoice.totalAmount, selectedInvoice.currency)}</p>
                   </div>
-                  <div className="bg-surface-2 rounded-lg p-4">
+                  <div className="bg-surface-2 rounded-none p-4">
                     <p className="text-xs text-ink-soft">Écart</p>
                     <p className={`text-lg font-bold ${selectedInvoice.variance > 0 ? 'text-danger' : selectedInvoice.variance < 0 ? 'text-success' : 'text-ink'}`}>
                       {selectedInvoice.variance != null ? (
@@ -804,7 +807,7 @@ const CarrierInvoicing = () => {
                 {selectedInvoice.reconciliationNotes && (
                   <div className="mt-4">
                     <p className="text-xs text-ink-soft mb-1">Notes de réconciliation</p>
-                    <p className="text-sm text-ink-soft bg-surface-2 rounded-lg p-3">{selectedInvoice.reconciliationNotes}</p>
+                    <p className="text-sm text-ink-soft bg-surface-2 rounded-none p-3">{selectedInvoice.reconciliationNotes}</p>
                   </div>
                 )}
               </div>
@@ -827,7 +830,7 @@ const CarrierInvoicing = () => {
                       </div>
                     )}
                     {selectedInvoice.disputeReason && (
-                      <div className="flex items-start gap-2 text-sm text-danger bg-danger/10 rounded-lg p-3">
+                      <div className="flex items-start gap-2 text-sm text-danger bg-danger/10 rounded-none p-3">
                         <AlertTriangle size={14} className="mt-0.5 shrink-0" />
                         <span>Litige : {selectedInvoice.disputeReason}</span>
                       </div>
