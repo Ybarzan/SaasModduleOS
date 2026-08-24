@@ -10,10 +10,10 @@ import java.util.UUID;
 
 /**
  * Une action candidate proposee par une regle a actionType non-null --
- * jamais une action deja executee. Voir V65 et docs/04-composants-techniques.md.
- * Le passage a EXECUTED (appel reel a un systeme aval) est un chantier separe,
- * pas encore construit -- cette table s'arrete a la proposition + decision
- * humaine (APPROVED/REJECTED).
+ * jamais une action deja executee au moment de sa creation. Voir V65/V66 et
+ * docs/04-composants-techniques.md. L'approbation (OrchestrationSuggestionService.approve)
+ * declenche immediatement OrchestrationExecutor, qui fait passer le statut a
+ * EXECUTED ou FAILED et renseigne executionResult.
  */
 @Entity
 @Table(name = "orchestration_suggestions")
@@ -64,6 +64,12 @@ public class OrchestrationSuggestion {
 
     @Column(name = "decision_note", length = 1000)
     private String decisionNote;
+
+    /** Resultat de l'execution reelle (succes détaillé ou raison d'echec/de
+     * blocage par la gouvernance) -- distinct de decisionNote, qui capture la
+     * note humaine au moment de la decision. */
+    @Column(name = "execution_result", length = 1000)
+    private String executionResult;
 
     public enum Status {
         PENDING_APPROVAL,

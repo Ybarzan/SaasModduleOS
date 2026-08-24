@@ -26,6 +26,7 @@ import static org.mockito.Mockito.when;
 class OrchestrationSuggestionServiceTest {
 
     @Mock OrchestrationSuggestionRepository suggestionRepo;
+    @Mock OrchestrationExecutor executor;
 
     private OrchestrationSuggestionService service;
 
@@ -34,7 +35,7 @@ class OrchestrationSuggestionServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        service = new OrchestrationSuggestionService(suggestionRepo);
+        service = new OrchestrationSuggestionService(suggestionRepo, executor);
         companyId = UUID.randomUUID();
         userId = UUID.randomUUID();
         suggestionId = UUID.randomUUID();
@@ -73,7 +74,7 @@ class OrchestrationSuggestionServiceTest {
     }
 
     @Test
-    @DisplayName("approve : PENDING_APPROVAL → APPROVED, horodate et attribue la décision")
+    @DisplayName("approve : PENDING_APPROVAL → APPROVED, horodate, attribue la décision, déclenche l'exécuteur")
     void approve_pending_transitionsToApproved() {
         OrchestrationSuggestion suggestion = pending();
         when(suggestionRepo.findByIdAndCompanyId(suggestionId, companyId)).thenReturn(Optional.of(suggestion));
@@ -85,6 +86,26 @@ class OrchestrationSuggestionServiceTest {
         assertThat(result.getDecidedByUserId()).isEqualTo(userId);
         assertThat(result.getDecisionNote()).isEqualTo("Montant raisonnable");
         assertThat(result.getDecidedAt()).isNotNull();
+        verify(executor).execute(suggestion);
+    }
+
+    @Test
+    @DisplayName("approve : l'exécuteur mute le statut vers EXECUTED, la décision persiste ce résultat")
+    void approve_executorMarksExecuted_persistsFinalStatus() {
+        OrchestrationSuggestion suggestion = pending();
+        when(suggestionRepo.findByIdAndCompanyId(suggestionId, companyId)).thenReturn(Optional.of(suggestion));
+        when(suggestionRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+        org.mockito.Mockito.doAnswer(inv -> {
+            OrchestrationSuggestion s = inv.getArgument(0);
+            s.setStatus(OrchestrationSuggestion.Status.EXECUTED);
+            s.setExecutionResult("Synchronisé vers odoo (Odoo prod)");
+            return null;
+        }).when(executor).execute(any());
+
+        OrchestrationSuggestion result = service.approve(suggestionId, userId, null);
+
+        assertThat(result.getStatus()).isEqualTo(OrchestrationSuggestion.Status.EXECUTED);
+        assertThat(result.getExecutionResult()).isEqualTo("Synchronisé vers odoo (Odoo prod)");
     }
 
     @Test

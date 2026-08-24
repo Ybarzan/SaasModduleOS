@@ -16,17 +16,18 @@ import java.util.UUID;
 
 /**
  * Flux de decision humaine sur les propositions creees par NotificationService
- * (voir OrchestrationSuggestion, V65, docs/04-composants-techniques.md). Ce
- * service ne fait qu'approuver/rejeter -- il n'execute jamais rien de reel
- * (pas d'appel a ErpProvider ou autre systeme aval). L'executeur qui
- * consommerait une suggestion APPROVED est un chantier separe, pas encore
- * construit (Phase 3 J6-J8 de docs/03-plan-migration.md).
+ * (voir OrchestrationSuggestion, V65/V66, docs/04-composants-techniques.md).
+ * L'approbation declenche immediatement OrchestrationExecutor -- c'est
+ * l'approbation humaine elle-meme qui sert de declencheur d'execution, il n'y
+ * a pas de file d'attente separee entre APPROVED et l'appel reel au systeme
+ * aval (Phase 3 J6-J8 de docs/03-plan-migration.md).
  */
 @Service
 @RequiredArgsConstructor
 public class OrchestrationSuggestionService {
 
     private final OrchestrationSuggestionRepository suggestionRepo;
+    private final OrchestrationExecutor executor;
 
     @Transactional(readOnly = true)
     public List<OrchestrationSuggestion> listSuggestions() {
@@ -51,7 +52,17 @@ public class OrchestrationSuggestionService {
 
     @Transactional
     public OrchestrationSuggestion approve(UUID id, UUID userId, String note) {
-        return decide(id, userId, note, OrchestrationSuggestion.Status.APPROVED);
+        OrchestrationSuggestion suggestion = getSuggestion(id);
+        if (suggestion.getStatus() != OrchestrationSuggestion.Status.PENDING_APPROVAL) {
+            throw new IllegalStateException(
+                    "Décision impossible : la suggestion est déjà " + suggestion.getStatus());
+        }
+        suggestion.setDecidedAt(LocalDateTime.now());
+        suggestion.setDecidedByUserId(userId);
+        suggestion.setDecisionNote(note);
+        suggestion.setStatus(OrchestrationSuggestion.Status.APPROVED);
+        executor.execute(suggestion);
+        return suggestionRepo.save(suggestion);
     }
 
     @Transactional
