@@ -68,6 +68,12 @@ public class NotificationRule {
     @Column(name = "filter_data_source", length = 10)
     private String filterDataSource;
 
+    /** Arbre de condition composee serialise en JSON (RuleConditionNode), ou null.
+     * Quand present, remplace filterStatus/filterCarrierId/filterDataSource pour
+     * cette regle -- voir NotificationService.matchesFilters. */
+    @Column(name = "condition_json", columnDefinition = "TEXT")
+    private String conditionJson;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

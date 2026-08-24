@@ -5,12 +5,14 @@ import com.incokalk.dto.notification.NotificationRuleDTO;
 import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.*;
 import com.incokalk.repository.*;
+import com.incokalk.rules.RuleConditionEvaluator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
@@ -30,6 +32,10 @@ class NotificationServiceTest {
     @Mock UserRepository userRepo;
     @Mock RestTemplate restTemplate;
     @Mock RoleChecker roleChecker;
+    // Instances reelles (pas de mock) : on veut tester la vraie evaluation JSON -> condition,
+    // pas verifier des appels sur un double.
+    @Spy RuleConditionEvaluator conditionEvaluator = new RuleConditionEvaluator();
+    @Spy ObjectMapper objectMapper = new ObjectMapper();
 
     @InjectMocks NotificationService service;
 
@@ -469,5 +475,110 @@ class NotificationServiceTest {
                 TrackingEvent.DataSource.MANUAL);
 
         verify(notificationRepo, never()).save(any());
+    }
+
+    // ── condition structurée (conditionJson) ────────────────────────────
+
+    @Test
+    @DisplayName("createRule : condition JSON valide -> persistée telle quelle")
+    void createRule_validConditionJson_persisted() {
+        String json = """
+                {"type":"LEAF","field":"newStatus","operator":"EQ","value":"IN_TRANSIT"}""";
+        NotificationRuleDTO dto = NotificationRuleDTO.builder()
+                .name("Règle test").eventType("SHIPMENT_STATUS_CHANGE").isActive(true)
+                .sendInApp(true).sendEmail(false).sendWebhook(false)
+                .conditionJson(json).build();
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+        when(ruleRepo.save(any(NotificationRule.class))).thenAnswer(i -> i.getArgument(0));
+
+        NotificationRule result = service.createRule(dto, companyId, userId);
+
+        assertThat(result.getConditionJson()).isEqualTo(json);
+    }
+
+    @Test
+    @DisplayName("createRule : condition JSON invalide (opérateur inconnu) -> rejetée")
+    void createRule_invalidConditionJson_rejected() {
+        String json = """
+                {"type":"LEAF","field":"newStatus","operator":"NOT_AN_OPERATOR","value":"IN_TRANSIT"}""";
+        NotificationRuleDTO dto = NotificationRuleDTO.builder()
+                .name("Règle test").eventType("SHIPMENT_STATUS_CHANGE").isActive(true)
+                .sendInApp(true).sendEmail(false).sendWebhook(false)
+                .conditionJson(json).build();
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+        assertThatThrownBy(() -> service.createRule(dto, companyId, userId))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(ruleRepo, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("condition structurée AND — les deux branches matchent -> notifie")
+    void onShipmentStatusChange_structuredAnd_bothMatch_notifies() {
+        rule.setConditionJson("""
+                {"type":"AND","children":[
+                  {"type":"LEAF","field":"newStatus","operator":"EQ","value":"IN_TRANSIT"},
+                  {"type":"LEAF","field":"dataSource","operator":"EQ","value":"LIVE"}
+                ]}""");
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
+        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.LIVE);
+
+        verify(notificationRepo).save(any());
+    }
+
+    @Test
+    @DisplayName("condition structurée AND — une seule branche matche -> ne notifie pas")
+    void onShipmentStatusChange_structuredAnd_partialMatch_skips() {
+        rule.setConditionJson("""
+                {"type":"AND","children":[
+                  {"type":"LEAF","field":"newStatus","operator":"EQ","value":"IN_TRANSIT"},
+                  {"type":"LEAF","field":"dataSource","operator":"EQ","value":"LIVE"}
+                ]}""");
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+
+        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.MANUAL);
+
+        verify(notificationRepo, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("condition structurée OR — une branche matche -> notifie")
+    void onShipmentStatusChange_structuredOr_oneMatches_notifies() {
+        rule.setConditionJson("""
+                {"type":"OR","children":[
+                  {"type":"LEAF","field":"newStatus","operator":"EQ","value":"DELIVERED"},
+                  {"type":"LEAF","field":"newStatus","operator":"EQ","value":"IN_TRANSIT"}
+                ]}""");
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
+        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.LIVE);
+
+        verify(notificationRepo).save(any());
+    }
+
+    @Test
+    @DisplayName("condition structurée présente -> ignore filterStatus/filterDataSource (pas de cumul des deux systèmes)")
+    void onShipmentStatusChange_structuredConditionOverridesLegacyFilters() {
+        // filterStatus exigerait DELIVERED (ne matcherait pas IN_TRANSIT), mais la
+        // condition structuree accepte explicitement IN_TRANSIT -- elle doit gagner.
+        rule.setFilterStatus("DELIVERED");
+        rule.setConditionJson("""
+                {"type":"LEAF","field":"newStatus","operator":"EQ","value":"IN_TRANSIT"}""");
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
+        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.LIVE);
+
+        verify(notificationRepo).save(any());
     }
 }

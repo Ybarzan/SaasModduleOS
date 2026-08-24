@@ -1,5 +1,6 @@
 package com.incokalk.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.incokalk.dto.notification.NotificationDTO;
 import com.incokalk.dto.notification.NotificationRuleDTO;
 import com.incokalk.dto.notification.SendNotificationDTO;
@@ -14,6 +15,8 @@ import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.NotificationRepository;
 import com.incokalk.repository.NotificationRuleRepository;
 import com.incokalk.repository.UserRepository;
+import com.incokalk.rules.RuleConditionEvaluator;
+import com.incokalk.rules.RuleConditionNode;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,6 +48,8 @@ public class NotificationService {
     private final UserRepository userRepo;
     private final RestTemplate restTemplate;
     private final RoleChecker roleChecker;
+    private final RuleConditionEvaluator conditionEvaluator;
+    private final ObjectMapper objectMapper;
 
     @Autowired(required = false)
     private JavaMailSender mailSender;
@@ -223,6 +228,7 @@ public class NotificationService {
                 .filterStatus(dto.getFilterStatus())
                 .filterCarrierId(dto.getFilterCarrierId())
                 .filterDataSource(dto.getFilterDataSource())
+                .conditionJson(validateConditionJson(dto.getConditionJson()))
                 .build();
 
         return ruleRepo.save(rule);
@@ -248,6 +254,7 @@ public class NotificationService {
         rule.setFilterStatus(dto.getFilterStatus());
         rule.setFilterCarrierId(dto.getFilterCarrierId());
         rule.setFilterDataSource(dto.getFilterDataSource());
+        rule.setConditionJson(validateConditionJson(dto.getConditionJson()));
 
         return ruleRepo.save(rule);
     }
@@ -341,7 +348,17 @@ public class NotificationService {
 
     // ==================== Internal helpers ====================
 
+    /**
+     * Si la regle porte une condition structuree (conditionJson), elle remplace
+     * entierement l'ancien filtrage plat -- pas de cumul des deux systemes, pour
+     * eviter une semantique ambigue ("est-ce que le AND/OR structure et les
+     * filtres plats doivent tous les deux matcher, ou l'un des deux ?"). Une
+     * regle migre vers l'un ou l'autre, jamais les deux a la fois.
+     */
     private boolean matchesFilters(NotificationRule rule, SendNotificationDTO dto) {
+        if (rule.getConditionJson() != null) {
+            return matchesStructuredCondition(rule, dto);
+        }
         if (rule.getFilterStatus() != null && dto.getTemplateData() != null) {
             String newStatus = dto.getTemplateData().get("newStatus");
             if (newStatus != null && !rule.getFilterStatus().equals(newStatus)) {
@@ -358,6 +375,32 @@ public class NotificationService {
             }
         }
         return true;
+    }
+
+    private boolean matchesStructuredCondition(NotificationRule rule, SendNotificationDTO dto) {
+        try {
+            RuleConditionNode condition = objectMapper.readValue(rule.getConditionJson(), RuleConditionNode.class);
+            Map<String, String> context = dto.getTemplateData() != null ? dto.getTemplateData() : Map.of();
+            return conditionEvaluator.evaluate(condition, context);
+        } catch (Exception e) {
+            // Une condition malformee ne doit jamais faire planter tout le traitement
+            // des regles des autres entreprises -- elle est deja validee a la creation
+            // (validateConditionJson), donc ceci ne devrait arriver qu'en cas de bug ;
+            // on journalise et on considere que la regle ne matche pas, par prudence.
+            log.warn("[Rules] Condition structuree invalide pour la regle {}: {}", rule.getId(), e.getMessage());
+            return false;
+        }
+    }
+
+    private String validateConditionJson(String conditionJson) {
+        if (conditionJson == null || conditionJson.isBlank()) return null;
+        try {
+            RuleConditionNode node = objectMapper.readValue(conditionJson, RuleConditionNode.class);
+            conditionEvaluator.validateStructure(node);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Condition invalide: " + e.getMessage());
+        }
+        return conditionJson;
     }
 
     private void createInAppNotification(NotificationRule rule, SendNotificationDTO dto) {

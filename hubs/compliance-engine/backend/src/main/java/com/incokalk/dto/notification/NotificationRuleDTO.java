@@ -31,4 +31,6 @@ public class NotificationRuleDTO {
     private UUID filterCarrierId;
     /** LIVE, MANUAL, ou null (pas de filtre) -- voir TrackingEvent.DataSource. */
     private String filterDataSource;
+    /** Arbre de condition composee (RuleConditionNode) serialise en JSON, ou null. */
+    private String conditionJson;
 }
