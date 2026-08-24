@@ -30,6 +30,8 @@ const rule = {
   filterCarrierId: "",
 };
 
+const carrier = { id: "c1", name: "DHL Express" };
+
 function mockDefaults() {
   vi.mocked(incokalkAPI.notificationRules.getPage).mockResolvedValue({
     data: { content: [rule], totalPages: 1 },
@@ -151,5 +153,79 @@ describe("NotificationRules page", () => {
         })
       );
     });
+  });
+
+  it("shows an automation badge on a rule with an actionType", async () => {
+    vi.mocked(incokalkAPI.notificationRules.getPage).mockResolvedValue({
+      data: { content: [{ ...rule, actionType: "SUGGEST_ERP_ORDER_ADJUSTMENT", maxBudgetAmount: 500 }], totalPages: 1 },
+    } as never);
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByText("Ajustement commande ERP")).toBeInTheDocument();
+    });
+    expect(screen.getByText(/budget max 500/)).toBeInTheDocument();
+  });
+
+  it("reveals governance fields when an action type is selected", async () => {
+    vi.mocked(incokalkAPI.carriers.getAll).mockResolvedValue({ data: [carrier] } as never);
+    renderPage();
+    await waitFor(() => screen.getByText("Alerte transit"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Nouvelle règle" }));
+    expect(screen.queryByText("Budget maximum (€, optionnel)")).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByDisplayValue("Aucune (notification seule)"), {
+      target: { value: "SUGGEST_ERP_ORDER_ADJUSTMENT" },
+    });
+
+    expect(screen.getByText("Budget maximum (€, optionnel)")).toBeInTheDocument();
+    expect(screen.getByLabelText("DHL Express")).toBeInTheDocument();
+  });
+
+  it("creates a rule with an action type, budget and allowed carrier", async () => {
+    vi.mocked(incokalkAPI.carriers.getAll).mockResolvedValue({ data: [carrier] } as never);
+    vi.mocked(incokalkAPI.notificationRules.create).mockResolvedValue({} as never);
+    renderPage();
+    await waitFor(() => screen.getByText("Alerte transit"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Nouvelle règle" }));
+    fireEvent.change(screen.getByPlaceholderText("Ex: Alerte changement de statut"), {
+      target: { value: "Ajustement auto" },
+    });
+    fireEvent.change(screen.getByDisplayValue("Aucune (notification seule)"), {
+      target: { value: "SUGGEST_ERP_ORDER_ADJUSTMENT" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Aucune limite"), { target: { value: "1000" } });
+    fireEvent.click(screen.getByLabelText("DHL Express"));
+    fireEvent.click(screen.getByRole("button", { name: "Créer" }));
+
+    await waitFor(() => {
+      expect(incokalkAPI.notificationRules.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Ajustement auto",
+          actionType: "SUGGEST_ERP_ORDER_ADJUSTMENT",
+          maxBudgetAmount: 1000,
+          allowedCarrierIds: "c1",
+        })
+      );
+    });
+  });
+
+  it("blocks submission when the budget is negative", async () => {
+    renderPage();
+    await waitFor(() => screen.getByText("Alerte transit"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Nouvelle règle" }));
+    fireEvent.change(screen.getByPlaceholderText("Ex: Alerte changement de statut"), {
+      target: { value: "Règle invalide" },
+    });
+    fireEvent.change(screen.getByDisplayValue("Aucune (notification seule)"), {
+      target: { value: "SUGGEST_ERP_ORDER_ADJUSTMENT" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Aucune limite"), { target: { value: "-50" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer" }));
+
+    expect(incokalkAPI.notificationRules.create).not.toHaveBeenCalled();
   });
 });

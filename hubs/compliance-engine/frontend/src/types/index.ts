@@ -445,6 +445,12 @@ export interface NotificationRule {
   filterStatus?: string;
   filterCarrierId?: string;
   filterDataSource?: 'LIVE' | 'MANUAL' | '';
+  /** null/"NONE" = notification seule. Non-null → crée une OrchestrationSuggestion en plus (voir docs/04). */
+  actionType?: string;
+  requiresApproval?: boolean;
+  maxBudgetAmount?: number;
+  /** UUIDs de transporteurs autorisés, séparés par des virgules, ou vide/undefined = tous autorisés. */
+  allowedCarrierIds?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -462,6 +468,9 @@ export interface NotificationRuleFormData {
   filterStatus?: string;
   filterCarrierId?: string;
   filterDataSource?: 'LIVE' | 'MANUAL' | '';
+  actionType?: string;
+  maxBudgetAmount?: number;
+  allowedCarrierIds?: string;
 }
 
 export interface Notification {

@@ -4,7 +4,7 @@ import { incokalkAPI } from '../lib/api';
 import toast from 'react-hot-toast';
 import {
   Bell, Plus, Pencil, Trash2, Mail, Webhook, Wifi, Package, Truck,
-  Search, Filter, ToggleLeft, ToggleRight, Loader2, Send, X,
+  Search, Filter, ToggleLeft, ToggleRight, Loader2, Send, X, Zap,
 } from 'lucide-react';
 import type { NotificationRule, NotificationRuleFormData, Carrier } from '../types';
 import Pagination from '../components/Pagination';
@@ -44,7 +44,16 @@ const EMPTY_FORM: NotificationRuleFormData = {
   filterStatus: '',
   filterCarrierId: '',
   filterDataSource: '',
+  actionType: '',
+  maxBudgetAmount: undefined,
+  allowedCarrierIds: '',
 };
+
+// Un seul type d'action existe côté moteur de règles pour l'instant (voir
+// docs/04-composants-techniques.md) — la liste s'étendra avec l'exécuteur.
+const ACTION_TYPES = [
+  { value: 'SUGGEST_ERP_ORDER_ADJUSTMENT', label: 'Ajustement commande ERP' },
+];
 
 // Modèles courants pour éviter de faire remplir les 12 champs bruts du formulaire
 // à quelqu'un qui veut juste "être alerté quand une expédition est livrée" — un clic
@@ -176,6 +185,9 @@ const NotificationRules = () => {
       filterStatus: rule.filterStatus || '',
       filterCarrierId: rule.filterCarrierId || '',
       filterDataSource: rule.filterDataSource || '',
+      actionType: rule.actionType || '',
+      maxBudgetAmount: rule.maxBudgetAmount,
+      allowedCarrierIds: rule.allowedCarrierIds || '',
     });
     setShowModal(true);
   };
@@ -196,6 +208,10 @@ const NotificationRules = () => {
       toast.error('Sélectionnez au moins un canal de diffusion');
       return;
     }
+    if (form.maxBudgetAmount != null && form.maxBudgetAmount < 0) {
+      toast.error('Le budget maximum ne peut pas être négatif');
+      return;
+    }
     if (editing) {
       updateMutation.mutate({ id: editing.id, data: form });
     } else {
@@ -206,6 +222,18 @@ const NotificationRules = () => {
   const handleTest = (rule: NotificationRule) => {
     testMutation.mutate({ ruleId: rule.id, eventType: rule.eventType });
   };
+
+  const selectedCarrierIds = form.allowedCarrierIds ? form.allowedCarrierIds.split(',').filter(Boolean) : [];
+
+  const toggleAllowedCarrier = (carrierId: string) => {
+    const next = selectedCarrierIds.includes(carrierId)
+      ? selectedCarrierIds.filter((id) => id !== carrierId)
+      : [...selectedCarrierIds, carrierId];
+    setForm({ ...form, allowedCarrierIds: next.join(',') });
+  };
+
+  const getActionTypeLabel = (actionType?: string) =>
+    ACTION_TYPES.find((a) => a.value === actionType)?.label || actionType;
 
   const getEventLabel = (eventType: string) => {
     return EVENT_TYPES.find((e) => e.value === eventType)?.label || eventType;
@@ -301,7 +329,7 @@ const NotificationRules = () => {
                       )}
                     </div>
                     {(rule.filterStatus || rule.filterCarrierId || rule.filterDataSource) && (
-                      <div className="flex items-center gap-2 text-sm text-ink-soft">
+                      <div className="flex items-center gap-2 text-sm text-ink-soft mb-2">
                         <Filter size={14} />
                         {rule.filterStatus && (
                           <span>Statut: {rule.filterStatus}</span>
@@ -316,6 +344,25 @@ const NotificationRules = () => {
                             Source: {rule.filterDataSource === 'LIVE' ? 'Live uniquement' : 'Manuel uniquement'}
                           </span>
                         )}
+                      </div>
+                    )}
+                    {rule.actionType && rule.actionType !== 'NONE' && (
+                      <div className="flex items-start gap-2 text-sm">
+                        <Zap size={14} className="text-warning shrink-0 mt-0.5" />
+                        <div className="text-ink-soft">
+                          <span className="font-medium text-ink">{getActionTypeLabel(rule.actionType)}</span>
+                          {' — génère une suggestion à valider'}
+                          {rule.maxBudgetAmount != null && ` · budget max ${rule.maxBudgetAmount} €`}
+                          {rule.allowedCarrierIds && (
+                            <>
+                              {' · transporteurs autorisés : '}
+                              {rule.allowedCarrierIds
+                                .split(',')
+                                .map((id) => carriers.find((c) => c.id === id)?.name || id)
+                                .join(', ')}
+                            </>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -559,6 +606,67 @@ const NotificationRules = () => {
                         </p>
                       </div>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ink mb-2">
+                      Action automatisée (optionnel)
+                    </label>
+                    <select
+                      value={form.actionType || ''}
+                      onChange={(e) => setForm({ ...form, actionType: e.target.value || undefined })}
+                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                    >
+                      <option value="">Aucune (notification seule)</option>
+                      {ACTION_TYPES.map((a) => (
+                        <option key={a.value} value={a.value}>{a.label}</option>
+                      ))}
+                    </select>
+                    {form.actionType && (
+                      <div className="mt-3 space-y-3 p-3 border border-line rounded-lg bg-bg">
+                        <p className="text-xs text-ink-soft flex items-start gap-1.5">
+                          <Zap size={14} className="text-warning shrink-0 mt-0.5" />
+                          Cette règle créera une suggestion à valider manuellement — jamais d'exécution
+                          automatique silencieuse. Approuver la suggestion déclenche l'action réelle.
+                        </p>
+                        <div>
+                          <label className="block text-xs text-ink-soft mb-1">Budget maximum (€, optionnel)</label>
+                          <input
+                            type="number"
+                            min={0}
+                            step="0.01"
+                            value={form.maxBudgetAmount ?? ''}
+                            onChange={(e) =>
+                              setForm({ ...form, maxBudgetAmount: e.target.value === '' ? undefined : Number(e.target.value) })
+                            }
+                            className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                            placeholder="Aucune limite"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-ink-soft mb-1">
+                            Transporteurs autorisés (optionnel — laisser vide = tous autorisés)
+                          </label>
+                          <div className="max-h-32 overflow-y-auto border border-line rounded-lg divide-y divide-line">
+                            {carriers.length === 0 ? (
+                              <p className="text-xs text-ink-soft p-2">Aucun transporteur configuré</p>
+                            ) : (
+                              carriers.map((c) => (
+                                <label key={c.id} className="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-surface-2">
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedCarrierIds.includes(c.id)}
+                                    onChange={() => toggleAllowedCarrier(c.id)}
+                                    className="w-4 h-4 text-accent rounded focus:ring-accent"
+                                  />
+                                  {c.name}
+                                </label>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex justify-end space-x-3 pt-4">
