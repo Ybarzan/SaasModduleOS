@@ -24,9 +24,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Verifie que /v1/orchestration-suggestions/** applique effectivement le
  * controle de role (RolesAllowedAspect, pas @PreAuthorize -- voir la note
  * dans CarrierBookingControllerTest sur ce piege deja rencontre). Approuver
- * une suggestion prepare une future action reelle (ERP, etc.), meme si
- * aucun executeur ne la declenche encore -- meme niveau d'exigence que la
- * soumission d'une reservation transporteur.
+ * une suggestion declenche desormais une action reelle (ERP, etc.) via
+ * OrchestrationExecutor -- meme niveau d'exigence que la soumission d'une
+ * reservation transporteur.
  */
 class OrchestrationSuggestionControllerTest extends ControllerTestBase {
 
@@ -38,6 +38,7 @@ class OrchestrationSuggestionControllerTest extends ControllerTestBase {
         company.setId(companyId);
         NotificationRule rule = new NotificationRule();
         rule.setId(UUID.randomUUID());
+        rule.setName("ETA dégradé");
 
         OrchestrationSuggestion s = new OrchestrationSuggestion();
         s.setId(id);
@@ -91,7 +92,8 @@ class OrchestrationSuggestionControllerTest extends ControllerTestBase {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"note\":\"OK, montant raisonnable\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.status").value("APPROVED"));
+                .andExpect(jsonPath("$.status").value("APPROVED"))
+                .andExpect(jsonPath("$.ruleName").value("ETA dégradé"));
     }
 
     @Test

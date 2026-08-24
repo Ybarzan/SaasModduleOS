@@ -719,6 +719,17 @@ export const incokalkAPI = {
     stats: () => api.get('/v1/approvals/stats'),
   },
 
+  // Suggestions d'action du moteur d'orchestration (Phase 3, plan PRO min.)
+  orchestrationSuggestions: {
+    list: (status?: string) =>
+      api.get('/v1/orchestration-suggestions', { params: status ? { status } : undefined }),
+    get: (id: string) => api.get(`/v1/orchestration-suggestions/${id}`),
+    approve: (id: string, note?: string) =>
+      api.post(`/v1/orchestration-suggestions/${id}/approve`, { note }),
+    reject: (id: string, note?: string) =>
+      api.post(`/v1/orchestration-suggestions/${id}/reject`, { note }),
+  },
+
   // Carbon Offsets (P4)
   carbonOffsets: {
     list: () => api.get('/v1/carbon-offsets'),

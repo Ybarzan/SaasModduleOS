@@ -21,9 +21,11 @@ import java.util.UUID;
 
 /**
  * Decision humaine sur les propositions d'action creees par le moteur de
- * regles (NotificationRule.actionType -> OrchestrationSuggestion, V65). Ne
- * declenche jamais d'action reelle -- seulement la transition PENDING_APPROVAL
- * -> APPROVED/REJECTED. Voir docs/04-composants-techniques.md.
+ * regles (NotificationRule.actionType -> OrchestrationSuggestion, V65).
+ * L'approbation declenche immediatement OrchestrationExecutor (V66) -- ce
+ * n'est plus une simple transition d'etat, approve() peut faire passer la
+ * suggestion jusqu'a EXECUTED/FAILED en un seul appel. Voir
+ * docs/04-composants-techniques.md.
  */
 @RestController
 @RequestMapping("/v1/orchestration-suggestions")
@@ -60,7 +62,7 @@ public class OrchestrationSuggestionController {
 
     @PostMapping("/{id}/approve")
     @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
-    @Operation(summary = "Approuver une suggestion d'action (ne l'exécute pas — aucun exécuteur n'existe encore)")
+    @Operation(summary = "Approuver une suggestion d'action (déclenche immédiatement son exécution réelle)")
     public ResponseEntity<OrchestrationSuggestion> approve(
             @PathVariable UUID id,
             @RequestBody(required = false) SuggestionDecisionDTO dto,

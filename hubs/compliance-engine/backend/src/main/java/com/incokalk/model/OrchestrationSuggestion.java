@@ -71,6 +71,14 @@ public class OrchestrationSuggestion {
     @Column(name = "execution_result", length = 1000)
     private String executionResult;
 
+    /** Nom de la règle déclenchante, exposé en JSON sans exposer l'entité
+     * NotificationRule complète (rule reste @JsonIgnore) -- le frontend en a
+     * besoin pour afficher une liste lisible, ouvre-en-vue Hibernate garde la
+     * session active pendant la sérialisation donc l'accès lazy est sûr ici. */
+    public String getRuleName() {
+        return rule != null ? rule.getName() : null;
+    }
+
     public enum Status {
         PENDING_APPROVAL,
         APPROVED,

@@ -60,6 +60,8 @@ Traduit une décision de règle en appel vers un service existant (`ErpProvider.
 
 **Phase 3 J1-J8 entièrement close** (bus d'événements, moteur de règles, gouvernance, approbation, exécution) — reste J9-J13 (langage naturel, pilote client).
 
+**Interface de décision humaine faite, 2026-08-24** : `OrchestrationSuggestions.tsx`, premier consommateur frontend — jusque-là toute la Phase 3 (bus, moteur de règles, gouvernance, approbation, exécution) n'était accessible que par appel API direct, aucun humain ne pouvait réellement approuver/rejeter une suggestion sans Postman. Page à onglets (En attente / Historique), décision via modale avec note optionnelle, tags de statut bordés (`[EN ATTENTE]`/`[APPROUVÉ]`/`[REJETÉ]`/`[EXÉCUTÉ]`/`[ÉCHOUÉ]`) dans le registre Praxio v0.2. `OrchestrationSuggestion.rule` était `@JsonIgnore` (protège contre la sérialisation de l'entité lazy complète) donc le nom de la règle n'atteignait jamais le frontend — corrigé par un getter dérivé `getRuleName()` plutôt qu'une couche DTO, cohérent avec la convention existante du code (contrôleurs qui sérialisent l'entité JPA directement, DTO réservés à l'écriture, cf. `NotificationRuleController`).
+
 ### Interface no-code en langage naturel
 Un LLM (Claude déjà utilisé pour d'autres suggestions dans le produit — cf. `HsMlService`) traduit une instruction utilisateur en règle structurée du moteur ci-dessus, présentée pour validation humaine avant activation. Jamais d'exécution directe de la sortie du LLM.
 **Complexité : moyenne.** Le risque n'est pas technique (le pattern LLM → structure validée est bien maîtrisé) mais produit : l'UI de relecture/validation doit rendre une règle mal traduite évidente à corriger, pas juste "approuver en un clic".

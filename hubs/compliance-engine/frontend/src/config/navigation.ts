@@ -6,7 +6,7 @@ import {
   Route, FileText, CreditCard, Globe, BookOpen, FileCheck, ShieldAlert, Tag, Receipt,
   BarChart3, Clock, CheckSquare, TrendingDown, Calendar, ShoppingCart, Building2,
   GraduationCap, Palette, Mail, KeyRound, Webhook, Euro, Warehouse, Boxes, ClipboardList,
-  ScanLine, Target,
+  ScanLine, Target, Zap,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -104,6 +104,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: '/documents', icon: FileText, label: 'Documents', requiredPlan: 'STARTER' },
       { to: '/email-intake', icon: Mail, label: 'Import Email', requiredRole: 'ADMIN', requiredPlan: 'STARTER' },
+      { to: '/orchestration-suggestions', icon: Zap, label: "Suggestions d'action", requiredRole: 'MANAGER', requiredPlan: 'PRO' },
     ],
   },
   {

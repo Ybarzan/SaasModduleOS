@@ -31,8 +31,8 @@ describe("Hubs page", () => {
     expect(screen.getAllByText("À partir du plan Suite")).toHaveLength(2);
     // Platform hub items carry no requiredPlan (never sold alone)
     expect(screen.getByText("Inclus dans tous les plans")).toBeInTheDocument();
-    // Import-Export spans STARTER through PRO
-    expect(screen.getByText("Du plan Starter au plan Croissance")).toBeInTheDocument();
+    // Import-Export and Documents & Automatisation (since /orchestration-suggestions is PRO-gated) both span STARTER through PRO
+    expect(screen.getAllByText("Du plan Starter au plan Croissance")).toHaveLength(2);
   });
 
   it("links to pricing and registration", () => {

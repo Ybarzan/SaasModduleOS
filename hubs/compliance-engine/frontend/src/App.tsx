@@ -82,6 +82,7 @@ const FinancialReports = lazy(() => import('./pages/FinancialReports'));
 const EtaPredictions = lazy(() => import('./pages/EtaPredictions'));
 const QualityDashboard = lazy(() => import('./pages/QualityDashboard'));
 const ApprovalWorkflows = lazy(() => import('./pages/ApprovalWorkflows'));
+const OrchestrationSuggestions = lazy(() => import('./pages/OrchestrationSuggestions'));
 const CarbonDashboard = lazy(() => import('./pages/CarbonDashboard'));
 const ClientInvoicing = lazy(() => import('./pages/ClientInvoicing'));
 const RateComparison = lazy(() => import('./pages/RateComparison'));
@@ -295,6 +296,7 @@ function AppRoutes() {
               <Route path="/csrd" element={<ProtectedRoute requireAdmin><CsrdReport /></ProtectedRoute>} />
               <Route path="/branding" element={<ProtectedRoute requireAdmin><BrandingPortal /></ProtectedRoute>} />
               <Route path="/email-intake" element={<ProtectedRoute requireAdmin><EmailIntake /></ProtectedRoute>} />
+              <Route path="/orchestration-suggestions" element={<ProtectedRoute requiredRole="MANAGER"><OrchestrationSuggestions /></ProtectedRoute>} />
               <Route path="/api-keys" element={<ProtectedRoute requireAdmin><ApiKeys /></ProtectedRoute>} />
               <Route path="/webhooks" element={<ProtectedRoute requireAdmin><Webhooks /></ProtectedRoute>} />
               <Route path="/company-settings" element={<ProtectedRoute requireAdmin><CompanySettings /></ProtectedRoute>} />
