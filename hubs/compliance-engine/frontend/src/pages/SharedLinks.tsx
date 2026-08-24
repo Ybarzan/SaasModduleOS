@@ -58,7 +58,9 @@ const SharedLinks = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
-            <Link2 className="w-6 h-6 text-accent" /> Liens de suivi
+            <Link2 className="w-6 h-6 text-accent" />
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Liens de suivi
           </h1>
           <p className="text-sm text-ink-soft mt-1">
             Créez des liens partagés pour que vos clients suivent leurs expéditions
@@ -81,7 +83,7 @@ const SharedLinks = () => {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl max-w-md w-full p-6">
+          <div className="bg-surface rounded-none max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-ink">Nouveau lien de suivi</h3>
               <button onClick={() => setShowCreate(false)}><X className="w-5 h-5 text-ink-soft" /></button>
@@ -89,13 +91,13 @@ const SharedLinks = () => {
             <div className="space-y-3">
               <input placeholder="ID de l'expédition (UUID)" value={form.shipmentId}
                 onChange={(e) => setForm({ ...form, shipmentId: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm font-mono" />
+                className="w-full px-3 py-2 border border-line rounded-none text-sm font-mono" />
               <input placeholder="Label (optionnel)" value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm" />
+                className="w-full px-3 py-2 border border-line rounded-none text-sm" />
               <input placeholder="Expiration en heures (optionnel, vide = pas d'expiration)" type="number" value={form.expiresHours}
                 onChange={(e) => setForm({ ...form, expiresHours: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm" />
+                className="w-full px-3 py-2 border border-line rounded-none text-sm" />
               <button onClick={() => {
                 if (!form.shipmentId.trim()) { toast.error("ID d'expédition requis"); return; }
                 createMut.mutate({
@@ -113,7 +115,7 @@ const SharedLinks = () => {
       )}
 
       {/* Links Table */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         {isLoading ? (
           <p className="text-center py-12 text-ink-soft">Chargement...</p>
         ) : links.length === 0 ? (
@@ -162,15 +164,15 @@ const SharedLinks = () => {
                       {link.active && (
                         <>
                           <button onClick={() => copyLink(link.url)}
-                            className="p-1.5 rounded-lg hover:bg-surface-2 text-ink-soft" title="Copier le lien">
+                            className="p-1.5 rounded-none hover:bg-surface-2 text-ink-soft" title="Copier le lien">
                             <Copy className="w-4 h-4" />
                           </button>
                           <a href={link.url} target="_blank" rel="noopener noreferrer"
-                            className="p-1.5 rounded-lg hover:bg-surface-2 text-ink-soft" title="Ouvrir">
+                            className="p-1.5 rounded-none hover:bg-surface-2 text-ink-soft" title="Ouvrir">
                             <ExternalLink className="w-4 h-4" />
                           </a>
                           <button onClick={() => revokeMut.mutate(link.id)}
-                            className="p-1.5 rounded-lg hover:bg-danger/10 text-danger" title="Révoquer">
+                            className="p-1.5 rounded-none hover:bg-danger/10 text-danger" title="Révoquer">
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </>

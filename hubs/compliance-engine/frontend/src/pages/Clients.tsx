@@ -73,7 +73,9 @@ const Clients = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
-            <Users className="w-6 h-6 text-accent" /> Clients
+            <Users className="w-6 h-6 text-accent" />
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Clients
           </h1>
           <p className="text-sm text-ink-soft mt-1">
             Gérez les comptes clients qui accèdent au portail de suivi
@@ -87,11 +89,11 @@ const Clients = () => {
       {/* Stats */}
       {stats && (
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-surface rounded-xl border border-line p-4 text-center">
+          <div className="bg-surface rounded-none border border-line p-4 text-center">
             <p className="text-2xl font-bold text-ink">{stats.totalClients}</p>
             <p className="text-xs text-ink-soft">Total clients</p>
           </div>
-          <div className="bg-surface rounded-xl border border-line p-4 text-center">
+          <div className="bg-surface rounded-none border border-line p-4 text-center">
             <p className="text-2xl font-bold text-success">{stats.activeClients}</p>
             <p className="text-xs text-ink-soft">Actifs</p>
           </div>
@@ -101,21 +103,21 @@ const Clients = () => {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl max-w-md w-full p-6">
+          <div className="bg-surface rounded-none max-w-md w-full p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-ink">Nouveau client</h3>
               <button onClick={() => setShowCreate(false)}><X className="w-5 h-5 text-ink-soft" /></button>
             </div>
             <div className="space-y-3">
               <input placeholder="Nom complet" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink" />
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink" />
               <input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink" />
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink" />
               <input placeholder="Mot de passe (min. 8 car.)" type={showPassword ? 'text' : 'password'} value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink" />
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink" />
               <input placeholder="Téléphone (optionnel)" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink" />
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink" />
               <button onClick={() => createMut.mutate(form)} disabled={createMut.isPending}
                 className="w-full btn-primary py-2.5 text-sm">
                 {createMut.isPending ? 'Création...' : 'Créer le client'}
@@ -128,16 +130,16 @@ const Clients = () => {
       {/* Reset Password Modal */}
       {showResetPw && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-2xl max-w-sm w-full p-6">
+          <div className="bg-surface rounded-none max-w-sm w-full p-6">
             <h3 className="font-bold text-ink mb-3 flex items-center gap-2">
               <Key className="w-5 h-5 text-accent" /> Nouveau mot de passe
             </h3>
             <input type="password" placeholder="Nouveau mot de passe (min. 8 car.)" value={newPw}
               onChange={(e) => setNewPw(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-lg text-sm mb-3 bg-surface text-ink" />
+              className="w-full px-3 py-2 border border-line rounded-none text-sm mb-3 bg-surface text-ink" />
             <div className="flex gap-2">
               <button onClick={() => { setShowResetPw(null); setNewPw(''); }}
-                className="flex-1 px-4 py-2 border border-line rounded-lg text-sm hover:bg-surface-2">Annuler</button>
+                className="flex-1 px-4 py-2 border border-line rounded-none text-sm hover:bg-surface-2">Annuler</button>
               <button onClick={() => resetPwMut.mutate({ id: showResetPw, pw: newPw })} disabled={newPw.length < 8}
                 className="flex-1 btn-primary py-2 text-sm">
                 Réinitialiser
@@ -148,7 +150,7 @@ const Clients = () => {
       )}
 
       {/* Clients Table */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         {isLoading ? (
           <p className="text-center py-12 text-ink-soft">Chargement...</p>
         ) : clients.length === 0 ? (
@@ -187,15 +189,15 @@ const Clients = () => {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
                       <button onClick={() => toggleMut.mutate({ id: client.id, active: !client.active })}
-                        className="p-1.5 rounded-lg hover:bg-surface-2 text-ink-soft" title={client.active ? 'Désactiver' : 'Activer'}>
+                        className="p-1.5 rounded-none hover:bg-surface-2 text-ink-soft" title={client.active ? 'Désactiver' : 'Activer'}>
                         {client.active ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4 text-success" />}
                       </button>
                       <button onClick={() => setShowResetPw(client.id)}
-                        className="p-1.5 rounded-lg hover:bg-surface-2 text-ink-soft" title="Réinitialiser mot de passe">
+                        className="p-1.5 rounded-none hover:bg-surface-2 text-ink-soft" title="Réinitialiser mot de passe">
                         <Key className="w-4 h-4" />
                       </button>
                       <button onClick={() => { if (confirm('Supprimer ce client ?')) deleteMut.mutate(client.id); }}
-                        className="p-1.5 rounded-lg hover:bg-danger/10 text-danger" title="Supprimer">
+                        className="p-1.5 rounded-none hover:bg-danger/10 text-danger" title="Supprimer">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

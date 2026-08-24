@@ -138,7 +138,10 @@ const ScanReceiving = () => {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Scanner une réception</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Scanner une réception
+          </h1>
           <p className="text-ink-soft mt-1">Scan code-barres / QR avec mode hors ligne</p>
         </div>
         <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
@@ -149,12 +152,12 @@ const ScanReceiving = () => {
         </span>
       </div>
 
-      <div className="bg-surface rounded-xl border border-line p-6 mb-6">
+      <div className="bg-surface rounded-none border border-line p-6 mb-6">
         <label className="block text-sm font-medium text-ink-soft mb-1">Bon de réception</label>
         <select
           value={orderId}
           onChange={(e) => setOrderId(e.target.value)}
-          className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+          className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
         >
           <option value="">— Sélectionner un bon ouvert —</option>
           {orders.map((o) => (
@@ -166,7 +169,7 @@ const ScanReceiving = () => {
       <div className="flex items-center gap-2 mb-4">
         <button
           onClick={() => setCamMode(true)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-none text-sm font-medium transition-colors ${
             camMode ? 'bg-accent text-white' : 'bg-surface-2 text-ink-soft hover:bg-line'
           }`}
         >
@@ -175,7 +178,7 @@ const ScanReceiving = () => {
         </button>
         <button
           onClick={() => setCamMode(false)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-none text-sm font-medium transition-colors ${
             !camMode ? 'bg-accent text-white' : 'bg-surface-2 text-ink-soft hover:bg-line'
           }`}
         >
@@ -184,7 +187,11 @@ const ScanReceiving = () => {
         </button>
       </div>
 
-      <div className="bg-surface rounded-xl border border-line overflow-hidden mb-6">
+      <div className="relative bg-surface rounded-none border border-line overflow-hidden mb-6">
+        <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+        <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-br" aria-hidden="true" />
         {camMode ? (
           <div className="relative bg-black">
             <video id="barcode-scanner-video" className="w-full h-72 object-cover" muted playsInline />
@@ -222,14 +229,14 @@ const ScanReceiving = () => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleScan(barcode);
                 }}
-                className="flex-1 px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
+                className="flex-1 px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
                 placeholder="Scanner ou saisir puis Entrée"
                 autoFocus
               />
               <button
                 onClick={() => handleScan(barcode)}
                 disabled={scanMutation.isPending}
-                className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
+                className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
               >
                 {scanMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <ScanLine size={16} />}
                 Scanner
@@ -240,13 +247,13 @@ const ScanReceiving = () => {
       </div>
 
       {lastScan && (
-        <div className="mb-6 flex items-center gap-2 bg-success/10 border border-success/20 text-success rounded-lg px-4 py-3 text-sm">
+        <div className="mb-6 flex items-center gap-2 bg-success/10 border border-success/20 text-success rounded-none px-4 py-3 text-sm">
           <CheckCircle2 size={16} />
           Dernier scan enregistré : <span className="font-mono font-semibold">{lastScan}</span>
         </div>
       )}
 
-      <div className="bg-surface rounded-xl border border-line p-6 mb-6">
+      <div className="bg-surface rounded-none border border-line p-6 mb-6">
         <h3 className="text-sm font-semibold text-ink mb-3">Détails du scan</h3>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
@@ -255,7 +262,7 @@ const ScanReceiving = () => {
               type="number"
               value={qty}
               onChange={(e) => setQty(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               min={1}
               step={0.01}
             />
@@ -266,7 +273,7 @@ const ScanReceiving = () => {
               type="text"
               value={lot}
               onChange={(e) => setLot(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             />
           </div>
           <div>
@@ -275,7 +282,7 @@ const ScanReceiving = () => {
               type="date"
               value={expiry}
               onChange={(e) => setExpiry(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             />
           </div>
           <div>
@@ -284,13 +291,13 @@ const ScanReceiving = () => {
               type="text"
               value={serial}
               onChange={(e) => setSerial(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-surface rounded-xl border border-line p-6">
+      <div className="bg-surface rounded-none border border-line p-6">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-ink flex items-center gap-2">
             <WifiOff size={14} className="text-warning" />

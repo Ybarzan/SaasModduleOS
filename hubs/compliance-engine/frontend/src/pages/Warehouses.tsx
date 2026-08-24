@@ -121,13 +121,16 @@ const Warehouses = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Entrepôts</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Entrepôts
+          </h1>
           <p className="text-ink-soft mt-1">Sites de réception et de stockage</p>
         </div>
         {isAdmin && (
           <button
             onClick={openAdd}
-            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
           >
             <Plus size={18} />
             Nouvel entrepôt
@@ -135,7 +138,7 @@ const Warehouses = () => {
         )}
       </div>
 
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         {isLoading ? (
           <div className="px-6 py-12 text-center text-ink-soft">
             <Loader2 size={24} className="animate-spin mx-auto mb-2 text-ink-soft" />
@@ -154,11 +157,11 @@ const Warehouses = () => {
               <div
                 key={w.id}
                 onClick={() => navigate(`/warehouses/${w.id}`)}
-                className="border border-line rounded-xl p-4 hover:shadow-md hover:border-accent/40 transition-shadow cursor-pointer"
+                className="border border-line rounded-none p-4 hover:shadow-md hover:border-accent/40 transition-shadow cursor-pointer"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
                       <WarehouseIcon size={20} className="text-accent" />
                     </div>
                     <div>
@@ -189,7 +192,7 @@ const Warehouses = () => {
                   <div className="mt-4 flex items-center justify-end gap-1 border-t border-line pt-3">
                     <button
                       onClick={(e) => { e.stopPropagation(); openEdit(w); }}
-                      className="px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent-soft rounded-lg transition-colors"
+                      className="px-3 py-1.5 text-xs font-medium text-accent hover:bg-accent-soft rounded-none transition-colors"
                     >
                       Modifier
                     </button>
@@ -212,7 +215,7 @@ const Warehouses = () => {
                     ) : (
                       <button
                         onClick={(e) => { e.stopPropagation(); setDeleteConfirm(w.id); }}
-                        className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                        className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                         title="Désactiver"
                       >
                         <Trash2 size={15} />
@@ -230,7 +233,7 @@ const Warehouses = () => {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowForm(false)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-lg mx-4 p-6">
             <h3 className="text-lg font-semibold text-ink mb-4">
               {editing ? 'Modifier l’entrepôt' : 'Nouvel entrepôt'}
             </h3>
@@ -242,7 +245,7 @@ const Warehouses = () => {
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     required
                   />
                 </div>
@@ -252,7 +255,7 @@ const Warehouses = () => {
                     type="text"
                     value={form.code}
                     onChange={(e) => setForm({ ...form, code: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     placeholder="WH-01"
                   />
                 </div>
@@ -263,7 +266,7 @@ const Warehouses = () => {
                   type="text"
                   value={form.address}
                   onChange={(e) => setForm({ ...form, address: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -273,7 +276,7 @@ const Warehouses = () => {
                     type="text"
                     value={form.city}
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   />
                 </div>
                 <div>
@@ -282,7 +285,7 @@ const Warehouses = () => {
                     type="text"
                     value={form.country}
                     onChange={(e) => setForm({ ...form, country: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     placeholder="FR"
                   />
                 </div>
@@ -300,14 +303,14 @@ const Warehouses = () => {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={saveMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {saveMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   {editing ? 'Mettre à jour' : 'Créer'}

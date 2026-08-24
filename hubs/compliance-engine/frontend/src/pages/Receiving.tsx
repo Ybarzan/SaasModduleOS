@@ -300,13 +300,16 @@ const Receiving = () => {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Réception marchandises</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Réception marchandises
+          </h1>
           <p className="text-ink-soft mt-1">Bons de réception, scan code-barres et écarts</p>
         </div>
         {canManage && (
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
           >
             <Plus size={18} />
             Nouveau bon
@@ -316,13 +319,13 @@ const Receiving = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1">
-          <div className="bg-surface rounded-xl border border-line overflow-hidden">
+          <div className="bg-surface rounded-none border border-line overflow-hidden">
             <div className="px-6 py-4 border-b border-line flex items-center justify-between">
               <h2 className="text-lg font-semibold text-ink">Bons de réception</h2>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="text-xs px-2 py-1 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="text-xs px-2 py-1 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent"
               >
                 <option value="">Tous</option>
                 {Object.entries(statusLabels).map(([k, v]) => (
@@ -369,7 +372,11 @@ const Receiving = () => {
         <div className="lg:col-span-2">
           {selectedId && detailData ? (
             <div className="space-y-6">
-              <div className="bg-surface rounded-xl border border-line p-6">
+              <div className="relative bg-surface rounded-none border border-line p-6">
+                <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+                <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+                <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+                <span className="hud-corner hud-corner-br" aria-hidden="true" />
                 <div className="flex flex-wrap items-start justify-between gap-4">
                   <div>
                     <h2 className="text-xl font-bold text-ink font-mono">{detailData.order.orderNumber}</h2>
@@ -419,14 +426,14 @@ const Receiving = () => {
                     <button
                       onClick={() => scanMutation.mutate()}
                       disabled={scanMutation.isPending || !scanForm.itemId && !scanForm.barcode}
-                      className="flex items-center gap-2 bg-success text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-success/90 disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-2 bg-success text-white px-4 py-2 rounded-none text-sm font-medium hover:bg-success/90 disabled:opacity-50 transition-colors"
                     >
                       {scanMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <ScanLine size={16} />}
                       Scanner / Enregistrer
                     </button>
                     <button
                       onClick={() => setDamageForm({ ...damageForm, itemId: '' })}
-                      className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-strong transition-colors"
+                      className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none text-sm font-medium hover:bg-accent-strong transition-colors"
                     >
                       <PackageX size={16} />
                       Endommagé
@@ -434,7 +441,7 @@ const Receiving = () => {
                     <button
                       onClick={() => completeMutation.mutate()}
                       disabled={completeMutation.isPending}
-                      className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
                     >
                       {completeMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
                       Clôturer
@@ -442,7 +449,7 @@ const Receiving = () => {
                     <button
                       onClick={() => cancelMutation.mutate()}
                       disabled={cancelMutation.isPending}
-                      className="flex items-center gap-2 bg-danger/10 text-danger px-4 py-2 rounded-lg text-sm font-medium hover:bg-danger/10 disabled:opacity-50 transition-colors"
+                      className="flex items-center gap-2 bg-danger/10 text-danger px-4 py-2 rounded-none text-sm font-medium hover:bg-danger/10 disabled:opacity-50 transition-colors"
                     >
                       {cancelMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
                       Annuler
@@ -451,7 +458,7 @@ const Receiving = () => {
                 )}
               </div>
 
-              <div className="bg-surface rounded-xl border border-line p-6">
+              <div className="bg-surface rounded-none border border-line p-6">
                 <h3 className="text-lg font-semibold text-ink mb-4">Scanner un article</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
@@ -460,7 +467,7 @@ const Receiving = () => {
                       type="text"
                       value={scanForm.barcode}
                       onChange={(e) => setScanForm({ ...scanForm, barcode: e.target.value })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
                       placeholder="3760123456789"
                     />
                   </div>
@@ -469,7 +476,7 @@ const Receiving = () => {
                     <select
                       value={scanForm.itemId}
                       onChange={(e) => setScanForm({ ...scanForm, itemId: e.target.value })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     >
                       <option value="">— auto (code-barres) —</option>
                       {items.map((i) => (
@@ -483,7 +490,7 @@ const Receiving = () => {
                       type="number"
                       value={scanForm.quantity}
                       onChange={(e) => setScanForm({ ...scanForm, quantity: parseFloat(e.target.value) || 0 })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       min={1}
                       step={0.01}
                     />
@@ -496,7 +503,7 @@ const Receiving = () => {
                       type="text"
                       value={scanForm.lotNumber}
                       onChange={(e) => setScanForm({ ...scanForm, lotNumber: e.target.value })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -505,7 +512,7 @@ const Receiving = () => {
                       type="date"
                       value={scanForm.expiryDate}
                       onChange={(e) => setScanForm({ ...scanForm, expiryDate: e.target.value })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                   <div>
@@ -514,13 +521,13 @@ const Receiving = () => {
                       type="text"
                       value={scanForm.serialNumber}
                       onChange={(e) => setScanForm({ ...scanForm, serialNumber: e.target.value })}
-                      className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                      className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-surface rounded-xl border border-line overflow-hidden">
+              <div className="bg-surface rounded-none border border-line overflow-hidden">
                 <div className="px-6 py-4 border-b border-line">
                   <h3 className="text-lg font-semibold text-ink">Lignes attendues</h3>
                 </div>
@@ -557,7 +564,7 @@ const Receiving = () => {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-surface rounded-xl border border-line overflow-hidden">
+                <div className="bg-surface rounded-none border border-line overflow-hidden">
                   <div className="px-6 py-4 border-b border-line flex items-center gap-2">
                     <ScanLine size={16} className="text-success" />
                     <h3 className="text-lg font-semibold text-ink">Scans ({detailData.scans.length})</h3>
@@ -609,7 +616,7 @@ const Receiving = () => {
                   )}
                 </div>
 
-                <div className="bg-surface rounded-xl border border-line overflow-hidden">
+                <div className="bg-surface rounded-none border border-line overflow-hidden">
                   <div className="px-6 py-4 border-b border-line flex items-center gap-2">
                     <TriangleAlert size={16} className="text-warning" />
                     <h3 className="text-lg font-semibold text-ink">Écarts du bon ({detailData.discrepancies.length})</h3>
@@ -652,7 +659,7 @@ const Receiving = () => {
               </div>
             </div>
           ) : (
-            <div className="bg-surface rounded-xl border border-line px-6 py-16 text-center text-ink-soft">
+            <div className="bg-surface rounded-none border border-line px-6 py-16 text-center text-ink-soft">
               <ClipboardList size={40} className="mx-auto mb-3 text-ink-soft" />
               <p>Sélectionnez un bon de réception pour voir son détail.</p>
             </div>
@@ -660,7 +667,7 @@ const Receiving = () => {
         </div>
       </div>
 
-      <div className="mt-8 bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="mt-8 bg-surface rounded-none border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line flex items-center gap-2">
           <PackageX size={16} className="text-danger" />
           <h2 className="text-lg font-semibold text-ink">Écarts globaux ({discrepancies.length})</h2>
@@ -710,7 +717,7 @@ const Receiving = () => {
             className="absolute inset-0 bg-black/40"
             onClick={() => { setShowCreate(false); setSearchParams({}, { replace: true }); }}
           />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-ink mb-4">Nouveau bon de réception</h3>
             <form
               onSubmit={(e) => { e.preventDefault(); createMutation.mutate(); }}
@@ -721,7 +728,7 @@ const Receiving = () => {
                 <select
                   value={createForm.warehouseId}
                   onChange={(e) => setCreateForm({ ...createForm, warehouseId: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   required
                 >
                   <option value="">— Sélectionner —</option>
@@ -738,7 +745,7 @@ const Receiving = () => {
                     setCreateForm({ ...createForm, shipmentId: e.target.value });
                     setReferenceTouched(false);
                   }}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 >
                   <option value="">— Aucune —</option>
                   {shipments.map((s) => (
@@ -757,7 +764,7 @@ const Receiving = () => {
                   type="text"
                   value={effectiveReference}
                   onChange={(e) => { setReference(e.target.value); setReferenceTouched(true); }}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   placeholder="Bon de commande, shipment..."
                 />
               </div>
@@ -782,7 +789,7 @@ const Receiving = () => {
                           lines[idx] = { ...line, itemId: e.target.value };
                           setCreateForm({ ...createForm, lines });
                         }}
-                        className="flex-1 px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                        className="flex-1 px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                       >
                         <option value="">— Article —</option>
                         {items.map((i) => (
@@ -797,7 +804,7 @@ const Receiving = () => {
                           lines[idx] = { ...line, quantityExpected: parseFloat(e.target.value) || 0 };
                           setCreateForm({ ...createForm, lines });
                         }}
-                        className="w-24 px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                        className="w-24 px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                         min={0}
                         step={0.01}
                       />
@@ -817,14 +824,14 @@ const Receiving = () => {
                 <button
                   type="button"
                   onClick={() => { setShowCreate(false); setSearchParams({}, { replace: true }); }}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending || !createForm.warehouseId}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   Créer
@@ -838,7 +845,7 @@ const Receiving = () => {
       {selectedId && damageForm.itemId !== '' && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setDamageForm({ ...damageForm, itemId: '' })} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-md mx-4 p-6">
             <h3 className="text-lg font-semibold text-ink mb-1">Marchandise endommagée</h3>
             <p className="text-sm text-ink-soft mb-4">{detailData?.order.orderNumber}</p>
             <form
@@ -850,7 +857,7 @@ const Receiving = () => {
                 <select
                   value={damageForm.itemId}
                   onChange={(e) => setDamageForm({ ...damageForm, itemId: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   required
                 >
                   <option value="">— Sélectionner —</option>
@@ -865,7 +872,7 @@ const Receiving = () => {
                   type="number"
                   value={damageForm.quantity}
                   onChange={(e) => setDamageForm({ ...damageForm, quantity: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   min={0.01}
                   step={0.01}
                   required
@@ -876,7 +883,7 @@ const Receiving = () => {
                 <textarea
                   value={damageForm.notes}
                   onChange={(e) => setDamageForm({ ...damageForm, notes: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   rows={2}
                   placeholder="Casse, humidité..."
                 />
@@ -885,14 +892,14 @@ const Receiving = () => {
                 <button
                   type="button"
                   onClick={() => setDamageForm({ ...damageForm, itemId: '' })}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={damageMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {damageMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   Signaler

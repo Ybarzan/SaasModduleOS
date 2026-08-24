@@ -125,13 +125,16 @@ const Inventory = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Stock</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Stock
+          </h1>
           <p className="text-ink-soft mt-1">Soldes par entrepôt et mouvements</p>
         </div>
         <select
           value={warehouseId}
           onChange={(e) => setWarehouseId(e.target.value)}
-          className="px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+          className="px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
         >
           <option value="">Tous les entrepôts</option>
           {warehouses.map((w) => (
@@ -145,12 +148,12 @@ const Inventory = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Rechercher article / SKU..."
-            className="pl-9 pr-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent w-64"
+            className="pl-9 pr-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent w-64"
           />
         </div>
       </div>
 
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         {isLoading ? (
           <div className="px-6 py-12 text-center text-ink-soft">
             <Loader2 size={24} className="animate-spin mx-auto mb-2 text-ink-soft" />
@@ -188,14 +191,14 @@ const Inventory = () => {
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => { setAdjustFor(b); setForm({ quantity: 0, note: '' }); }}
-                          className="p-1.5 rounded-lg text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
+                          className="p-1.5 rounded-none text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
                           title="Ajuster le stock"
                         >
                           <SlidersHorizontal size={16} />
                         </button>
                         <button
                           onClick={() => setMovementFor(b.itemId)}
-                          className="p-1.5 rounded-lg text-ink-soft hover:text-accent hover:bg-accent/20 transition-colors"
+                          className="p-1.5 rounded-none text-ink-soft hover:text-accent hover:bg-accent/20 transition-colors"
                           title="Mouvements"
                         >
                           <ArrowDownUp size={16} />
@@ -213,7 +216,7 @@ const Inventory = () => {
       {adjustFor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setAdjustFor(null)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-md mx-4 p-6">
             <h3 className="text-lg font-semibold text-ink mb-1">Ajuster le stock</h3>
             <p className="text-sm text-ink-soft mb-4">
               {itemName(adjustFor.itemId)} — {warehouseName(adjustFor.warehouseId)}
@@ -232,7 +235,7 @@ const Inventory = () => {
                   type="number"
                   value={form.quantity}
                   onChange={(e) => setForm({ ...form, quantity: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   step={0.01}
                   required
                 />
@@ -243,7 +246,7 @@ const Inventory = () => {
                   type="text"
                   value={form.note}
                   onChange={(e) => setForm({ ...form, note: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   placeholder="Inventaire, casse, erreur..."
                 />
               </div>
@@ -251,14 +254,14 @@ const Inventory = () => {
                 <button
                   type="button"
                   onClick={() => setAdjustFor(null)}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={adjustMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {adjustMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   Ajuster
@@ -272,14 +275,14 @@ const Inventory = () => {
       {movementFor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMovementFor(null)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[80vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[80vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-ink mb-4">Mouvements — {itemName(movementFor)}</h3>
             {movements.length === 0 ? (
               <p className="text-sm text-ink-soft">Aucun mouvement pour cet article.</p>
             ) : (
               <ul className="space-y-3">
                 {movements.map((m) => (
-                  <li key={m.id} className="flex items-center justify-between border border-line rounded-lg p-3">
+                  <li key={m.id} className="flex items-center justify-between border border-line rounded-none p-3">
                     <div>
                       <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${typeColors[m.type] ?? 'bg-surface-2 text-ink-soft'}`}>
                         {typeLabels[m.type] ?? m.type}
@@ -299,7 +302,7 @@ const Inventory = () => {
             <div className="flex gap-3 pt-4">
               <button
                 onClick={() => setMovementFor(null)}
-                className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
               >
                 Fermer
               </button>

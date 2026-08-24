@@ -154,7 +154,10 @@ const BrandingPortal = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Portail White-Label</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Portail White-Label
+          </h1>
           <p className="text-ink-soft mt-1">Personnalisez l'apparence de votre portail client</p>
         </div>
         <div className="flex items-center gap-3">
@@ -162,7 +165,7 @@ const BrandingPortal = () => {
             <button
               onClick={handleReset}
               disabled={isSaving}
-              className="flex items-center gap-2 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg disabled:opacity-50 transition-colors"
             >
               <RefreshCw size={16} />
               Annuler
@@ -171,7 +174,7 @@ const BrandingPortal = () => {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 bg-terra-600 text-white rounded-lg text-sm font-medium hover:bg-terra-700 disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-terra-600 text-white rounded-none text-sm font-medium hover:bg-terra-700 disabled:opacity-50 transition-colors"
           >
             {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
             {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
@@ -180,7 +183,7 @@ const BrandingPortal = () => {
       </div>
 
       {isLoading ? (
-        <div className="bg-surface rounded-xl border border-line px-6 py-12 text-center text-ink-soft">
+        <div className="bg-surface rounded-none border border-line px-6 py-12 text-center text-ink-soft">
           <Loader2 size={24} className="animate-spin mx-auto mb-2 text-ink-soft" />
           Chargement...
         </div>
@@ -189,14 +192,14 @@ const BrandingPortal = () => {
           {/* Settings columns (3/5) */}
           <div className="lg:col-span-3 space-y-6">
             {/* Logo Upload */}
-            <div className="bg-surface rounded-xl border border-line overflow-hidden">
+            <div className="bg-surface rounded-none border border-line overflow-hidden">
               <div className="px-6 py-4 border-b border-line flex items-center gap-2">
                 <Image size={18} className="text-terra-500" />
                 <h2 className="text-lg font-semibold text-ink">Logo de l'entreprise</h2>
               </div>
               <div className="px-6 py-4 space-y-4">
                 <div className="flex items-center gap-6">
-                  <div className="w-24 h-24 rounded-xl border-2 border-dashed border-line flex items-center justify-center overflow-hidden bg-bg">
+                  <div className="w-24 h-24 rounded-none border-2 border-dashed border-line flex items-center justify-center overflow-hidden bg-bg">
                     {logoPreview ? (
                       <img src={logoPreview} alt="Logo preview" className="w-full h-full object-contain" />
                     ) : (
@@ -214,7 +217,7 @@ const BrandingPortal = () => {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                      className="px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                     >
                       Choisir un fichier
                     </button>
@@ -234,7 +237,7 @@ const BrandingPortal = () => {
             </div>
 
             {/* Colors */}
-            <div className="bg-surface rounded-xl border border-line overflow-hidden">
+            <div className="bg-surface rounded-none border border-line overflow-hidden">
               <div className="px-6 py-4 border-b border-line flex items-center gap-2">
                 <Palette size={18} className="text-terra-500" />
                 <h2 className="text-lg font-semibold text-ink">Couleurs</h2>
@@ -253,7 +256,7 @@ const BrandingPortal = () => {
                       type="text"
                       value={settings.primaryColor}
                       onChange={(e) => updateField('primaryColor', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-line rounded-lg text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-line rounded-none text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                       placeholder="#7c3aed"
                     />
                   </div>
@@ -271,7 +274,7 @@ const BrandingPortal = () => {
                       type="text"
                       value={settings.secondaryColor}
                       onChange={(e) => updateField('secondaryColor', e.target.value)}
-                      className="flex-1 px-3 py-2 border border-line rounded-lg text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                      className="flex-1 px-3 py-2 border border-line rounded-none text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                       placeholder="#f59e0b"
                     />
                   </div>
@@ -280,7 +283,7 @@ const BrandingPortal = () => {
             </div>
 
             {/* Text content */}
-            <div className="bg-surface rounded-xl border border-line overflow-hidden">
+            <div className="bg-surface rounded-none border border-line overflow-hidden">
               <div className="px-6 py-4 border-b border-line flex items-center gap-2">
                 <Type size={18} className="text-terra-500" />
                 <h2 className="text-lg font-semibold text-ink">Contenu textuel</h2>
@@ -292,7 +295,7 @@ const BrandingPortal = () => {
                     type="text"
                     value={settings.portalTitle}
                     onChange={(e) => updateField('portalTitle', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="Portail Client"
                   />
                 </div>
@@ -302,7 +305,7 @@ const BrandingPortal = () => {
                     value={settings.welcomeMessage}
                     onChange={(e) => updateField('welcomeMessage', e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent resize-none"
                     placeholder="Bienvenue sur votre portail de suivi de livraisons"
                   />
                 </div>
@@ -312,7 +315,7 @@ const BrandingPortal = () => {
                     type="text"
                     value={settings.footerText}
                     onChange={(e) => updateField('footerText', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="© 2026 IncoKalk - Tous droits réservés"
                   />
                 </div>
@@ -320,7 +323,7 @@ const BrandingPortal = () => {
             </div>
 
             {/* Custom Domain */}
-            <div className="bg-surface rounded-xl border border-line overflow-hidden">
+            <div className="bg-surface rounded-none border border-line overflow-hidden">
               <div className="px-6 py-4 border-b border-line flex items-center gap-2">
                 <Globe size={18} className="text-terra-500" />
                 <h2 className="text-lg font-semibold text-ink">Domaine personnalisé</h2>
@@ -332,7 +335,7 @@ const BrandingPortal = () => {
                     type="text"
                     value={settings.customDomain || ''}
                     onChange={(e) => updateField('customDomain', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="portail.monentreprise.com"
                   />
                   <p className="text-xs text-ink-soft mt-1">
@@ -343,7 +346,7 @@ const BrandingPortal = () => {
             </div>
 
             {/* Custom CSS */}
-            <div className="bg-surface rounded-xl border border-line overflow-hidden">
+            <div className="bg-surface rounded-none border border-line overflow-hidden">
               <div className="px-6 py-4 border-b border-line flex items-center gap-2">
                 <Eye size={18} className="text-terra-500" />
                 <h2 className="text-lg font-semibold text-ink">CSS personnalisé</h2>
@@ -363,7 +366,7 @@ const BrandingPortal = () => {
                     value={settings.customCss || ''}
                     onChange={(e) => updateField('customCss', e.target.value)}
                     rows={8}
-                    className="w-full px-3 py-2 border border-line rounded-lg text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent resize-none"
+                    className="w-full px-3 py-2 border border-line rounded-none text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent resize-none"
                     placeholder="/* Vos styles CSS personnalisés */"
                   />
                 )}
@@ -373,14 +376,18 @@ const BrandingPortal = () => {
 
           {/* Preview column (2/5) */}
           <div className="lg:col-span-2">
-            <div className="bg-surface rounded-xl border border-line overflow-hidden sticky top-8">
+            <div className="relative bg-surface rounded-none border border-line overflow-hidden sticky top-8">
+              <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+              <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+              <span className="hud-corner hud-corner-br" aria-hidden="true" />
               <div className="px-6 py-4 border-b border-line flex items-center gap-2">
                 <Eye size={18} className="text-terra-500" />
                 <h2 className="text-lg font-semibold text-ink">Aperçu</h2>
               </div>
               <div className="p-6">
                 <div
-                  className="rounded-xl overflow-hidden border shadow-lg"
+                  className="rounded-none overflow-hidden border shadow-lg"
                   style={{ borderColor: settings.primaryColor }}
                 >
                   {/* Mock header */}
@@ -388,7 +395,7 @@ const BrandingPortal = () => {
                     className="px-6 py-5 flex items-center gap-3"
                     style={{ backgroundColor: settings.primaryColor }}
                   >
-                    <div className="w-8 h-8 rounded-lg bg-surface/20 flex items-center justify-center text-white font-bold text-xs">
+                    <div className="w-8 h-8 rounded-none bg-surface/20 flex items-center justify-center text-white font-bold text-xs">
                       {logoPreview ? (
                         <img src={logoPreview} alt="" className="w-full h-full object-contain" />
                       ) : (
@@ -412,14 +419,14 @@ const BrandingPortal = () => {
                     {/* Mock cards */}
                     <div className="grid grid-cols-2 gap-3">
                       <div
-                        className="p-3 rounded-lg"
+                        className="p-3 rounded-none"
                         style={{ backgroundColor: settings.primaryColor + '10', borderLeft: `3px solid ${settings.primaryColor}` }}
                       >
                         <p className="text-xs font-semibold" style={{ color: settings.primaryColor }}>Expéditions</p>
                         <p className="text-2xl font-bold text-ink">12</p>
                       </div>
                       <div
-                        className="p-3 rounded-lg"
+                        className="p-3 rounded-none"
                         style={{ backgroundColor: settings.secondaryColor + '10', borderLeft: `3px solid ${settings.secondaryColor}` }}
                       >
                         <p className="text-xs font-semibold" style={{ color: settings.secondaryColor }}>En transit</p>
@@ -428,7 +435,7 @@ const BrandingPortal = () => {
                     </div>
 
                     {/* Mock list item */}
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-line">
+                    <div className="flex items-center gap-3 p-3 rounded-none border border-line">
                       <div
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: settings.primaryColor }}
@@ -447,7 +454,7 @@ const BrandingPortal = () => {
                         En cours
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-line">
+                    <div className="flex items-center gap-3 p-3 rounded-none border border-line">
                       <div
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: settings.secondaryColor }}

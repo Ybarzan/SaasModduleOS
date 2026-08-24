@@ -118,13 +118,16 @@ const InventoryItems = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Catalogue articles</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Catalogue articles
+          </h1>
           <p className="text-ink-soft mt-1">Références produit, code-barres et données douanières</p>
         </div>
         {canManage && (
           <button
             onClick={openAdd}
-            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
           >
             <Plus size={18} />
             Nouvel article
@@ -138,12 +141,12 @@ const InventoryItems = () => {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+          className="w-full pl-10 pr-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
           placeholder="Rechercher par nom, SKU ou code..."
         />
       </div>
 
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         {isLoading ? (
           <div className="px-6 py-12 text-center text-ink-soft">
             <Loader2 size={24} className="animate-spin mx-auto mb-2 text-ink-soft" />
@@ -173,7 +176,7 @@ const InventoryItems = () => {
                   <tr key={item.id} className="hover:bg-bg transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-none bg-accent/10 flex items-center justify-center">
                           <Package size={16} className="text-accent" />
                         </div>
                         <div>
@@ -200,14 +203,14 @@ const InventoryItems = () => {
                         <div className="flex items-center justify-end gap-1">
                           <button
                             onClick={() => { setBarcodeFor(item); setBarcodeValue(''); }}
-                            className="p-1.5 rounded-lg text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
+                            className="p-1.5 rounded-none text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
                             title="Associer un code-barres"
                           >
                             <Barcode size={16} />
                           </button>
                           <button
                             onClick={() => openEdit(item)}
-                            className="p-1.5 rounded-lg text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
+                            className="p-1.5 rounded-none text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors"
                             title="Modifier"
                           >
                             <Package size={16} />
@@ -231,7 +234,7 @@ const InventoryItems = () => {
                           ) : (
                             <button
                               onClick={() => setDeleteConfirm(item.id)}
-                              className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                              className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                               title="Désactiver"
                             >
                               <Trash2 size={16} />
@@ -251,7 +254,7 @@ const InventoryItems = () => {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowForm(false)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-ink mb-4">
               {editing ? 'Modifier l’article' : 'Nouvel article'}
             </h3>
@@ -262,7 +265,7 @@ const InventoryItems = () => {
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   required
                 />
               </div>
@@ -273,7 +276,7 @@ const InventoryItems = () => {
                     type="text"
                     value={form.sku}
                     onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   />
                 </div>
                 <div>
@@ -282,7 +285,7 @@ const InventoryItems = () => {
                     type="text"
                     value={form.hsCode}
                     onChange={(e) => setForm({ ...form, hsCode: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     placeholder="84713000"
                   />
                 </div>
@@ -292,7 +295,7 @@ const InventoryItems = () => {
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   rows={2}
                 />
               </div>
@@ -303,7 +306,7 @@ const InventoryItems = () => {
                     type="text"
                     value={form.originCountry}
                     onChange={(e) => setForm({ ...form, originCountry: e.target.value.toUpperCase() })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     maxLength={3}
                     placeholder="CN"
                   />
@@ -313,7 +316,7 @@ const InventoryItems = () => {
                   <select
                     value={form.unit}
                     onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   >
                     {['PCS', 'KG', 'L', 'M', 'CTN', 'BOX', 'PAL'].map((u) => (
                       <option key={u} value={u}>{u}</option>
@@ -328,7 +331,7 @@ const InventoryItems = () => {
                     type="number"
                     value={form.unitPrice}
                     onChange={(e) => setForm({ ...form, unitPrice: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                     min={0}
                     step={0.01}
                   />
@@ -339,7 +342,7 @@ const InventoryItems = () => {
                     type="text"
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
-                    className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   />
                 </div>
               </div>
@@ -356,14 +359,14 @@ const InventoryItems = () => {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={saveMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {saveMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   {editing ? 'Mettre à jour' : 'Créer'}
@@ -377,7 +380,7 @@ const InventoryItems = () => {
       {barcodeFor && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setBarcodeFor(null)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-md mx-4 p-6">
             <h3 className="text-lg font-semibold text-ink mb-1">Code-barres</h3>
             <p className="text-sm text-ink-soft mb-4">{barcodeFor.name}</p>
             <form
@@ -390,7 +393,7 @@ const InventoryItems = () => {
                   type="text"
                   value={barcodeValue}
                   onChange={(e) => setBarcodeValue(e.target.value)}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
                   placeholder="3760123456789"
                   required
                 />
@@ -400,7 +403,7 @@ const InventoryItems = () => {
                 <select
                   value={barcodeType}
                   onChange={(e) => setBarcodeType(e.target.value)}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 >
                   {['EAN13', 'EAN8', 'UPCA', 'CODE128', 'CODE39', 'QR_CODE', 'ITF'].map((t) => (
                     <option key={t} value={t}>{t}</option>
@@ -411,14 +414,14 @@ const InventoryItems = () => {
                 <button
                   type="button"
                   onClick={() => setBarcodeFor(null)}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={barcodeMutation.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {barcodeMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   Associer
