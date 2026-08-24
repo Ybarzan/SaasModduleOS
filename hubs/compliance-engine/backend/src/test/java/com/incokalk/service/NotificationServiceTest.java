@@ -32,6 +32,7 @@ class NotificationServiceTest {
     @Mock UserRepository userRepo;
     @Mock RestTemplate restTemplate;
     @Mock RoleChecker roleChecker;
+    @Mock OrchestrationSuggestionRepository suggestionRepo;
     // Instances reelles (pas de mock) : on veut tester la vraie evaluation JSON -> condition,
     // pas verifier des appels sur un double.
     @Spy RuleConditionEvaluator conditionEvaluator = new RuleConditionEvaluator();
@@ -575,6 +576,121 @@ class NotificationServiceTest {
         when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
         when(companyRepo.getReferenceById(companyId)).thenReturn(company);
         when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.LIVE);
+
+        verify(notificationRepo).save(any());
+    }
+
+    // ── actions candidates / gouvernance (actionType, OrchestrationSuggestion) ──
+
+    @Test
+    @DisplayName("createRule : actionType connu -> persisté")
+    void createRule_knownActionType_persisted() {
+        NotificationRuleDTO dto = NotificationRuleDTO.builder()
+                .name("Règle test").eventType("SHIPMENT_STATUS_CHANGE").isActive(true)
+                .sendInApp(true).sendEmail(false).sendWebhook(false)
+                .actionType("SUGGEST_ERP_ORDER_ADJUSTMENT").build();
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+        when(ruleRepo.save(any(NotificationRule.class))).thenAnswer(i -> i.getArgument(0));
+
+        NotificationRule result = service.createRule(dto, companyId, userId);
+
+        assertThat(result.getActionType()).isEqualTo("SUGGEST_ERP_ORDER_ADJUSTMENT");
+        assertThat(result.isRequiresApproval()).isTrue(); // défaut prudent (risque R1)
+    }
+
+    @Test
+    @DisplayName("createRule : actionType='NONE' -> normalisé en null")
+    void createRule_noneActionType_normalizedToNull() {
+        NotificationRuleDTO dto = NotificationRuleDTO.builder()
+                .name("Règle test").eventType("SHIPMENT_STATUS_CHANGE").isActive(true)
+                .sendInApp(true).sendEmail(false).sendWebhook(false)
+                .actionType("NONE").build();
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+        when(ruleRepo.save(any(NotificationRule.class))).thenAnswer(i -> i.getArgument(0));
+
+        NotificationRule result = service.createRule(dto, companyId, userId);
+
+        assertThat(result.getActionType()).isNull();
+    }
+
+    @Test
+    @DisplayName("createRule : actionType inconnu -> rejeté")
+    void createRule_unknownActionType_rejected() {
+        NotificationRuleDTO dto = NotificationRuleDTO.builder()
+                .name("Règle test").eventType("SHIPMENT_STATUS_CHANGE").isActive(true)
+                .sendInApp(true).sendEmail(false).sendWebhook(false)
+                .actionType("DELETE_EVERYTHING").build();
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+        assertThatThrownBy(() -> service.createRule(dto, companyId, userId))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(ruleRepo, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("createRule : plafond de budget négatif -> rejeté")
+    void createRule_negativeBudget_rejected() {
+        NotificationRuleDTO dto = NotificationRuleDTO.builder()
+                .name("Règle test").eventType("SHIPMENT_STATUS_CHANGE").isActive(true)
+                .sendInApp(true).sendEmail(false).sendWebhook(false)
+                .maxBudgetAmount(new java.math.BigDecimal("-100")).build();
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+        assertThatThrownBy(() -> service.createRule(dto, companyId, userId))
+                .isInstanceOf(IllegalArgumentException.class);
+        verify(ruleRepo, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("règle avec actionType -> crée une suggestion PENDING_APPROVAL, jamais exécutée")
+    void onShipmentStatusChange_ruleWithActionType_createsSuggestion() {
+        rule.setActionType("SUGGEST_ERP_ORDER_ADJUSTMENT");
+        UUID shipmentId = UUID.randomUUID();
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
+        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(suggestionRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service.onShipmentStatusChange(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.LIVE);
+
+        org.mockito.ArgumentCaptor<OrchestrationSuggestion> captor =
+                org.mockito.ArgumentCaptor.forClass(OrchestrationSuggestion.class);
+        verify(suggestionRepo).save(captor.capture());
+        OrchestrationSuggestion suggestion = captor.getValue();
+        assertThat(suggestion.getRule()).isEqualTo(rule);
+        assertThat(suggestion.getShipmentId()).isEqualTo(shipmentId);
+        assertThat(suggestion.getActionType()).isEqualTo("SUGGEST_ERP_ORDER_ADJUSTMENT");
+        assertThat(suggestion.getStatus()).isEqualTo(OrchestrationSuggestion.Status.PENDING_APPROVAL);
+        assertThat(suggestion.getContextJson()).contains("IN_TRANSIT");
+        // Toujours notifie EN PLUS -- une suggestion ne remplace pas la notification.
+        verify(notificationRepo).save(any());
+    }
+
+    @Test
+    @DisplayName("règle sans actionType -> aucune suggestion créée (comportement historique inchangé)")
+    void onShipmentStatusChange_ruleWithoutActionType_noSuggestion() {
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
+        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
+                TrackingEvent.DataSource.LIVE);
+
+        verify(suggestionRepo, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("échec de création de la suggestion -> n'empêche pas la notification normale")
+    void onShipmentStatusChange_suggestionCreationFails_stillNotifies() {
+        rule.setActionType("SUGGEST_ERP_ORDER_ADJUSTMENT");
+        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
+        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
+        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
+        when(suggestionRepo.save(any())).thenThrow(new RuntimeException("DB down"));
 
         service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
                 TrackingEvent.DataSource.LIVE);

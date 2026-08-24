@@ -33,4 +33,10 @@ public class NotificationRuleDTO {
     private String filterDataSource;
     /** Arbre de condition composee (RuleConditionNode) serialise en JSON, ou null. */
     private String conditionJson;
+
+    /** null/"NONE" = notification seule. Voir NotificationRule.actionType. */
+    private String actionType;
+    private Boolean requiresApproval;
+    private java.math.BigDecimal maxBudgetAmount;
+    private String allowedCarrierIds;
 }

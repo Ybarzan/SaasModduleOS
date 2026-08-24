@@ -9,11 +9,13 @@ import com.incokalk.model.Company;
 import com.incokalk.model.CompanyRole;
 import com.incokalk.model.Notification;
 import com.incokalk.model.NotificationRule;
+import com.incokalk.model.OrchestrationSuggestion;
 import com.incokalk.model.TrackingEvent;
 import com.incokalk.model.User;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.NotificationRepository;
 import com.incokalk.repository.NotificationRuleRepository;
+import com.incokalk.repository.OrchestrationSuggestionRepository;
 import com.incokalk.repository.UserRepository;
 import com.incokalk.rules.RuleConditionEvaluator;
 import com.incokalk.rules.RuleConditionNode;
@@ -50,6 +52,7 @@ public class NotificationService {
     private final RoleChecker roleChecker;
     private final RuleConditionEvaluator conditionEvaluator;
     private final ObjectMapper objectMapper;
+    private final OrchestrationSuggestionRepository suggestionRepo;
 
     @Autowired(required = false)
     private JavaMailSender mailSender;
@@ -59,6 +62,11 @@ public class NotificationService {
 
     @Value("${incokalk.notifications.webhook.timeout:5000}")
     private int webhookTimeout;
+
+    /** Types d'action reconnus pour NotificationRule.actionType -- une valeur hors
+     * de cet ensemble est rejetee a la creation/modification de la regle plutot que
+     * de rester silencieusement sans effet. NONE (ou null) = notification seule. */
+    private static final Set<String> KNOWN_ACTION_TYPES = Set.of("NONE", "SUGGEST_ERP_ORDER_ADJUSTMENT");
 
     // ==================== Core event processing ====================
 
@@ -80,6 +88,31 @@ public class NotificationService {
             if (Boolean.TRUE.equals(rule.getSendWebhook()) && rule.getWebhookUrl() != null) {
                 sendWebhook(rule, dto);
             }
+            if (rule.getActionType() != null && !"NONE".equals(rule.getActionType())) {
+                createSuggestion(rule, dto);
+            }
+        }
+    }
+
+    /**
+     * Cree une proposition d'action -- ne l'execute jamais. L'executeur reel
+     * (appel a ErpProvider.exportOrders etc.) est un chantier separe, pas encore
+     * construit ; voir V65 et le risque R1 de docs/05-estimation-couts-risques.md.
+     */
+    private void createSuggestion(NotificationRule rule, SendNotificationDTO dto) {
+        try {
+            String contextJson = objectMapper.writeValueAsString(
+                    dto.getTemplateData() != null ? dto.getTemplateData() : Map.of());
+            OrchestrationSuggestion suggestion = OrchestrationSuggestion.builder()
+                    .company(companyRepo.getReferenceById(dto.getCompanyId()))
+                    .rule(rule)
+                    .shipmentId(dto.getEntityId())
+                    .actionType(rule.getActionType())
+                    .contextJson(contextJson)
+                    .build();
+            suggestionRepo.save(suggestion);
+        } catch (Exception e) {
+            log.warn("[Rules] Échec de création de la suggestion pour la règle {}: {}", rule.getId(), e.getMessage());
         }
     }
 
@@ -229,6 +262,10 @@ public class NotificationService {
                 .filterCarrierId(dto.getFilterCarrierId())
                 .filterDataSource(dto.getFilterDataSource())
                 .conditionJson(validateConditionJson(dto.getConditionJson()))
+                .actionType(validateActionType(dto.getActionType()))
+                .requiresApproval(dto.getRequiresApproval() != null ? dto.getRequiresApproval() : true)
+                .maxBudgetAmount(validateBudget(dto.getMaxBudgetAmount()))
+                .allowedCarrierIds(dto.getAllowedCarrierIds())
                 .build();
 
         return ruleRepo.save(rule);
@@ -255,6 +292,10 @@ public class NotificationService {
         rule.setFilterCarrierId(dto.getFilterCarrierId());
         rule.setFilterDataSource(dto.getFilterDataSource());
         rule.setConditionJson(validateConditionJson(dto.getConditionJson()));
+        rule.setActionType(validateActionType(dto.getActionType()));
+        if (dto.getRequiresApproval() != null) rule.setRequiresApproval(dto.getRequiresApproval());
+        rule.setMaxBudgetAmount(validateBudget(dto.getMaxBudgetAmount()));
+        rule.setAllowedCarrierIds(dto.getAllowedCarrierIds());
 
         return ruleRepo.save(rule);
     }
@@ -401,6 +442,21 @@ public class NotificationService {
             throw new IllegalArgumentException("Condition invalide: " + e.getMessage());
         }
         return conditionJson;
+    }
+
+    private String validateActionType(String actionType) {
+        if (actionType == null || actionType.isBlank()) return null;
+        if (!KNOWN_ACTION_TYPES.contains(actionType)) {
+            throw new IllegalArgumentException("Type d'action inconnu: " + actionType);
+        }
+        return "NONE".equals(actionType) ? null : actionType;
+    }
+
+    private java.math.BigDecimal validateBudget(java.math.BigDecimal maxBudgetAmount) {
+        if (maxBudgetAmount != null && maxBudgetAmount.signum() < 0) {
+            throw new IllegalArgumentException("Le plafond de budget ne peut pas être négatif");
+        }
+        return maxBudgetAmount;
     }
 
     private void createInAppNotification(NotificationRule rule, SendNotificationDTO dto) {

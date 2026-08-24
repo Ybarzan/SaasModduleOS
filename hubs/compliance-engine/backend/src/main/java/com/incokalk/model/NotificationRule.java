@@ -74,6 +74,31 @@ public class NotificationRule {
     @Column(name = "condition_json", columnDefinition = "TEXT")
     private String conditionJson;
 
+    /** null/"NONE" = notification seule (comportement historique). Une valeur
+     * comme "SUGGEST_ERP_ORDER_ADJUSTMENT" fait naitre une OrchestrationSuggestion
+     * EN PLUS de la notification -- jamais a la place, et jamais executee
+     * automatiquement (voir V65, risque R1 de docs/05-estimation-couts-risques.md). */
+    @Column(name = "action_type", length = 50)
+    private String actionType;
+
+    /** Reserve pour l'executeur d'actions (pas encore construit) : quand celui-ci
+     * existera, une regle a requiresApproval=false pourra sauter la validation
+     * humaine. Sans executeur, ce champ n'a encore aucun effet -- toute suggestion
+     * reste PENDING_APPROVAL quelle que soit sa valeur. */
+    @Column(name = "requires_approval", nullable = false)
+    @Builder.Default
+    private boolean requiresApproval = true;
+
+    /** Plafond de gouvernance (ex: n'agir que si l'impact cout estime reste sous ce
+     * montant) -- pas encore verifie par le code, prepare pour l'executeur. */
+    @Column(name = "max_budget_amount", precision = 15, scale = 2)
+    private java.math.BigDecimal maxBudgetAmount;
+
+    /** UUID de transporteurs autorises, separes par des virgules, ou null (tous
+     * autorises) -- perimetre de gouvernance de l'action, pas encore verifie. */
+    @Column(name = "allowed_carrier_ids", columnDefinition = "TEXT")
+    private String allowedCarrierIds;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
