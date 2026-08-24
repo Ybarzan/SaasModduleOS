@@ -117,6 +117,9 @@ public class LiveTrackingService {
     }
 
     private String detectMode(ShipmentOrder shipment) {
+        if (shipment.getFleetHubTruckRegistration() != null && !shipment.getFleetHubTruckRegistration().isBlank()) {
+            return "FLEET_HUB";
+        }
         Carrier carrier = shipment.getCarrier();
         if (carrier != null && carrier.getTransportModes() != null) {
             String modes = carrier.getTransportModes().toUpperCase();
@@ -128,6 +131,9 @@ public class LiveTrackingService {
     }
 
     private String resolveTrackingNumber(ShipmentOrder shipment) {
+        if (shipment.getFleetHubTruckRegistration() != null && !shipment.getFleetHubTruckRegistration().isBlank()) {
+            return shipment.getFleetHubTruckRegistration();
+        }
         return shipment.getOrderNumber();
     }
 }

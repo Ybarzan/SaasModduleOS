@@ -47,6 +47,12 @@ public class ShipmentOrder {
     @JsonIgnore
     private Carrier carrier;
 
+    /** Immatriculation du camion fleet-hub assigné, si cette expédition est livrée
+     * par la flotte propre du client plutôt que par un transporteur tiers (carrier).
+     * Voir docs/07-integration-fleet-hub.md et FleetHubAdapter. */
+    @Column(name = "fleethub_truck_registration", length = 50)
+    private String fleetHubTruckRegistration;
+
     @com.fasterxml.jackson.annotation.JsonProperty("carrierId")
     public UUID getCarrierId() {
         return carrier != null ? carrier.getId() : null;
