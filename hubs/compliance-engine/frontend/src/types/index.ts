@@ -445,6 +445,9 @@ export interface NotificationRule {
   filterStatus?: string;
   filterCarrierId?: string;
   filterDataSource?: 'LIVE' | 'MANUAL' | '';
+  /** Arbre de condition composée (AND/OR), sérialisé en JSON. Remplace entièrement
+   * les filtres plats ci-dessus quand il est défini (jamais les deux à la fois). */
+  conditionJson?: string;
   /** null/"NONE" = notification seule. Non-null → crée une OrchestrationSuggestion en plus (voir docs/04). */
   actionType?: string;
   requiresApproval?: boolean;
@@ -468,6 +471,7 @@ export interface NotificationRuleFormData {
   filterStatus?: string;
   filterCarrierId?: string;
   filterDataSource?: 'LIVE' | 'MANUAL' | '';
+  conditionJson?: string;
   actionType?: string;
   maxBudgetAmount?: number;
   allowedCarrierIds?: string;

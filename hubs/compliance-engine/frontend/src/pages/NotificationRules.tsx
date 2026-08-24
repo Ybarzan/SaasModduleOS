@@ -4,13 +4,17 @@ import { incokalkAPI } from '../lib/api';
 import toast from 'react-hot-toast';
 import {
   Bell, Plus, Pencil, Trash2, Mail, Webhook, Wifi, Package, Truck,
-  Search, Filter, ToggleLeft, ToggleRight, Loader2, Send, X, Zap,
+  Search, Filter, ToggleLeft, ToggleRight, Loader2, Send, X, Zap, ShieldAlert,
 } from 'lucide-react';
 import type { NotificationRule, NotificationRuleFormData, Carrier } from '../types';
 import Pagination from '../components/Pagination';
 import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import ConditionTreeEditor from '../components/ConditionTreeEditor';
+import {
+  type ConditionGroup, type ConditionField, describeCondition, emptyGroup, hasIncompleteLeaf,
+} from '../lib/conditionTree';
 
 const PAGE_SIZE = 20;
 
@@ -20,6 +24,7 @@ const EVENT_TYPES = [
   { value: 'QUOTE_RECEIVED', label: 'Devis reçu', icon: Search, color: 'bg-accent-soft text-accent-strong' },
   { value: 'PROVIDER_DOWN', label: 'Fournisseur indisponible', icon: Wifi, color: 'bg-danger/10 text-danger' },
   { value: 'PROVIDER_RECOVERED', label: 'Fournisseur rétabli', icon: Wifi, color: 'bg-success/10 text-success' },
+  { value: 'DPS_ALERT', label: 'Alerte screening (DPS)', icon: ShieldAlert, color: 'bg-danger/10 text-danger' },
 ];
 
 const STATUS_OPTIONS = [
@@ -30,6 +35,36 @@ const STATUS_OPTIONS = [
   { value: 'DELIVERED', label: 'Livré' },
   { value: 'CANCELLED', label: 'Annulé' },
 ];
+
+// Champs disponibles pour le constructeur de conditions, par type d'événement — reflète
+// exactement les clés de templateData que NotificationService place dans le contexte
+// (voir onShipmentStatusChange/onShipmentCreated/onQuoteReceived/onProviderDown/onDpsAlert
+// côté backend). Utiliser un champ hors de cette liste n'aurait aucune donnée à comparer.
+const EVENT_CONDITION_FIELDS: Record<string, ConditionField[]> = {
+  SHIPMENT_STATUS_CHANGE: [
+    { value: 'newStatus', label: 'Nouveau statut' },
+    { value: 'oldStatus', label: 'Ancien statut' },
+    { value: 'orderNumber', label: 'Numéro de commande' },
+    { value: 'dataSource', label: 'Provenance (LIVE/MANUAL)' },
+  ],
+  SHIPMENT_CREATED: [
+    { value: 'orderNumber', label: 'Numéro de commande' },
+  ],
+  QUOTE_RECEIVED: [
+    { value: 'quoteCount', label: 'Nombre de devis' },
+  ],
+  PROVIDER_DOWN: [
+    { value: 'providerType', label: 'Fournisseur' },
+  ],
+  PROVIDER_RECOVERED: [
+    { value: 'providerType', label: 'Fournisseur' },
+  ],
+  DPS_ALERT: [
+    { value: 'checkedName', label: 'Nom vérifié' },
+    { value: 'riskLevel', label: 'Niveau de risque' },
+    { value: 'matchedListName', label: 'Liste correspondante' },
+  ],
+};
 
 const EMPTY_FORM: NotificationRuleFormData = {
   name: '',
@@ -96,6 +131,8 @@ const NotificationRules = () => {
   const [form, setForm] = useState<NotificationRuleFormData>({ ...EMPTY_FORM });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  const [conditionMode, setConditionMode] = useState<'simple' | 'advanced'>('simple');
+  const [conditionTree, setConditionTree] = useState<ConditionGroup>(() => emptyGroup('newStatus'));
 
   const { data: rulesData, isLoading } = useQuery({
     queryKey: ['notification-rules', page],
@@ -167,6 +204,8 @@ const NotificationRules = () => {
   const openCreate = () => {
     setEditing(null);
     setForm({ ...EMPTY_FORM });
+    setConditionMode('simple');
+    setConditionTree(emptyGroup(EVENT_CONDITION_FIELDS.SHIPMENT_STATUS_CHANGE[0].value));
     setShowModal(true);
   };
 
@@ -189,6 +228,20 @@ const NotificationRules = () => {
       maxBudgetAmount: rule.maxBudgetAmount,
       allowedCarrierIds: rule.allowedCarrierIds || '',
     });
+    const fields = EVENT_CONDITION_FIELDS[rule.eventType] || [];
+    if (rule.conditionJson) {
+      try {
+        const parsed = JSON.parse(rule.conditionJson);
+        setConditionTree(parsed.type === 'AND' || parsed.type === 'OR' ? parsed : emptyGroup(fields[0]?.value || ''));
+        setConditionMode('advanced');
+      } catch {
+        setConditionTree(emptyGroup(fields[0]?.value || ''));
+        setConditionMode('simple');
+      }
+    } else {
+      setConditionTree(emptyGroup(fields[0]?.value || ''));
+      setConditionMode('simple');
+    }
     setShowModal(true);
   };
 
@@ -196,6 +249,13 @@ const NotificationRules = () => {
     setShowModal(false);
     setEditing(null);
     setForm({ ...EMPTY_FORM });
+    setConditionMode('simple');
+  };
+
+  const handleEventTypeChange = (eventType: string) => {
+    const fields = EVENT_CONDITION_FIELDS[eventType] || [];
+    setForm({ ...form, eventType });
+    setConditionTree(emptyGroup(fields[0]?.value || ''));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -212,10 +272,19 @@ const NotificationRules = () => {
       toast.error('Le budget maximum ne peut pas être négatif');
       return;
     }
+    if (conditionMode === 'advanced' && hasIncompleteLeaf(conditionTree)) {
+      toast.error('Complétez ou supprimez les conditions vides avant de sauvegarder');
+      return;
+    }
+
+    const payload: NotificationRuleFormData = conditionMode === 'advanced'
+      ? { ...form, conditionJson: JSON.stringify(conditionTree), filterStatus: undefined, filterCarrierId: undefined, filterDataSource: undefined }
+      : { ...form, conditionJson: undefined };
+
     if (editing) {
-      updateMutation.mutate({ id: editing.id, data: form });
+      updateMutation.mutate({ id: editing.id, data: payload });
     } else {
-      createMutation.mutate(form);
+      createMutation.mutate(payload);
     }
   };
 
@@ -328,23 +397,38 @@ const NotificationRules = () => {
                         </span>
                       )}
                     </div>
-                    {(rule.filterStatus || rule.filterCarrierId || rule.filterDataSource) && (
-                      <div className="flex items-center gap-2 text-sm text-ink-soft mb-2">
-                        <Filter size={14} />
-                        {rule.filterStatus && (
-                          <span>Statut: {rule.filterStatus}</span>
-                        )}
-                        {rule.filterCarrierId && (
-                          <span>
-                            Transporteur: {carriers.find((c) => c.id === rule.filterCarrierId)?.name || rule.filterCarrierId}
-                          </span>
-                        )}
-                        {rule.filterDataSource && (
-                          <span>
-                            Source: {rule.filterDataSource === 'LIVE' ? 'Live uniquement' : 'Manuel uniquement'}
-                          </span>
-                        )}
+                    {rule.conditionJson ? (
+                      <div className="flex items-start gap-2 text-sm text-ink-soft mb-2">
+                        <Filter size={14} className="mt-0.5 shrink-0" />
+                        <span className="font-mono text-xs">
+                          {(() => {
+                            try {
+                              return describeCondition(JSON.parse(rule.conditionJson), EVENT_CONDITION_FIELDS[rule.eventType] || []);
+                            } catch {
+                              return 'Condition invalide';
+                            }
+                          })()}
+                        </span>
                       </div>
+                    ) : (
+                      (rule.filterStatus || rule.filterCarrierId || rule.filterDataSource) && (
+                        <div className="flex items-center gap-2 text-sm text-ink-soft mb-2">
+                          <Filter size={14} />
+                          {rule.filterStatus && (
+                            <span>Statut: {rule.filterStatus}</span>
+                          )}
+                          {rule.filterCarrierId && (
+                            <span>
+                              Transporteur: {carriers.find((c) => c.id === rule.filterCarrierId)?.name || rule.filterCarrierId}
+                            </span>
+                          )}
+                          {rule.filterDataSource && (
+                            <span>
+                              Source: {rule.filterDataSource === 'LIVE' ? 'Live uniquement' : 'Manuel uniquement'}
+                            </span>
+                          )}
+                        </div>
+                      )
                     )}
                     {rule.actionType && rule.actionType !== 'NONE' && (
                       <div className="flex items-start gap-2 text-sm">
@@ -473,7 +557,7 @@ const NotificationRules = () => {
                     <label className="block text-sm font-medium text-ink mb-1">Type d'événement *</label>
                     <select
                       value={form.eventType}
-                      onChange={(e) => setForm({ ...form, eventType: e.target.value })}
+                      onChange={(e) => handleEventTypeChange(e.target.value)}
                       className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                     >
                       {EVENT_TYPES.map((et) => (
@@ -560,52 +644,86 @@ const NotificationRules = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-ink mb-2">
-                      Filtres (optionnel)
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs text-ink-soft mb-1">Filtrer par statut</label>
-                        <select
-                          value={form.filterStatus || ''}
-                          onChange={(e) => setForm({ ...form, filterStatus: e.target.value || undefined })}
-                          className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-ink">Condition de déclenchement</label>
+                      <div className="flex gap-1 bg-surface-2 p-0.5 rounded-md">
+                        <button
+                          type="button"
+                          onClick={() => setConditionMode('simple')}
+                          className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+                            conditionMode === 'simple' ? 'bg-surface text-ink shadow-sm' : 'text-ink-soft hover:text-ink'
+                          }`}
                         >
-                          <option value="">Tous les statuts</option>
-                          {STATUS_OPTIONS.map((s) => (
-                            <option key={s.value} value={s.value}>{s.label}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs text-ink-soft mb-1">Filtrer par transporteur</label>
-                        <select
-                          value={form.filterCarrierId || ''}
-                          onChange={(e) => setForm({ ...form, filterCarrierId: e.target.value || undefined })}
-                          className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                          Filtres simples
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConditionMode('advanced')}
+                          className={`px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+                            conditionMode === 'advanced' ? 'bg-surface text-ink shadow-sm' : 'text-ink-soft hover:text-ink'
+                          }`}
                         >
-                          <option value="">Tous les transporteurs</option>
-                          {carriers.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs text-ink-soft mb-1">Filtrer par provenance</label>
-                        <select
-                          value={form.filterDataSource || ''}
-                          onChange={(e) => setForm({ ...form, filterDataSource: (e.target.value || undefined) as NotificationRuleFormData['filterDataSource'] })}
-                          className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
-                        >
-                          <option value="">Toutes provenances</option>
-                          <option value="LIVE">Live uniquement (transporteur/webhook)</option>
-                          <option value="MANUAL">Manuel uniquement (saisie humaine)</option>
-                        </select>
-                        <p className="text-xs text-ink-soft/70 mt-1">
-                          Ne s'applique qu'aux changements de statut d'expédition
-                        </p>
+                          Conditions avancées (ET/OU)
+                        </button>
                       </div>
                     </div>
+
+                    {conditionMode === 'simple' ? (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs text-ink-soft mb-1">Filtrer par statut</label>
+                          <select
+                            value={form.filterStatus || ''}
+                            onChange={(e) => setForm({ ...form, filterStatus: e.target.value || undefined })}
+                            className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                          >
+                            <option value="">Tous les statuts</option>
+                            {STATUS_OPTIONS.map((s) => (
+                              <option key={s.value} value={s.value}>{s.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-ink-soft mb-1">Filtrer par transporteur</label>
+                          <select
+                            value={form.filterCarrierId || ''}
+                            onChange={(e) => setForm({ ...form, filterCarrierId: e.target.value || undefined })}
+                            className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                          >
+                            <option value="">Tous les transporteurs</option>
+                            {carriers.map((c) => (
+                              <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-xs text-ink-soft mb-1">Filtrer par provenance</label>
+                          <select
+                            value={form.filterDataSource || ''}
+                            onChange={(e) => setForm({ ...form, filterDataSource: (e.target.value || undefined) as NotificationRuleFormData['filterDataSource'] })}
+                            className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                          >
+                            <option value="">Toutes provenances</option>
+                            <option value="LIVE">Live uniquement (transporteur/webhook)</option>
+                            <option value="MANUAL">Manuel uniquement (saisie humaine)</option>
+                          </select>
+                          <p className="text-xs text-ink-soft/70 mt-1">
+                            Ne s'applique qu'aux changements de statut d'expédition
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="text-xs text-ink-soft mb-2">
+                          Remplace les filtres simples — une règle utilise l'un ou l'autre, jamais les deux.
+                        </p>
+                        <ConditionTreeEditor
+                          node={conditionTree}
+                          onChange={(n) => setConditionTree(n as ConditionGroup)}
+                          fields={EVENT_CONDITION_FIELDS[form.eventType] || []}
+                        />
+                      </div>
+                    )}
                   </div>
 
                   <div>

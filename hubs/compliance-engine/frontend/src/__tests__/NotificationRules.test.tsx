@@ -228,4 +228,104 @@ describe("NotificationRules page", () => {
 
     expect(incokalkAPI.notificationRules.create).not.toHaveBeenCalled();
   });
+
+  it("switches to advanced condition mode and hides the simple filters", async () => {
+    renderPage();
+    await waitFor(() => screen.getByText("Alerte transit"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Nouvelle règle" }));
+    expect(screen.getByText("Filtrer par statut")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Conditions avancées (ET/OU)" }));
+
+    expect(screen.queryByText("Filtrer par statut")).not.toBeInTheDocument();
+    expect(screen.getByText("Combiner avec :")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Valeur")).toBeInTheDocument();
+  });
+
+  it("creates a rule with a composed condition, clearing the legacy flat filters", async () => {
+    vi.mocked(incokalkAPI.notificationRules.create).mockResolvedValue({} as never);
+    renderPage();
+    await waitFor(() => screen.getByText("Alerte transit"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Nouvelle règle" }));
+    fireEvent.change(screen.getByPlaceholderText("Ex: Alerte changement de statut"), {
+      target: { value: "Règle composée" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Conditions avancées (ET/OU)" }));
+    fireEvent.change(screen.getByPlaceholderText("Valeur"), { target: { value: "BOOKED" } });
+    fireEvent.click(screen.getByRole("button", { name: "Créer" }));
+
+    await waitFor(() => {
+      expect(incokalkAPI.notificationRules.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: "Règle composée",
+          filterStatus: undefined,
+          filterCarrierId: undefined,
+          filterDataSource: undefined,
+        })
+      );
+    });
+    const payload = vi.mocked(incokalkAPI.notificationRules.create).mock.calls[0][0] as { conditionJson: string };
+    expect(JSON.parse(payload.conditionJson)).toEqual({
+      type: "AND",
+      children: [{ type: "LEAF", field: "newStatus", operator: "EQ", value: "BOOKED" }],
+    });
+  });
+
+  it("blocks submission when a composed condition is left incomplete", async () => {
+    renderPage();
+    await waitFor(() => screen.getByText("Alerte transit"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Nouvelle règle" }));
+    fireEvent.change(screen.getByPlaceholderText("Ex: Alerte changement de statut"), {
+      target: { value: "Règle incomplète" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Conditions avancées (ET/OU)" }));
+    // La valeur de la condition par défaut reste vide.
+    fireEvent.click(screen.getByRole("button", { name: "Créer" }));
+
+    expect(incokalkAPI.notificationRules.create).not.toHaveBeenCalled();
+  });
+
+  it("adds a nested group and toggles it to OR", async () => {
+    renderPage();
+    await waitFor(() => screen.getByText("Alerte transit"));
+
+    fireEvent.click(screen.getByRole("button", { name: "Nouvelle règle" }));
+    fireEvent.click(screen.getByRole("button", { name: "Conditions avancées (ET/OU)" }));
+    fireEvent.click(screen.getByRole("button", { name: "Groupe imbriqué" }));
+
+    // Deux sélecteurs ET/OU existent maintenant (racine + groupe imbriqué) : deux boutons "OU".
+    const orButtons = screen.getAllByRole("button", { name: "OU" });
+    expect(orButtons).toHaveLength(2);
+    fireEvent.click(orButtons[1]);
+
+    // Deux lignes de condition existent désormais (racine + groupe imbriqué).
+    expect(screen.getAllByPlaceholderText("Valeur")).toHaveLength(2);
+  });
+
+  it("pre-fills the condition editor and switches to advanced mode when editing a rule with conditionJson", async () => {
+    const composedRule = {
+      ...rule,
+      id: "r2",
+      name: "Règle avec condition",
+      conditionJson: JSON.stringify({
+        type: "OR",
+        children: [{ type: "LEAF", field: "newStatus", operator: "EQ", value: "DELIVERED" }],
+      }),
+    };
+    vi.mocked(incokalkAPI.notificationRules.getPage).mockResolvedValue({
+      data: { content: [composedRule], totalPages: 1 },
+    } as never);
+    renderPage();
+    await waitFor(() => screen.getByText("Règle avec condition"));
+
+    // La carte affiche la description de la condition composée plutôt que les filtres plats.
+    expect(screen.getByText(/Nouveau statut est égal à "DELIVERED"/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTitle("Modifier"));
+    expect(screen.getByRole("button", { name: "Conditions avancées (ET/OU)" })).toHaveClass("bg-surface");
+    expect(screen.getByDisplayValue("DELIVERED")).toBeInTheDocument();
+  });
 });
