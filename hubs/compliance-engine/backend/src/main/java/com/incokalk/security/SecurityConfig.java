@@ -220,7 +220,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();
-        String origins = System.getenv().getOrDefault("CORS_ORIGINS", "http://localhost:3000,http://localhost:5173,http://localhost:5180");
+        // 3010/3011 : ports des frontends compliance-engine/fleet-hub dans .claude/launch.json de ce monorepo.
+        String origins = System.getenv().getOrDefault("CORS_ORIGINS", "http://localhost:3000,http://localhost:3010,http://localhost:3011,http://localhost:5173,http://localhost:5180");
         cfg.setAllowedOrigins(Arrays.stream(origins.split(","))
             .map(String::trim)
             .filter(s -> !s.isEmpty())
