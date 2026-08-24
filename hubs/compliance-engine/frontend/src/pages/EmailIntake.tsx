@@ -268,12 +268,15 @@ const EmailIntake = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-ink mb-2">Import Email</h1>
+            <h1 className="text-4xl font-bold text-ink mb-2">
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
+              Import Email
+            </h1>
             <p className="text-ink-soft">Configurez les boîtes email surveillées pour l'import automatique</p>
           </div>
           <button
             onClick={() => { resetForm(); setShowForm(true); }}
-            className="flex items-center space-x-2 px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors font-medium"
+            className="flex items-center space-x-2 px-4 py-2.5 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors font-medium"
           >
             <Plus size={18} />
             <span>Ajouter une boîte</span>
@@ -288,11 +291,11 @@ const EmailIntake = () => {
             {intakes.map((intake) => (
               <div
                 key={intake.id}
-                className="bg-surface rounded-lg shadow-lg border-2 border-line hover:shadow-xl transition-shadow overflow-hidden"
+                className="bg-surface rounded-none shadow-lg border-2 border-line hover:shadow-xl transition-shadow overflow-hidden"
               >
                 <div className="px-6 py-5 bg-accent-soft flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-accent-soft rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-accent-soft rounded-none flex items-center justify-center">
                       <Mail className="h-6 w-6 text-accent" />
                     </div>
                     <div>
@@ -367,7 +370,7 @@ const EmailIntake = () => {
                     <span className="text-ink-soft">{formatDate(intake.lastCheckAt)}</span>
                   </div>
                   {intake.lastError && (
-                    <div className="flex items-start space-x-1 text-xs text-danger bg-danger/10 p-2 rounded-lg">
+                    <div className="flex items-start space-x-1 text-xs text-danger bg-danger/10 p-2 rounded-none">
                       <AlertTriangle size={12} className="mt-0.5 flex-shrink-0" />
                       <span>{intake.lastError}</span>
                     </div>
@@ -378,7 +381,7 @@ const EmailIntake = () => {
                   <button
                     onClick={() => handleTest(intake.id)}
                     disabled={testingId === intake.id}
-                    className="flex-1 px-3 py-2 bg-accent-soft text-accent-strong rounded-lg hover:bg-accent-soft transition-colors text-sm font-medium flex items-center justify-center space-x-1.5"
+                    className="flex-1 px-3 py-2 bg-accent-soft text-accent-strong rounded-none hover:bg-accent-soft transition-colors text-sm font-medium flex items-center justify-center space-x-1.5"
                   >
                     {testingId === intake.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -389,14 +392,14 @@ const EmailIntake = () => {
                   </button>
                   <button
                     onClick={() => openEditForm(intake)}
-                    className="px-3 py-2 bg-surface-2 text-ink-soft rounded-lg hover:bg-line transition-colors text-sm font-medium"
+                    className="px-3 py-2 bg-surface-2 text-ink-soft rounded-none hover:bg-line transition-colors text-sm font-medium"
                     title="Modifier"
                   >
                     <Settings size={14} />
                   </button>
                   <button
                     onClick={() => setDeleteId(intake.id)}
-                    className="px-3 py-2 bg-danger/10 text-danger rounded-lg hover:bg-danger/10 transition-colors text-sm font-medium"
+                    className="px-3 py-2 bg-danger/10 text-danger rounded-none hover:bg-danger/10 transition-colors text-sm font-medium"
                     title="Supprimer"
                   >
                     <Trash2 size={14} />
@@ -406,7 +409,7 @@ const EmailIntake = () => {
             ))}
           </div>
         ) : (
-          <div className="bg-surface rounded-lg shadow-lg p-12 mb-10 text-center">
+          <div className="bg-surface rounded-none shadow-lg p-12 mb-10 text-center">
             <Inbox className="h-16 w-16 text-ink-soft mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-ink-soft mb-2">Aucune boîte email configurée</h3>
             <p className="text-ink-soft mb-6">
@@ -414,7 +417,7 @@ const EmailIntake = () => {
             </p>
             <button
               onClick={() => { resetForm(); setShowForm(true); }}
-              className="inline-flex items-center space-x-2 px-4 py-2.5 bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors font-medium"
+              className="inline-flex items-center space-x-2 px-4 py-2.5 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors font-medium"
             >
               <Plus size={18} />
               <span>Ajouter une boîte</span>
@@ -424,7 +427,7 @@ const EmailIntake = () => {
 
         {/* Sync Logs */}
         {syncLogs.length > 0 && (
-          <div className="bg-surface rounded-lg shadow-lg overflow-hidden mb-10">
+          <div className="bg-surface rounded-none shadow-lg overflow-hidden mb-10">
             <div className="px-6 py-4 border-b border-line flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <History size={20} className="text-ink-soft" />
@@ -432,7 +435,7 @@ const EmailIntake = () => {
               </div>
               <button
                 onClick={() => queryClient.invalidateQueries({ queryKey: ['email-intake-logs'] })}
-                className="p-1.5 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-lg transition-colors"
+                className="p-1.5 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-none transition-colors"
                 title="Rafraîchir"
               >
                 <RefreshCw size={16} />
@@ -477,7 +480,7 @@ const EmailIntake = () => {
         {/* Add/Edit Form Modal */}
         {showForm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-surface rounded-lg shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="bg-surface rounded-none shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-ink">
@@ -485,7 +488,7 @@ const EmailIntake = () => {
                   </h2>
                   <button
                     onClick={resetForm}
-                    className="p-1.5 text-ink-soft hover:text-ink hover:bg-surface-2 rounded-lg transition-colors"
+                    className="p-1.5 text-ink-soft hover:text-ink hover:bg-surface-2 rounded-none transition-colors"
                   >
                     <XCircle size={18} />
                   </button>
@@ -498,7 +501,7 @@ const EmailIntake = () => {
                       type="email"
                       value={formEmail}
                       onChange={(e) => setFormEmail(e.target.value)}
-                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       placeholder="incoming@exemple.com"
                     />
                   </div>
@@ -510,7 +513,7 @@ const EmailIntake = () => {
                         type="text"
                         value={formHost}
                         onChange={(e) => setFormHost(e.target.value)}
-                        className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                         placeholder="imap.exemple.com"
                       />
                     </div>
@@ -520,7 +523,7 @@ const EmailIntake = () => {
                         type="number"
                         value={formPort}
                         onChange={(e) => setFormPort(e.target.value)}
-                        className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       />
                     </div>
                   </div>
@@ -532,7 +535,7 @@ const EmailIntake = () => {
                         type="text"
                         value={formUsername}
                         onChange={(e) => setFormUsername(e.target.value)}
-                        className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                         placeholder="incoming@exemple.com"
                       />
                     </div>
@@ -545,7 +548,7 @@ const EmailIntake = () => {
                           type={showPassword ? 'text' : 'password'}
                           value={formPassword}
                           onChange={(e) => setFormPassword(e.target.value)}
-                          className="w-full border border-line rounded-lg px-3 pr-10 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                          className="w-full border border-line rounded-none px-3 pr-10 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                           placeholder="••••••••"
                         />
                         <button
@@ -565,7 +568,7 @@ const EmailIntake = () => {
                       type="text"
                       value={formFolder}
                       onChange={(e) => setFormFolder(e.target.value)}
-                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       placeholder="INBOX"
                     />
                   </div>
@@ -576,7 +579,7 @@ const EmailIntake = () => {
                       <select
                         value={formProtocol}
                         onChange={(e) => setFormProtocol(e.target.value as 'IMAP' | 'POP3')}
-                        className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       >
                         <option value="IMAP">IMAP</option>
                         <option value="POP3">POP3</option>
@@ -587,7 +590,7 @@ const EmailIntake = () => {
                       <select
                         value={formDocType}
                         onChange={(e) => setFormDocType(e.target.value)}
-                        className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                        className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       >
                         {DOCUMENT_TYPES.map((dt) => (
                           <option key={dt.value} value={dt.value}>{dt.label}</option>
@@ -670,14 +673,14 @@ const EmailIntake = () => {
                 <div className="flex justify-end space-x-3 pt-6">
                   <button
                     onClick={resetForm}
-                    className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
+                    className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
                   >
                     Annuler
                   </button>
                   <button
                     onClick={handleSubmit}
                     disabled={createMutation.isPending || updateMutation.isPending}
-                    className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
+                    className="px-4 py-2 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
                   >
                     {(createMutation.isPending || updateMutation.isPending) && (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -693,7 +696,7 @@ const EmailIntake = () => {
         {/* Delete Confirmation */}
         {deleteId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-surface rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="bg-surface rounded-none shadow-xl w-full max-w-md mx-4 p-6">
               <div className="flex items-center space-x-3 mb-4">
                 <div className="w-10 h-10 bg-danger/10 rounded-full flex items-center justify-center">
                   <AlertTriangle className="h-5 w-5 text-danger" />
@@ -706,14 +709,14 @@ const EmailIntake = () => {
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setDeleteId(null)}
-                  className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
+                  className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   onClick={() => deleteMutation.mutate(deleteId)}
                   disabled={deleteMutation.isPending}
-                  className="px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  className="px-4 py-2 bg-danger text-white rounded-none hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
                 >
                   {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   <span>Supprimer</span>

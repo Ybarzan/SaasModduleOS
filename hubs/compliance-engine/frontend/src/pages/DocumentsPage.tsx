@@ -103,7 +103,10 @@ const DocumentsPage = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-surface-2 mb-4">
             <FileText size={32} className="text-ink-soft" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">Documents</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Documents
+          </h1>
           <p className="text-ink-soft max-w-xl mx-auto">
             Générez les documents de transport à partir des données réelles de vos expéditions.
           </p>
@@ -112,9 +115,9 @@ const DocumentsPage = () => {
         {/* Devis — pointe vers la vraie recherche de tarifs (déjà construite sur /quotes) */}
         <Link
           to="/quotes"
-          className="flex items-center gap-4 bg-surface rounded-2xl shadow-sm border border-line p-6 mb-6 hover:border-accent/40 transition-colors group"
+          className="flex items-center gap-4 bg-surface rounded-none shadow-sm border border-line p-6 mb-6 hover:border-accent/40 transition-colors group"
         >
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent/10 shrink-0">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-none bg-accent/10 shrink-0">
             <FileText size={24} className="text-accent" />
           </div>
           <div className="flex-1">
@@ -131,9 +134,9 @@ const DocumentsPage = () => {
         {hasMinimumRole('MANAGER') && (
           <Link
             to="/document-parser"
-            className="flex items-center gap-4 bg-surface rounded-2xl shadow-sm border border-line p-6 mb-6 hover:border-accent/40 transition-colors group"
+            className="flex items-center gap-4 bg-surface rounded-none shadow-sm border border-line p-6 mb-6 hover:border-accent/40 transition-colors group"
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent/10 shrink-0">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-none bg-accent/10 shrink-0">
               <ScanText size={24} className="text-accent" />
             </div>
             <div className="flex-1">
@@ -148,9 +151,9 @@ const DocumentsPage = () => {
         {hasMinimumRole('ADMIN') && (
           <Link
             to="/email-intake"
-            className="flex items-center gap-4 bg-surface rounded-2xl shadow-sm border border-line p-6 mb-6 hover:border-accent/40 transition-colors group"
+            className="flex items-center gap-4 bg-surface rounded-none shadow-sm border border-line p-6 mb-6 hover:border-accent/40 transition-colors group"
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent/10 shrink-0">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-none bg-accent/10 shrink-0">
               <Mail size={24} className="text-accent" />
             </div>
             <div className="flex-1">
@@ -164,14 +167,14 @@ const DocumentsPage = () => {
         )}
 
         {/* Sélection d'expédition — alimente les 4 documents ci-dessous */}
-        <div className="bg-surface rounded-2xl shadow-sm border border-line p-6 mb-6">
+        <div className="bg-surface rounded-none shadow-sm border border-line p-6 mb-6">
           <h2 className="font-bold text-ink mb-1">Sélectionnez une expédition</h2>
           <p className="text-sm text-ink-soft mb-4">
             Les documents ci-dessous sont générés à partir des données réelles de l'expédition choisie.
           </p>
 
           {selectedShipment ? (
-            <div className="flex items-center justify-between bg-accent-soft border border-accent/30 rounded-xl px-4 py-3">
+            <div className="flex items-center justify-between bg-accent-soft border border-accent/30 rounded-none px-4 py-3">
               <div className="flex items-center gap-3 min-w-0">
                 <CheckCircle2 size={18} className="text-accent shrink-0" />
                 <div className="min-w-0">
@@ -199,7 +202,7 @@ const DocumentsPage = () => {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Rechercher par n° de commande, expéditeur, destinataire..."
-                  className="w-full pl-9 pr-4 py-2.5 border border-line rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent bg-surface"
+                  className="w-full pl-9 pr-4 py-2.5 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent bg-surface"
                 />
               </div>
 
@@ -225,7 +228,7 @@ const DocumentsPage = () => {
                       <button
                         key={s.id}
                         onClick={() => setSelectedShipment(s)}
-                        className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl hover:bg-surface-2 transition-colors text-left"
+                        className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-none hover:bg-surface-2 transition-colors text-left"
                       >
                         <div className="min-w-0">
                           <p className="font-semibold text-ink text-sm truncate">{s.orderNumber}</p>
@@ -252,8 +255,8 @@ const DocumentsPage = () => {
             const isGenerating = generatingDoc === doc.id;
 
             return (
-              <div key={doc.id} className={`bg-surface rounded-2xl shadow-sm border border-line p-6 flex flex-col ${colors.border} transition-colors`}>
-                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${colors.bg} mb-4`}>
+              <div key={doc.id} className={`bg-surface rounded-none shadow-sm border border-line p-6 flex flex-col ${colors.border} transition-colors`}>
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-none ${colors.bg} mb-4`}>
                   <Icon size={24} className={colors.icon} />
                 </div>
                 <h3 className="font-bold text-ink mb-1">{doc.title}</h3>
@@ -262,7 +265,7 @@ const DocumentsPage = () => {
                 <button
                   onClick={() => selectedShipment && generateMutation.mutate({ type: doc.id, shipment: selectedShipment })}
                   disabled={!selectedShipment || isGenerating}
-                  className="bg-accent text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-accent-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                  className="bg-accent text-white py-2.5 rounded-none text-sm font-semibold hover:bg-accent-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
                 >
                   {isGenerating ? (
                     <><Loader2 className="h-4 w-4 animate-spin" /> Génération...</>
