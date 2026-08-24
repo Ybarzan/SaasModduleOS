@@ -119,12 +119,15 @@ const EoriSettings = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Configuration EORI</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Configuration EORI
+          </h1>
           <p className="text-ink-soft mt-1">Gérez vos numéros EORI pour les opérations douanières EU</p>
         </div>
         <button
           onClick={() => setFormOpen(true)}
-          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
         >
           <Plus size={18} />
           Ajouter un EORI
@@ -132,7 +135,7 @@ const EoriSettings = () => {
       </div>
 
       {/* EORI list */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">Numéros EORI</h2>
         </div>
@@ -155,7 +158,7 @@ const EoriSettings = () => {
             {eoris.map((eori: EoriEntry) => (
               <div key={eori.id} className="px-6 py-4 flex items-center justify-between hover:bg-bg transition-colors">
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center text-sm font-bold text-accent-strong">
+                  <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center text-sm font-bold text-accent-strong">
                     {eori.eori.slice(0, 2)}
                   </div>
                   <div>
@@ -187,7 +190,7 @@ const EoriSettings = () => {
                     <button
                       onClick={() => setDefaultMutation.mutate(eori.id)}
                       disabled={setDefaultMutation.isPending}
-                      className="p-1.5 rounded-lg text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors disabled:opacity-50"
+                      className="p-1.5 rounded-none text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors disabled:opacity-50"
                       title="Définir par défaut"
                     >
                       <Star size={16} />
@@ -214,7 +217,7 @@ const EoriSettings = () => {
                   ) : (
                     <button
                       onClick={() => setDeleteConfirm(eori.id)}
-                      className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                      className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                       title="Supprimer"
                     >
                       <Trash2 size={16} />
@@ -231,7 +234,7 @@ const EoriSettings = () => {
 
       {/* Default EORI info */}
       {defaultEori && (
-        <div className="mt-6 bg-accent-soft border border-accent/20 rounded-lg px-4 py-3 flex items-center gap-3">
+        <div className="mt-6 bg-accent-soft border border-accent/20 rounded-none px-4 py-3 flex items-center gap-3">
           <AlertCircle size={18} className="text-accent" />
           <p className="text-sm text-accent-strong">
             EORI par défaut : <span className="font-mono font-semibold">{defaultEori.eori}</span> — {defaultEori.holderName}
@@ -243,7 +246,7 @@ const EoriSettings = () => {
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setFormOpen(false)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-md mx-4 p-6">
             <h3 className="text-lg font-semibold text-ink mb-4">Ajouter un EORI</h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -252,7 +255,7 @@ const EoriSettings = () => {
                   type="text"
                   value={form.eori}
                   onChange={(e) => handleEoriChange(e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono uppercase ${
+                  className={`w-full px-3 py-2 border rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono uppercase ${
                     eoriError ? 'border-danger/40' : 'border-line'
                   }`}
                   placeholder="FR12345678901"
@@ -272,7 +275,7 @@ const EoriSettings = () => {
                   type="text"
                   value={form.holderName}
                   onChange={(e) => setForm({ ...form, holderName: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   placeholder="Entreprise Exemple SAS"
                   required
                 />
@@ -283,7 +286,7 @@ const EoriSettings = () => {
                   type="text"
                   value={form.holderAddress}
                   onChange={(e) => setForm({ ...form, holderAddress: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   placeholder="123 Rue de l'Exemple, 75001 Paris"
                 />
               </div>
@@ -293,7 +296,7 @@ const EoriSettings = () => {
                   type="text"
                   value={form.holderCountry}
                   onChange={(e) => setForm({ ...form, holderCountry: e.target.value.toUpperCase().slice(0, 2) })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono uppercase"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono uppercase"
                   placeholder="FR"
                   maxLength={2}
                 />
@@ -311,14 +314,14 @@ const EoriSettings = () => {
                 <button
                   type="button"
                   onClick={() => setFormOpen(false)}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending || !!eoriError}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                   Ajouter

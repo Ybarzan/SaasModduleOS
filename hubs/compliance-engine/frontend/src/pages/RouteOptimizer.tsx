@@ -119,24 +119,27 @@ const RouteOptimizer = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10 mb-4">
             <Route size={32} className="text-success" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">Optimisation d'itinéraire</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Optimisation d'itinéraire
+          </h1>
           <p className="text-ink-soft max-w-xl mx-auto">Planifiez un itinéraire multi-stops avec estimation de carburant et péages.</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-6">
-          <div className="bg-surface rounded-2xl shadow-sm border border-line p-6 space-y-5">
+          <div className="bg-surface rounded-none shadow-sm border border-line p-6 space-y-5">
             <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider">Itinéraire</h2>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-ink-soft mb-1 block">Départ</label>
-                <select value={origin} onChange={e => setOrigin(e.target.value)} className="w-full px-3 py-2.5 border border-line rounded-lg text-sm bg-bg">
+                <select value={origin} onChange={e => setOrigin(e.target.value)} className="w-full px-3 py-2.5 border border-line rounded-none text-sm bg-bg">
                   {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
                 <label className="text-xs text-ink-soft mb-1 block">Arrivée</label>
-                <select value={destination} onChange={e => setDestination(e.target.value)} className="w-full px-3 py-2.5 border border-line rounded-lg text-sm bg-bg">
+                <select value={destination} onChange={e => setDestination(e.target.value)} className="w-full px-3 py-2.5 border border-line rounded-none text-sm bg-bg">
                   {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
@@ -147,7 +150,7 @@ const RouteOptimizer = () => {
               {stops.length > 0 && (
                 <div className="space-y-1.5 mb-2">
                   {stops.map((stop, idx) => (
-                    <div key={idx} className="flex items-center gap-2 bg-bg rounded-lg px-3 py-2 text-sm border border-line">
+                    <div key={idx} className="flex items-center gap-2 bg-bg rounded-none px-3 py-2 text-sm border border-line">
                       <MapPin size={14} className="text-success flex-shrink-0" />
                       <span className="flex-1 font-medium">{stop}</span>
                       <span className="text-[10px] text-ink-soft">Stop {idx + 1}</span>
@@ -157,15 +160,15 @@ const RouteOptimizer = () => {
                 </div>
               )}
               <div className="flex gap-2">
-                <select value={newStop} onChange={e => setNewStop(e.target.value)} className="flex-1 px-3 py-2 border border-line rounded-lg text-sm bg-bg">
+                <select value={newStop} onChange={e => setNewStop(e.target.value)} className="flex-1 px-3 py-2 border border-line rounded-none text-sm bg-bg">
                   <option value="">Ajouter un stop...</option>
                   {CITIES.filter(c => c !== origin && c !== destination && !stops.includes(c)).map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
-                <button onClick={addStop} className="bg-success text-white px-3 py-2 rounded-lg hover:bg-success/90 transition-colors"><Plus size={16} /></button>
+                <button onClick={addStop} className="bg-success text-white px-3 py-2 rounded-none hover:bg-success/90 transition-colors"><Plus size={16} /></button>
               </div>
             </div>
 
-            <button onClick={handleOptimize} disabled={optimizeMutation.isPending} className="w-full bg-success text-white py-3 rounded-xl font-semibold hover:bg-success/90 disabled:opacity-50 flex items-center justify-center gap-2 text-sm transition-colors">
+            <button onClick={handleOptimize} disabled={optimizeMutation.isPending} className="w-full bg-success text-white py-3 rounded-none font-semibold hover:bg-success/90 disabled:opacity-50 flex items-center justify-center gap-2 text-sm transition-colors">
               {optimizeMutation.isPending ? <><Loader2 className="animate-spin" /> Calcul...</> : 'Optimiser l\'itinéraire'}
             </button>
           </div>
@@ -173,29 +176,33 @@ const RouteOptimizer = () => {
           <div className="space-y-4">
             {result ? (
               <>
-                <div className="bg-surface rounded-2xl shadow-sm border border-line p-6">
+                <div className="relative bg-surface rounded-none shadow-sm border border-line p-6">
+                  <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-br" aria-hidden="true" />
                   <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-4">Résumé</h2>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-success/10 rounded-xl p-4 text-center">
+                    <div className="bg-success/10 rounded-none p-4 text-center">
                       <div className="text-3xl font-bold text-success">{formatNumber(result.totalDistanceKm)}</div>
                       <div className="text-xs text-ink-soft">km</div>
                     </div>
-                    <div className="bg-warning/10 rounded-xl p-4 text-center">
+                    <div className="bg-warning/10 rounded-none p-4 text-center">
                       <div className="text-3xl font-bold text-warning">{result.estimatedHours}h</div>
                       <div className="text-xs text-ink-soft">temps estimé</div>
                     </div>
-                    <div className="bg-accent/10 rounded-xl p-4 text-center">
+                    <div className="bg-accent/10 rounded-none p-4 text-center">
                       <div className="text-2xl font-bold text-accent-strong">{result.estimatedFuelLiters} L</div>
                       <div className="text-xs text-ink-soft">carburant</div>
                     </div>
-                    <div className="bg-danger/10 rounded-xl p-4 text-center">
+                    <div className="bg-danger/10 rounded-none p-4 text-center">
                       <div className="text-2xl font-bold text-danger">{formatEur(result.estimatedFuelCost + result.estimatedTollCost)}</div>
                       <div className="text-xs text-ink-soft">coût total</div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-surface rounded-2xl shadow-sm border border-line p-5">
+                <div className="bg-surface rounded-none shadow-sm border border-line p-5">
                   <h3 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-3">Détail des coûts</h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between items-center py-1">
@@ -213,7 +220,7 @@ const RouteOptimizer = () => {
                   </div>
                 </div>
 
-                <div className="bg-surface rounded-2xl shadow-sm border border-line p-5">
+                <div className="bg-surface rounded-none shadow-sm border border-line p-5">
                   <h3 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-3">Étapes ({result.orderedStops.length})</h3>
                   <div className="space-y-0">
                     {result.orderedStops.map((stop, idx) => (
@@ -237,13 +244,13 @@ const RouteOptimizer = () => {
                 </div>
 
                 {result.recommendation && (
-                  <div className="bg-success/10 border border-success/40 rounded-xl p-4 text-sm text-success font-medium">
+                  <div className="bg-success/10 border border-success/40 rounded-none p-4 text-sm text-success font-medium">
                     {result.recommendation}
                   </div>
                 )}
               </>
             ) : (
-              <div className="bg-surface rounded-2xl shadow-sm border border-line p-12 text-center">
+              <div className="bg-surface rounded-none shadow-sm border border-line p-12 text-center">
                 <Route className="h-10 w-10 mx-auto mb-3 text-ink-soft" />
                 <p className="text-sm text-ink-soft">Ajoutez des stops et cliquez sur « Optimiser »</p>
               </div>
@@ -252,9 +259,9 @@ const RouteOptimizer = () => {
         </div>
 
         {polylinePositions.length > 0 && (
-          <div className="mt-6 bg-surface rounded-2xl shadow-sm border border-line p-5">
+          <div className="mt-6 bg-surface rounded-none shadow-sm border border-line p-5">
             <h3 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-4">Visualisation de l'itinéraire</h3>
-            <div style={{ height: 400 }} className="rounded-xl overflow-hidden">
+            <div style={{ height: 400 }} className="rounded-none overflow-hidden">
               <MapContainer center={[48.8566, 2.3522]} zoom={5} style={{ height: '100%', width: '100%' }} scrollWheelZoom={false}>
                 <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 <FitBounds positions={polylinePositions} />

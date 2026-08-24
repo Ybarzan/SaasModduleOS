@@ -68,11 +68,14 @@ const QualityDashboard = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <PageReveal>
         <PageRevealItem className="flex items-start gap-3 mb-8">
-          <div className="w-11 h-11 rounded-xl bg-accent-soft flex items-center justify-center flex-shrink-0">
+          <div className="w-11 h-11 rounded-none bg-accent-soft flex items-center justify-center flex-shrink-0">
             <Target size={22} className="text-accent" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-ink">Qualité Six Sigma</h1>
+            <h1 className="text-2xl font-bold text-ink">
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
+              Qualité Six Sigma
+            </h1>
             <p className="text-ink-soft mt-1 max-w-2xl">
               Niveau sigma, DPMO et rendement calculés en direct sur vos données opérationnelles —
               expéditions, déclarations douanières, réceptions et facturation.
@@ -82,7 +85,11 @@ const QualityDashboard = () => {
 
         {/* Overall hero */}
         <PageRevealItem>
-          <Card variant="flat" className={`mb-8 border ${overallTone.ring} ${overallTone.bg}`} hover={false}>
+          <Card variant="flat" className={`relative mb-8 border ${overallTone.ring} ${overallTone.bg}`} hover={false}>
+            <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+            <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-br" aria-hidden="true" />
             <div className="flex flex-wrap items-center justify-between gap-6 px-2 py-2">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-ink-soft mb-1">
@@ -166,7 +173,7 @@ const QualityDashboard = () => {
 
         {/* Methodology note */}
         <PageRevealItem>
-          <div className="flex items-start gap-3 text-xs text-ink-soft bg-surface-2 rounded-xl p-4">
+          <div className="flex items-start gap-3 text-xs text-ink-soft bg-surface-2 rounded-none p-4">
             <TrendingUp size={15} className="flex-shrink-0 mt-0.5" />
             <p>
               Le niveau sigma est calculé selon la méthode Six Sigma long terme (décalage de 1,5σ) à

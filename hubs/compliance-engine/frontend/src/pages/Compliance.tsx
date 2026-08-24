@@ -92,7 +92,10 @@ const Compliance = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">Conformité</h1>
+        <h1 className="text-2xl font-bold text-ink">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Conformité
+        </h1>
         <p className="text-ink-soft mt-1">Tableau de bord réglementaire</p>
       </div>
 
@@ -103,9 +106,9 @@ const Compliance = () => {
           return (
             <div
               key={card.label}
-              className="bg-surface rounded-xl border border-line p-5 flex items-center gap-4"
+              className="bg-surface rounded-none border border-line p-5 flex items-center gap-4"
             >
-              <div className={`w-10 h-10 rounded-lg ${card.bg} flex items-center justify-center shrink-0`}>
+              <div className={`w-10 h-10 rounded-none ${card.bg} flex items-center justify-center shrink-0`}>
                 <Icon size={20} className={card.color} />
               </div>
               <div>
@@ -119,7 +122,7 @@ const Compliance = () => {
 
       {/* Compliance Areas */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-2 mb-3">
             <FileCheck size={16} className="text-accent" />
             <h3 className="text-sm font-semibold text-ink">Déclarations douanières</h3>
@@ -136,7 +139,7 @@ const Compliance = () => {
           </div>
         </div>
 
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-2 mb-3">
             <AlertTriangle size={16} className="text-warning" />
             <h3 className="text-sm font-semibold text-ink">DPS (Denied Party Screening)</h3>
@@ -153,7 +156,7 @@ const Compliance = () => {
           </div>
         </div>
 
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-2 mb-3">
             <Shield size={16} className="text-danger" />
             <h3 className="text-sm font-semibold text-ink">Listes de sanctions</h3>
@@ -170,7 +173,7 @@ const Compliance = () => {
           </div>
         </div>
 
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-2 mb-3">
             <Clock size={16} className="text-accent" />
             <h3 className="text-sm font-semibold text-ink">EORI</h3>
@@ -189,7 +192,7 @@ const Compliance = () => {
       </div>
 
       {/* Recent Alerts */}
-      <div className="bg-surface rounded-xl border border-line">
+      <div className="bg-surface rounded-none border border-line">
         <div className="flex items-center gap-2 px-5 py-4 border-b border-line">
           <BarChart3 size={16} className="text-ink-soft" />
           <h2 className="text-sm font-semibold text-ink">Alertes récentes</h2>

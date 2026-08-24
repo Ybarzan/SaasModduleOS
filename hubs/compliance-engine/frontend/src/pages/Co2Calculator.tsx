@@ -66,6 +66,7 @@ const Co2Calculator = () => {
             <Leaf size={32} className="text-accent" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Calculateur d'émissions CO₂
           </h1>
           <p className="text-lg text-ink-soft max-w-2xl mx-auto">
@@ -75,7 +76,7 @@ const Co2Calculator = () => {
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1 space-y-6">
-            <div className="bg-surface rounded-2xl shadow-lg border border-line p-6">
+            <div className="bg-surface rounded-none shadow-lg border border-line p-6">
               <h2 className="text-lg font-bold text-ink mb-4">Paramètres</h2>
 
               <div className="space-y-5">
@@ -87,14 +88,14 @@ const Co2Calculator = () => {
                     type="number"
                     value={weight}
                     onChange={(e) => setWeight(Math.max(1, Number(e.target.value)))}
-                    className="w-full px-4 py-2.5 border border-line rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface text-ink"
+                    className="w-full px-4 py-2.5 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface text-ink"
                     min="1"
                   />
                   <input
                     type="range"
                     value={weight}
                     onChange={(e) => setWeight(Number(e.target.value))}
-                    className="w-full h-2 bg-surface-2 rounded-lg appearance-none cursor-pointer accent-accent mt-2"
+                    className="w-full h-2 bg-surface-2 rounded-none appearance-none cursor-pointer accent-accent mt-2"
                     min="1"
                     max="50000"
                     step="100"
@@ -113,14 +114,14 @@ const Co2Calculator = () => {
                     type="number"
                     value={distance}
                     onChange={(e) => setDistance(Math.max(1, Number(e.target.value)))}
-                    className="w-full px-4 py-2.5 border border-line rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface text-ink"
+                    className="w-full px-4 py-2.5 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface text-ink"
                     min="1"
                   />
                   <input
                     type="range"
                     value={distance}
                     onChange={(e) => setDistance(Number(e.target.value))}
-                    className="w-full h-2 bg-surface-2 rounded-lg appearance-none cursor-pointer accent-accent mt-2"
+                    className="w-full h-2 bg-surface-2 rounded-none appearance-none cursor-pointer accent-accent mt-2"
                     min="100"
                     max="25000"
                     step="100"
@@ -133,14 +134,14 @@ const Co2Calculator = () => {
               </div>
             </div>
 
-            <div className="bg-surface rounded-2xl shadow-lg border border-line p-6">
+            <div className="bg-surface rounded-none shadow-lg border border-line p-6">
               <h2 className="text-sm font-bold text-ink mb-3 uppercase tracking-wide">Routes courantes</h2>
               <div className="space-y-2">
                 {COMMON_ROUTES.map((route, i) => (
                   <button
                     key={i}
                     onClick={() => handleRouteSelect(i)}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all ${
+                    className={`w-full text-left px-3 py-2 rounded-none text-sm transition-all ${
                       selectedRoute === i
                         ? 'bg-accent-soft text-accent-strong font-semibold border border-accent/20'
                         : 'text-ink-soft hover:bg-surface-2 border border-transparent'
@@ -162,12 +163,20 @@ const Co2Calculator = () => {
                 return (
                   <div
                     key={r.mode}
-                    className={`bg-surface rounded-2xl shadow-lg border-2 p-5 text-center transition-all ${
+                    className={`relative bg-surface rounded-none shadow-lg border-2 p-5 text-center transition-all ${
                       isLowest ? 'border-accent shadow-accent/20' : 'border-line'
                     }`}
                   >
+                    {isLowest && (
+                      <>
+                        <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+                        <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+                        <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+                        <span className="hud-corner hud-corner-br" aria-hidden="true" />
+                      </>
+                    )}
                     <div className="flex justify-center mb-3">
-                      <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: color + '15' }}>
+                      <div className="w-12 h-12 rounded-none flex items-center justify-center" style={{ backgroundColor: color + '15' }}>
                         <Icon size={24} style={{ color }} />
                       </div>
                     </div>
@@ -187,7 +196,7 @@ const Co2Calculator = () => {
               })}
             </div>
 
-            <div className="bg-surface rounded-2xl shadow-lg border border-line p-6">
+            <div className="bg-surface rounded-none shadow-lg border border-line p-6">
               <h2 className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
                 <BarChart3 size={20} className="text-accent" />
                 Comparaison des émissions
@@ -212,7 +221,7 @@ const Co2Calculator = () => {
               </div>
             </div>
 
-            <div className="bg-accent-soft rounded-2xl border border-accent/20 p-6">
+            <div className="bg-accent-soft rounded-none border border-accent/20 p-6">
               <div className="flex items-start gap-3">
                 <Info size={20} className="text-accent mt-0.5 flex-shrink-0" />
                 <div>
@@ -224,14 +233,14 @@ const Co2Calculator = () => {
                   <div className="flex flex-wrap gap-3">
                     <Link
                       to="/simulation"
-                      className="inline-flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-accent-strong transition-colors"
+                      className="inline-flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none text-sm font-semibold hover:bg-accent-strong transition-colors"
                     >
                       Simuler un Incoterm
                       <ArrowRight size={16} />
                     </Link>
                     <Link
                       to="/quotes"
-                      className="inline-flex items-center gap-2 bg-surface text-ink px-4 py-2 rounded-xl text-sm font-semibold hover:bg-surface-2 transition-colors border border-line"
+                      className="inline-flex items-center gap-2 bg-surface text-ink px-4 py-2 rounded-none text-sm font-semibold hover:bg-surface-2 transition-colors border border-line"
                     >
                       Demander un devis vert
                     </Link>

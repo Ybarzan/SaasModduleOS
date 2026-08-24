@@ -200,28 +200,31 @@ const FlightRadar = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/dashboard')}
-              className="p-2 text-ink-soft hover:text-white hover:bg-ink-soft rounded-lg transition-colors flex-shrink-0"
+              className="p-2 text-ink-soft hover:text-white hover:bg-ink-soft rounded-none transition-colors flex-shrink-0"
               title="Retour au tableau de bord"
             >
               <ArrowLeft size={20} />
             </button>
-            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-none bg-accent flex items-center justify-center flex-shrink-0">
               <Plane size={20} className="text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-extrabold text-white">Flight Radar</h1>
+              <h1 className="text-lg font-extrabold text-white">
+                <span className="text-accent font-normal" aria-hidden="true">:: </span>
+                Flight Radar
+              </h1>
               <p className="text-xs text-ink-soft">Vols en temps réel — OpenSky Network</p>
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-ink-soft rounded-xl px-3 py-2">
+            <div className="flex items-center gap-2 bg-ink-soft rounded-none px-3 py-2">
               <Radar size={14} className="text-accent animate-pulse" />
               <span className="text-sm font-semibold text-white">{flightCount}</span>
               <span className="text-xs text-ink-soft">vols affichés</span>
             </div>
             <button
               onClick={() => refetch()}
-              className="p-2 text-ink-soft hover:text-white hover:bg-ink-soft rounded-lg transition-colors"
+              className="p-2 text-ink-soft hover:text-white hover:bg-ink-soft rounded-none transition-colors"
               title="Rafraîchir"
             >
               <RefreshCw size={18} />
@@ -233,7 +236,11 @@ const FlightRadar = () => {
       <div className="flex-1 relative min-h-0">
         <div ref={mapRef} className="absolute inset-0 z-0" />
 
-        <div className="absolute top-4 left-4 z-[1000] bg-ink/90 backdrop-blur-sm rounded-xl shadow-lg border border-line p-3">
+        <div className="absolute top-4 left-4 z-[1000] bg-ink/90 backdrop-blur-sm rounded-none shadow-lg border border-line p-3">
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <div className="flex items-center gap-2 mb-1">
             <Globe size={14} className="text-accent" />
             <span className="text-xs font-bold text-white uppercase tracking-wide">Filtres</span>
@@ -241,13 +248,13 @@ const FlightRadar = () => {
           <p className="text-[10px] text-ink-soft">Déplacez la carte pour charger les vols</p>
           <button
             onClick={() => refetch()}
-            className="mt-2 w-full px-3 py-1.5 bg-accent text-white rounded-lg text-xs font-semibold hover:bg-accent-strong transition-colors"
+            className="mt-2 w-full px-3 py-1.5 bg-accent text-white rounded-none text-xs font-semibold hover:bg-accent-strong transition-colors"
           >
             Actualiser cette zone
           </button>
         </div>
 
-        <div className="absolute bottom-4 left-4 z-[1000] bg-ink/90 backdrop-blur-sm rounded-xl shadow border border-line px-3 py-2">
+        <div className="absolute bottom-4 left-4 z-[1000] bg-ink/90 backdrop-blur-sm rounded-none shadow border border-line px-3 py-2">
           <div className="flex items-center gap-4 text-[10px] text-ink-soft">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-accent" />
@@ -265,7 +272,7 @@ const FlightRadar = () => {
         </div>
 
         {selectedFlight && (
-          <div className="absolute top-4 right-4 z-[1000] bg-ink/95 backdrop-blur-sm rounded-xl shadow-lg border border-line p-4 w-72">
+          <div className="absolute top-4 right-4 z-[1000] bg-ink/95 backdrop-blur-sm rounded-none shadow-lg border border-line p-4 w-72">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Plane size={16} className="text-accent" />

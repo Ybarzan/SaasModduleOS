@@ -299,9 +299,9 @@ const LoadingSpinner = () => (
 // --- Stats Card ---
 
 const StatCard = ({ label, value, icon: Icon, color }: { label: string; value: number | string; icon: typeof FileText; color: string }) => (
-  <div className="bg-surface rounded-xl border border-line p-5">
+  <div className="bg-surface rounded-none border border-line p-5">
     <div className="flex items-center gap-3">
-      <div className={`w-10 h-10 rounded-lg ${color} flex items-center justify-center`}>
+      <div className={`w-10 h-10 rounded-none ${color} flex items-center justify-center`}>
         <Icon size={20} />
       </div>
       <div>
@@ -396,7 +396,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
           <select
             value={form.declarationType}
             onChange={(e) => setForm({ ...form, declarationType: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
           >
             <option value="DAU_IMPORT">Import</option>
             <option value="DAU_EXPORT">Export</option>
@@ -410,7 +410,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.customsOffice}
             onChange={(e) => setForm({ ...form, customsOffice: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: Paris-CDG"
             required
           />
@@ -421,7 +421,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.customsRegime}
             onChange={(e) => setForm({ ...form, customsRegime: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: 4000"
             required
           />
@@ -432,7 +432,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="number"
             value={form.declaredValue}
             onChange={(e) => setForm({ ...form, declaredValue: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0.00"
             required
           />
@@ -443,7 +443,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.originCountry}
             onChange={(e) => setForm({ ...form, originCountry: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Code pays (ex: CN)"
             required
           />
@@ -454,7 +454,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.destinationCountry}
             onChange={(e) => setForm({ ...form, destinationCountry: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Code pays (ex: FR)"
             required
           />
@@ -465,7 +465,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.hsCode}
             onChange={(e) => setForm({ ...form, hsCode: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: 8471.30"
             required
           />
@@ -476,7 +476,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="number"
             value={form.packages}
             onChange={(e) => setForm({ ...form, packages: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0"
           />
         </div>
@@ -487,7 +487,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             step="0.01"
             value={form.netWeight}
             onChange={(e) => setForm({ ...form, netWeight: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0.00"
           />
         </div>
@@ -498,7 +498,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             step="0.01"
             value={form.grossWeight}
             onChange={(e) => setForm({ ...form, grossWeight: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0.00"
           />
         </div>
@@ -508,7 +508,7 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
         <textarea
           value={form.goodsDescription}
           onChange={(e) => setForm({ ...form, goodsDescription: e.target.value })}
-          className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+          className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
           rows={3}
           placeholder="Description détaillée..."
           required
@@ -519,16 +519,16 @@ const DauForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
         <textarea
           value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })}
-          className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+          className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
           rows={2}
           placeholder="Notes internes..."
         />
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors">
+        <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors">
           Annuler
         </button>
-        <button type="submit" disabled={isPending} className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+        <button type="submit" disabled={isPending} className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
           {isPending && <Loader2 size={14} className="animate-spin" />}
           Créer la déclaration
         </button>
@@ -569,7 +569,7 @@ const DebForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
           <select
             value={form.declarationType}
             onChange={(e) => setForm({ ...form, declarationType: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
           >
             <option value="DEB_EXPEDITION">Expédition</option>
             <option value="DEB_INTRODUCTION">Introduction</option>
@@ -583,7 +583,7 @@ const DebForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="month"
             value={form.period}
             onChange={(e) => setForm({ ...form, period: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             required
           />
         </div>
@@ -593,7 +593,7 @@ const DebForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.partnerCountry}
             onChange={(e) => setForm({ ...form, partnerCountry: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Code pays (ex: DE)"
             required
           />
@@ -604,7 +604,7 @@ const DebForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.natureOfTransaction}
             onChange={(e) => setForm({ ...form, natureOfTransaction: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: Achat-vente"
           />
         </div>
@@ -614,7 +614,7 @@ const DebForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.modeOfTransport}
             onChange={(e) => setForm({ ...form, modeOfTransport: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: Route"
           />
         </div>
@@ -624,7 +624,7 @@ const DebForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="number"
             value={form.statisticalValue}
             onChange={(e) => setForm({ ...form, statisticalValue: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0.00"
             required
           />
@@ -636,7 +636,7 @@ const DebForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             step="0.01"
             value={form.netMass}
             onChange={(e) => setForm({ ...form, netMass: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0.00"
           />
         </div>
@@ -646,7 +646,7 @@ const DebForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.hsCode8}
             onChange={(e) => setForm({ ...form, hsCode8: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: 84713000"
             required
           />
@@ -657,17 +657,17 @@ const DebForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
         <textarea
           value={form.goodsDescription}
           onChange={(e) => setForm({ ...form, goodsDescription: e.target.value })}
-          className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+          className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
           rows={3}
           placeholder="Description détaillée..."
           required
         />
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors">
+        <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors">
           Annuler
         </button>
-        <button type="submit" disabled={isPending} className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+        <button type="submit" disabled={isPending} className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
           {isPending && <Loader2 size={14} className="animate-spin" />}
           Créer la déclaration
         </button>
@@ -709,7 +709,7 @@ const Ics2Form = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.senderEori}
             onChange={(e) => setForm({ ...form, senderEori: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: FR12345678900"
             required
           />
@@ -720,7 +720,7 @@ const Ics2Form = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.receiverEori}
             onChange={(e) => setForm({ ...form, receiverEori: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: DE12345678900"
             required
           />
@@ -731,7 +731,7 @@ const Ics2Form = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.vesselName}
             onChange={(e) => setForm({ ...form, vesselName: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: MAERSK SELETAR"
           />
         </div>
@@ -741,7 +741,7 @@ const Ics2Form = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.voyageNumber}
             onChange={(e) => setForm({ ...form, voyageNumber: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: VOY2026-001"
           />
         </div>
@@ -751,7 +751,7 @@ const Ics2Form = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.containerNumber}
             onChange={(e) => setForm({ ...form, containerNumber: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: MSKU1234567"
           />
         </div>
@@ -761,7 +761,7 @@ const Ics2Form = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.hsCode6}
             onChange={(e) => setForm({ ...form, hsCode6: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: 847130"
             required
           />
@@ -773,7 +773,7 @@ const Ics2Form = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             step="0.01"
             value={form.grossWeight}
             onChange={(e) => setForm({ ...form, grossWeight: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0.00"
           />
         </div>
@@ -783,7 +783,7 @@ const Ics2Form = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="number"
             value={form.packagesCount}
             onChange={(e) => setForm({ ...form, packagesCount: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0"
           />
         </div>
@@ -793,17 +793,17 @@ const Ics2Form = ({ onSubmit, isPending, onClose }: DauFormProps) => {
         <textarea
           value={form.goodsDescription}
           onChange={(e) => setForm({ ...form, goodsDescription: e.target.value })}
-          className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+          className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
           rows={3}
           placeholder="Description détaillée..."
           required
         />
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors">
+        <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors">
           Annuler
         </button>
-        <button type="submit" disabled={isPending} className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+        <button type="submit" disabled={isPending} className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
           {isPending && <Loader2 size={14} className="animate-spin" />}
           Créer la déclaration
         </button>
@@ -847,7 +847,7 @@ const ExportForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
           <select
             value={form.declarationType}
             onChange={(e) => setForm({ ...form, declarationType: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
           >
             <option value="AES">AES</option>
             <option value="EXS">EXS</option>
@@ -859,7 +859,7 @@ const ExportForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.exporterEori}
             onChange={(e) => setForm({ ...form, exporterEori: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: FR12345678900"
             required
           />
@@ -870,7 +870,7 @@ const ExportForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.destinationCountry}
             onChange={(e) => setForm({ ...form, destinationCountry: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Code pays (ex: US)"
             required
           />
@@ -881,7 +881,7 @@ const ExportForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="number"
             value={form.declaredValue}
             onChange={(e) => setForm({ ...form, declaredValue: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0.00"
             required
           />
@@ -892,7 +892,7 @@ const ExportForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="text"
             value={form.hsCode}
             onChange={(e) => setForm({ ...form, hsCode: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="Ex: 8471.30"
             required
           />
@@ -903,7 +903,7 @@ const ExportForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             type="number"
             value={form.packagesCount}
             onChange={(e) => setForm({ ...form, packagesCount: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0"
           />
         </div>
@@ -914,7 +914,7 @@ const ExportForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             step="0.01"
             value={form.netWeight}
             onChange={(e) => setForm({ ...form, netWeight: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0.00"
           />
         </div>
@@ -925,7 +925,7 @@ const ExportForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
             step="0.01"
             value={form.grossWeight}
             onChange={(e) => setForm({ ...form, grossWeight: e.target.value })}
-            className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
             placeholder="0.00"
           />
         </div>
@@ -935,17 +935,17 @@ const ExportForm = ({ onSubmit, isPending, onClose }: DauFormProps) => {
         <textarea
           value={form.goodsDescription}
           onChange={(e) => setForm({ ...form, goodsDescription: e.target.value })}
-          className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+          className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
           rows={3}
           placeholder="Description détaillée..."
           required
         />
       </div>
       <div className="flex gap-3 pt-2">
-        <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors">
+        <button type="button" onClick={onClose} className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors">
           Annuler
         </button>
-        <button type="submit" disabled={isPending} className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
+        <button type="submit" disabled={isPending} className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2">
           {isPending && <Loader2 size={14} className="animate-spin" />}
           Créer la déclaration
         </button>
@@ -1278,12 +1278,15 @@ const DeclarationsPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Déclarations en douane</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Déclarations en douane
+          </h1>
           <p className="text-ink-soft mt-1">DAU, DEB/Intrastat, ICS2 et déclarations d'export</p>
         </div>
         <button
           onClick={() => setFormOpen(true)}
-          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
         >
           <Plus size={18} />
           Nouvelle déclaration
@@ -1350,7 +1353,7 @@ const DeclarationsPage = () => {
       )}
 
       {/* Table */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">
             {activeTab === 'dau' && 'Documents Administratifs Uniques'}
@@ -1414,7 +1417,7 @@ const DeclarationsPage = () => {
                           {getNextStatus(d.status) && (
                             <button
                               onClick={() => handleStatusUpdate(d.id, d.status)}
-                              className="px-3 py-1 text-xs bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors flex items-center gap-1"
+                              className="px-3 py-1 text-xs bg-accent text-white rounded-none hover:bg-accent-strong transition-colors flex items-center gap-1"
                             >
                               <Send size={12} />
                               {getNextStatusLabel(d.status)}
@@ -1440,7 +1443,7 @@ const DeclarationsPage = () => {
                             ) : (
                               <button
                                 onClick={() => setDeleteConfirm(d.id)}
-                                className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                                className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                                 title="Supprimer"
                               >
                                 <Trash2 size={16} />
@@ -1494,7 +1497,7 @@ const DeclarationsPage = () => {
                           {getDebNextStatus(d.status) && (
                             <button
                               onClick={() => handleStatusUpdate(d.id, d.status)}
-                              className="px-3 py-1 text-xs bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors flex items-center gap-1"
+                              className="px-3 py-1 text-xs bg-accent text-white rounded-none hover:bg-accent-strong transition-colors flex items-center gap-1"
                             >
                               <Send size={12} />
                               {getDebNextStatusLabel(d.status)}
@@ -1520,7 +1523,7 @@ const DeclarationsPage = () => {
                             ) : (
                               <button
                                 onClick={() => setDeleteConfirm(d.id)}
-                                className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                                className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                                 title="Supprimer"
                               >
                                 <Trash2 size={16} />
@@ -1567,7 +1570,7 @@ const DeclarationsPage = () => {
                           {getNextStatus(d.status) && (
                             <button
                               onClick={() => handleStatusUpdate(d.id, d.status)}
-                              className="px-3 py-1 text-xs bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors flex items-center gap-1"
+                              className="px-3 py-1 text-xs bg-accent text-white rounded-none hover:bg-accent-strong transition-colors flex items-center gap-1"
                             >
                               <Send size={12} />
                               {getNextStatusLabel(d.status)}
@@ -1593,7 +1596,7 @@ const DeclarationsPage = () => {
                             ) : (
                               <button
                                 onClick={() => setDeleteConfirm(d.id)}
-                                className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                                className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                                 title="Supprimer"
                               >
                                 <Trash2 size={16} />
@@ -1642,7 +1645,7 @@ const DeclarationsPage = () => {
                           {getExportNextStatus(d.status) && (
                             <button
                               onClick={() => handleStatusUpdate(d.id, d.status)}
-                              className="px-3 py-1 text-xs bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors flex items-center gap-1"
+                              className="px-3 py-1 text-xs bg-accent text-white rounded-none hover:bg-accent-strong transition-colors flex items-center gap-1"
                             >
                               <Send size={12} />
                               {getExportNextStatusLabel(d.status)}
@@ -1668,7 +1671,7 @@ const DeclarationsPage = () => {
                             ) : (
                               <button
                                 onClick={() => setDeleteConfirm(d.id)}
-                                className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+                                className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
                                 title="Supprimer"
                               >
                                 <Trash2 size={16} />
@@ -1690,7 +1693,7 @@ const DeclarationsPage = () => {
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setFormOpen(false)} />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-ink mb-4">
               {activeTab === 'dau' && 'Nouvelle déclaration DAU'}
               {activeTab === 'deb' && 'Nouvelle déclaration DEB'}
@@ -1704,7 +1707,7 @@ const DeclarationsPage = () => {
 
       {detailModalOpen && selectedDeclaration && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDetailModalOpen(false)}>
-          <div className="bg-surface rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <div className="bg-surface rounded-none shadow-2xl max-w-2xl w-full mx-4 max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-6 border-b border-line">
               <div>
                 <h2 className="text-lg font-bold text-ink">{selectedDeclaration.declarationNumber}</h2>
@@ -1722,12 +1725,12 @@ const DeclarationsPage = () => {
                     downloadAuthedFile(`/v1/${resource}/${selectedDeclaration.id}/pdf`, `${selectedDeclaration.declarationNumber || activeTab}.pdf`)
                       .catch(() => toast.error('Erreur lors du téléchargement du PDF'));
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-danger/10 text-danger rounded-lg text-sm font-medium hover:bg-danger/10 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-danger/10 text-danger rounded-none text-sm font-medium hover:bg-danger/10 transition-colors"
                 >
                   <FileText size={14} />
                   PDF
                 </button>
-                <button onClick={() => setDetailModalOpen(false)} className="p-2 hover:bg-surface-2 rounded-lg">
+                <button onClick={() => setDetailModalOpen(false)} className="p-2 hover:bg-surface-2 rounded-none">
                   <X size={20} className="text-ink-soft" />
                 </button>
               </div>

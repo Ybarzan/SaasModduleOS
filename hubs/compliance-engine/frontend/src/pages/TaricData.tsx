@@ -57,7 +57,10 @@ const TaricData = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">Données TARIC</h1>
+        <h1 className="text-2xl font-bold text-ink">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Données TARIC
+        </h1>
         <p className="text-ink-soft mt-1">Consultez le tarif douanier européen</p>
       </div>
 
@@ -69,13 +72,13 @@ const TaricData = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Code SH ou mot-clé..."
-            className="w-full pl-10 pr-4 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
           />
         </div>
         <select
           value={chapterFilter}
           onChange={(e) => setChapterFilter(e.target.value)}
-          className="px-3 py-2 border border-line rounded-lg text-sm bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
+          className="px-3 py-2 border border-line rounded-none text-sm bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
         >
           <option value="">Chapitre</option>
           {CHAPTERS.map((ch) => (
@@ -87,7 +90,7 @@ const TaricData = () => {
         <select
           value={countryFilter}
           onChange={(e) => setCountryFilter(e.target.value)}
-          className="px-3 py-2 border border-line rounded-lg text-sm bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
+          className="px-3 py-2 border border-line rounded-none text-sm bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
         >
           <option value="">Pays d'origine</option>
           <option value="CN">Chine</option>
@@ -122,7 +125,7 @@ const TaricData = () => {
               <div key={item.id}>
                 <button
                   onClick={() => setSelectedId(isSelected ? null : item.id)}
-                  className="w-full text-left bg-surface rounded-xl border border-line p-4 hover:shadow-md transition-shadow"
+                  className="w-full text-left bg-surface rounded-none border border-line p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 min-w-0">
@@ -138,7 +141,7 @@ const TaricData = () => {
                   </div>
                 </button>
                 {isSelected && (
-                  <div className="bg-bg border border-t-0 border-line rounded-b-xl px-4 py-4 space-y-4">
+                  <div className="bg-bg border border-t-0 border-line rounded-none px-4 py-4 space-y-4">
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                       <div>
                         <p className="text-xs font-medium text-ink-soft uppercase tracking-wider">Droit de douane</p>
@@ -169,7 +172,7 @@ const TaricData = () => {
                         <p className="text-sm text-ink">{item.suspensions || '—'}</p>
                       </div>
                     </div>
-                    <button className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent text-white rounded-lg text-sm hover:bg-accent-strong transition-colors">
+                    <button className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent text-white rounded-none text-sm hover:bg-accent-strong transition-colors">
                       <Download size={14} />
                       Exporter
                     </button>

@@ -184,13 +184,14 @@ const GroupagePage = () => {
         <div>
           <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
             <Boxes size={24} className="text-accent" />
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Groupage & Co-loading
           </h1>
           <p className="text-ink-soft mt-1">Consolidez plusieurs exportateurs sur un même transport pour mutualiser les coûts.</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong transition-colors"
         >
           <Plus size={16} />
           Nouveau groupage
@@ -201,7 +202,7 @@ const GroupagePage = () => {
       {stats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
           {(['total', 'PLANNED', 'FORMING', 'BOOKED', 'DEPARTED', 'DELIVERED', 'CANCELLED'] as const).map((key) => (
-            <div key={key} className="bg-surface rounded-xl border border-line p-4">
+            <div key={key} className="bg-surface rounded-none border border-line p-4">
               <p className="text-xs text-ink-soft uppercase tracking-wider">
                 {key === 'total' ? 'Total' : (STATUS_CONFIG[key]?.label ?? key)}
               </p>
@@ -217,7 +218,7 @@ const GroupagePage = () => {
           <Loader2 size={24} className="animate-spin mr-2" /> Chargement...
         </div>
       ) : groupages.length === 0 ? (
-        <div className="bg-surface rounded-xl border border-line p-16 text-center text-ink-soft">
+        <div className="bg-surface rounded-none border border-line p-16 text-center text-ink-soft">
           <Boxes size={40} className="mx-auto mb-3 text-ink-soft" />
           <p>Aucun groupage. Créez un premier groupage pour consolider vos expéditions.</p>
         </div>
@@ -229,10 +230,10 @@ const GroupagePage = () => {
             const wPct = utilization(g.bookedWeightKg, g.capacityWeightKg);
             const vPct = utilization(g.bookedVolumeM3, g.capacityVolumeM3);
             return (
-              <div key={g.id} className="bg-surface rounded-xl border border-line p-5 hover:shadow-sm transition-shadow">
+              <div key={g.id} className="bg-surface rounded-none border border-line p-5 hover:shadow-sm transition-shadow">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-lg bg-accent-soft flex items-center justify-center">
+                    <div className="w-11 h-11 rounded-none bg-accent-soft flex items-center justify-center">
                       <ModeIcon size={22} className="text-accent" />
                     </div>
                     <div>
@@ -255,7 +256,7 @@ const GroupagePage = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setDetailId(g.id)}
-                      className="px-3 py-1.5 text-xs font-medium text-accent bg-accent-soft rounded-lg hover:bg-accent-soft transition-colors"
+                      className="px-3 py-1.5 text-xs font-medium text-accent bg-accent-soft rounded-none hover:bg-accent-soft transition-colors"
                     >
                       Détail & membres
                     </button>
@@ -263,7 +264,7 @@ const GroupagePage = () => {
                       <button
                         onClick={() => statusMutation.mutate({ id: g.id, status: nextStatus(g.status)! })}
                         disabled={statusMutation.isPending}
-                        className="px-3 py-1.5 text-xs font-medium text-white bg-ink rounded-lg hover:bg-ink disabled:opacity-50 transition-colors"
+                        className="px-3 py-1.5 text-xs font-medium text-white bg-ink rounded-none hover:bg-ink disabled:opacity-50 transition-colors"
                       >
                         {STATUS_CONFIG[nextStatus(g.status)!].label}
                       </button>
@@ -272,7 +273,7 @@ const GroupagePage = () => {
                       onClick={() => {
                         if (window.confirm(`Supprimer le groupage ${g.reference} ?`)) deleteMutation.mutate(g.id);
                       }}
-                      className="p-2 text-ink-soft hover:text-danger rounded-lg hover:bg-danger/10 transition-colors"
+                      className="p-2 text-ink-soft hover:text-danger rounded-none hover:bg-danger/10 transition-colors"
                       title="Supprimer"
                     >
                       <Trash2 size={16} />
@@ -318,7 +319,7 @@ const GroupagePage = () => {
       {/* Detail modal */}
       {detailId && detail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setDetailId(null)}>
-          <div className="bg-surface rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-surface rounded-none shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-6 py-4 border-b border-line">
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-bold text-ink">{detail.name}</h2>
@@ -333,21 +334,21 @@ const GroupagePage = () => {
             <div className="px-6 py-4 space-y-6">
               {/* Capacity summary */}
               <div className="grid grid-cols-3 gap-3">
-                <div className="bg-bg rounded-xl p-4">
+                <div className="bg-bg rounded-none p-4">
                   <p className="text-xs text-ink-soft flex items-center gap-1"><Scale size={12} /> Poids</p>
                   <p className="text-xl font-bold text-ink mt-1">{detail.bookedWeightKg} / {detail.capacityWeightKg ?? '∞'} kg</p>
                   <div className="h-1.5 bg-surface-2 rounded-full mt-2 overflow-hidden">
                     <div className="h-full bg-accent rounded-full" style={{ width: `${detail.weightUtilizationPct}%` }} />
                   </div>
                 </div>
-                <div className="bg-bg rounded-xl p-4">
+                <div className="bg-bg rounded-none p-4">
                   <p className="text-xs text-ink-soft flex items-center gap-1"><Ruler size={12} /> Volume</p>
                   <p className="text-xl font-bold text-ink mt-1">{detail.bookedVolumeM3} / {detail.capacityVolumeM3 ?? '∞'} m³</p>
                   <div className="h-1.5 bg-surface-2 rounded-full mt-2 overflow-hidden">
                     <div className="h-full bg-accent rounded-full" style={{ width: `${detail.volumeUtilizationPct}%` }} />
                   </div>
                 </div>
-                <div className="bg-bg rounded-xl p-4">
+                <div className="bg-bg rounded-none p-4">
                   <p className="text-xs text-ink-soft flex items-center gap-1"><Users size={12} /> Expéditions</p>
                   <p className="text-xl font-bold text-ink mt-1">{detail.memberCount}</p>
                   <p className="text-xs text-ink-soft mt-2 flex items-center gap-1">
@@ -360,9 +361,9 @@ const GroupagePage = () => {
               <div>
                 <h3 className="text-sm font-semibold text-ink mb-3">Expéditions consolidées</h3>
                 {detail.members.length === 0 ? (
-                  <p className="text-sm text-ink-soft py-6 text-center bg-bg rounded-xl">Aucune expédition dans ce groupage</p>
+                  <p className="text-sm text-ink-soft py-6 text-center bg-bg rounded-none">Aucune expédition dans ce groupage</p>
                 ) : (
-                  <div className="overflow-x-auto rounded-xl border border-line">
+                  <div className="overflow-x-auto rounded-none border border-line">
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-bg border-b border-line">
@@ -384,7 +385,7 @@ const GroupagePage = () => {
                               <button
                                 onClick={() => removeMemberMutation.mutate(m.id)}
                                 disabled={removeMemberMutation.isPending}
-                                className="p-1.5 text-ink-soft hover:text-danger rounded-lg hover:bg-danger/10 transition-colors"
+                                className="p-1.5 text-ink-soft hover:text-danger rounded-none hover:bg-danger/10 transition-colors"
                                 title="Retirer"
                               >
                                 <Trash2 size={15} />
@@ -399,21 +400,21 @@ const GroupagePage = () => {
               </div>
 
               {/* Add member */}
-              <form onSubmit={submitMember} className="bg-accent-soft/50 rounded-xl p-4 border border-accent/40">
+              <form onSubmit={submitMember} className="bg-accent-soft/50 rounded-none p-4 border border-accent/40">
                 <h3 className="text-sm font-semibold text-ink mb-3 flex items-center gap-2">
                   <Package size={15} className="text-accent" /> Ajouter une expédition
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
                   <input value={memberForm.reference} onChange={(e) => setMemberForm({ ...memberForm, reference: e.target.value })}
-                    placeholder="Référence" className="px-3 py-2 border border-line rounded-lg text-sm bg-surface" />
+                    placeholder="Référence" className="px-3 py-2 border border-line rounded-none text-sm bg-surface" />
                   <input value={memberForm.externalCompany} onChange={(e) => setMemberForm({ ...memberForm, externalCompany: e.target.value })}
-                    placeholder="Exportateur externe" className="px-3 py-2 border border-line rounded-lg text-sm bg-surface" />
+                    placeholder="Exportateur externe" className="px-3 py-2 border border-line rounded-none text-sm bg-surface" />
                   <input value={memberForm.weightKg} onChange={(e) => setMemberForm({ ...memberForm, weightKg: e.target.value })}
-                    placeholder="Poids (kg)" type="number" min="0" required className="px-3 py-2 border border-line rounded-lg text-sm bg-surface" />
+                    placeholder="Poids (kg)" type="number" min="0" required className="px-3 py-2 border border-line rounded-none text-sm bg-surface" />
                   <input value={memberForm.volumeM3} onChange={(e) => setMemberForm({ ...memberForm, volumeM3: e.target.value })}
-                    placeholder="Volume (m³)" type="number" min="0" step="0.01" required className="px-3 py-2 border border-line rounded-lg text-sm bg-surface" />
+                    placeholder="Volume (m³)" type="number" min="0" step="0.01" required className="px-3 py-2 border border-line rounded-none text-sm bg-surface" />
                   <button type="submit" disabled={addMemberMutation.isPending}
-                    className="flex items-center justify-center gap-1.5 px-3 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong disabled:opacity-50 transition-colors">
+                    className="flex items-center justify-center gap-1.5 px-3 py-2 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong disabled:opacity-50 transition-colors">
                     {addMemberMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
                     Ajouter
                   </button>
@@ -459,17 +460,17 @@ const CreateGroupageModal = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
-      <form onSubmit={submit} className="bg-surface rounded-2xl shadow-xl w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
+      <form onSubmit={submit} className="bg-surface rounded-none shadow-xl w-full max-w-lg p-6" onClick={(e) => e.stopPropagation()}>
         <h2 className="text-lg font-bold text-ink mb-4">Nouveau groupage</h2>
         <div className="space-y-3">
           <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-            placeholder="Nom du groupage *" required className="w-full px-3 py-2.5 border border-line rounded-lg text-sm" />
+            placeholder="Nom du groupage *" required className="w-full px-3 py-2.5 border border-line rounded-none text-sm" />
           <div className="grid grid-cols-3 gap-2">
             {(['ROAD', 'SEA', 'AIR'] as const).map((mode) => {
               const Icon = MODE_ICON[mode];
               return (
                 <button key={mode} type="button" onClick={() => setForm({ ...form, transportMode: mode })}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-none text-sm font-medium transition-colors ${
                     form.transportMode === mode ? 'bg-accent text-white' : 'bg-surface-2 text-ink-soft hover:bg-surface-2'
                   }`}>
                   <Icon size={15} /> {mode === 'SEA' ? 'Maritime' : mode === 'AIR' ? 'Aérien' : 'Routier'}
@@ -479,31 +480,31 @@ const CreateGroupageModal = ({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <input value={form.origin} onChange={(e) => setForm({ ...form, origin: e.target.value })}
-              placeholder="Origine" className="px-3 py-2.5 border border-line rounded-lg text-sm" />
+              placeholder="Origine" className="px-3 py-2.5 border border-line rounded-none text-sm" />
             <input value={form.destination} onChange={(e) => setForm({ ...form, destination: e.target.value })}
-              placeholder="Destination" className="px-3 py-2.5 border border-line rounded-lg text-sm" />
+              placeholder="Destination" className="px-3 py-2.5 border border-line rounded-none text-sm" />
           </div>
           <input value={form.carrierName} onChange={(e) => setForm({ ...form, carrierName: e.target.value })}
-            placeholder="Transporteur" className="w-full px-3 py-2.5 border border-line rounded-lg text-sm" />
+            placeholder="Transporteur" className="w-full px-3 py-2.5 border border-line rounded-none text-sm" />
           <div className="grid grid-cols-2 gap-3">
             <input value={form.capacityWeightKg} onChange={(e) => setForm({ ...form, capacityWeightKg: e.target.value })}
-              placeholder="Capacité poids (kg)" type="number" min="0" className="px-3 py-2.5 border border-line rounded-lg text-sm" />
+              placeholder="Capacité poids (kg)" type="number" min="0" className="px-3 py-2.5 border border-line rounded-none text-sm" />
             <input value={form.capacityVolumeM3} onChange={(e) => setForm({ ...form, capacityVolumeM3: e.target.value })}
-              placeholder="Capacité volume (m³)" type="number" min="0" step="0.01" className="px-3 py-2.5 border border-line rounded-lg text-sm" />
+              placeholder="Capacité volume (m³)" type="number" min="0" step="0.01" className="px-3 py-2.5 border border-line rounded-none text-sm" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <input value={form.plannedDeparture} onChange={(e) => setForm({ ...form, plannedDeparture: e.target.value })}
-              type="date" className="px-3 py-2.5 border border-line rounded-lg text-sm" />
+              type="date" className="px-3 py-2.5 border border-line rounded-none text-sm" />
             <input value={form.plannedArrival} onChange={(e) => setForm({ ...form, plannedArrival: e.target.value })}
-              type="date" className="px-3 py-2.5 border border-line rounded-lg text-sm" />
+              type="date" className="px-3 py-2.5 border border-line rounded-none text-sm" />
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-ink-soft hover:bg-surface-2 rounded-lg transition-colors">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-ink-soft hover:bg-surface-2 rounded-none transition-colors">
             Annuler
           </button>
           <button type="submit" disabled={pending}
-            className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong disabled:opacity-50 transition-colors">
+            className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong disabled:opacity-50 transition-colors">
             {pending ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />} Créer
           </button>
         </div>

@@ -97,12 +97,15 @@ const Eur1Certificates = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Certificats EUR.1</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Certificats EUR.1
+          </h1>
           <p className="text-ink-soft mt-1">Certificats d'origine préférentielle</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg text-sm hover:bg-accent-strong transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-none text-sm hover:bg-accent-strong transition-colors"
         >
           <Plus size={16} />
           Nouveau certificat
@@ -110,7 +113,7 @@ const Eur1Certificates = () => {
       </div>
 
       {showForm && (
-        <div className="bg-surface rounded-xl border border-line p-6 mb-6">
+        <div className="bg-surface rounded-none border border-line p-6 mb-6">
           <h3 className="text-sm font-semibold text-ink mb-4">Créer un certificat EUR.1</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             <div>
@@ -120,7 +123,7 @@ const Eur1Certificates = () => {
               <select
                 value={form.agreementCode}
                 onChange={(e) => setForm({ ...form, agreementCode: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
               >
                 <option value="">Sélectionner</option>
                 {agreements.map((a) => (
@@ -138,7 +141,7 @@ const Eur1Certificates = () => {
                 onChange={(e) => setForm({ ...form, originCountry: e.target.value.toUpperCase() })}
                 placeholder="FR"
                 maxLength={2}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
               />
             </div>
             <div>
@@ -149,7 +152,7 @@ const Eur1Certificates = () => {
                 type="text"
                 value={form.exporterName}
                 onChange={(e) => setForm({ ...form, exporterName: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
               />
             </div>
             <div>
@@ -160,7 +163,7 @@ const Eur1Certificates = () => {
                 type="text"
                 value={form.importerName}
                 onChange={(e) => setForm({ ...form, importerName: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
               />
             </div>
             <div>
@@ -172,7 +175,7 @@ const Eur1Certificates = () => {
                 value={form.hsCode}
                 onChange={(e) => setForm({ ...form, hsCode: e.target.value })}
                 placeholder="8471.30.00"
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
               />
             </div>
             <div>
@@ -182,7 +185,7 @@ const Eur1Certificates = () => {
               <select
                 value={form.originCriteria}
                 onChange={(e) => setForm({ ...form, originCriteria: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
               >
                 {ORIGIN_CRITERIA.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -197,7 +200,7 @@ const Eur1Certificates = () => {
                 type="number"
                 value={form.netWeightKg}
                 onChange={(e) => setForm({ ...form, netWeightKg: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
               />
             </div>
             <div>
@@ -208,7 +211,7 @@ const Eur1Certificates = () => {
                 type="date"
                 value={form.validUntil}
                 onChange={(e) => setForm({ ...form, validUntil: e.target.value })}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
               />
             </div>
             <div className="md:col-span-2 lg:col-span-3">
@@ -220,7 +223,7 @@ const Eur1Certificates = () => {
                 onChange={(e) => setForm({ ...form, goodsDescription: e.target.value })}
                 placeholder="Description des produits..."
                 rows={2}
-                className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
               />
             </div>
           </div>
@@ -232,7 +235,7 @@ const Eur1Certificates = () => {
           <button
             onClick={() => createMutation.mutate(form)}
             disabled={createMutation.isPending || !form.agreementCode || !form.originCountry || !form.importerName || !form.exporterName || !form.hsCode}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg text-sm hover:bg-accent-strong transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-none text-sm hover:bg-accent-strong transition-colors disabled:opacity-50"
           >
             {createMutation.isPending ? 'Création...' : 'Créer le certificat'}
           </button>
@@ -251,7 +254,7 @@ const Eur1Certificates = () => {
           <p className="text-xs mt-1">Créez un nouveau certificat pour commencer</p>
         </div>
       ) : (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="bg-surface rounded-none border border-line overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line bg-bg">

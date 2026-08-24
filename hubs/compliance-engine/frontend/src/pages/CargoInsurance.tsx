@@ -152,12 +152,15 @@ const CargoInsurance = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-danger/10 mb-4">
             <Umbrella size={32} className="text-danger" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">Assurance cargo</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Assurance cargo
+          </h1>
           <p className="text-ink-soft max-w-xl mx-auto">Estimez la prime d'assurance pour votre marchandise selon le mode de transport et la catégorie.</p>
         </div>
 
         {/* Indicateur du marché maritime */}
-        <div className="bg-surface rounded-2xl shadow-sm border border-line p-5 mb-8">
+        <div className="bg-surface rounded-none shadow-sm border border-line p-5 mb-8">
           <div className="flex items-center gap-2 mb-3">
             <Activity size={18} className="text-danger" />
             <h2 className="text-sm font-semibold text-ink">Indicateur du marché maritime</h2>
@@ -170,11 +173,11 @@ const CargoInsurance = () => {
             <div className="flex flex-wrap items-center gap-6">
               <div className="flex-1 min-w-[200px]">
                 <div className="flex items-center gap-3">
-                  <div className="bg-danger/10 rounded-xl px-4 py-2.5">
+                  <div className="bg-danger/10 rounded-none px-4 py-2.5">
                     <span className="text-xs text-ink-soft block">Taux EUR/USD</span>
                     <span className={`text-xl font-bold ${rateIsUp ? 'text-success' : 'text-danger'}`}>{eurUsdRate.toFixed(4)}</span>
                   </div>
-                  <div className={`flex items-center gap-1 rounded-xl px-4 py-2.5 ${rateIsUp ? 'bg-success/10' : 'bg-danger/10'}`}>
+                  <div className={`flex items-center gap-1 rounded-none px-4 py-2.5 ${rateIsUp ? 'bg-success/10' : 'bg-danger/10'}`}>
                     {rateIsUp ? (
                       <TrendingUp size={18} className="text-success" />
                     ) : (
@@ -197,7 +200,7 @@ const CargoInsurance = () => {
 
         <div className="grid lg:grid-cols-2 gap-6">
           {/* Formulaire */}
-          <div className="bg-surface rounded-2xl shadow-sm border border-line p-6 space-y-5">
+          <div className="bg-surface rounded-none shadow-sm border border-line p-6 space-y-5">
             <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider">Détails de l'expédition</h2>
 
             <div>
@@ -205,19 +208,19 @@ const CargoInsurance = () => {
                 <label className="text-sm font-medium text-ink">Valeur marchandises (€)</label>
                 <input type="number" value={goodsValue} onChange={e => setGoodsValue(Number(e.target.value))} className="w-28 px-2 py-1 border border-line rounded text-right text-sm bg-bg" />
               </div>
-              <input type="range" value={goodsValue} onChange={e => setGoodsValue(Number(e.target.value))} className="w-full h-1.5 bg-surface-2 rounded-lg appearance-none cursor-pointer accent-accent" min="100" max="1000000" step="100" />
+              <input type="range" value={goodsValue} onChange={e => setGoodsValue(Number(e.target.value))} className="w-full h-1.5 bg-surface-2 rounded-none appearance-none cursor-pointer accent-accent" min="100" max="1000000" step="100" />
             </div>
 
             <div>
               <label className="text-xs text-ink-soft mb-1 block">Poids (kg)</label>
-              <input type="number" value={weight} onChange={e => setWeight(Number(e.target.value))} className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-bg" />
+              <input type="number" value={weight} onChange={e => setWeight(Number(e.target.value))} className="w-full px-3 py-2 border border-line rounded-none text-sm bg-bg" />
             </div>
 
             <div>
               <label className="text-xs text-ink-soft mb-1 block">Mode de transport</label>
               <div className="grid grid-cols-3 gap-2">
                 {MODES.map(m => (
-                  <button key={m.value} onClick={() => setMode(m.value)} className={`py-2.5 rounded-lg text-sm font-medium transition-colors ${mode === m.value ? 'bg-danger text-white' : 'bg-surface-2 text-ink-soft hover:bg-surface-2'}`}>
+                  <button key={m.value} onClick={() => setMode(m.value)} className={`py-2.5 rounded-none text-sm font-medium transition-colors ${mode === m.value ? 'bg-danger text-white' : 'bg-surface-2 text-ink-soft hover:bg-surface-2'}`}>
                     {m.icon} {m.label}
                   </button>
                 ))}
@@ -228,7 +231,7 @@ const CargoInsurance = () => {
               <label className="text-xs text-ink-soft mb-1 block">Catégorie de marchandise</label>
               <div className="grid grid-cols-2 gap-2">
                 {CATEGORIES.map(c => (
-                  <button key={c.value} onClick={() => setCategory(c.value)} className={`p-3 rounded-lg text-left transition-colors ${category === c.value ? 'bg-danger/10 border-2 border-danger/40' : 'bg-bg border border-line hover:border-line'}`}>
+                  <button key={c.value} onClick={() => setCategory(c.value)} className={`p-3 rounded-none text-left transition-colors ${category === c.value ? 'bg-danger/10 border-2 border-danger/40' : 'bg-bg border border-line hover:border-line'}`}>
                     <div className="text-sm font-medium text-ink">{c.label}</div>
                     <div className="text-[10px] text-ink-soft">{c.desc}</div>
                   </button>
@@ -236,7 +239,7 @@ const CargoInsurance = () => {
               </div>
             </div>
 
-            <button onClick={handleCalculate} disabled={loading} className="w-full bg-danger text-white py-3 rounded-xl font-semibold hover:bg-danger/90 disabled:opacity-50 flex items-center justify-center gap-2 text-sm transition-colors">
+            <button onClick={handleCalculate} disabled={loading} className="w-full bg-danger text-white py-3 rounded-none font-semibold hover:bg-danger/90 disabled:opacity-50 flex items-center justify-center gap-2 text-sm transition-colors">
               {loading ? <><Loader2 className="animate-spin" /> Calcul...</> : 'Calculer la prime'}
             </button>
           </div>
@@ -245,14 +248,18 @@ const CargoInsurance = () => {
           <div className="space-y-4">
             {result ? (
               <>
-                <div className="bg-surface rounded-2xl shadow-sm border border-line p-6">
+                <div className="relative bg-surface rounded-none shadow-sm border border-line p-6">
+                  <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-br" aria-hidden="true" />
                   <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-4">Estimation de la prime</h2>
                   <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div className="bg-danger/10 rounded-xl p-4 text-center">
+                    <div className="bg-danger/10 rounded-none p-4 text-center">
                       <div className="text-3xl font-bold text-danger">{formatEur(result.premiumAmount)}</div>
                       <div className="text-xs text-ink-soft">Prime annuelle</div>
                     </div>
-                    <div className="bg-success/10 rounded-xl p-4 text-center">
+                    <div className="bg-success/10 rounded-none p-4 text-center">
                       <div className="text-3xl font-bold text-success">{(result.premiumRate * 100).toFixed(2)}%</div>
                       <div className="text-xs text-ink-soft">Taux de prime</div>
                     </div>
@@ -265,7 +272,7 @@ const CargoInsurance = () => {
                 </div>
 
                 {/* Bar chart Prime vs Couverture */}
-                <div className="bg-surface rounded-2xl shadow-sm border border-line p-6">
+                <div className="bg-surface rounded-none shadow-sm border border-line p-6">
                   <h3 className="text-sm font-semibold text-ink mb-4">Prime vs Couverture</h3>
                   <div className="space-y-3">
                     <div>
@@ -292,7 +299,7 @@ const CargoInsurance = () => {
                   </div>
                 </div>
 
-                <div className="bg-success/10 border border-success/40 rounded-xl p-4 flex items-start gap-3">
+                <div className="bg-success/10 border border-success/40 rounded-none p-4 flex items-start gap-3">
                   <ShieldCheck size={20} className="text-success mt-0.5 flex-shrink-0" />
                   <div>
                     <div className="text-sm font-bold text-success">{result.coverageType}</div>
@@ -300,16 +307,16 @@ const CargoInsurance = () => {
                   </div>
                 </div>
                 {isAuthed && (
-                  <button onClick={handleSaveQuote} disabled={saving} className="w-full bg-ink text-white py-3 rounded-xl font-semibold hover:bg-ink disabled:opacity-50 flex items-center justify-center gap-2 text-sm transition-colors">
+                  <button onClick={handleSaveQuote} disabled={saving} className="w-full bg-ink text-white py-3 rounded-none font-semibold hover:bg-ink disabled:opacity-50 flex items-center justify-center gap-2 text-sm transition-colors">
                     {saving ? <><Loader2 className="animate-spin" /> Enregistrement...</> : <><Save size={16} /> Enregistrer le devis</>}
                   </button>
                 )}
                 {result.note && (
-                  <div className="bg-bg rounded-xl p-4 text-xs text-ink-soft">{result.note}</div>
+                  <div className="bg-bg rounded-none p-4 text-xs text-ink-soft">{result.note}</div>
                 )}
               </>
             ) : (
-              <div className="bg-surface rounded-2xl shadow-sm border border-line p-12 text-center">
+              <div className="bg-surface rounded-none shadow-sm border border-line p-12 text-center">
                 <Umbrella className="h-10 w-10 mx-auto mb-3 text-ink-soft" />
                 <p className="text-sm text-ink-soft">Remplissez le formulaire pour estimer la prime d'assurance</p>
               </div>
@@ -319,7 +326,7 @@ const CargoInsurance = () => {
 
         {/* Historique des devis & polices */}
         {isAuthed && (
-          <div className="mt-8 bg-surface rounded-2xl shadow-sm border border-line p-6">
+          <div className="mt-8 bg-surface rounded-none shadow-sm border border-line p-6">
             <div className="flex items-center gap-2 mb-5">
               <History size={18} className="text-danger" />
               <h2 className="text-sm font-semibold text-ink">Historique des devis & polices</h2>
@@ -357,7 +364,7 @@ const CargoInsurance = () => {
                         </td>
                         <td className="py-3 px-3 text-center">
                           {q.status === 'QUOTE' && (
-                            <button onClick={() => handleActivatePolicy(q.id)} className="px-3 py-1.5 bg-success text-white text-xs font-medium rounded-lg hover:bg-success/90 transition-colors">
+                            <button onClick={() => handleActivatePolicy(q.id)} className="px-3 py-1.5 bg-success text-white text-xs font-medium rounded-none hover:bg-success/90 transition-colors">
                               Souscrire la police
                             </button>
                           )}
@@ -372,7 +379,7 @@ const CargoInsurance = () => {
         )}
 
         {/* Taux d'assurance par catégorie */}
-        <div className="mt-10 bg-surface rounded-2xl shadow-sm border border-line p-6">
+        <div className="mt-10 bg-surface rounded-none shadow-sm border border-line p-6">
           <h2 className="text-sm font-semibold text-ink mb-5">Taux d'assurance par catégorie</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -412,14 +419,14 @@ const CargoInsurance = () => {
         </div>
 
         {/* Catégories de couverture */}
-        <div className="mt-8 bg-surface rounded-2xl shadow-sm border border-line p-6">
+        <div className="mt-8 bg-surface rounded-none shadow-sm border border-line p-6">
           <div className="flex items-center gap-2 mb-5">
             <Info size={18} className="text-danger" />
             <h2 className="text-sm font-semibold text-ink">Catégories de couverture</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-4">
             {COVERAGE_TYPES.map(ct => (
-              <div key={ct.code} className="border border-line rounded-xl p-5 hover:shadow-sm transition-shadow">
+              <div key={ct.code} className="border border-line rounded-none p-5 hover:shadow-sm transition-shadow">
                 <div className="flex items-center gap-2 mb-3">
                   <div className={`w-3 h-3 rounded-full ${ct.color}`} />
                   <span className="font-bold text-ink text-sm">{ct.code}</span>

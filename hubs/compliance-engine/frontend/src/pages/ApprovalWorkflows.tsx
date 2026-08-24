@@ -295,13 +295,16 @@ const ApprovalWorkflows = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Workflows d'approbation</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Workflows d'approbation
+          </h1>
           <p className="text-ink-soft mt-1">Gestion des chaînes d'approbation multi-étapes</p>
         </div>
         {activeTab === 'workflows' && (
           <button
             onClick={() => { setCreateOpen(true); setForm(emptyWorkflowForm); }}
-            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong transition-colors"
+            className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong transition-colors"
           >
             <Plus size={18} />
             Nouveau workflow
@@ -311,9 +314,9 @@ const ApprovalWorkflows = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
               <GitBranch size={20} className="text-accent" />
             </div>
             <div>
@@ -322,9 +325,9 @@ const ApprovalWorkflows = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning/15 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-warning/15 flex items-center justify-center">
               <Clock size={20} className="text-warning" />
             </div>
             <div>
@@ -333,9 +336,9 @@ const ApprovalWorkflows = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/15 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-success/15 flex items-center justify-center">
               <Check size={20} className="text-success" />
             </div>
             <div>
@@ -344,9 +347,9 @@ const ApprovalWorkflows = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-danger/15 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-danger/15 flex items-center justify-center">
               <X size={20} className="text-danger" />
             </div>
             <div>
@@ -358,10 +361,10 @@ const ApprovalWorkflows = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-surface-2 p-1 rounded-lg mb-6 w-fit">
+      <div className="flex gap-1 bg-surface-2 p-1 rounded-none mb-6 w-fit">
         <button
           onClick={() => setActiveTab('workflows')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-none text-sm font-medium transition-colors ${
             activeTab === 'workflows'
               ? 'bg-surface text-ink shadow-sm'
               : 'text-ink-soft hover:text-ink'
@@ -371,7 +374,7 @@ const ApprovalWorkflows = () => {
         </button>
         <button
           onClick={() => setActiveTab('demandes')}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+          className={`px-4 py-2 rounded-none text-sm font-medium transition-colors ${
             activeTab === 'demandes'
               ? 'bg-surface text-ink shadow-sm'
               : 'text-ink-soft hover:text-ink'
@@ -392,7 +395,7 @@ const ApprovalWorkflows = () => {
               Chargement...
             </div>
           ) : workflows.length === 0 ? (
-            <div className="bg-surface rounded-xl border border-line px-6 py-12 text-center text-ink-soft">
+            <div className="bg-surface rounded-none border border-line px-6 py-12 text-center text-ink-soft">
               <GitBranch size={32} className="mx-auto mb-3 text-ink-soft" />
               <p>Aucun workflow configuré</p>
               <p className="text-sm text-ink-soft mt-1">Créez votre premier workflow d'approbation</p>
@@ -402,7 +405,7 @@ const ApprovalWorkflows = () => {
               {workflows.map((wf: WorkflowDefinition) => (
                 <div
                   key={wf.id}
-                  className="bg-surface rounded-xl border border-line p-5 hover:shadow-sm transition-shadow"
+                  className="bg-surface rounded-none border border-line p-5 hover:shadow-sm transition-shadow"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1 min-w-0">
@@ -438,7 +441,7 @@ const ApprovalWorkflows = () => {
                         toggleActive.mutate({ id: wf.id, active: !wf.active })
                       }
                       disabled={toggleActive.isPending}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      className={`px-3 py-1.5 rounded-none text-xs font-medium transition-colors ${
                         wf.active
                           ? 'bg-surface-2 text-ink-soft hover:bg-line'
                           : 'bg-success/15 text-success hover:bg-success/25'
@@ -470,7 +473,7 @@ const ApprovalWorkflows = () => {
                     ) : (
                       <button
                         onClick={() => setDeleteConfirm(wf.id)}
-                        className="p-1.5 rounded-lg text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors ml-auto"
+                        className="p-1.5 rounded-none text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors ml-auto"
                         title="Supprimer"
                       >
                         <Trash2 size={16} />
@@ -490,7 +493,7 @@ const ApprovalWorkflows = () => {
       {activeTab === 'demandes' && (
         <>
           {/* Sub-view tabs */}
-          <div className="flex gap-1 bg-surface-2 p-1 rounded-lg mb-6 w-fit">
+          <div className="flex gap-1 bg-surface-2 p-1 rounded-none mb-6 w-fit">
             {([
               { key: 'toutes', label: 'Toutes', icon: Filter },
               { key: 'en_attente', label: 'En attente', icon: Clock },
@@ -499,7 +502,7 @@ const ApprovalWorkflows = () => {
               <button
                 key={key}
                 onClick={() => setDemandeView(key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-none text-sm font-medium transition-colors ${
                   demandeView === key
                     ? 'bg-surface text-ink shadow-sm'
                     : 'text-ink-soft hover:text-ink'
@@ -517,12 +520,12 @@ const ApprovalWorkflows = () => {
               Chargement...
             </div>
           ) : currentRequests.length === 0 ? (
-            <div className="bg-surface rounded-xl border border-line px-6 py-12 text-center text-ink-soft">
+            <div className="bg-surface rounded-none border border-line px-6 py-12 text-center text-ink-soft">
               <FileText size={32} className="mx-auto mb-3 text-ink-soft" />
               <p>Aucune demande</p>
             </div>
           ) : (
-            <div className="bg-surface rounded-xl border border-line overflow-hidden">
+            <div className="bg-surface rounded-none border border-line overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -603,7 +606,7 @@ const ApprovalWorkflows = () => {
                                     <button
                                       onClick={() => approveRequest.mutate(req.id)}
                                       disabled={approveRequest.isPending}
-                                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-success text-white rounded-lg hover:bg-success/90 transition-colors"
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-success text-white rounded-none hover:bg-success/90 transition-colors"
                                     >
                                       <Check size={12} />
                                       Approuver
@@ -611,7 +614,7 @@ const ApprovalWorkflows = () => {
                                     <button
                                       onClick={() => rejectRequest.mutate(req.id)}
                                       disabled={rejectRequest.isPending}
-                                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors"
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-danger text-white rounded-none hover:bg-danger/90 transition-colors"
                                     >
                                       <X size={12} />
                                       Rejeter
@@ -622,7 +625,7 @@ const ApprovalWorkflows = () => {
                                   <button
                                     onClick={() => cancelRequest.mutate(req.id)}
                                     disabled={cancelRequest.isPending}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-surface-2 text-ink-soft rounded-lg hover:bg-line transition-colors"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-surface-2 text-ink-soft rounded-none hover:bg-line transition-colors"
                                   >
                                     Annuler
                                   </button>
@@ -732,7 +735,7 @@ const ApprovalWorkflows = () => {
             className="absolute inset-0 bg-black/40"
             onClick={() => setCreateOpen(false)}
           />
-          <div className="relative bg-surface rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-none shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-ink mb-4">
               Nouveau workflow
             </h3>
@@ -746,7 +749,7 @@ const ApprovalWorkflows = () => {
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   placeholder="Approbation devis > 10k€"
                   required
                 />
@@ -762,7 +765,7 @@ const ApprovalWorkflows = () => {
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   rows={2}
                   placeholder="Workflow pour les devis dépassant 10 000 €"
                 />
@@ -778,7 +781,7 @@ const ApprovalWorkflows = () => {
                   onChange={(e) =>
                     setForm({ ...form, entityType: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                 >
                   {ENTITY_TYPES.map((et) => (
                     <option key={et.value} value={et.value}>
@@ -803,7 +806,7 @@ const ApprovalWorkflows = () => {
                       thresholdAmount: Number(e.target.value),
                     })
                   }
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                  className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
                   placeholder="0"
                 />
               </div>
@@ -827,14 +830,14 @@ const ApprovalWorkflows = () => {
                   {form.steps.map((step, i) => (
                     <div
                       key={i}
-                      className="flex items-start gap-2 p-3 bg-bg rounded-lg border border-line"
+                      className="flex items-start gap-2 p-3 bg-bg rounded-none border border-line"
                     >
                       <div className="flex-1 space-y-2">
                         <input
                           type="text"
                           value={step.name}
                           onChange={(e) => updateStep(i, 'name', e.target.value)}
-                          className="w-full px-2 py-1.5 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+                          className="w-full px-2 py-1.5 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
                           placeholder={`Étape ${i + 1}`}
                         />
                         <div className="flex items-center gap-2">
@@ -843,7 +846,7 @@ const ApprovalWorkflows = () => {
                             onChange={(e) =>
                               updateStep(i, 'approverRole', e.target.value)
                             }
-                            className="flex-1 px-2 py-1.5 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+                            className="flex-1 px-2 py-1.5 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
                           >
                             <option value="ADMIN">Administrateur</option>
                             <option value="MANAGER">Manager</option>
@@ -880,14 +883,14 @@ const ApprovalWorkflows = () => {
                 <button
                   type="button"
                   onClick={() => setCreateOpen(false)}
-                  className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
+                  className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={createWorkflow.isPending}
-                  className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                 >
                   {createWorkflow.isPending && (
                     <Loader2 size={14} className="animate-spin" />

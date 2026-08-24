@@ -137,12 +137,15 @@ const DeniedPartyScreening = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">Screening de parties</h1>
+        <h1 className="text-2xl font-bold text-ink">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Screening de parties
+        </h1>
         <p className="text-ink-soft mt-1">Vérification contre les listes de sanctions internationales</p>
       </div>
 
       {/* Screening form */}
-      <div className="bg-surface rounded-xl border border-line p-6 mb-8">
+      <div className="bg-surface rounded-none border border-line p-6 mb-8">
         <h2 className="text-lg font-semibold text-ink mb-4">Vérifier un nom</h2>
         <form onSubmit={handleScreen} className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
@@ -150,7 +153,7 @@ const DeniedPartyScreening = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-4 py-3 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               placeholder="Nom de l'entité ou de la personne"
               required
             />
@@ -160,7 +163,7 @@ const DeniedPartyScreening = () => {
               type="text"
               value={countryCode}
               onChange={(e) => setCountryCode(e.target.value.slice(0, 2).toUpperCase())}
-              className="w-full px-4 py-3 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-4 py-3 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               placeholder="Pays"
               maxLength={2}
             />
@@ -168,7 +171,7 @@ const DeniedPartyScreening = () => {
           <button
             type="submit"
             disabled={screenMutation.isPending || !name.trim()}
-            className="flex items-center justify-center gap-2 bg-accent text-white px-6 py-3 rounded-lg font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
+            className="flex items-center justify-center gap-2 bg-accent text-white px-6 py-3 rounded-none font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
           >
             {screenMutation.isPending ? (
               <Loader2 size={18} className="animate-spin" />
@@ -187,7 +190,11 @@ const DeniedPartyScreening = () => {
         const risk = riskConfig[lastResult.riskLevel] || riskConfig.NONE;
 
         return (
-          <div className={`rounded-xl border-2 ${rc.bg} p-6 mb-8`}>
+          <div className={`relative rounded-none border-2 ${rc.bg} p-6 mb-8`}>
+            <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+            <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-br" aria-hidden="true" />
             <div className="flex items-center gap-4">
               <div className={`w-14 h-14 rounded-full flex items-center justify-center ${rc.text}`}>
                 <RcIcon size={32} />
@@ -220,9 +227,9 @@ const DeniedPartyScreening = () => {
 
       {/* Stats cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
               <Activity size={20} className="text-accent" />
             </div>
             <div>
@@ -231,9 +238,9 @@ const DeniedPartyScreening = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
               <CheckCircle size={20} className="text-success" />
             </div>
             <div>
@@ -242,9 +249,9 @@ const DeniedPartyScreening = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-warning/10 flex items-center justify-center">
               <AlertTriangle size={20} className="text-warning" />
             </div>
             <div>
@@ -255,9 +262,9 @@ const DeniedPartyScreening = () => {
             </div>
           </div>
         </div>
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-danger/10 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-none bg-danger/10 flex items-center justify-center">
               <XCircle size={20} className="text-danger" />
             </div>
             <div>
@@ -312,7 +319,7 @@ const DeniedPartyScreening = () => {
 
       {/* History table */}
       {activeTab === 'history' && (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="bg-surface rounded-none border border-line overflow-hidden">
           {historyLoading ? (
             <div className="px-6 py-12 text-center text-ink-soft">
               <Loader2 size={24} className="animate-spin mx-auto mb-2 text-ink-soft" />
@@ -385,7 +392,7 @@ const DeniedPartyScreening = () => {
 
       {/* Alerts tab */}
       {activeTab === 'alerts' && (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="bg-surface rounded-none border border-line overflow-hidden">
           {alertsLoading ? (
             <div className="px-6 py-12 text-center text-ink-soft">
               <Loader2 size={24} className="animate-spin mx-auto mb-2 text-ink-soft" />
@@ -452,7 +459,7 @@ const DeniedPartyScreening = () => {
 
       {/* Sanctioned Entities tab */}
       {activeTab === 'entities' && (
-        <div className="bg-surface rounded-xl border border-line overflow-hidden">
+        <div className="bg-surface rounded-none border border-line overflow-hidden">
           {entitiesLoading ? (
             <div className="px-6 py-12 text-center text-ink-soft">
               <Loader2 size={24} className="animate-spin mx-auto mb-2 text-ink-soft" />

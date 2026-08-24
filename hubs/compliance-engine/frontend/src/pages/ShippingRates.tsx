@@ -204,6 +204,7 @@ const ShippingRates = () => {
           <div>
             <h1 className="text-3xl font-bold text-ink flex items-center gap-3">
               <DollarSign className="h-8 w-8 text-success" />
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
               Gestion des tarifs
             </h1>
             <p className="text-ink-soft mt-1">
@@ -212,7 +213,7 @@ const ShippingRates = () => {
           </div>
           <button
             onClick={openCreate}
-            className="bg-success text-white px-4 py-2.5 rounded-lg hover:bg-success/90 transition-colors flex items-center space-x-2 font-medium shadow-sm"
+            className="bg-success text-white px-4 py-2.5 rounded-none hover:bg-success/90 transition-colors flex items-center space-x-2 font-medium shadow-sm"
           >
             <Plus size={20} />
             <span>Ajouter un tarif</span>
@@ -220,7 +221,7 @@ const ShippingRates = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-surface rounded-lg shadow-sm p-4 mb-6 flex flex-wrap items-center gap-4">
+        <div className="bg-surface rounded-none shadow-sm p-4 mb-6 flex flex-wrap items-center gap-4">
           <div className="relative flex-1 min-w-[200px]">
             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" />
             <input
@@ -228,13 +229,13 @@ const ShippingRates = () => {
               placeholder="Rechercher par nom, transporteur, origine, destination..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-success border-success/40 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-success border-success/40 text-sm"
             />
           </div>
           <select
             value={filterMode}
             onChange={(e) => setFilterMode(e.target.value)}
-            className="border border-line rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-success"
+            className="border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-success"
           >
             <option value="">Tous les modes</option>
             {TRANSPORT_MODES.map(m => (
@@ -244,7 +245,7 @@ const ShippingRates = () => {
           <select
             value={filterActive}
             onChange={(e) => setFilterActive(e.target.value as 'all' | 'active' | 'inactive')}
-            className="border border-line rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-success"
+            className="border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-success"
           >
             <option value="all">Tous les statuts</option>
             <option value="active">Actifs</option>
@@ -256,7 +257,7 @@ const ShippingRates = () => {
         </div>
 
         {/* Table */}
-        <div className="bg-surface rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-surface rounded-none shadow-sm overflow-hidden">
           {filteredRates.length === 0 ? (
             <div className="p-12 text-center">
               <DollarSign className="h-16 w-16 text-ink-soft mx-auto mb-4" />
@@ -332,7 +333,7 @@ const ShippingRates = () => {
                         <div className="flex items-center justify-end space-x-1">
                           <button
                             onClick={() => toggleMutation.mutate(rate.id)}
-                            className="p-1.5 rounded-lg hover:bg-surface-2 transition-colors"
+                            className="p-1.5 rounded-none hover:bg-surface-2 transition-colors"
                             title={rate.active ? 'Désactiver' : 'Activer'}
                           >
                             {rate.active
@@ -342,14 +343,14 @@ const ShippingRates = () => {
                           </button>
                           <button
                             onClick={() => openEdit(rate)}
-                            className="p-1.5 rounded-lg hover:bg-accent-soft transition-colors"
+                            className="p-1.5 rounded-none hover:bg-accent-soft transition-colors"
                             title="Modifier"
                           >
                             <Pencil size={16} className="text-accent" />
                           </button>
                           <button
                             onClick={() => setDeleteId(rate.id)}
-                            className="p-1.5 rounded-lg hover:bg-danger/10 transition-colors"
+                            className="p-1.5 rounded-none hover:bg-danger/10 transition-colors"
                             title="Supprimer"
                           >
                             <Trash2 size={16} className="text-danger" />
@@ -400,7 +401,7 @@ const ShippingRates = () => {
       </div>
 
       {!Array.isArray(data) && totalPages > 1 && (
-        <div className="bg-surface rounded-lg shadow-lg mt-4 py-3">
+        <div className="bg-surface rounded-none shadow-lg mt-4 py-3">
           <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
         </div>
       )}
@@ -408,12 +409,12 @@ const ShippingRates = () => {
       {/* Create/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-surface rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="bg-surface rounded-none shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-line">
               <h2 className="text-xl font-bold text-ink">
                 {editing ? 'Modifier le tarif' : 'Nouveau tarif'}
               </h2>
-              <button onClick={closeModal} className="p-1 rounded-lg hover:bg-surface-2">
+              <button onClick={closeModal} className="p-1 rounded-none hover:bg-surface-2">
                 <X size={20} className="text-ink-soft" />
               </button>
             </div>
@@ -426,7 +427,7 @@ const ShippingRates = () => {
                   <select
                     value={form.carrierId}
                     onChange={(e) => setForm({ ...form, carrierId: e.target.value })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                     required
                   >
                     <option value="">Sélectionner...</option>
@@ -441,7 +442,7 @@ const ShippingRates = () => {
                     type="text"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                     placeholder="Ex: TARIF STANDARD FR→DE"
                     required
                   />
@@ -455,7 +456,7 @@ const ShippingRates = () => {
                   <select
                     value={form.originCountry}
                     onChange={(e) => setForm({ ...form, originCountry: e.target.value })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                     required
                   >
                     <option value="">Pays...</option>
@@ -467,7 +468,7 @@ const ShippingRates = () => {
                   <select
                     value={form.destinationCountry}
                     onChange={(e) => setForm({ ...form, destinationCountry: e.target.value })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                     required
                   >
                     <option value="">Pays...</option>
@@ -479,7 +480,7 @@ const ShippingRates = () => {
                   <select
                     value={form.transportMode}
                     onChange={(e) => setForm({ ...form, transportMode: e.target.value })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                     required
                   >
                     {TRANSPORT_MODES.map(m => (
@@ -499,7 +500,7 @@ const ShippingRates = () => {
                     min="0.01"
                     value={form.baseRate}
                     onChange={(e) => setForm({ ...form, baseRate: parseFloat(e.target.value) || 0 })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                     required
                   />
                 </div>
@@ -508,7 +509,7 @@ const ShippingRates = () => {
                   <select
                     value={form.currency}
                     onChange={(e) => setForm({ ...form, currency: e.target.value })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                   >
                     {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
@@ -521,7 +522,7 @@ const ShippingRates = () => {
                     min="0"
                     value={form.ratePerKg ?? ''}
                     onChange={(e) => setForm({ ...form, ratePerKg: e.target.value ? parseFloat(e.target.value) : undefined })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                     placeholder="0.00"
                   />
                 </div>
@@ -533,7 +534,7 @@ const ShippingRates = () => {
                     min="0"
                     value={form.ratePerCbm ?? ''}
                     onChange={(e) => setForm({ ...form, ratePerCbm: e.target.value ? parseFloat(e.target.value) : undefined })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                     placeholder="0.00"
                   />
                 </div>
@@ -549,7 +550,7 @@ const ShippingRates = () => {
                     min="0"
                     value={form.minWeightKg ?? ''}
                     onChange={(e) => setForm({ ...form, minWeightKg: e.target.value ? parseFloat(e.target.value) : undefined })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                   />
                 </div>
                 <div>
@@ -560,7 +561,7 @@ const ShippingRates = () => {
                     min="0"
                     value={form.maxWeightKg ?? ''}
                     onChange={(e) => setForm({ ...form, maxWeightKg: e.target.value ? parseFloat(e.target.value) : undefined })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                   />
                 </div>
                 <div>
@@ -570,7 +571,7 @@ const ShippingRates = () => {
                     min="1"
                     value={form.transitDaysMin ?? ''}
                     onChange={(e) => setForm({ ...form, transitDaysMin: e.target.value ? parseInt(e.target.value) : undefined })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                   />
                 </div>
                 <div>
@@ -580,7 +581,7 @@ const ShippingRates = () => {
                     min="1"
                     value={form.transitDaysMax ?? ''}
                     onChange={(e) => setForm({ ...form, transitDaysMax: e.target.value ? parseInt(e.target.value) : undefined })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                   />
                 </div>
               </div>
@@ -595,7 +596,7 @@ const ShippingRates = () => {
                     min="0"
                     value={form.co2EstimateKg ?? ''}
                     onChange={(e) => setForm({ ...form, co2EstimateKg: e.target.value ? parseFloat(e.target.value) : undefined })}
-                    className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
+                    className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-success border-success/40"
                   />
                 </div>
               </div>
@@ -605,14 +606,14 @@ const ShippingRates = () => {
                 <button
                   type="button"
                   onClick={closeModal}
-                  className="px-4 py-2 border border-line rounded-lg text-ink hover:bg-bg transition-colors"
+                  className="px-4 py-2 border border-line rounded-none text-ink hover:bg-bg transition-colors"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={createMutation.isPending || updateMutation.isPending}
-                  className="px-6 py-2 bg-success text-white rounded-lg hover:bg-success/90 transition-colors flex items-center space-x-2 disabled:opacity-50"
+                  className="px-6 py-2 bg-success text-white rounded-none hover:bg-success/90 transition-colors flex items-center space-x-2 disabled:opacity-50"
                 >
                   {(createMutation.isPending || updateMutation.isPending) && (
                     <Loader2 size={16} className="animate-spin" />
@@ -628,7 +629,7 @@ const ShippingRates = () => {
       {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-surface rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
+          <div className="bg-surface rounded-none shadow-2xl p-6 w-full max-w-md mx-4">
             <h3 className="text-lg font-bold text-ink mb-2">Confirmer la suppression</h3>
             <p className="text-ink-soft mb-6">
               Voulez-vous vraiment supprimer ce tarif ? Cette action est irréversible.
@@ -636,14 +637,14 @@ const ShippingRates = () => {
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setDeleteId(null)}
-                className="px-4 py-2 border border-line rounded-lg text-ink hover:bg-bg"
+                className="px-4 py-2 border border-line rounded-none text-ink hover:bg-bg"
               >
                 Annuler
               </button>
               <button
                 onClick={() => deleteMutation.mutate(deleteId)}
                 disabled={deleteMutation.isPending}
-                className="px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger/90 flex items-center space-x-2 disabled:opacity-50"
+                className="px-4 py-2 bg-danger text-white rounded-none hover:bg-danger/90 flex items-center space-x-2 disabled:opacity-50"
               >
                 {deleteMutation.isPending && <Loader2 size={16} className="animate-spin" />}
                 <span>Supprimer</span>
