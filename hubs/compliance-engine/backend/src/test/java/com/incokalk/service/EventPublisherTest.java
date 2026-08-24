@@ -1,6 +1,7 @@
 package com.incokalk.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.incokalk.dto.shared.ShipmentCreatedPayload;
 import com.incokalk.dto.shared.ShipmentStatusChangedPayload;
 import com.incokalk.model.EventOutbox;
 import com.incokalk.model.TrackingEvent;
@@ -106,5 +107,36 @@ class EventPublisherTest {
                 TrackingEvent.DataSource.LIVE);
 
         verify(pushNotificationService).sendShipmentUpdate(userId, companyId, shipmentId, "IN_TRANSIT");
+    }
+
+    @Test
+    @DisplayName("shipmentCreated : écrit un événement outbox PENDING avec le bon payload")
+    void shipmentCreated_writesOutboxEvent() throws Exception {
+        eventPublisher.shipmentCreated(shipmentId, "CMD-002", companyId);
+
+        ArgumentCaptor<EventOutbox> captor = ArgumentCaptor.forClass(EventOutbox.class);
+        verify(eventOutboxRepo).save(captor.capture());
+
+        EventOutbox saved = captor.getValue();
+        assertThat(saved.getEventType()).isEqualTo("SHIPMENT_CREATED");
+        assertThat(saved.getCompanyId()).isEqualTo(companyId);
+        assertThat(saved.getStatus()).isEqualTo(EventOutbox.Status.PENDING);
+
+        ShipmentCreatedPayload payload = objectMapper.readValue(saved.getPayload(), ShipmentCreatedPayload.class);
+        assertThat(payload.getShipmentId()).isEqualTo(shipmentId);
+        assertThat(payload.getOrderNumber()).isEqualTo("CMD-002");
+        assertThat(payload.getCompanyId()).isEqualTo(companyId);
+
+        verify(notificationService, never()).onShipmentCreated(any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("shipmentCreated : échec de l'écriture outbox → ne lève pas, échec journalisé")
+    void shipmentCreated_outboxWriteThrows_doesNotPropagate() {
+        doThrow(new RuntimeException("DB down")).when(eventOutboxRepo).save(any());
+
+        eventPublisher.shipmentCreated(shipmentId, "CMD-002", companyId);
+
+        verify(eventOutboxRepo).save(any());
     }
 }

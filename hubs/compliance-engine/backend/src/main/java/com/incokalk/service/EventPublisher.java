@@ -1,6 +1,7 @@
 package com.incokalk.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.incokalk.dto.shared.ShipmentCreatedPayload;
 import com.incokalk.dto.shared.ShipmentStatusChangedPayload;
 import com.incokalk.model.EventOutbox;
 import com.incokalk.model.TrackingEvent;
@@ -59,15 +60,35 @@ public class EventPublisher {
         }
     }
 
-    @Async
+    /**
+     * Meme raisonnement que shipmentStatusChanged ci-dessus : pas @Async, la
+     * ligne outbox s'ecrit dans la meme transaction que ShipmentService.createShipment
+     * (@Transactional). Migre 2026-08-24 (docs/03-plan-migration.md, Phase 3 J1-J2).
+     */
     public void shipmentCreated(UUID shipmentId, String orderNumber, UUID companyId) {
         try {
-            notificationService.onShipmentCreated(shipmentId, orderNumber, companyId);
+            ShipmentCreatedPayload payload = ShipmentCreatedPayload.builder()
+                    .shipmentId(shipmentId)
+                    .orderNumber(orderNumber)
+                    .companyId(companyId)
+                    .build();
+            eventOutboxRepo.save(EventOutbox.builder()
+                    .eventType("SHIPMENT_CREATED")
+                    .companyId(companyId)
+                    .payload(objectMapper.writeValueAsString(payload))
+                    .build());
         } catch (Exception e) {
-            log.warn("Failed to send notification for shipment created: {}", e.getMessage());
+            log.warn("Failed to enqueue outbox event for shipment created: {}", e.getMessage());
         }
     }
 
+    /**
+     * NON MIGRE vers l'outbox : aucun appelant reel dans le code actuel
+     * (grep confirmé sur src/main) -- garder sur l'ancien chemin @Async tel
+     * quel pour ne pas construire de plomberie autour d'une methode morte.
+     * A migrer si/quand un vrai declencheur (health-check fournisseur) est
+     * branche.
+     */
     @Async
     public void providerStatusChanged(String providerType, boolean isDown, UUID companyId) {
         try {
@@ -81,6 +102,8 @@ public class EventPublisher {
         }
     }
 
+    /** NON MIGRE vers l'outbox pour la meme raison que providerStatusChanged
+     * ci-dessus : aucun appelant reel dans le code actuel. */
     @Async
     public void quoteReceived(int quoteCount, UUID companyId) {
         try {

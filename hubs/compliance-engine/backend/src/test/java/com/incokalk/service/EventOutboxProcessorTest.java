@@ -1,6 +1,7 @@
 package com.incokalk.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.incokalk.dto.shared.ShipmentCreatedPayload;
 import com.incokalk.dto.shared.ShipmentStatusChangedPayload;
 import com.incokalk.model.EventOutbox;
 import com.incokalk.model.TrackingEvent;
@@ -60,6 +61,36 @@ class EventOutboxProcessorTest {
                 .status(EventOutbox.Status.PENDING)
                 .attempts(0)
                 .build();
+    }
+
+    private EventOutbox shipmentCreatedEvent() throws Exception {
+        ShipmentCreatedPayload payload = ShipmentCreatedPayload.builder()
+                .shipmentId(shipmentId)
+                .orderNumber("CMD-002")
+                .companyId(companyId)
+                .build();
+        return EventOutbox.builder()
+                .id(UUID.randomUUID())
+                .eventType("SHIPMENT_CREATED")
+                .companyId(companyId)
+                .payload(objectMapper.writeValueAsString(payload))
+                .status(EventOutbox.Status.PENDING)
+                .attempts(0)
+                .build();
+    }
+
+    @Test
+    @DisplayName("processOne : SHIPMENT_CREATED -> déserialise le payload, notifie, marque PROCESSED")
+    void processOne_shipmentCreated_marksProcessed() throws Exception {
+        EventOutbox event = shipmentCreatedEvent();
+
+        processor.processOne(event);
+
+        verify(notificationService).onShipmentCreated(shipmentId, "CMD-002", companyId);
+
+        ArgumentCaptor<EventOutbox> captor = ArgumentCaptor.forClass(EventOutbox.class);
+        verify(eventOutboxRepo).save(captor.capture());
+        assertThat(captor.getValue().getStatus()).isEqualTo(EventOutbox.Status.PROCESSED);
     }
 
     @Test

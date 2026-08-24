@@ -1,6 +1,7 @@
 package com.incokalk.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.incokalk.dto.shared.ShipmentCreatedPayload;
 import com.incokalk.dto.shared.ShipmentStatusChangedPayload;
 import com.incokalk.model.EventOutbox;
 import com.incokalk.repository.EventOutboxRepository;
@@ -83,6 +84,12 @@ public class EventOutboxProcessor {
                         payload.getShipmentId(), payload.getOrderNumber(),
                         payload.getOldStatus(), payload.getNewStatus(),
                         payload.getCompanyId(), payload.getDataSource());
+            }
+            case "SHIPMENT_CREATED" -> {
+                ShipmentCreatedPayload payload = objectMapper.readValue(
+                        event.getPayload(), ShipmentCreatedPayload.class);
+                notificationService.onShipmentCreated(
+                        payload.getShipmentId(), payload.getOrderNumber(), payload.getCompanyId());
             }
             default -> throw new IllegalArgumentException("Type d'evenement outbox inconnu: " + event.getEventType());
         }
