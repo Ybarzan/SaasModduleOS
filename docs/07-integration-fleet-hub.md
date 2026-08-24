@@ -31,6 +31,12 @@ L'audit d'IncoKalk ([01-audit-existant.md](01-audit-existant.md)) identifie un a
 - Dans l'autre sens, l'exécuteur d'actions de la Couche 3 peut appeler l'API fleet-hub existante pour déclencher une replanification de tournée — pas besoin d'un nouveau protocole, l'API REST suffit.
 - **SSO unifié entre les deux produits** (un seul login pour accéder à compliance-engine et fleet-hub) est une amélioration UX désirable mais **secondaire** — à traiter après que l'intégration data fonctionne, pas comme prérequis. Proposition technique : fleet-hub adopte le JWT émis par compliance-engine comme identité fédérée (OAuth2/OIDC), sans toucher à son schéma de rôles interne.
 
+## État de l'implémentation
+
+**Configuration + client REST fait, 2026-08-24** : `FleetHubConfig` (V67, identifiants d'un compte de service fleet-hub -- URL de base, username, password) + `FleetHubClient` (`POST /api/auth/login` puis `GET /api/map/vehicles` avec le token Bearer obtenu, mapping exact du record `MapVehicleDto` côté fleet-hub) + CRUD via `/v1/fleethub` (OWNER/ADMIN pour créer/modifier/supprimer, MANAGER peut aussi lister/tester la connexion). Pas de cache de token dans cette première version -- un login par appel, volontairement simple ; à optimiser seulement si la fréquence d'appel le justifie réellement. Le compte de service utilisé ne doit pas avoir la 2FA activée (`POST /api/auth/login` ne renvoie pas de token si `totpRequired=true`) -- `FleetHubClient` détecte ce cas et échoue avec un message explicite plutôt qu'une erreur opaque. Toujours par API, jamais d'accès direct à la base fleet-hub, conformément à la décision d'architecture ci-dessus.
+
+**Reste à faire** : l'adapter `TrackingProvider` (type `FLEET_HUB`) qui consomme `FleetHubClient.getVehicles()` pour la position GPS temps réel, le lien entre une expédition et un camion fleet-hub (flotte propre vs transporteur tiers), et le branchement dans `LiveTrackingService`.
+
 ## Ce qu'il ne faut pas faire
 
 - Ne pas connecter l'orchestrateur directement aux tables PostgreSQL de fleet-hub — toujours passer par son API, même en interne (le principe "cohabiter, pas remplacer" s'applique aussi entre les deux hubs du même produit, pas seulement vis-à-vis des systèmes tiers du client).
