@@ -24,7 +24,7 @@ const IncotermCard = ({ incoterm, onClick }: IncotermCardProps) => {
   };
 
   return (
-    <div className="bg-surface rounded-2xl p-6 border border-line hover:-translate-y-1 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.12)] hover:border-accent/30 transition-all duration-300">
+    <div className="bg-surface rounded-none p-6 border border-line hover:-translate-y-1 hover:shadow-[0_20px_40px_-12px_rgba(0,0,0,0.12)] hover:border-accent/30 transition-all duration-300">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -54,7 +54,7 @@ const IncotermCard = ({ incoterm, onClick }: IncotermCardProps) => {
                   e.stopPropagation();
                   if (!disabled) setSelectedMode(value);
                 }}
-                className={`flex-1 flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-xs font-medium transition-all
+                className={`flex-1 flex flex-col items-center gap-1 py-2 px-1 rounded-none text-xs font-medium transition-all
                   ${disabled
                     ? 'bg-bg text-ink-soft cursor-not-allowed'
                     : selectedMode === value
@@ -117,7 +117,7 @@ const IncotermCard = ({ incoterm, onClick }: IncotermCardProps) => {
       {/* Action Button */}
       <div className="mt-4 pt-4 border-t border-line">
         <button
-          className="w-full bg-accent text-white py-2 px-4 rounded-lg hover:bg-accent-strong transition-colors font-medium text-sm"
+          className="w-full bg-accent text-white py-2 px-4 rounded-none hover:bg-accent-strong transition-colors font-medium text-sm"
           onClick={(e) => {
             e.stopPropagation();
             onClick?.(selectedMode);

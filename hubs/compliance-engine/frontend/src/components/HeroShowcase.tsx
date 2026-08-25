@@ -77,7 +77,7 @@ function PersonaSceneCard({ scene }: { scene: PersonaScene }) {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 mb-5">
-        <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-accent-soft text-accent-strong shrink-0">
+        <span className="inline-flex items-center justify-center w-11 h-11 rounded-none bg-accent-soft text-accent-strong shrink-0">
           <Icon size={20} />
         </span>
         <div>
@@ -179,21 +179,21 @@ export default function HeroShowcase() {
     <div className="relative max-w-md mx-auto lg:mx-0">
       {/* Overlays flottants -- revendications réelles (essai 14j : BillingService,
           parrainage : /billing, voir project_incokalk_marketing_backlog memory) */}
-      <div className="hidden sm:flex absolute -top-4 -right-4 z-20 items-center gap-1.5 bg-surface border border-line rounded-xl px-3 py-2 shadow-lg animate-float">
+      <div className="hidden sm:flex absolute -top-4 -right-4 z-20 items-center gap-1.5 bg-surface border border-line rounded-none px-3 py-2 shadow-lg animate-float">
         <ShieldCheck size={16} className="text-success shrink-0" />
         <span className="text-xs font-semibold text-ink whitespace-nowrap">Essai 14 jours, sans engagement</span>
       </div>
-      <div className="hidden sm:flex absolute -bottom-4 -left-4 z-20 items-center gap-1.5 bg-surface border border-line rounded-xl px-3 py-2 shadow-lg animate-float" style={{ animationDelay: '2s' }}>
+      <div className="hidden sm:flex absolute -bottom-4 -left-4 z-20 items-center gap-1.5 bg-surface border border-line rounded-none px-3 py-2 shadow-lg animate-float" style={{ animationDelay: '2s' }}>
         <Gift size={16} className="text-accent shrink-0" />
         <span className="text-xs font-semibold text-ink whitespace-nowrap">1 mois offert en parrainant</span>
       </div>
 
       <div
-        className="bg-bg rounded-3xl border border-line p-6 shadow-xl shadow-accent/5"
+        className="bg-bg rounded-none border border-line p-6 shadow-xl shadow-accent/5"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        <div className="bg-surface rounded-2xl p-6 border border-line min-h-[240px] flex flex-col overflow-hidden">
+        <div className="bg-surface rounded-none p-6 border border-line min-h-[240px] flex flex-col overflow-hidden">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-2.5 h-2.5 rounded-full bg-accent" />
             <div className="w-2.5 h-2.5 rounded-full bg-accent/60" />

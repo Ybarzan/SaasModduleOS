@@ -43,10 +43,10 @@ const PWAInstallPrompt = () => {
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50">
-      <div className="bg-surface rounded-xl shadow-2xl border border-line p-4">
+      <div className="bg-surface rounded-none shadow-2xl border border-line p-4">
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-accent rounded-none flex items-center justify-center">
               <Download size={20} className="text-white" />
             </div>
             <div>
@@ -61,7 +61,7 @@ const PWAInstallPrompt = () => {
         <div className="flex space-x-2">
           <button
             onClick={handleInstall}
-            className="flex-1 bg-accent text-white text-sm py-2 rounded-lg hover:bg-accent-strong transition-colors font-medium"
+            className="flex-1 bg-accent text-white text-sm py-2 rounded-none hover:bg-accent-strong transition-colors font-medium"
           >
             Installer
           </button>

@@ -34,14 +34,14 @@ const DeleteConfirmModal = ({
       <div className="flex justify-end space-x-3">
         <button
           onClick={onClose}
-          className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
+          className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
         >
           Annuler
         </button>
         <button
           onClick={onConfirm}
           disabled={isPending}
-          className="px-4 py-2 bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
+          className="px-4 py-2 bg-danger text-white rounded-none hover:bg-danger/90 transition-colors disabled:opacity-50 flex items-center space-x-2"
         >
           {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
           <span>{confirmLabel}</span>

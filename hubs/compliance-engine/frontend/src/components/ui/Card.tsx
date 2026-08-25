@@ -11,7 +11,7 @@ const Card = ({ variant = 'default', hover = true, className, children, ...props
   return (
     <motion.div
       className={clsx(
-        'bg-surface rounded-2xl border border-line',
+        'bg-surface rounded-none border border-line',
         variant === 'default' && 'p-6',
         variant === 'stat' && 'p-6 text-center',
         variant === 'flat' && 'p-4',

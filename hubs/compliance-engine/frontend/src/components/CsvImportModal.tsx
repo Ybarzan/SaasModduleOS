@@ -71,14 +71,14 @@ export default function CsvImportModal({ isOpen, onClose, title, queryKey }: Csv
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-surface rounded-none shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-line">
           <h2 className="text-lg font-bold text-ink flex items-center gap-2">
             <Upload size={20} className="text-accent" />
             {title}
           </h2>
-          <button onClick={handleClose} className="p-1.5 rounded-lg hover:bg-surface-2 text-ink-soft">
+          <button onClick={handleClose} className="p-1.5 rounded-none hover:bg-surface-2 text-ink-soft">
             <X size={18} />
           </button>
         </div>
@@ -88,7 +88,7 @@ export default function CsvImportModal({ isOpen, onClose, title, queryKey }: Csv
           {!file ? (
             <div
               onClick={() => fileRef.current?.click()}
-              className="border-2 border-dashed border-line rounded-xl p-12 text-center cursor-pointer hover:border-accent hover:bg-accent-soft/30 transition-colors"
+              className="border-2 border-dashed border-line rounded-none p-12 text-center cursor-pointer hover:border-accent hover:bg-accent-soft/30 transition-colors"
             >
               <Upload size={40} className="mx-auto mb-3 text-ink-soft" />
               <p className="text-sm font-medium text-ink-soft">Cliquez pour sélectionner un fichier CSV</p>
@@ -114,7 +114,7 @@ export default function CsvImportModal({ isOpen, onClose, title, queryKey }: Csv
                 <span className="text-xs text-ink-soft">({(file.size / 1024).toFixed(1)} Ko)</span>
               </div>
 
-              <div className="overflow-x-auto border border-line rounded-lg">
+              <div className="overflow-x-auto border border-line rounded-none">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="bg-surface-2">
@@ -147,14 +147,14 @@ export default function CsvImportModal({ isOpen, onClose, title, queryKey }: Csv
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-line">
           <button
             onClick={handleClose}
-            className="px-4 py-2 rounded-xl text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
+            className="px-4 py-2 rounded-none text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
           >
             Annuler
           </button>
           <button
             onClick={() => file && importMutation.mutate(file)}
             disabled={!file || importMutation.isPending}
-            className="px-5 py-2 rounded-xl text-sm font-semibold bg-accent text-white hover:bg-accent-strong disabled:opacity-50 transition-colors inline-flex items-center gap-2"
+            className="px-5 py-2 rounded-none text-sm font-semibold bg-accent text-white hover:bg-accent-strong disabled:opacity-50 transition-colors inline-flex items-center gap-2"
           >
             {importMutation.isPending ? (
               <><Loader2 size={14} className="animate-spin" /> Importation...</>

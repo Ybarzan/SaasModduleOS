@@ -59,7 +59,7 @@ const LiveTrackingPanel = ({ shipmentId, mode = 'ROAD' }: LiveTrackingPanelProps
   const label = MODE_LABELS[mode] || mode;
 
   return (
-    <div className="bg-surface border border-line rounded-xl shadow-sm overflow-hidden">
+    <div className="bg-surface border border-line rounded-none shadow-sm overflow-hidden">
       <div className="bg-surface-2 px-4 py-3 border-b border-line flex items-center justify-between">
         <div className="flex items-center space-x-2">
           {icon}
@@ -68,14 +68,14 @@ const LiveTrackingPanel = ({ shipmentId, mode = 'ROAD' }: LiveTrackingPanelProps
         <div className="flex items-center space-x-2">
           <button
             onClick={() => { setShowPosition(!showPosition); if (!showPosition) refetchPosition(); }}
-            className="p-1.5 rounded-md text-ink-soft hover:bg-surface-2 transition-colors"
+            className="p-1.5 rounded-none text-ink-soft hover:bg-surface-2 transition-colors"
             title="Position actuelle"
           >
             <Compass size={14} />
           </button>
           <button
             onClick={() => { refetchTracking(); if (showPosition) refetchPosition(); }}
-            className="p-1.5 rounded-md text-ink-soft hover:bg-surface-2 transition-colors"
+            className="p-1.5 rounded-none text-ink-soft hover:bg-surface-2 transition-colors"
             title="Rafraîchir"
           >
             <RefreshCw size={14} />
@@ -108,7 +108,7 @@ const LiveTrackingPanel = ({ shipmentId, mode = 'ROAD' }: LiveTrackingPanelProps
         ) : (
           <div className="space-y-3">
             {position && (
-              <div className="bg-surface-2 border border-line rounded-lg p-3">
+              <div className="bg-surface-2 border border-line rounded-none p-3">
                 <div className="flex items-center space-x-2 mb-2">
                   <MapPin size={14} className="text-ink-soft" />
                   <span className="text-xs font-medium text-ink uppercase tracking-wide">Position actuelle</span>
@@ -176,7 +176,7 @@ const LiveTrackingPanel = ({ shipmentId, mode = 'ROAD' }: LiveTrackingPanelProps
           <button
             onClick={() => syncMutation.mutate()}
             disabled={syncMutation.isPending}
-            className="w-full px-3 py-2 bg-accent text-white text-sm rounded-lg hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+            className="w-full px-3 py-2 bg-accent text-white text-sm rounded-none hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
           >
             {syncMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />

@@ -18,7 +18,7 @@ interface StatCardProps {
 const StatCard = ({ label, value, icon: Icon, iconColor = 'text-accent', iconBg = 'bg-accent-soft' }: StatCardProps) => {
   if (!Icon) {
     return (
-      <div className="bg-surface rounded-xl border border-line p-4 text-center">
+      <div className="bg-surface rounded-none border border-line p-4 text-center">
         <p className="text-2xl font-bold text-ink">{value}</p>
         <p className="text-xs text-ink-soft">{label}</p>
       </div>
@@ -26,9 +26,9 @@ const StatCard = ({ label, value, icon: Icon, iconColor = 'text-accent', iconBg 
   }
 
   return (
-    <div className="bg-surface rounded-xl border border-line p-5">
+    <div className="bg-surface rounded-none border border-line p-5">
       <div className="flex items-center gap-3">
-        <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}>
+        <div className={`w-10 h-10 rounded-none ${iconBg} flex items-center justify-center shrink-0`}>
           <Icon size={20} className={iconColor} />
         </div>
         <div>

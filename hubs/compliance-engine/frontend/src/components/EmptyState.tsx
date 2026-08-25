@@ -23,14 +23,14 @@ interface EmptyStateProps {
 const EmptyState = ({ icon: Icon, title, description, action }: EmptyStateProps) => {
   const ActionIcon = action?.icon;
   return (
-    <div className="bg-surface rounded-lg shadow-lg p-12 text-center">
+    <div className="bg-surface rounded-none shadow-lg p-12 text-center">
       <Icon className="h-16 w-16 text-ink-soft mx-auto mb-4" />
       <h3 className="text-xl font-semibold text-ink mb-2">{title}</h3>
       {description && <p className="text-ink-soft mb-6">{description}</p>}
       {action && (
         <button
           onClick={action.onClick}
-          className="bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent-strong transition-colors inline-flex items-center space-x-2"
+          className="bg-accent text-white px-6 py-3 rounded-none hover:bg-accent-strong transition-colors inline-flex items-center space-x-2"
         >
           {ActionIcon && <ActionIcon size={20} />}
           <span>{action.label}</span>

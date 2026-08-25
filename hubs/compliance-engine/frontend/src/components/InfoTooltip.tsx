@@ -33,7 +33,7 @@ const InfoTooltip = ({ text, className = '' }: InfoTooltipProps) => {
       {open && (
         <span
           role="tooltip"
-          className="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-lg border border-line bg-surface px-3 py-2 text-xs font-normal normal-case text-ink-soft shadow-lg"
+          className="absolute z-20 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 rounded-none border border-line bg-surface px-3 py-2 text-xs font-normal normal-case text-ink-soft shadow-lg"
         >
           {text}
         </span>

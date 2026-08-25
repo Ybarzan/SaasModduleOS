@@ -91,7 +91,7 @@ const VirtualWarehouseMap = ({ data, onSelectTile, selectedBalanceId }: Props) =
 
   if (data.length === 0) {
     return (
-      <div className="bg-surface rounded-xl border border-line px-6 py-16 text-center text-ink-soft">
+      <div className="bg-surface rounded-none border border-line px-6 py-16 text-center text-ink-soft">
         <PackageOpen size={32} className="mx-auto mb-3 text-ink-soft" />
         <p>Aucun article en stock dans cet entrepôt pour le moment.</p>
       </div>
@@ -99,7 +99,7 @@ const VirtualWarehouseMap = ({ data, onSelectTile, selectedBalanceId }: Props) =
   }
 
   return (
-    <div className="bg-surface rounded-xl border border-line p-5">
+    <div className="bg-surface rounded-none border border-line p-5">
       <div className="relative mb-5 max-w-xs">
         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" />
         <input
@@ -107,7 +107,7 @@ const VirtualWarehouseMap = ({ data, onSelectTile, selectedBalanceId }: Props) =
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Rechercher un article..."
-          className="pl-9 pr-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent w-full bg-bg text-ink"
+          className="pl-9 pr-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent w-full bg-bg text-ink"
         />
       </div>
 
@@ -115,7 +115,7 @@ const VirtualWarehouseMap = ({ data, onSelectTile, selectedBalanceId }: Props) =
         {zones.map((zone) => (
           <PageRevealItem key={zone.category} className="flex-1 min-w-[260px]">
             <div
-              className="rounded-xl border p-4 h-full"
+              className="rounded-none border p-4 h-full"
               style={{
                 borderColor: hsl(zone.color, 0.3),
                 backgroundColor: hsl(zone.color, 0.05),
@@ -155,7 +155,7 @@ const VirtualWarehouseMap = ({ data, onSelectTile, selectedBalanceId }: Props) =
                         backgroundColor: hsl(zone.color, 0.14),
                         borderColor: nearlyReserved ? 'rgb(var(--c-warning))' : hsl(zone.color, 0.45),
                       }}
-                      className={`flex flex-col items-center justify-center rounded-lg border-2 p-1.5 text-center transition-shadow ${
+                      className={`flex flex-col items-center justify-center rounded-none border-2 p-1.5 text-center transition-shadow ${
                         isSelected ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface' : ''
                       }`}
                       title={`${tile.item.name} — ${tile.balance.quantityOnHand} ${tile.item.unit ?? 'PCS'}`}

@@ -42,7 +42,7 @@ const Footer = () => {
           {/* Brand column */}
           <div className="col-span-2">
             <Link to="/" className="flex items-center gap-2.5 font-extrabold text-xl mb-4">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent to-accent-strong flex items-center justify-center shadow-md shadow-accent/20">
+              <div className="w-9 h-9 rounded-none bg-gradient-to-br from-accent to-accent-strong flex items-center justify-center shadow-md shadow-accent/20">
                 <Calculator size={18} className="text-white" />
               </div>
               <span className="text-ink">Inco<span className="text-accent">Kalk</span></span>

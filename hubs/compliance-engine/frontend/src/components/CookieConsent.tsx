@@ -41,13 +41,13 @@ export default function CookieConsent() {
         <div className="flex items-center gap-3 shrink-0 self-end md:self-auto">
           <button
             onClick={() => setConsent('rejected')}
-            className="px-5 py-2.5 rounded-xl font-semibold text-sm text-ink-soft border border-line hover:bg-bg transition-colors"
+            className="px-5 py-2.5 rounded-none font-semibold text-sm text-ink-soft border border-line hover:bg-bg transition-colors"
           >
             Refuser
           </button>
           <button
             onClick={() => setConsent('accepted')}
-            className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-accent text-white hover:bg-accent-strong transition-colors shadow-md shadow-accent/20"
+            className="px-5 py-2.5 rounded-none font-semibold text-sm bg-accent text-white hover:bg-accent-strong transition-colors shadow-md shadow-accent/20"
           >
             Accepter
           </button>

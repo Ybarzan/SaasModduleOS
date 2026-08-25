@@ -37,7 +37,7 @@ const Navbar = () => {
       <div className="container-narrow mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2.5 font-extrabold text-xl group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent to-accent-strong flex items-center justify-center shadow-md shadow-accent/20 group-hover:shadow-lg group-hover:shadow-accent/30 transition-shadow">
+            <div className="w-9 h-9 rounded-none bg-gradient-to-br from-accent to-accent-strong flex items-center justify-center shadow-md shadow-accent/20 group-hover:shadow-lg group-hover:shadow-accent/30 transition-shadow">
               <Calculator size={18} className="text-white" />
             </div>
             <span className="text-ink">Inco<span className="text-accent">Kalk</span></span>
@@ -49,7 +49,7 @@ const Navbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-3 py-2 rounded-none text-sm font-medium transition-colors ${
                   isActive(link.to)
                     ? 'text-accent bg-accent-soft'
                     : 'text-ink-soft hover:text-ink hover:bg-surface-2'
@@ -68,14 +68,14 @@ const Navbar = () => {
               <>
                 <Link
                   to="/dashboard"
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-ink-soft hover:text-ink hover:bg-surface-2 transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-none text-sm font-medium text-ink-soft hover:text-ink hover:bg-surface-2 transition-colors flex items-center gap-1.5"
                 >
                   <LayoutDashboard size={16} />
                   Aller à l'app
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors flex items-center gap-1.5"
+                  className="px-3 py-2 rounded-none text-sm font-medium text-ink-soft hover:text-accent hover:bg-accent-soft transition-colors flex items-center gap-1.5"
                   title="Déconnexion"
                 >
                   <LogOut size={16} />
@@ -85,7 +85,7 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
-                  className="px-4 py-2 rounded-lg text-sm font-medium text-ink-soft hover:text-ink hover:bg-surface-2 transition-colors"
+                  className="px-4 py-2 rounded-none text-sm font-medium text-ink-soft hover:text-ink hover:bg-surface-2 transition-colors"
                 >
                   Connexion
                 </Link>
@@ -102,7 +102,7 @@ const Navbar = () => {
             <ThemeToggle />
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="p-2 rounded-lg text-ink-soft hover:bg-surface-2 transition-colors"
+              className="p-2 rounded-none text-ink-soft hover:bg-surface-2 transition-colors"
             >
               {mobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -116,7 +116,7 @@ const Navbar = () => {
               <Link
                 key={link.to}
                 to={link.to}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ink hover:bg-surface-2 transition-colors"
+                className="flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-medium text-ink hover:bg-surface-2 transition-colors"
                 onClick={() => setMobileOpen(false)}
               >
                 {link.label}
@@ -128,7 +128,7 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/dashboard"
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-ink hover:bg-surface-2 transition-colors"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-none text-sm font-medium text-ink hover:bg-surface-2 transition-colors"
                     onClick={() => setMobileOpen(false)}
                   >
                     <LayoutDashboard size={18} className="text-ink-soft" />
@@ -136,7 +136,7 @@ const Navbar = () => {
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-accent hover:bg-accent-soft transition-colors flex items-center gap-2"
+                    className="w-full text-left px-3 py-2.5 rounded-none text-sm font-medium text-accent hover:bg-accent-soft transition-colors flex items-center gap-2"
                   >
                     <LogOut size={16} />
                     Déconnexion
@@ -146,14 +146,14 @@ const Navbar = () => {
                 <>
                   <Link
                     to="/login"
-                    className="block px-3 py-2.5 rounded-lg text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
+                    className="block px-3 py-2.5 rounded-none text-sm font-medium text-ink-soft hover:bg-surface-2 transition-colors"
                     onClick={() => setMobileOpen(false)}
                   >
                     Connexion
                   </Link>
                   <Link
                     to="/register"
-                    className="block px-3 py-2.5 rounded-lg text-sm font-semibold text-center btn-primary !py-3"
+                    className="block px-3 py-2.5 rounded-none text-sm font-semibold text-center btn-primary !py-3"
                     onClick={() => setMobileOpen(false)}
                   >
                     S'inscrire

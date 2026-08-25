@@ -108,7 +108,7 @@ const CommandPaletteDialog = ({ onClose }: { onClose: () => void }) => {
       <div
         role="dialog"
         aria-label="Rechercher une page"
-        className="w-full max-w-lg mx-4 bg-surface rounded-xl shadow-2xl border border-line overflow-hidden"
+        className="w-full max-w-lg mx-4 bg-surface rounded-none shadow-2xl border border-line overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 px-4 py-3 border-b border-line">

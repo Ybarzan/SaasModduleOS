@@ -79,7 +79,7 @@ const OnboardingDialog = ({ onClose }: { onClose: () => void }) => {
           </button>
           <button
             onClick={() => (isLast ? onClose() : setStep((s) => s + 1))}
-            className="px-5 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong transition-colors"
+            className="px-5 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong transition-colors"
           >
             {isLast ? 'Terminer' : 'Suivant'}
           </button>

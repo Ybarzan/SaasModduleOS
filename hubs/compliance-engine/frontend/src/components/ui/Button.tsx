@@ -18,9 +18,9 @@ const variantClasses: Record<Variant, string> = {
 };
 
 const sizeClasses: Record<Size, string> = {
-  sm: 'px-4 py-2 text-sm rounded-lg gap-1.5',
-  md: 'px-6 py-3 text-sm rounded-xl gap-2',
-  lg: 'px-8 py-3.5 text-base rounded-xl gap-2',
+  sm: 'px-4 py-2 text-sm rounded-none gap-1.5',
+  md: 'px-6 py-3 text-sm rounded-none gap-2',
+  lg: 'px-8 py-3.5 text-base rounded-none gap-2',
 };
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(

@@ -102,7 +102,7 @@ const NotificationBell = () => {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className={`relative p-2 rounded-lg hover:bg-accent-soft transition-colors text-ink-soft hover:text-accent-strong ${pulse ? 'animate-bounce' : ''}`}
+        className={`relative p-2 rounded-none hover:bg-accent-soft transition-colors text-ink-soft hover:text-accent-strong ${pulse ? 'animate-bounce' : ''}`}
       >
         <Bell size={20} />
         {unreadCount > 0 && (
@@ -113,7 +113,7 @@ const NotificationBell = () => {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[380px] bg-surface rounded-xl shadow-2xl border border-line z-50 overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 w-[380px] bg-surface rounded-none shadow-2xl border border-line z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-line">
             <h3 className="font-bold text-ink">Notifications</h3>
             <div className="flex items-center gap-2">

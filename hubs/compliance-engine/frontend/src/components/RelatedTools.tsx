@@ -25,7 +25,7 @@ const RelatedTools = ({ tools }: { tools: RelatedTool[] }) => {
           <Link
             key={tool.to}
             to={tool.to}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-line text-ink-soft hover:border-accent hover:text-accent transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-none border border-line text-ink-soft hover:border-accent hover:text-accent transition-colors"
           >
             <Icon size={13} />
             {tool.label}

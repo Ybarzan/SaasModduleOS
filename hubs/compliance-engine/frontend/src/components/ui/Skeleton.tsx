@@ -10,8 +10,8 @@ const Skeleton = ({ className, variant = 'block' }: SkeletonProps) => {
     <div
       className={clsx(
         'animate-pulse bg-surface-2',
-        variant === 'text' && 'h-4 rounded-md',
-        variant === 'block' && 'rounded-xl',
+        variant === 'text' && 'h-4 rounded-none',
+        variant === 'block' && 'rounded-none',
         variant === 'circle' && 'rounded-full',
         className,
       )}
@@ -20,7 +20,7 @@ const Skeleton = ({ className, variant = 'block' }: SkeletonProps) => {
 };
 
 export const SkeletonCard = () => (
-  <div className="bg-surface rounded-2xl border border-line p-6 space-y-4">
+  <div className="bg-surface rounded-none border border-line p-6 space-y-4">
     <Skeleton variant="text" className="w-1/2" />
     <Skeleton className="h-8 w-2/3" />
     <Skeleton variant="text" className="w-1/3" />

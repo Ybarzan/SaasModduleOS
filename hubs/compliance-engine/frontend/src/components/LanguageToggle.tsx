@@ -9,7 +9,7 @@ const LanguageToggle = () => {
     <button
       onClick={toggle}
       aria-label={language === 'fr' ? 'Switch to English' : 'Passer en français'}
-      className="px-2.5 py-1 rounded-lg text-xs font-bold text-ink-soft border border-line hover:border-accent hover:text-accent transition-colors shrink-0"
+      className="px-2.5 py-1 rounded-none text-xs font-bold text-ink-soft border border-line hover:border-accent hover:text-accent transition-colors shrink-0"
     >
       {language === 'fr' ? 'EN' : 'FR'}
     </button>

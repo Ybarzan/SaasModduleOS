@@ -31,7 +31,7 @@ const Pagination = ({ page, totalPages, onPageChange }: PaginationProps) => {
       <button
         onClick={() => onPageChange(page - 1)}
         disabled={page === 0}
-        className="p-2 rounded-lg hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className="p-2 rounded-none hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
       >
         <ChevronLeft size={18} />
       </button>
@@ -42,7 +42,7 @@ const Pagination = ({ page, totalPages, onPageChange }: PaginationProps) => {
           <button
             key={p}
             onClick={() => onPageChange(p)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-none text-sm font-medium transition-colors ${
               p === page
                 ? 'bg-accent text-white'
                 : 'text-ink-soft hover:bg-surface-2'
@@ -55,7 +55,7 @@ const Pagination = ({ page, totalPages, onPageChange }: PaginationProps) => {
       <button
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages - 1}
-        className="p-2 rounded-lg hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className="p-2 rounded-none hover:bg-surface-2 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
       >
         <ChevronRight size={18} />
       </button>

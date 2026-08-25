@@ -69,7 +69,7 @@ const Modal = ({ open, onClose, ariaLabel, children, maxWidth = 'max-w-lg' }: Mo
         role="dialog"
         aria-modal="true"
         aria-label={ariaLabel}
-        className={`bg-surface rounded-lg shadow-xl w-full ${maxWidth} mx-4 max-h-[90vh] overflow-y-auto`}
+        className={`bg-surface rounded-none shadow-xl w-full ${maxWidth} mx-4 max-h-[90vh] overflow-y-auto`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}
