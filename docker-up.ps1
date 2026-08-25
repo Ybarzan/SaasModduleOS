@@ -67,7 +67,8 @@ function Initialize-EnvFile {
     param(
         [string]$ExamplePath,
         [string]$TargetPath,
-        [string[]]$SecretKeys
+        [string[]]$SecretKeys,
+        [hashtable]$Overrides = @{}
     )
     if (Test-Path $TargetPath) {
         Write-Host "  .env deja present ($TargetPath) - conserve tel quel" -ForegroundColor DarkGray
@@ -77,7 +78,7 @@ function Initialize-EnvFile {
         throw "Fichier modele introuvable: $ExamplePath"
     }
     Write-Host "  Generation de $TargetPath (secrets locaux auto-generes, jamais commite)" -ForegroundColor Yellow
-    $lines = Get-Content -Path $ExamplePath
+    $lines = Get-Content -Path $ExamplePath -Encoding UTF8
     $out = New-Object System.Collections.Generic.List[string]
     foreach ($line in $lines) {
         $written = $false
@@ -88,11 +89,19 @@ function Initialize-EnvFile {
                 break
             }
         }
+        if (-not $written -and $Overrides.ContainsKey(($line -split '=', 2)[0])) {
+            $key = ($line -split '=', 2)[0]
+            $out.Add("$key=$($Overrides[$key])")
+            $written = $true
+        }
         if (-not $written) {
             $out.Add($line)
         }
     }
-    Set-Content -Path $TargetPath -Value $out -Encoding utf8
+    # -Encoding utf8 in Windows PowerShell 5.1 always writes a BOM, which garbles the
+    # accented comments in these .env.example templates when later re-read as plain UTF-8
+    # (cosmetic only -- docker compose still parses the values fine -- but avoid it anyway).
+    [System.IO.File]::WriteAllLines($TargetPath, $out, (New-Object System.Text.UTF8Encoding $false))
 }
 
 Write-Host "=== SaasModduleOS :: demarrage Docker ===" -ForegroundColor Cyan
@@ -102,7 +111,13 @@ if ($InfraOnly) {
 Write-Host ""
 
 Write-Host "[compliance-engine] preparation .env" -ForegroundColor Cyan
-Initialize-EnvFile -ExamplePath $ceEnvExample -TargetPath $ceEnv -SecretKeys @("POSTGRES_PASSWORD", "MINIO_ROOT_PASSWORD", "JWT_SECRET", "API_KEY_SALT")
+# CORS_ORIGINS doit inclure le port reellement servi au navigateur. Le .env.example par
+# defaut ne liste que 5173/5174 (dev local direct) -- sans ce port 8080/8443 (celui que ce
+# script utilise pour nginx, voir plus bas), l'inscription/connexion echoue en 403 des que
+# le frontend tourne derriere nginx plutot qu'en direct. Trouve la premiere fois via un
+# vrai test d'inscription apres deploiement complet, pas une supposition.
+$ceOverrides = @{ CORS_ORIGINS = "http://localhost:5174,http://localhost:5173,http://localhost:8080,https://localhost:8443" }
+Initialize-EnvFile -ExamplePath $ceEnvExample -TargetPath $ceEnv -SecretKeys @("POSTGRES_PASSWORD", "MINIO_ROOT_PASSWORD", "JWT_SECRET", "API_KEY_SALT") -Overrides $ceOverrides
 
 if (-not $InfraOnly) {
     Write-Host "[fleet-hub] preparation .env" -ForegroundColor Cyan
