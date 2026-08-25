@@ -90,6 +90,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/shipping-rates', icon: DollarSign, label: 'Gestion tarifs', requiredRole: 'MANAGER', requiredPlan: 'STARTER' },
       { to: '/groupage', icon: Boxes, label: 'Groupage & Co-loading', requiredRole: 'MANAGER', requiredPlan: 'STARTER' },
       { to: '/optimisation-itineraire', icon: Route, label: 'Optimisation itinéraire', requiredPlan: 'STARTER' },
+      { to: '/optimization', icon: TrendingDown, label: 'Optimisation tarifaire', requiredRole: 'MANAGER' },
       { to: '/ship-tracker', icon: Ship, label: 'Ship Tracker', requiredPlan: 'STARTER' },
       { to: '/flight-radar', icon: Plane, label: 'Flight Radar', requiredPlan: 'STARTER' },
       { to: '/assurance-cargo', icon: Umbrella, label: 'Assurance cargo', requiredPlan: 'STARTER' },
