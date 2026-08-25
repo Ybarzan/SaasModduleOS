@@ -192,6 +192,7 @@ const WarehouseDetail = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-ink flex items-center gap-2">
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
               {warehouse.name}
               {warehouse.code && <span className="text-sm font-mono text-ink-soft">{warehouse.code}</span>}
             </h1>

@@ -54,6 +54,7 @@ const Simulation = () => {
         <div className="text-center mb-12">
           <p className="eyebrow mb-4">Calculateur Incoterms</p>
           <h1 className="text-4xl md:text-5xl font-extrabold text-ink mb-4">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Simulateur Incoterms <span className="gradient-text">2020</span>
           </h1>
           <p className="text-xl text-ink-soft max-w-3xl mx-auto">
