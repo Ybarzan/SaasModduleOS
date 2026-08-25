@@ -40,7 +40,7 @@ function StatusBarSync() {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
     StatusBar.setStyle({ style: isDark ? StatusBarStyle.Dark : StatusBarStyle.Light })
-    StatusBar.setBackgroundColor({ color: isDark ? '#05070d' : '#f4f6f9' })
+    StatusBar.setBackgroundColor({ color: isDark ? '#14100c' : '#e6e0d3' })
   }, [isDark])
   return null
 }

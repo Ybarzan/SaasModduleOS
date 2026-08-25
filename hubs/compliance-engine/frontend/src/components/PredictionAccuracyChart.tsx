@@ -26,14 +26,14 @@ interface PredictionAccuracyChartProps {
 // La résolution doit être refaite à chaque changement de thème (voir lib/theme.ts) sinon
 // les couleurs restent figées sur celles du thème actif au premier rendu.
 const resolveToken = (token: string): string => {
-  if (typeof window === 'undefined') return '#1B6B4F';
+  if (typeof window === 'undefined') return '#d9683f';
   const value = getComputedStyle(document.documentElement).getPropertyValue(token).trim();
-  return value ? `rgb(${value})` : '#1B6B4F';
+  return value ? `rgb(${value})` : '#d9683f';
 };
 
 const resolveColors = () => ({
   predictedColor: resolveToken('--c-accent'),
-  actualColor: '#2a78d6',
+  actualColor: resolveToken('--c-accent-2'),
   gridColor: resolveToken('--c-line'),
   inkSoftColor: resolveToken('--c-ink-soft'),
   surfaceColor: resolveToken('--c-surface'),

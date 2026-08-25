@@ -4,8 +4,8 @@
   "description": "Plateforme de gestion logistique — Incoterms, devis, expéditions, ERP",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#2563eb",
+  "background_color": "#14100c",
+  "theme_color": "#14100c",
   "orientation": "any",
   "icons": [
     {

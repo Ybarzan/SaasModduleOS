@@ -48,7 +48,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 const StatsCard = ({ icon: Icon, label, value, color, sub }: { icon: LucideIcon; label: string; value: string; color: string; sub?: string }) => (
-  <div className="bg-surface rounded-none shadow-sm border border-[#DEB887]/30 p-5 relative overflow-hidden">
+  <div className="bg-surface rounded-none shadow-sm border border-line p-5 relative overflow-hidden">
     <div className={`absolute left-0 top-0 bottom-0 w-1 ${color}`} />
     <div className="flex items-start justify-between pl-3">
       <div>
@@ -165,9 +165,9 @@ const OptimizationDashboard = () => {
 
   if (statsLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAF0E6]">
+      <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin mx-auto text-[#C04000] mb-4" />
+          <Loader2 className="h-12 w-12 animate-spin mx-auto text-accent mb-4" />
           <div className="text-xl text-ink-soft">Chargement du dashboard d'optimisation...</div>
         </div>
       </div>
@@ -175,10 +175,10 @@ const OptimizationDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF0E6] py-10">
+    <div className="min-h-screen bg-bg py-10">
       <div className="container mx-auto px-4 max-w-7xl">
         {toastMessage && (
-          <div className="fixed top-20 right-4 z-50 bg-[#556B2F] text-white px-4 py-3 rounded-none shadow-lg flex items-center gap-2 animate-fade-in">
+          <div className="fixed top-20 right-4 z-50 bg-success text-white px-4 py-3 rounded-none shadow-lg flex items-center gap-2 animate-fade-in">
             <CheckCircle size={16} />
             <span className="text-sm font-medium">{toastMessage}</span>
           </div>
@@ -187,9 +187,9 @@ const OptimizationDashboard = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-[#1a1a2e] flex items-center gap-3">
-              <div className="p-2 bg-[#C04000]/10 rounded-none">
-                <TrendingDown size={28} className="text-[#C04000]" />
+            <h1 className="text-3xl font-bold text-ink flex items-center gap-3">
+              <div className="p-2 bg-accent/10 rounded-none">
+                <TrendingDown size={28} className="text-accent" />
               </div>
               <span className="text-accent font-normal" aria-hidden="true">:: </span>
               Moteur d'optimisation tarifaire
@@ -199,7 +199,7 @@ const OptimizationDashboard = () => {
           <button
             onClick={() => analyzeMutation.mutate()}
             disabled={analyzeMutation.isPending}
-            className="bg-[#C04000] text-white px-6 py-3 rounded-none hover:bg-[#A03000] transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50"
+            className="bg-accent text-white px-6 py-3 rounded-none hover:bg-accent-strong transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50"
           >
             {analyzeMutation.isPending ? (
               <Loader2 size={18} className="animate-spin" />
@@ -216,36 +216,36 @@ const OptimizationDashboard = () => {
             icon={Route}
             label="Routes analysées"
             value={String(stats?.totalRoutes ?? 0)}
-            color="bg-[#C04000]"
+            color="bg-accent"
             sub={`${stats?.totalOptimizations ?? 0} optimisations`}
           />
           <StatsCard
             icon={TrendingDown}
             label="Économies totales"
             value={formatCurrency(stats?.totalSavings ?? 0)}
-            color="bg-[#556B2F]"
+            color="bg-success"
             sub={`${formatCurrency(stats?.acceptedSavings ?? 0)} accept\u00e9es`}
           />
           <StatsCard
             icon={BarChart3}
             label="Confiance moyenne"
             value={`${((stats?.avgConfidence ?? 0) * 100).toFixed(0)}%`}
-            color="bg-[#DEB887]"
+            color="bg-accent-2"
             sub={`${stats?.pendingOptimizations ?? 0} en attente`}
           />
           <StatsCard
             icon={Package}
             label="Consolidations trouvées"
             value={String(stats?.totalConsolidationOpportunities ?? 0)}
-            color="bg-[#556B2F]"
+            color="bg-success"
             sub={`${formatCurrency(stats?.consolidationSavings ?? 0)} \u00e9conomis\u00e9es`}
           />
         </div>
 
         {/* Prediction Form */}
-        <div className="bg-surface rounded-none shadow-sm border border-[#DEB887]/30 p-6 mb-8">
-          <h2 className="text-lg font-semibold text-[#1a1a2e] flex items-center gap-2 mb-4">
-            <Search size={20} className="text-[#C04000]" />
+        <div className="bg-surface rounded-none shadow-sm border border-line p-6 mb-8">
+          <h2 className="text-lg font-semibold text-ink flex items-center gap-2 mb-4">
+            <Search size={20} className="text-accent" />
             Prédiction de tarif
           </h2>
           <form onSubmit={handlePredict} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -255,7 +255,7 @@ const OptimizationDashboard = () => {
                 type="text"
                 value={predictForm.origin}
                 onChange={(e) => setPredictForm({ ...predictForm, origin: e.target.value })}
-                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
+                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
                 placeholder="Ex: FR"
                 maxLength={2}
               />
@@ -266,7 +266,7 @@ const OptimizationDashboard = () => {
                 type="text"
                 value={predictForm.destination}
                 onChange={(e) => setPredictForm({ ...predictForm, destination: e.target.value })}
-                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
+                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
                 placeholder="Ex: DE"
                 maxLength={2}
               />
@@ -276,7 +276,7 @@ const OptimizationDashboard = () => {
               <select
                 value={predictForm.mode}
                 onChange={(e) => setPredictForm({ ...predictForm, mode: e.target.value })}
-                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
+                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
               >
                 <option value="">Tous</option>
                 <option value="SEA">Maritime</option>
@@ -292,7 +292,7 @@ const OptimizationDashboard = () => {
                 min="0"
                 value={predictForm.weight}
                 onChange={(e) => setPredictForm({ ...predictForm, weight: e.target.value })}
-                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
+                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
                 placeholder="Ex: 500"
               />
             </div>
@@ -304,7 +304,7 @@ const OptimizationDashboard = () => {
                 min="0"
                 value={predictForm.volume}
                 onChange={(e) => setPredictForm({ ...predictForm, volume: e.target.value })}
-                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
+                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
                 placeholder="Ex: 2.5"
               />
             </div>
@@ -312,7 +312,7 @@ const OptimizationDashboard = () => {
               <button
                 type="submit"
                 disabled={predictMutation.isPending}
-                className="bg-[#C04000] text-white px-6 py-2.5 rounded-none hover:bg-[#A03000] transition-colors flex items-center gap-2 text-sm font-medium disabled:opacity-50"
+                className="bg-accent text-white px-6 py-2.5 rounded-none hover:bg-accent-strong transition-colors flex items-center gap-2 text-sm font-medium disabled:opacity-50"
               >
                 {predictMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
                 Prédire le tarif
@@ -322,15 +322,15 @@ const OptimizationDashboard = () => {
 
           {/* Predict Result */}
           {predictResult && (
-            <div className="mt-6 p-5 bg-[#FAF0E6]/50 rounded-none border border-[#DEB887]/40">
-              <h3 className="font-semibold text-[#1a1a2e] mb-3 flex items-center gap-2">
-                <TrendingDown size={16} className="text-[#C04000]" />
+            <div className="mt-6 p-5 bg-bg/50 rounded-none border border-line">
+              <h3 className="font-semibold text-ink mb-3 flex items-center gap-2">
+                <TrendingDown size={16} className="text-accent" />
                 Résultat de la prédiction
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-ink-soft">Coût prédit :</span>
-                  <p className="text-lg font-bold text-[#C04000]">{formatCurrency(predictResult.predictedCost || 0)}</p>
+                  <p className="text-lg font-bold text-accent">{formatCurrency(predictResult.predictedCost || 0)}</p>
                 </div>
                 <div>
                   <span className="text-ink-soft">Transporteur :</span>
@@ -350,14 +350,14 @@ const OptimizationDashboard = () => {
         </div>
 
         {/* Lane Analysis Table */}
-        <div className="bg-surface rounded-none shadow-sm border border-[#DEB887]/30 p-6 mb-8">
-          <h2 className="text-lg font-semibold text-[#1a1a2e] flex items-center gap-2 mb-4">
-            <Truck size={20} className="text-[#C04000]" />
+        <div className="bg-surface rounded-none shadow-sm border border-line p-6 mb-8">
+          <h2 className="text-lg font-semibold text-ink flex items-center gap-2 mb-4">
+            <Truck size={20} className="text-accent" />
             Tableau de bord des lanes
           </h2>
           {lanesLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-[#C04000]" />
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
             </div>
           ) : laneAnalysis.length === 0 ? (
             <div className="text-center py-8 text-ink-soft">
@@ -380,7 +380,7 @@ const OptimizationDashboard = () => {
                 </thead>
                 <tbody>
                   {laneAnalysis.map((lane: LaneAnalysis, idx: number) => (
-                    <tr key={`${lane.origin}-${lane.destination}`} className={`border-b border-line ${idx % 2 === 0 ? 'bg-bg/50' : 'bg-surface'} hover:bg-[#FAF0E6]/30 transition-colors`}>
+                    <tr key={`${lane.origin}-${lane.destination}`} className={`border-b border-line ${idx % 2 === 0 ? 'bg-bg/50' : 'bg-surface'} hover:bg-bg/30 transition-colors`}>
                       <td className="py-3 px-4 font-medium text-ink">
                         <span className="flex items-center gap-2">
                           {getFlag(lane.origin)} {lane.origin}
@@ -390,10 +390,10 @@ const OptimizationDashboard = () => {
                       </td>
                       <td className="py-3 px-4 text-center text-ink">{lane.totalShipments}</td>
                       <td className="py-3 px-4 text-center text-ink">{lane.bestCarrier}</td>
-                      <td className="py-3 px-4 text-right font-medium text-[#556B2F]">{formatCurrency(lane.bestCost)}</td>
+                      <td className="py-3 px-4 text-right font-medium text-success">{formatCurrency(lane.bestCost)}</td>
                       <td className="py-3 px-4 text-right text-ink-soft">{formatCurrency(lane.worstCost)}</td>
                       <td className="py-3 px-4 text-right">
-                        <span className="text-[#C04000] font-medium flex items-center justify-end gap-1">
+                        <span className="text-accent font-medium flex items-center justify-end gap-1">
                           <TrendingDown size={14} />
                           {formatCurrency(lane.potentialSavings)}
                         </span>
@@ -412,14 +412,14 @@ const OptimizationDashboard = () => {
         </div>
 
         {/* Recommendations */}
-        <div className="bg-surface rounded-none shadow-sm border border-[#DEB887]/30 p-6 mb-8">
-          <h2 className="text-lg font-semibold text-[#1a1a2e] flex items-center gap-2 mb-4">
-            <Zap size={20} className="text-[#C04000]" />
+        <div className="bg-surface rounded-none shadow-sm border border-line p-6 mb-8">
+          <h2 className="text-lg font-semibold text-ink flex items-center gap-2 mb-4">
+            <Zap size={20} className="text-accent" />
             Recommandations
           </h2>
           {recsLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-[#C04000]" />
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
             </div>
           ) : recommendations.length === 0 ? (
             <div className="text-center py-8 text-ink-soft">
@@ -429,10 +429,10 @@ const OptimizationDashboard = () => {
           ) : (
             <div className="space-y-3">
               {recommendations.map((rec: RateOptimization) => (
-                <div key={rec.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-none border border-line hover:border-[#DEB887]/60 bg-[#FAF0E6]/20 transition-colors gap-3">
+                <div key={rec.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-none border border-line hover:border-accent/60 bg-bg/20 transition-colors gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
-                      <span className="font-medium text-[#1a1a2e] flex items-center gap-1.5">
+                      <span className="font-medium text-ink flex items-center gap-1.5">
                         {getFlag(rec.origin)} {rec.origin}
                         <span className="text-ink-soft">→</span>
                         {getFlag(rec.destination)} {rec.destination}
@@ -447,7 +447,7 @@ const OptimizationDashboard = () => {
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <p className="text-lg font-bold text-[#C04000]">{formatCurrency(rec.predictedCost)}</p>
+                      <p className="text-lg font-bold text-accent">{formatCurrency(rec.predictedCost)}</p>
                       <p className="text-xs text-success flex items-center gap-1 justify-end">
                         <TrendingDown size={12} />
                         -{rec.savingsPercent.toFixed(0)}% ({formatCurrency(rec.savingsEstimate)})
@@ -457,7 +457,7 @@ const OptimizationDashboard = () => {
                       <button
                         onClick={() => acceptOptMutation.mutate(rec.id)}
                         disabled={acceptOptMutation.isPending}
-                        className="bg-[#556B2F] text-white px-4 py-2 rounded-none hover:bg-[#445820] transition-colors text-sm font-medium disabled:opacity-50"
+                        className="bg-success text-white px-4 py-2 rounded-none hover:bg-success/90 transition-colors text-sm font-medium disabled:opacity-50"
                       >
                         Accepter
                       </button>
@@ -470,16 +470,16 @@ const OptimizationDashboard = () => {
         </div>
 
         {/* Consolidation */}
-        <div className="bg-surface rounded-none shadow-sm border border-[#DEB887]/30 p-6">
+        <div className="bg-surface rounded-none shadow-sm border border-line p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-[#1a1a2e] flex items-center gap-2">
-              <Package size={20} className="text-[#C04000]" />
+            <h2 className="text-lg font-semibold text-ink flex items-center gap-2">
+              <Package size={20} className="text-accent" />
               Consolidation d'expéditions
             </h2>
             <button
               onClick={() => findConsolMutation.mutate()}
               disabled={findConsolMutation.isPending}
-              className="bg-[#556B2F] text-white px-4 py-2 rounded-none hover:bg-[#445820] transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+              className="bg-success text-white px-4 py-2 rounded-none hover:bg-success/90 transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
             >
               {findConsolMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Package size={14} />}
               Rechercher
@@ -487,7 +487,7 @@ const OptimizationDashboard = () => {
           </div>
           {consolLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-[#C04000]" />
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
             </div>
           ) : consolidations.length === 0 ? (
             <div className="text-center py-8 text-ink-soft">
@@ -497,11 +497,11 @@ const OptimizationDashboard = () => {
           ) : (
             <div className="space-y-3">
               {consolidations.map((consol: ConsolidationOpportunity) => (
-                <div key={consol.id} className="p-4 rounded-none border border-line hover:border-[#DEB887]/60 bg-[#FAF0E6]/20 transition-colors">
+                <div key={consol.id} className="p-4 rounded-none border border-line hover:border-accent/60 bg-bg/20 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-3 mb-1">
-                        <span className="font-medium text-[#1a1a2e] flex items-center gap-1.5">
+                        <span className="font-medium text-ink flex items-center gap-1.5">
                           {getFlag(consol.origin)} {consol.origin}
                           <span className="text-ink-soft">→</span>
                           {getFlag(consol.destination)} {consol.destination}
@@ -517,7 +517,7 @@ const OptimizationDashboard = () => {
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="text-lg font-bold text-[#556B2F]">{formatCurrency(consol.consolidatedCost)}</p>
+                        <p className="text-lg font-bold text-success">{formatCurrency(consol.consolidatedCost)}</p>
                         <p className="text-xs text-ink-soft line-through">{formatCurrency(consol.combinedCost)}</p>
                         <p className="text-xs text-success font-medium flex items-center gap-1 justify-end">
                           <TrendingDown size={12} />
@@ -528,7 +528,7 @@ const OptimizationDashboard = () => {
                         <button
                           onClick={() => acceptConsolMutation.mutate(consol.id)}
                           disabled={acceptConsolMutation.isPending}
-                          className="bg-[#556B2F] text-white px-4 py-2 rounded-none hover:bg-[#445820] transition-colors text-sm font-medium disabled:opacity-50"
+                          className="bg-success text-white px-4 py-2 rounded-none hover:bg-success/90 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Accepter
                         </button>
