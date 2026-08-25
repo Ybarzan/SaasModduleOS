@@ -140,7 +140,7 @@ const SharedLandedCost = () => {
               <span className="font-bold">{fmt(data.totalLandedCost)} {data.currency}</span>
             </div>
             {data.unitCount > 1 && (
-              <div className="flex justify-between py-2 text-sm bg-accent-soft -mx-6 px-6 rounded-b-xl">
+              <div className="flex justify-between py-2 text-sm bg-accent-soft -mx-6 px-6 rounded-none">
                 <span className="font-medium text-accent-strong">Coût par unité</span>
                 <span className="font-bold text-accent-strong">{fmt(data.totalLandedCostPerUnit)} {data.currency}</span>
               </div>
