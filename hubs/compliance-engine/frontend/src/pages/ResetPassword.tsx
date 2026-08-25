@@ -51,17 +51,20 @@ const ResetPassword = () => {
   if (success) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-surface rounded-lg shadow-lg p-8 text-center">
+        <div className="max-w-md w-full bg-surface rounded-none shadow-lg p-8 text-center">
           <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-success" />
           </div>
-          <h2 className="text-2xl font-bold text-ink mb-2">Mot de passe réinitialisé</h2>
+          <h2 className="text-2xl font-bold text-ink mb-2">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Mot de passe réinitialisé
+          </h2>
           <p className="text-ink-soft mb-6">
             Votre mot de passe a été mis à jour. Vous pouvez maintenant vous connecter.
           </p>
           <Link
             to="/login"
-            className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-lg font-semibold hover:bg-accent-strong transition-colors"
+            className="inline-flex items-center gap-2 bg-accent text-white px-6 py-3 rounded-none font-semibold hover:bg-accent-strong transition-colors"
           >
             Se connecter
           </Link>
@@ -72,8 +75,11 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-surface rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-center mb-2">Nouveau mot de passe</h2>
+      <div className="max-w-md w-full bg-surface rounded-none shadow-lg p-8">
+        <h2 className="text-3xl font-bold text-center mb-2">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Nouveau mot de passe
+        </h2>
         <p className="text-ink-soft text-center mb-8">
           Choisissez un nouveau mot de passe pour votre compte
         </p>
@@ -89,7 +95,7 @@ const ResetPassword = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
                 autoComplete="new-password"
-                className="w-full pl-10 pr-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 required
                 minLength={8}
               />
@@ -106,7 +112,7 @@ const ResetPassword = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
                 autoComplete="new-password"
-                className="w-full pl-10 pr-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 required
                 minLength={8}
               />
@@ -116,7 +122,7 @@ const ResetPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent-strong disabled:opacity-50 transition-colors"
+            className="w-full bg-accent text-white py-3 rounded-none font-semibold hover:bg-accent-strong disabled:opacity-50 transition-colors"
           >
             {loading ? 'Réinitialisation...' : 'Réinitialiser le mot de passe'}
           </button>

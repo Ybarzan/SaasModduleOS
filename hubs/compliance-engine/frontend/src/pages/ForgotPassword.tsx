@@ -29,11 +29,14 @@ const ForgotPassword = () => {
   if (sent) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-        <div className="max-w-md w-full bg-surface rounded-lg shadow-lg p-8 text-center">
+        <div className="max-w-md w-full bg-surface rounded-none shadow-lg p-8 text-center">
           <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-8 h-8 text-success" />
           </div>
-          <h2 className="text-2xl font-bold text-ink mb-2">Email envoyé</h2>
+          <h2 className="text-2xl font-bold text-ink mb-2">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Email envoyé
+          </h2>
           <p className="text-ink-soft mb-6">
             Si un compte existe avec l'adresse <strong>{email}</strong>, vous recevrez un lien de réinitialisation.
           </p>
@@ -51,8 +54,11 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen bg-bg flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-surface rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-center mb-2">Mot de passe oublié</h2>
+      <div className="max-w-md w-full bg-surface rounded-none shadow-lg p-8">
+        <h2 className="text-3xl font-bold text-center mb-2">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Mot de passe oublié
+        </h2>
         <p className="text-ink-soft text-center mb-8">
           Entrez votre email pour recevoir un lien de réinitialisation
         </p>
@@ -68,7 +74,7 @@ const ForgotPassword = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="vous@entreprise.com"
                 autoComplete="email"
-                className="w-full pl-10 pr-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 required
               />
             </div>
@@ -77,7 +83,7 @@ const ForgotPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent-strong disabled:opacity-50 transition-colors"
+            className="w-full bg-accent text-white py-3 rounded-none font-semibold hover:bg-accent-strong disabled:opacity-50 transition-colors"
           >
             {loading ? 'Envoi...' : 'Envoyer le lien'}
           </button>

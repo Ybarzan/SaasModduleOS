@@ -17,7 +17,7 @@ export default function NotFound() {
         noindex
       />
       <div className="container mx-auto px-4 py-20 max-w-2xl text-center">
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-accent-soft border border-accent-soft mb-8">
+        <div className="inline-flex items-center justify-center w-24 h-24 rounded-none bg-accent-soft border border-accent-soft mb-8">
           <Compass size={44} className="text-accent" />
         </div>
         <div className="text-7xl font-extrabold text-line mb-4">404</div>

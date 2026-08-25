@@ -78,7 +78,7 @@ const Register = () => {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center px-4">
         <Seo title="Bienvenue" description="Votre compte IncoKalk a été créé avec succès." path="/register" noindex />
-        <div className="max-w-md w-full bg-surface rounded-lg shadow-lg p-8 text-center">
+        <div className="max-w-md w-full bg-surface rounded-none shadow-lg p-8 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/10 mb-6">
             <CheckCircle2 size={32} className="text-success" />
           </div>
@@ -88,7 +88,7 @@ const Register = () => {
           </p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent-strong transition-colors inline-flex items-center justify-center gap-2"
+            className="w-full bg-accent text-white py-3 rounded-none font-semibold hover:bg-accent-strong transition-colors inline-flex items-center justify-center gap-2"
           >
             Continuer vers le tableau de bord
             <ArrowRight size={18} />
@@ -105,11 +105,18 @@ const Register = () => {
         description="Créez votre compte IncoKalk gratuitement, sans carte bancaire. Simulez vos coûts logistiques et comparez les transporteurs dès aujourd'hui."
         path="/register"
       />
-      <div className="max-w-md w-full bg-surface rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-center mb-8">Inscription</h2>
+      <div className="relative max-w-md w-full bg-surface rounded-none shadow-lg p-8">
+        <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+        <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-br" aria-hidden="true" />
+        <h2 className="text-3xl font-bold text-center mb-8">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Inscription
+        </h2>
 
         {errorMsg && (
-          <div className="mb-4 p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
+          <div className="mb-4 p-3 bg-danger/10 border border-danger/20 rounded-none text-danger text-sm">
             {errorMsg}
           </div>
         )}
@@ -123,7 +130,7 @@ const Register = () => {
               onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               placeholder="Jean Dupont"
               autoComplete="name"
-              className="w-full px-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full px-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent"
               required
             />
           </div>
@@ -135,7 +142,7 @@ const Register = () => {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               autoComplete="email"
-              className="w-full px-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full px-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent"
               required
             />
           </div>
@@ -147,7 +154,7 @@ const Register = () => {
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               autoComplete="new-password"
-              className="w-full px-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full px-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent"
               required
               minLength={8}
             />
@@ -160,7 +167,7 @@ const Register = () => {
               value={formData.company}
               onChange={(e) => setFormData({ ...formData, company: e.target.value })}
               autoComplete="organization"
-              className="w-full px-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full px-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent"
             />
           </div>
 
@@ -171,7 +178,7 @@ const Register = () => {
               value={formData.referralCode}
               onChange={(e) => setFormData({ ...formData, referralCode: e.target.value.toUpperCase() })}
               placeholder="Ex : ABCD1234"
-              className="w-full px-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent uppercase"
+              className="w-full px-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent uppercase"
             />
             {formData.referralCode && (
               <p className="mt-2 flex items-center gap-1.5 text-sm text-success">
@@ -184,7 +191,7 @@ const Register = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent-strong disabled:opacity-50 transition-colors"
+            className="w-full bg-accent text-white py-3 rounded-none font-semibold hover:bg-accent-strong disabled:opacity-50 transition-colors"
           >
             {loading ? "Inscription..." : "S'inscrire"}
           </button>

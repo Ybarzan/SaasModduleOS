@@ -35,7 +35,7 @@ export default function MisclassificationCostCalculator() {
           </p>
         </div>
 
-        <div className="bg-surface rounded-2xl border border-line p-6 sm:p-8 mb-8">
+        <div className="bg-surface rounded-none border border-line p-6 sm:p-8 mb-8">
           <h2 className="text-lg font-bold text-ink mb-6 flex items-center gap-2">
             <Calculator size={20} className="text-accent" />
             Estimez votre exposition
@@ -51,7 +51,7 @@ export default function MisclassificationCostCalculator() {
                 min={0}
                 value={shipmentsPerMonth}
                 onChange={(e) => setShipmentsPerMonth(Math.max(0, Number(e.target.value)))}
-                className="w-full px-4 py-2.5 border border-line rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface text-ink"
+                className="w-full px-4 py-2.5 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface text-ink"
               />
             </div>
             <div>
@@ -63,7 +63,7 @@ export default function MisclassificationCostCalculator() {
                 min={0}
                 value={avgValue}
                 onChange={(e) => setAvgValue(Math.max(0, Number(e.target.value)))}
-                className="w-full px-4 py-2.5 border border-line rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface text-ink"
+                className="w-full px-4 py-2.5 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface text-ink"
               />
             </div>
             <div>
@@ -76,23 +76,23 @@ export default function MisclassificationCostCalculator() {
                 step={0.5}
                 value={dutyGapPoints}
                 onChange={(e) => setDutyGapPoints(Math.max(0, Number(e.target.value)))}
-                className="w-full px-4 py-2.5 border border-line rounded-xl focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface text-ink"
+                className="w-full px-4 py-2.5 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm bg-surface text-ink"
               />
             </div>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4 mb-6">
-            <div className="bg-accent-soft rounded-xl p-5 text-center">
+            <div className="bg-accent-soft rounded-none p-5 text-center">
               <p className="text-xs font-semibold text-ink-soft uppercase tracking-wide mb-1">Coût mensuel estimé</p>
               <p className="text-3xl font-extrabold text-accent-strong">{formatEur(monthlyCost)}</p>
             </div>
-            <div className="bg-accent-soft rounded-xl p-5 text-center">
+            <div className="bg-accent-soft rounded-none p-5 text-center">
               <p className="text-xs font-semibold text-ink-soft uppercase tracking-wide mb-1">Coût annuel estimé</p>
               <p className="text-3xl font-extrabold text-accent-strong">{formatEur(annualCost)}</p>
             </div>
           </div>
 
-          <div className="flex items-start gap-3 text-sm text-ink-soft bg-warning/10 border border-warning/20 rounded-xl p-4">
+          <div className="flex items-start gap-3 text-sm text-ink-soft bg-warning/10 border border-warning/20 rounded-none p-4">
             <Info size={16} className="text-warning shrink-0 mt-0.5" />
             <p>
               Estimation basée sur les valeurs que vous saisissez, pas sur un taux moyen du marché —
@@ -103,7 +103,7 @@ export default function MisclassificationCostCalculator() {
           </div>
         </div>
 
-        <div className="bg-surface border border-line rounded-2xl p-6 sm:p-8 mb-8 flex items-start gap-4">
+        <div className="bg-surface border border-line rounded-none p-6 sm:p-8 mb-8 flex items-start gap-4">
           <AlertTriangle size={22} className="text-warning shrink-0 mt-0.5" />
           <div>
             <h2 className="font-bold text-ink mb-1">Ce n'est pas qu'un manque à gagner</h2>
@@ -116,7 +116,7 @@ export default function MisclassificationCostCalculator() {
           </div>
         </div>
 
-        <div className="text-center bg-surface border border-line rounded-2xl p-8">
+        <div className="text-center bg-surface border border-line rounded-none p-8">
           <h2 className="text-xl font-bold text-ink mb-2">Vérifiez votre classification HS</h2>
           <p className="text-ink-soft mb-6">
             IncoKalk classe vos produits, calcule les droits associés et alerte en cas d'écart avec
@@ -129,7 +129,7 @@ export default function MisclassificationCostCalculator() {
             </Link>
             <Link
               to="/register"
-              className="px-6 py-3 rounded-lg font-semibold border border-line text-ink hover:bg-surface-2 transition-colors inline-flex items-center justify-center gap-2"
+              className="px-6 py-3 rounded-none font-semibold border border-line text-ink hover:bg-surface-2 transition-colors inline-flex items-center justify-center gap-2"
             >
               Créer un compte gratuit
             </Link>

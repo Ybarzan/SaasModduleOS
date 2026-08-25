@@ -54,7 +54,10 @@ const ClientShipmentDetail = () => {
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-ink font-mono">{shipment.orderNumber}</h1>
+              <h1 className="text-xl font-bold text-ink font-mono">
+                <span className="text-accent font-normal" aria-hidden="true">:: </span>
+                {shipment.orderNumber}
+              </h1>
               <div className="flex items-center gap-2 mt-1">
                 <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${statusCfg.color}`}>
                   <StatusIcon className="w-3 h-3 inline mr-1" />
@@ -79,7 +82,7 @@ const ClientShipmentDetail = () => {
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
         {/* Route Card */}
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <h2 className="text-sm font-semibold text-ink mb-3 uppercase tracking-wide">Itinéraire</h2>
           <div className="flex items-center justify-between">
             <div className="flex-1">
@@ -102,11 +105,11 @@ const ClientShipmentDetail = () => {
 
         {/* Cost Summary */}
         {displayCost && (
-          <div className="bg-surface rounded-xl border border-line p-5">
+          <div className="bg-surface rounded-none border border-line p-5">
             <h2 className="text-sm font-semibold text-ink mb-3 uppercase tracking-wide">Coût</h2>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-none bg-success/10 flex items-center justify-center">
                   <DollarSign className="w-5 h-5 text-success" />
                 </div>
                 <div>
@@ -129,7 +132,7 @@ const ClientShipmentDetail = () => {
         )}
 
         {/* Cargo Info */}
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <h2 className="text-sm font-semibold text-ink mb-3 uppercase tracking-wide">Marchandise</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {shipment.goodsDescription && (
@@ -162,7 +165,7 @@ const ClientShipmentDetail = () => {
         </div>
 
         {/* Documents Section */}
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <h2 className="text-sm font-semibold text-ink mb-3 uppercase tracking-wide">Documents</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[
@@ -176,7 +179,7 @@ const ClientShipmentDetail = () => {
                   downloadAuthedFile(`/v1/client/shipments/${id}/documents/${doc.type}`, `${doc.type}-${shipment.orderNumber}.pdf`)
                     .catch(() => {});
                 }}
-                className="flex items-center gap-2 p-3 rounded-lg border border-line hover:border-accent/40 hover:bg-accent-soft transition-colors text-left"
+                className="flex items-center gap-2 p-3 rounded-none border border-line hover:border-accent/40 hover:bg-accent-soft transition-colors text-left"
               >
                 <Download className="w-4 h-4 text-accent flex-shrink-0" />
                 <span className="text-sm text-ink">{doc.label}</span>
@@ -186,7 +189,7 @@ const ClientShipmentDetail = () => {
         </div>
 
         {/* Tracking Timeline */}
-        <div className="bg-surface rounded-xl border border-line p-5">
+        <div className="bg-surface rounded-none border border-line p-5">
           <h2 className="text-sm font-semibold text-ink mb-4 uppercase tracking-wide">Suivi en temps réel</h2>
           {trackingEvents.length === 0 ? (
             <div className="text-center py-8">

@@ -60,9 +60,9 @@ const USE_CASES: UseCase[] = [
 function UseCaseCard({ useCase }: { useCase: UseCase }) {
   const Icon = useCase.icon;
   return (
-    <div className="bg-surface border border-line rounded-2xl p-6 sm:p-8">
+    <div className="bg-surface border border-line rounded-none p-6 sm:p-8">
       <div className="flex items-start gap-4 mb-4">
-        <span className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent-soft text-accent-strong shrink-0">
+        <span className="inline-flex items-center justify-center w-12 h-12 rounded-none bg-accent-soft text-accent-strong shrink-0">
           <Icon size={22} />
         </span>
         <div>
@@ -111,7 +111,7 @@ export default function UseCases() {
           </p>
         </div>
 
-        <div className="bg-accent-soft border border-accent/20 rounded-2xl p-5 mb-10 flex items-start gap-3 max-w-3xl mx-auto">
+        <div className="bg-accent-soft border border-accent/20 rounded-none p-5 mb-10 flex items-start gap-3 max-w-3xl mx-auto">
           <Info size={18} className="text-accent-strong mt-0.5 shrink-0" />
           <p className="text-sm text-ink">
             Sophie, Marc et Karim sont des profils type, pas des clients nommés — ils illustrent des
@@ -125,7 +125,7 @@ export default function UseCases() {
           ))}
         </div>
 
-        <div className="text-center bg-surface border border-line rounded-2xl p-8">
+        <div className="text-center bg-surface border border-line rounded-none p-8">
           <h2 className="text-xl font-bold text-ink mb-2">Quel profil vous ressemble le plus ?</h2>
           <p className="text-ink-soft mb-6">
             Découvrez les 7 Hubs métier d'IncoKalk et le plan qui correspond à votre situation.
@@ -137,7 +137,7 @@ export default function UseCases() {
             </Link>
             <Link
               to="/register"
-              className="px-6 py-3 rounded-lg font-semibold border border-line text-ink hover:bg-surface-2 transition-colors inline-flex items-center justify-center gap-2"
+              className="px-6 py-3 rounded-none font-semibold border border-line text-ink hover:bg-surface-2 transition-colors inline-flex items-center justify-center gap-2"
             >
               Essayer gratuitement
             </Link>

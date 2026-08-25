@@ -53,7 +53,7 @@ const FAQ_SCHEMA = {
 function FaqRow({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-line rounded-2xl bg-surface overflow-hidden">
+    <div className="border border-line rounded-none bg-surface overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -87,6 +87,7 @@ export default function Faq() {
 
         <div className="text-center my-10">
           <h1 className="text-4xl font-extrabold text-ink mb-4">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Questions <span className="text-accent">fréquentes</span>
           </h1>
           <p className="text-lg text-ink-soft max-w-xl mx-auto">
@@ -100,7 +101,7 @@ export default function Faq() {
           ))}
         </div>
 
-        <div className="mt-12 text-center bg-surface border border-line rounded-2xl p-8">
+        <div className="mt-12 text-center bg-surface border border-line rounded-none p-8">
           <h2 className="text-xl font-bold text-ink mb-2">Une autre question ?</h2>
           <p className="text-ink-soft mb-6">
             Consultez nos <Link to="/pricing" className="text-accent font-semibold hover:underline">plans et tarifs</Link>,

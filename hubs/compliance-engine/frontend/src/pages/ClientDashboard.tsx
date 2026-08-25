@@ -32,11 +32,14 @@ const ClientDashboard = () => {
       <div className="bg-surface border-b border-line">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-accent-soft rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-accent-soft rounded-none flex items-center justify-center">
               <Package className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <h1 className="font-bold text-ink">Mon Suivi</h1>
+              <h1 className="font-bold text-ink">
+                <span className="text-accent font-normal" aria-hidden="true">:: </span>
+                Mon Suivi
+              </h1>
               <p className="text-xs text-ink-soft">{client?.fullName || client?.email}</p>
             </div>
           </div>
@@ -52,17 +55,29 @@ const ClientDashboard = () => {
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
         {/* KPI Cards */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-surface rounded-xl border border-line p-4 text-center">
+          <div className="relative bg-surface rounded-none border border-line p-4 text-center">
+            <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+            <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-br" aria-hidden="true" />
             <Package className="w-5 h-5 text-ink-soft mx-auto mb-1" />
             <p className="text-2xl font-bold text-ink">{totalShipments}</p>
             <p className="text-xs text-ink-soft">Total expéditions</p>
           </div>
-          <div className="bg-surface rounded-xl border border-line p-4 text-center">
+          <div className="relative bg-surface rounded-none border border-line p-4 text-center">
+            <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+            <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-br" aria-hidden="true" />
             <Truck className="w-5 h-5 text-warning mx-auto mb-1" />
             <p className="text-2xl font-bold text-warning">{inTransit}</p>
             <p className="text-xs text-ink-soft">En transit</p>
           </div>
-          <div className="bg-surface rounded-xl border border-line p-4 text-center">
+          <div className="relative bg-surface rounded-none border border-line p-4 text-center">
+            <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+            <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+            <span className="hud-corner hud-corner-br" aria-hidden="true" />
             <CheckCircle className="w-5 h-5 text-success mx-auto mb-1" />
             <p className="text-2xl font-bold text-success">{delivered}</p>
             <p className="text-xs text-ink-soft">Livrées</p>
@@ -81,7 +96,7 @@ const ClientDashboard = () => {
         {isLoading ? (
           <div className="text-center py-12 text-ink-soft">Chargement...</div>
         ) : shipments.length === 0 ? (
-          <div className="text-center py-12 bg-surface rounded-xl border border-line">
+          <div className="text-center py-12 bg-surface rounded-none border border-line">
             <Package className="w-12 h-12 text-ink-soft mx-auto mb-3" />
             <p className="text-ink-soft">Aucune expédition partagée pour le moment</p>
           </div>
@@ -94,11 +109,11 @@ const ClientDashboard = () => {
                 <Link
                   key={shipment.id}
                   to={`/client/shipments/${shipment.id}`}
-                  className="block bg-surface rounded-xl border border-line p-4 hover:shadow-md hover:border-accent/30 transition-all"
+                  className="block bg-surface rounded-none border border-line p-4 hover:shadow-md hover:border-accent/30 transition-all"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4 flex-1">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${statusCfg.color}`}>
+                      <div className={`w-10 h-10 rounded-none flex items-center justify-center ${statusCfg.color}`}>
                         <StatusIcon className="w-5 h-5" />
                       </div>
                       <div className="flex-1 min-w-0">

@@ -286,10 +286,10 @@ export default function Pricing() {
           </Link>
 
           {/* Billing cycle toggle */}
-          <div className="inline-flex bg-surface border border-line rounded-xl p-1 mt-8">
+          <div className="inline-flex bg-surface border border-line rounded-none p-1 mt-8">
             <button
               onClick={() => setCycle('monthly')}
-              className={`px-5 py-2 text-sm font-semibold rounded-lg transition-colors ${
+              className={`px-5 py-2 text-sm font-semibold rounded-none transition-colors ${
                 cycle === 'monthly'
                   ? 'bg-ink text-white'
                   : 'text-ink-soft hover:bg-bg'
@@ -299,7 +299,7 @@ export default function Pricing() {
             </button>
             <button
               onClick={() => setCycle('annual')}
-              className={`px-5 py-2 text-sm font-semibold rounded-lg transition-colors inline-flex items-center gap-2 ${
+              className={`px-5 py-2 text-sm font-semibold rounded-none transition-colors inline-flex items-center gap-2 ${
                 cycle === 'annual'
                   ? 'bg-ink text-white'
                   : 'text-ink-soft hover:bg-bg'
@@ -320,7 +320,7 @@ export default function Pricing() {
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="border border-line rounded-lg px-2 py-1 text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
+                className="border border-line rounded-none px-2 py-1 text-sm bg-surface text-ink focus:ring-2 focus:ring-accent focus:border-transparent"
               >
                 {CURRENCY_OPTIONS.filter((c) => c.code === 'EUR' || fxData?.rates?.[c.code]).map((c) => (
                   <option key={c.code} value={c.code}>{c.code}</option>
@@ -343,12 +343,20 @@ export default function Pricing() {
             return (
               <div
                 key={plan.id}
-                className={`relative bg-surface rounded-2xl border-2 p-7 transition-all hover:shadow-xl flex flex-col ${
+                className={`relative bg-surface rounded-none border-2 p-7 transition-all hover:shadow-xl flex flex-col ${
                   isPopular
                     ? 'border-accent shadow-lg shadow-accent/10 scale-[1.03]'
                     : 'border-line hover:border-accent/60'
                 }`}
               >
+                {isPopular && (
+                  <>
+                    <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+                    <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+                    <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+                    <span className="hud-corner hud-corner-br" aria-hidden="true" />
+                  </>
+                )}
                 {isPopular && (
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                     <span className="bg-accent text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-md">
@@ -357,7 +365,7 @@ export default function Pricing() {
                   </div>
                 )}
 
-                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${planColors[plan.id]} flex items-center justify-center mb-5 shadow-lg`}>
+                <div className={`w-12 h-12 rounded-none bg-gradient-to-br ${planColors[plan.id]} flex items-center justify-center mb-5 shadow-lg`}>
                   <Icon size={22} className="text-white" />
                 </div>
 
@@ -406,7 +414,7 @@ export default function Pricing() {
                 <button
                   onClick={() => handleSubscribe(plan.id, cycle)}
                   disabled={isCurrent || checkoutMutation.isPending}
-                  className={`w-full py-3 px-6 rounded-xl font-semibold text-sm transition-all ${
+                  className={`w-full py-3 px-6 rounded-none font-semibold text-sm transition-all ${
                     isCurrent
                       ? 'bg-surface-2 text-ink-soft cursor-not-allowed'
                       : isPopular
@@ -443,13 +451,13 @@ export default function Pricing() {
 
         {/* Mécanique de croissance */}
         <div className="mt-16 max-w-4xl mx-auto grid sm:grid-cols-2 gap-4">
-          <div className="bg-surface rounded-xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <h3 className="font-semibold text-ink mb-2">{t.growthTitle1}</h3>
             <p className="text-sm text-ink-soft leading-relaxed">
               {t.growthBody1}
             </p>
           </div>
-          <div className="bg-surface rounded-xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <h3 className="font-semibold text-ink mb-2">{t.growthTitle2}</h3>
             <p className="text-sm text-ink-soft leading-relaxed">
               {t.growthBody2}
@@ -479,7 +487,7 @@ export default function Pricing() {
           <h2 className="text-2xl font-bold text-ink text-center mb-8">{t.faqTitle}</h2>
           <div className="space-y-4">
             {t.faq.map((faq, i) => (
-              <div key={i} className="bg-surface rounded-xl border border-line p-6">
+              <div key={i} className="bg-surface rounded-none border border-line p-6">
                 <h4 className="font-semibold text-ink mb-2">{faq.q}</h4>
                 <p className="text-sm text-ink-soft">{faq.a}</p>
               </div>

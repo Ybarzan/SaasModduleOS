@@ -48,6 +48,7 @@ const TrackingLookup = () => {
             <Globe size={32} className="text-accent" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Suivi d'Expédition
           </h1>
           <p className="text-ink-soft max-w-md mx-auto">
@@ -55,7 +56,7 @@ const TrackingLookup = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-surface rounded-2xl shadow-lg border border-line p-6 sm:p-8 mb-8">
+        <form onSubmit={handleSubmit} className="bg-surface rounded-none shadow-lg border border-line p-6 sm:p-8 mb-8">
           <div className="flex flex-wrap gap-2 mb-5">
             {MODES.map((m) => {
               const Icon = m.icon;
@@ -64,7 +65,7 @@ const TrackingLookup = () => {
                   key={m.value}
                   type="button"
                   onClick={() => setMode(m.value)}
-                  className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-none text-sm font-medium transition-all ${
                     mode === m.value
                       ? 'bg-accent text-white shadow-md'
                       : 'bg-surface-2 text-ink-soft hover:bg-line'
@@ -85,13 +86,13 @@ const TrackingLookup = () => {
                 value={trackingNumber}
                 onChange={(e) => setTrackingNumber(e.target.value)}
                 placeholder={selectedMode.placeholder}
-                className="w-full pl-10 pr-4 py-3 border border-line rounded-xl focus:ring-2 focus:ring-accent focus:border-accent text-sm bg-surface-2 text-ink"
+                className="w-full pl-10 pr-4 py-3 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-accent text-sm bg-surface-2 text-ink"
               />
             </div>
             <button
               type="submit"
               disabled={!trackingNumber.trim()}
-              className="px-6 py-3 bg-accent text-white rounded-xl hover:bg-accent-strong transition-colors disabled:opacity-40 flex items-center justify-center space-x-2 font-medium text-sm"
+              className="px-6 py-3 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors disabled:opacity-40 flex items-center justify-center space-x-2 font-medium text-sm"
             >
               <Search size={16} />
               <span>Rechercher</span>
@@ -100,7 +101,7 @@ const TrackingLookup = () => {
         </form>
 
         {submitted && (
-          <div className="bg-surface rounded-2xl shadow-lg border border-line overflow-hidden">
+          <div className="bg-surface rounded-none shadow-lg border border-line overflow-hidden">
             <div className="bg-surface-2 px-6 py-4 border-b border-line flex items-center space-x-2">
               <Activity size={18} className="text-ink-soft" />
               <h2 className="font-semibold text-ink">

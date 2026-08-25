@@ -175,12 +175,13 @@ export default function Terms() {
 
         <div className="my-10">
           <h1 className="text-4xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Conditions Générales d'Utilisation
           </h1>
           <p className="text-ink-soft">Dernière mise à jour : {LAST_UPDATED}</p>
         </div>
 
-        <div className="bg-accent-soft border border-accent/30 rounded-2xl p-5 mb-10 text-sm text-ink-soft">
+        <div className="bg-accent-soft border border-accent/30 rounded-none p-5 mb-10 text-sm text-ink-soft">
           <strong>Note :</strong> ce document constitue un modèle générique de CGU pour un SaaS B2B. Il
           contient des champs à compléter avec les informations réelles de la société éditrice, et doit
           être relu et adapté par un conseil juridique avant publication définitive.

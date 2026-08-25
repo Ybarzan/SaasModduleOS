@@ -73,7 +73,7 @@ const WhatIfForm = ({
           type="number"
           value={params.productValue}
           onChange={(e) => setParams({ ...params, productValue: Number(e.target.value) })}
-          className="w-full px-3 py-2 border border-line rounded-md focus:ring-2 focus:ring-warning focus:border-transparent"
+          className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-warning focus:border-transparent"
         />
       </div>
       <div>
@@ -82,7 +82,7 @@ const WhatIfForm = ({
           type="number"
           value={params.weight}
           onChange={(e) => setParams({ ...params, weight: Number(e.target.value) })}
-          className="w-full px-3 py-2 border border-line rounded-md focus:ring-2 focus:ring-warning focus:border-transparent"
+          className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-warning focus:border-transparent"
         />
       </div>
       <div>
@@ -90,7 +90,7 @@ const WhatIfForm = ({
         <select
           value={params.transportMode}
           onChange={(e) => setParams({ ...params, transportMode: e.target.value as TransportMode })}
-          className="w-full px-3 py-2 border border-line rounded-md focus:ring-2 focus:ring-warning focus:border-transparent"
+          className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-warning focus:border-transparent"
         >
           <option value="SEA">Maritime</option>
           <option value="AIR">Aérien</option>
@@ -100,13 +100,13 @@ const WhatIfForm = ({
       <div className="flex space-x-3 pt-4">
         <button
           onClick={() => onRun(params)}
-          className="flex-1 bg-warning text-white py-2 px-4 rounded-md hover:bg-warning/90 font-medium"
+          className="flex-1 bg-warning text-white py-2 px-4 rounded-none hover:bg-warning/90 font-medium"
         >
           Lancer le What-if
         </button>
         <button
           onClick={onCancel}
-          className="flex-1 bg-surface-2 text-ink-soft py-2 px-4 rounded-md hover:bg-line font-medium"
+          className="flex-1 bg-surface-2 text-ink-soft py-2 px-4 rounded-none hover:bg-line font-medium"
         >
           Annuler
         </button>
@@ -426,14 +426,15 @@ const Calculator = () => {
             <div className="h-6 w-px bg-line" />
             <h1 className="text-xl font-bold text-ink flex items-center space-x-2">
               <CalculatorIcon className="h-5 w-5 text-accent" />
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
               <span>Calculateur Incoterms</span>
             </h1>
           </div>
           {result && user && (
             <div className="flex items-center gap-2">
-              <button onClick={pinResult} className="text-sm bg-accent-soft text-accent-strong px-3 py-1.5 rounded-lg hover:bg-accent-soft transition-colors font-medium">Épingler</button>
-              <button onClick={() => handleBranch(result.params!)} className="text-sm bg-warning/10 text-warning px-3 py-1.5 rounded-lg hover:bg-warning/20 transition-colors font-medium flex items-center gap-1"><Layers size={13} /> Branch</button>
-              <button onClick={handleSave} className="text-sm bg-success text-white px-3 py-1.5 rounded-lg hover:bg-success transition-colors font-medium">Historique</button>
+              <button onClick={pinResult} className="text-sm bg-accent-soft text-accent-strong px-3 py-1.5 rounded-none hover:bg-accent-soft transition-colors font-medium">Épingler</button>
+              <button onClick={() => handleBranch(result.params!)} className="text-sm bg-warning/10 text-warning px-3 py-1.5 rounded-none hover:bg-warning/20 transition-colors font-medium flex items-center gap-1"><Layers size={13} /> Branch</button>
+              <button onClick={handleSave} className="text-sm bg-success text-white px-3 py-1.5 rounded-none hover:bg-success transition-colors font-medium">Historique</button>
             </div>
           )}
         </div>
@@ -444,7 +445,7 @@ const Calculator = () => {
           {/* ── Colonne formulaire (2/5) ── */}
           <div className="lg:col-span-2 space-y-4">
             {/* Incoterm */}
-            <div className="bg-surface rounded-2xl border border-line p-5">
+            <div className="bg-surface rounded-none border border-line p-5">
               <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-3">Incoterm</h2>
               {loadingIncoterms ? (
                 <div className="flex items-center gap-2 text-ink-soft"><Loader2 className="h-4 w-4 animate-spin" /><span className="text-sm">Chargement...</span></div>
@@ -452,7 +453,7 @@ const Calculator = () => {
                 <select
                   value={selectedIncoterm?.id || ''}
                   onChange={(e) => { const incoterm = incoterms.find(i => i.id === e.target.value); setSelectedIncoterm(incoterm || null); }}
-                  className="w-full px-3 py-2.5 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent bg-bg"
+                  className="w-full px-3 py-2.5 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent bg-bg"
                 >
                   <option value="">Sélectionner un Incoterm</option>
                   {incoterms.map((incoterm) => (
@@ -463,7 +464,7 @@ const Calculator = () => {
             </div>
 
             {/* Paramètres marchandise */}
-            <div className="bg-surface rounded-2xl border border-line p-5">
+            <div className="bg-surface rounded-none border border-line p-5">
               <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-3">Marchandise</h2>
               <div className="space-y-4">
                 <div>
@@ -471,35 +472,35 @@ const Calculator = () => {
                     <label className="text-sm font-medium text-ink-soft">Valeur (€)</label>
                     <input type="number" value={formData.productValue} onChange={(e) => setFormData({ ...formData, productValue: Number(e.target.value) })} className="w-28 px-2 py-1 border border-line rounded text-right text-sm bg-bg focus:ring-2 focus:ring-accent" min="0" step="100" />
                   </div>
-                  <input type="range" value={formData.productValue} onChange={(e) => setFormData({ ...formData, productValue: Number(e.target.value) })} className="w-full h-1.5 bg-line rounded-lg appearance-none cursor-pointer accent-accent" min="0" max="1000000" step="100" />
+                  <input type="range" value={formData.productValue} onChange={(e) => setFormData({ ...formData, productValue: Number(e.target.value) })} className="w-full h-1.5 bg-line rounded-none appearance-none cursor-pointer accent-accent" min="0" max="1000000" step="100" />
                 </div>
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
                     <label className="text-sm font-medium text-ink-soft">Poids (kg)</label>
                     <input type="number" value={formData.weight} onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })} className="w-28 px-2 py-1 border border-line rounded text-right text-sm bg-bg focus:ring-2 focus:ring-accent" min="0" step="1" />
                   </div>
-                  <input type="range" value={formData.weight} onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })} className="w-full h-1.5 bg-line rounded-lg appearance-none cursor-pointer accent-accent" min="0" max="10000" step="1" />
+                  <input type="range" value={formData.weight} onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })} className="w-full h-1.5 bg-line rounded-none appearance-none cursor-pointer accent-accent" min="0" max="10000" step="1" />
                 </div>
               </div>
             </div>
 
             {/* Transport & Route */}
-            <div className="bg-surface rounded-2xl border border-line p-5">
+            <div className="bg-surface rounded-none border border-line p-5">
               <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-3">Transport & Route</h2>
               <div className="space-y-3">
-                <select value={formData.transportMode} onChange={(e) => setFormData({ ...formData, transportMode: e.target.value as TransportMode })} className="w-full px-3 py-2.5 border border-line rounded-lg text-sm bg-bg focus:ring-2 focus:ring-accent">
+                <select value={formData.transportMode} onChange={(e) => setFormData({ ...formData, transportMode: e.target.value as TransportMode })} className="w-full px-3 py-2.5 border border-line rounded-none text-sm bg-bg focus:ring-2 focus:ring-accent">
                   <option value="SEA">Maritime</option><option value="AIR">Aérien</option><option value="ROAD">Routier</option>
                 </select>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs text-ink-soft mb-1 block">Origine</label>
-                    <select value={formData.originCountry} onChange={(e) => setFormData({ ...formData, originCountry: e.target.value })} className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-bg focus:ring-2 focus:ring-accent">
+                    <select value={formData.originCountry} onChange={(e) => setFormData({ ...formData, originCountry: e.target.value })} className="w-full px-3 py-2 border border-line rounded-none text-sm bg-bg focus:ring-2 focus:ring-accent">
                       <option value="CN">Chine</option><option value="US">États-Unis</option><option value="DE">Allemagne</option><option value="JP">Japon</option>
                     </select>
                   </div>
                   <div>
                     <label className="text-xs text-ink-soft mb-1 block">Destination</label>
-                    <select value={formData.destinationCountry} onChange={(e) => setFormData({ ...formData, destinationCountry: e.target.value })} className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-bg focus:ring-2 focus:ring-accent">
+                    <select value={formData.destinationCountry} onChange={(e) => setFormData({ ...formData, destinationCountry: e.target.value })} className="w-full px-3 py-2 border border-line rounded-none text-sm bg-bg focus:ring-2 focus:ring-accent">
                       <option value="FR">France</option><option value="US">États-Unis</option><option value="DE">Allemagne</option><option value="GB">Royaume-Uni</option>
                     </select>
                   </div>
@@ -508,7 +509,7 @@ const Calculator = () => {
             </div>
 
             {/* Packaging */}
-            <div className="bg-surface rounded-2xl border border-line p-5">
+            <div className="bg-surface rounded-none border border-line p-5">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider flex items-center gap-2"><Package size={14} /> Packaging</h2>
                 {packagingItems.length > 0 && <span className="bg-surface-2 text-ink text-xs px-2 py-0.5 rounded-full font-medium">{packagingItems.length}</span>}
@@ -516,7 +517,7 @@ const Calculator = () => {
               {packagingItems.length > 0 && (
                 <div className="space-y-1.5 mb-3">
                   {packagingItems.map((item, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs bg-bg rounded-lg px-3 py-2 border border-line">
+                    <div key={idx} className="flex items-center gap-2 text-xs bg-bg rounded-none px-3 py-2 border border-line">
                       <span className="text-ink-soft font-mono w-4">{idx + 1}</span>
                       <span className="font-medium text-ink flex-1 truncate">{item.sku}</span>
                       <span className="text-ink-soft">{item.quantity}×</span>
@@ -541,10 +542,10 @@ const Calculator = () => {
 
             {/* Actions */}
             <div className="flex gap-2">
-              <button onClick={handleCalculate} disabled={calculateMutation.isPending || !selectedIncoterm} className="flex-1 bg-accent text-white py-3 rounded-xl font-semibold hover:bg-accent-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm transition-colors shadow-sm">
+              <button onClick={handleCalculate} disabled={calculateMutation.isPending || !selectedIncoterm} className="flex-1 bg-accent text-white py-3 rounded-none font-semibold hover:bg-accent-strong disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm transition-colors shadow-sm">
                 {calculateMutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Calcul...</> : <><CalculatorIcon className="h-4 w-4" /> Calculer</>}
               </button>
-              <button onClick={compareAllModes} disabled={isComparing || !selectedIncoterm || calculateMutation.isPending} className="flex-1 bg-surface-2 text-ink-soft py-3 rounded-xl font-semibold hover:bg-line disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm transition-colors">
+              <button onClick={compareAllModes} disabled={isComparing || !selectedIncoterm || calculateMutation.isPending} className="flex-1 bg-surface-2 text-ink-soft py-3 rounded-none font-semibold hover:bg-line disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm transition-colors">
                 {isComparing ? <><Loader2 className="h-4 w-4 animate-spin" /> Comparaison...</> : <><Layers className="h-4 w-4" /> Comparer 3 modes</>}
               </button>
             </div>
@@ -555,7 +556,7 @@ const Calculator = () => {
             {/* What-if modal */}
             {isBranching && branchingParams && (
               <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                <div className="bg-surface rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+                <div className="bg-surface rounded-none shadow-2xl w-full max-w-md overflow-hidden">
                   <div className="flex justify-between items-center p-4 border-b bg-bg">
                     <h3 className="text-lg font-bold text-ink flex items-center space-x-2"><Layers className="text-warning" size={20} /><span>Scénario What-if</span></h3>
                     <button onClick={() => setIsBranching(false)} className="text-ink-soft hover:text-ink"><X size={20} /></button>
@@ -567,13 +568,13 @@ const Calculator = () => {
 
             {/* Comparaison épinglée */}
             {pinnedResults.length > 0 && (
-              <div className="bg-surface rounded-2xl border border-line p-5">
+              <div className="bg-surface rounded-none border border-line p-5">
                 <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-4 flex items-center gap-2">Comparaison ({pinnedResults.length})</h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                   {(() => {
                     const minCost = Math.min(...pinnedResults.map(r => r.totalBuyerCost));
                     return pinnedResults.map((pinned, index) => (
-                      <div key={index} className={`relative rounded-xl p-4 border-2 ${pinned.totalBuyerCost === minCost ? 'border-success bg-success/10' : 'border-line bg-bg'}`}>
+                      <div key={index} className={`relative rounded-none p-4 border-2 ${pinned.totalBuyerCost === minCost ? 'border-success bg-success/10' : 'border-line bg-bg'}`}>
                         {pinned.totalBuyerCost === minCost && <span className="absolute -top-2 -right-2 bg-success text-white text-[9px] font-bold px-2 py-0.5 rounded-full shadow">MEILLEUR PRIX</span>}
                         <button onClick={() => handleBranch(pinned.params!)} className="absolute top-2 left-2 text-warning hover:text-warning" title="Brancher"><Layers size={13} /></button>
                         <button onClick={() => unpinResult(index)} className="absolute top-2 right-2 text-ink-soft hover:text-danger" title="Retirer"><span className="text-xs font-bold">✕</span></button>
@@ -602,7 +603,11 @@ const Calculator = () => {
             {result ? (
               <div className="space-y-4">
                 {/* Incoterm + Coût total */}
-                <div className="bg-surface rounded-2xl border border-line p-5">
+                <div className="relative bg-surface rounded-none border border-line p-5">
+                  <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+                  <span className="hud-corner hud-corner-br" aria-hidden="true" />
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="text-[10px] font-bold text-accent uppercase tracking-widest">{result.incoterm}</div>
@@ -628,7 +633,7 @@ const Calculator = () => {
                   const hasCritical = criticals.length > 0;
 
                   return (
-                    <div className={`rounded-xl shadow-sm border p-5 ${hasCritical ? 'bg-danger/10 border-danger/40' : 'bg-surface border-line'}`}>
+                    <div className={`rounded-none shadow-sm border p-5 ${hasCritical ? 'bg-danger/10 border-danger/40' : 'bg-surface border-line'}`}>
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="text-xs font-semibold text-ink-soft uppercase tracking-wider">Alertes conformité</h3>
                         <div className="flex gap-1.5">
@@ -644,7 +649,7 @@ const Calculator = () => {
                           const categoryLabels: Record<string, string> = { INCOTERM: 'Incoterm', COUNTRY: 'Pays', HS_CODE: 'Code SH', TRANSPORT: 'Transport' };
                           const Icon = severityIconMap[alert.severity] || Info;
                           return (
-                            <div key={index} className={`flex items-start gap-2.5 p-3 border rounded-lg text-sm ${severityStyles[alert.severity] || severityStyles.INFO} ${alert.severity === 'CRITICAL' ? 'ring-1 ring-danger' : ''}`}>
+                            <div key={index} className={`flex items-start gap-2.5 p-3 border rounded-none text-sm ${severityStyles[alert.severity] || severityStyles.INFO} ${alert.severity === 'CRITICAL' ? 'ring-1 ring-danger' : ''}`}>
                               <Icon className="h-4 w-4 mt-0.5 flex-shrink-0" />
                               <div className="flex-1">
                                 <div className="flex items-center gap-2 mb-0.5">
@@ -662,7 +667,7 @@ const Calculator = () => {
                 })()}
 
                 {/* Répartition des frais */}
-                <div className="bg-surface rounded-2xl border border-line p-5">
+                <div className="bg-surface rounded-none border border-line p-5">
                   <h3 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-4">Répartition des frais acheteur</h3>
                   <CostChart data={[
                     { name: 'Douanes Export', value: result.buyerCosts.exportCustoms },
@@ -703,32 +708,32 @@ const Calculator = () => {
 
                 {/* Logistique */}
                 {result.logistics && (
-                  <div className="bg-surface rounded-2xl border border-line p-5">
+                  <div className="bg-surface rounded-none border border-line p-5">
                     <h3 className="text-xs font-semibold text-ink-soft uppercase tracking-wider mb-3 flex items-center gap-2"><Package size={14} /> Logistique</h3>
                     <div className="grid grid-cols-4 gap-3">
-                      <div className="bg-surface-2 rounded-lg p-3 text-center">
+                      <div className="bg-surface-2 rounded-none p-3 text-center">
                         <div className="text-2xl font-bold text-ink">{result.logistics.totalBoxes}</div>
                         <div className="text-[10px] text-ink-soft uppercase">Colis</div>
                       </div>
-                      <div className="bg-success/10 rounded-lg p-3 text-center">
+                      <div className="bg-success/10 rounded-none p-3 text-center">
                         <div className="text-2xl font-bold text-success">{result.logistics.totalWeightKg}</div>
                         <div className="text-[10px] text-ink-soft uppercase">Kg</div>
                       </div>
-                      <div className="bg-accent-soft rounded-lg p-3 text-center">
+                      <div className="bg-accent-soft rounded-none p-3 text-center">
                         <div className="text-2xl font-bold text-accent-strong">{result.logistics.totalVolumeM3}</div>
                         <div className="text-[10px] text-ink-soft uppercase">m³</div>
                       </div>
-                      <div className="bg-warning/10 rounded-lg p-3 text-center">
+                      <div className="bg-warning/10 rounded-none p-3 text-center">
                         <div className="text-2xl font-bold text-warning">{result.logistics.utilizationPercent}%</div>
                         <div className="text-[10px] text-ink-soft uppercase">Rempli</div>
                       </div>
                     </div>
-                    <div className="mt-3 p-2.5 bg-success/10 rounded-lg border border-success/15">
+                    <div className="mt-3 p-2.5 bg-success/10 rounded-none border border-success/15">
                       <div className="text-xs font-bold text-success">Mode recommandé : {result.logistics.recommendedMode}</div>
                       {result.logistics.modeReason && <div className="text-[11px] text-success mt-0.5">{result.logistics.modeReason}</div>}
                     </div>
                     {!truckingRates ? (
-                      <button onClick={fetchTruckingRates} disabled={loadingTrucking} className="mt-3 w-full bg-success text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-success disabled:opacity-50 flex items-center justify-center gap-2 transition-colors">
+                      <button onClick={fetchTruckingRates} disabled={loadingTrucking} className="mt-3 w-full bg-success text-white py-2.5 rounded-none text-sm font-semibold hover:bg-success disabled:opacity-50 flex items-center justify-center gap-2 transition-colors">
                         {loadingTrucking ? <><Loader2 className="h-4 w-4 animate-spin" /> Calcul...</> : 'Voir les tarifs LTL / FTL / Express'}
                       </button>
                     ) : (
@@ -738,7 +743,7 @@ const Calculator = () => {
                           <button onClick={() => setTruckingRates(null)} className="text-[10px] text-ink-soft hover:text-ink">Masquer</button>
                         </div>
                         {truckingRates.options.map((opt: TruckingOption) => (
-                          <div key={opt.mode} className={`flex items-center justify-between p-3 rounded-xl text-sm border ${opt.recommended ? 'bg-success/10 border-success/40' : 'bg-bg border-line'}`}>
+                          <div key={opt.mode} className={`flex items-center justify-between p-3 rounded-none text-sm border ${opt.recommended ? 'bg-success/10 border-success/40' : 'bg-bg border-line'}`}>
                             <div className="flex-1">
                               <div className="flex items-center gap-2">
                                 <span className="font-bold text-ink">{opt.label}</span>
@@ -760,7 +765,7 @@ const Calculator = () => {
                 )}
               </div>
             ) : (
-              <div className="bg-surface rounded-xl shadow-sm border border-line p-12 text-center">
+              <div className="bg-surface rounded-none shadow-sm border border-line p-12 text-center">
                 <CalculatorIcon className="h-10 w-10 mx-auto mb-3 text-ink-soft" />
                 <p className="text-sm text-ink-soft">Sélectionnez un Incoterm et cliquez sur « Calculer »</p>
               </div>

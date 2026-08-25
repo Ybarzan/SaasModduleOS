@@ -144,11 +144,14 @@ export default function Privacy() {
         <Breadcrumbs items={[{ label: 'Politique de confidentialité' }]} />
 
         <div className="my-10">
-          <h1 className="text-4xl font-extrabold text-ink mb-3">Politique de confidentialité</h1>
+          <h1 className="text-4xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Politique de confidentialité
+          </h1>
           <p className="text-ink-soft">Dernière mise à jour : {LAST_UPDATED}</p>
         </div>
 
-        <div className="bg-accent-soft border border-accent/30 rounded-2xl p-5 mb-10 text-sm text-ink-soft">
+        <div className="bg-accent-soft border border-accent/30 rounded-none p-5 mb-10 text-sm text-ink-soft">
           <strong>Note :</strong> ce document constitue un modèle générique conforme aux grands principes du
           RGPD. Il doit être relu et adapté par un conseil juridique avant publication définitive, en
           fonction de vos sous-traitants réels, de votre implantation et de votre activité précise.

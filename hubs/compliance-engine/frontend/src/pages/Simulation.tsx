@@ -39,7 +39,7 @@ const Simulation = () => {
       <div className="min-h-screen flex items-center justify-center bg-bg">
         <div className="text-center max-w-md">
           <AlertCircle className="h-12 w-12 mx-auto text-danger mb-4" />
-          <div className="bg-danger/10 border border-danger/40 text-danger px-6 py-4 rounded-xl">
+          <div className="bg-danger/10 border border-danger/40 text-danger px-6 py-4 rounded-none">
             Erreur lors du chargement des Incoterms
           </div>
         </div>
@@ -61,7 +61,7 @@ const Simulation = () => {
           </p>
 
           {!user && (
-            <div className="mt-6 bg-accent-soft border border-accent/15 rounded-xl p-4 inline-block">
+            <div className="mt-6 bg-accent-soft border border-accent/15 rounded-none p-4 inline-block">
               <div className="flex items-center space-x-2 text-accent-strong">
                 <Info size={20} />
                 <span className="font-medium">Connectez-vous pour sauvegarder vos simulations</span>
@@ -82,7 +82,7 @@ const Simulation = () => {
         </div>
 
         {/* Info Section */}
-        <div className="mt-16 bg-surface rounded-3xl border border-line shadow-xl shadow-accent/5 p-8">
+        <div className="mt-16 bg-surface rounded-none border border-line shadow-xl shadow-accent/5 p-8">
           <h2 className="text-2xl font-bold text-ink mb-6 text-center">
             Qu'est-ce qu'un Incoterm ?
           </h2>

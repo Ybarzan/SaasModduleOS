@@ -17,10 +17,13 @@ export default function LegalNotice() {
         <Breadcrumbs items={[{ label: 'Mentions légales' }]} />
 
         <div className="my-10">
-          <h1 className="text-4xl font-extrabold text-ink mb-3">Mentions légales</h1>
+          <h1 className="text-4xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Mentions légales
+          </h1>
         </div>
 
-        <div className="bg-danger/10 border border-danger/40 rounded-2xl p-5 mb-10 flex gap-3">
+        <div className="bg-danger/10 border border-danger/40 rounded-none p-5 mb-10 flex gap-3">
           <AlertTriangle size={20} className="text-danger shrink-0 mt-0.5" />
           <div className="text-sm text-danger">
             <strong>Page non publiable en l'état.</strong> Les mentions légales sont une obligation

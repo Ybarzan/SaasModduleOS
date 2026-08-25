@@ -53,9 +53,9 @@ const SharedTracking = () => {
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {companyLogo ? (
-              <img src={companyLogo} alt={companyName} className="w-10 h-10 rounded-xl object-cover" />
+              <img src={companyLogo} alt={companyName} className="w-10 h-10 rounded-none object-cover" />
             ) : (
-              <div className="w-10 h-10 bg-accent-soft rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-accent-soft rounded-none flex items-center justify-center">
                 <Package className="w-5 h-5 text-accent" />
               </div>
             )}
@@ -72,9 +72,9 @@ const SharedTracking = () => {
 
       <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         {/* Status + Route */}
-        <div className="bg-surface rounded-2xl border border-line p-6">
+        <div className="bg-surface rounded-none border border-line p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${statusCfg.color}`}>
+            <div className={`w-12 h-12 rounded-none flex items-center justify-center ${statusCfg.color}`}>
               <StatusIcon className="w-6 h-6" />
             </div>
             <div>
@@ -83,7 +83,7 @@ const SharedTracking = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-between bg-bg rounded-xl p-4">
+          <div className="flex items-center justify-between bg-bg rounded-none p-4">
             <div className="text-center flex-1">
               <p className="text-xs text-ink-soft mb-0.5">Origine</p>
               <p className="font-semibold text-ink">{shipment.shipperCity || '—'}</p>
@@ -126,7 +126,7 @@ const SharedTracking = () => {
         </div>
 
         {/* Tracking Timeline */}
-        <div className="bg-surface rounded-2xl border border-line p-6">
+        <div className="bg-surface rounded-none border border-line p-6">
           <h2 className="text-sm font-semibold text-ink mb-4 uppercase tracking-wide">Historique de suivi</h2>
           {trackingEvents.length === 0 ? (
             <div className="text-center py-8">

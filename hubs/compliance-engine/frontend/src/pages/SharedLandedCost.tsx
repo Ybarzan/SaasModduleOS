@@ -68,7 +68,7 @@ const SharedLandedCost = () => {
   if (error || !data) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center">
-        <div className="bg-surface rounded-xl border border-line p-8 text-center max-w-md">
+        <div className="bg-surface rounded-none border border-line p-8 text-center max-w-md">
           <AlertCircle className="w-12 h-12 text-danger/70 mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-ink mb-2">Lien invalide</h2>
           <p className="text-ink-soft">{error || 'Ce lien de partage n\'est pas valide ou a expiré.'}</p>
@@ -92,7 +92,7 @@ const SharedLandedCost = () => {
           </p>
         </div>
 
-        <div className="bg-surface rounded-xl border border-line p-6 mb-6">
+        <div className="bg-surface rounded-none border border-line p-6 mb-6">
           <h2 className="text-lg font-semibold text-ink mb-4">Ventilation des coûts</h2>
           <div className="space-y-2">
             <div className="flex justify-between py-1.5 text-sm">
@@ -149,7 +149,7 @@ const SharedLandedCost = () => {
         </div>
 
         {data.sellingPrice > 0 && (
-          <div className="bg-surface rounded-xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <div className="flex items-center gap-2 mb-4">
               {data.margin >= 0 ? <TrendingUp className="w-5 h-5 text-success" /> : <TrendingDown className="w-5 h-5 text-danger" />}
               <h2 className="text-lg font-semibold text-ink">Marge</h2>

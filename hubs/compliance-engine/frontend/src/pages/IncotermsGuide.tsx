@@ -108,9 +108,9 @@ const SCHEMA = {
 
 function RuleCard({ rule }: { rule: IncotermRule }) {
   return (
-    <div className="bg-surface border border-line rounded-2xl p-6">
+    <div className="bg-surface border border-line rounded-none p-6">
       <div className="flex items-center gap-3 mb-3">
-        <span className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent-soft text-accent-strong font-extrabold text-sm shrink-0">
+        <span className="inline-flex items-center justify-center w-12 h-12 rounded-none bg-accent-soft text-accent-strong font-extrabold text-sm shrink-0">
           {rule.code}
         </span>
         <h3 className="font-bold text-ink">{rule.name}</h3>
@@ -148,6 +148,7 @@ export default function IncotermsGuide() {
 
         <div className="text-center my-10">
           <h1 className="text-4xl font-extrabold text-ink mb-4">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Le guide des <span className="text-accent">Incoterms 2020</span>
           </h1>
           <p className="text-lg text-ink-soft max-w-2xl mx-auto">
@@ -157,7 +158,7 @@ export default function IncotermsGuide() {
           </p>
         </div>
 
-        <div className="bg-accent-soft border border-accent/20 rounded-2xl p-6 mb-10 flex items-start gap-3">
+        <div className="bg-accent-soft border border-accent/20 rounded-none p-6 mb-10 flex items-start gap-3">
           <ShieldCheck size={22} className="text-accent-strong mt-0.5 shrink-0" />
           <p className="text-sm text-ink">
             Deux notions à ne jamais confondre : le <strong>transfert du risque</strong> (à partir de
@@ -197,7 +198,7 @@ export default function IncotermsGuide() {
           </div>
         </section>
 
-        <div className="text-center bg-surface border border-line rounded-2xl p-8">
+        <div className="text-center bg-surface border border-line rounded-none p-8">
           <h2 className="text-xl font-bold text-ink mb-2">Calculez le coût réel selon chaque Incoterm</h2>
           <p className="text-ink-soft mb-6">
             Choisir la bonne règle sur le papier ne suffit pas — le Calculateur Incoterms d'IncoKalk

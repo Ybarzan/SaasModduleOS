@@ -86,6 +86,7 @@ export default function Developers() {
 
         <div className="text-center my-10">
           <h1 className="text-4xl font-extrabold text-ink mb-4">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             L'API <span className="text-accent">IncoKalk</span>
           </h1>
           <p className="text-lg text-ink-soft max-w-2xl mx-auto">
@@ -94,7 +95,7 @@ export default function Developers() {
           </p>
         </div>
 
-        <section className="bg-surface border border-line rounded-2xl p-6 mb-10">
+        <section className="bg-surface border border-line rounded-none p-6 mb-10">
           <div className="flex items-center gap-2 mb-4">
             <KeyRound size={20} className="text-accent" />
             <h2 className="text-xl font-bold text-ink">Authentification</h2>
@@ -104,10 +105,10 @@ export default function Developers() {
             utilisateur, ou une clé API dédiée pour une intégration serveur-à-serveur.
           </p>
           <div className="grid sm:grid-cols-2 gap-3">
-            <div className="bg-bg border border-line rounded-lg p-4 font-mono text-xs text-ink overflow-x-auto">
+            <div className="bg-bg border border-line rounded-none p-4 font-mono text-xs text-ink overflow-x-auto">
               Authorization: Bearer &lt;jwt_token&gt;
             </div>
-            <div className="bg-bg border border-line rounded-lg p-4 font-mono text-xs text-ink overflow-x-auto">
+            <div className="bg-bg border border-line rounded-none p-4 font-mono text-xs text-ink overflow-x-auto">
               X-API-Key: &lt;votre_cle_api&gt;
             </div>
           </div>
@@ -126,9 +127,9 @@ export default function Developers() {
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               return (
-                <div key={cat.title} className="bg-surface border border-line rounded-2xl p-5">
+                <div key={cat.title} className="bg-surface border border-line rounded-none p-5">
                   <div className="flex items-center gap-3 mb-2">
-                    <div className="w-9 h-9 rounded-lg bg-accent-soft flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-none bg-accent-soft flex items-center justify-center shrink-0">
                       <Icon size={18} className="text-accent" />
                     </div>
                     <h3 className="font-bold text-ink">{cat.title}</h3>
@@ -141,7 +142,7 @@ export default function Developers() {
           </div>
         </section>
 
-        <div className="text-center bg-surface border border-line rounded-2xl p-8">
+        <div className="text-center bg-surface border border-line rounded-none p-8">
           <h2 className="text-xl font-bold text-ink mb-2">Générez votre clé API</h2>
           <p className="text-ink-soft mb-6">
             La gestion des clés API est accessible depuis votre espace Administration, une fois

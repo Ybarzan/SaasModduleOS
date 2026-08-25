@@ -220,7 +220,7 @@ const Home = () => {
                   key={feature.title}
                   className="card-moroccan p-8 group"
                 >
-                  <div className="w-14 h-14 rounded-2xl bg-accent-soft flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <div className="w-14 h-14 rounded-none bg-accent-soft flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                     <Icon size={28} className="text-accent" />
                   </div>
                   <h3 className="text-xl font-bold text-ink mb-3">{feature.title}</h3>
@@ -250,12 +250,12 @@ const Home = () => {
               const Icon = step.icon;
               return (
                 <div key={step.number} className="relative">
-                  <div className="bg-surface rounded-2xl border border-line p-8 h-full hover:shadow-xl hover:shadow-accent/8 hover:-translate-y-1 transition-all duration-300">
+                  <div className="bg-surface rounded-none border border-line p-8 h-full hover:shadow-xl hover:shadow-accent/8 hover:-translate-y-1 transition-all duration-300">
                     <div className="text-7xl font-extrabold text-surface-2 absolute top-4 right-6 select-none">
                       {step.number}
                     </div>
                     <div className="relative z-10">
-                      <div className="w-14 h-14 rounded-2xl bg-accent-soft border border-accent/15 flex items-center justify-center mb-6">
+                      <div className="w-14 h-14 rounded-none bg-accent-soft border border-accent/15 flex items-center justify-center mb-6">
                         <Icon size={26} className="text-accent" />
                       </div>
                       <h3 className="text-xl font-bold text-ink mb-3">{step.title}</h3>
@@ -290,8 +290,8 @@ const Home = () => {
 
           <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Dashboard mockup */}
-            <div className="bg-bg rounded-3xl border border-line p-6 shadow-xl shadow-accent/5">
-              <div className="bg-surface rounded-2xl p-6 space-y-4 border border-line">
+            <div className="bg-bg rounded-none border border-line p-6 shadow-xl shadow-accent/5">
+              <div className="bg-surface rounded-none p-6 space-y-4 border border-line">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-ink font-bold">Tableau de bord</h3>
                   <div className="flex gap-2">
@@ -302,15 +302,15 @@ const Home = () => {
                 </div>
                 {/* Mock KPI cards */}
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-bg rounded-xl p-3 border border-line">
+                  <div className="bg-bg rounded-none p-3 border border-line">
                     <div className="text-xs text-ink-soft font-medium">Simulations</div>
                     <div className="text-xl font-bold text-ink">247</div>
                   </div>
-                  <div className="bg-bg rounded-xl p-3 border border-line">
+                  <div className="bg-bg rounded-none p-3 border border-line">
                     <div className="text-xs text-ink-soft font-medium">Économies</div>
                     <div className="text-xl font-bold text-success">€12.4k</div>
                   </div>
-                  <div className="bg-bg rounded-xl p-3 border border-line">
+                  <div className="bg-bg rounded-none p-3 border border-line">
                     <div className="text-xs text-ink-soft font-medium">Transporteurs</div>
                     <div className="text-xl font-bold text-ink">18</div>
                   </div>
@@ -360,7 +360,7 @@ const Home = () => {
                 const Icon = item.icon;
                 return (
                   <div key={item.title} className="flex gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-accent-soft border border-accent/15 flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 rounded-none bg-accent-soft border border-accent/15 flex items-center justify-center shrink-0">
                       <Icon size={22} className="text-accent" />
                     </div>
                     <div>
@@ -378,7 +378,7 @@ const Home = () => {
       {/* ========== CO2 SECTION ========== */}
       <section className="bg-bg section-padding">
         <div className="container-narrow mx-auto px-4">
-          <div className="bg-success/5 rounded-3xl border border-success/20 p-8 md:p-12 relative overflow-hidden">
+          <div className="bg-success/5 rounded-none border border-success/20 p-8 md:p-12 relative overflow-hidden">
             <div className="grid lg:grid-cols-2 gap-8 items-center relative z-10">
               <div>
                 <div className="inline-flex items-center gap-2 bg-success/10 border border-success/20 rounded-full px-4 py-2 mb-6">
@@ -407,7 +407,7 @@ const Home = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="absolute -top-4 -right-4 w-16 h-16 rounded-2xl bg-success/10 border border-success/20 flex items-center justify-center animate-float">
+                  <div className="absolute -top-4 -right-4 w-16 h-16 rounded-none bg-success/10 border border-success/20 flex items-center justify-center animate-float">
                     <Leaf size={28} className="text-success" />
                   </div>
                 </div>
@@ -420,7 +420,7 @@ const Home = () => {
       {/* ========== FINAL CTA ========== */}
       <section className="bg-surface section-padding">
         <div className="container-narrow mx-auto px-4">
-          <div className="bg-accent rounded-3xl p-12 md:p-20 text-center">
+          <div className="bg-accent rounded-none p-12 md:p-20 text-center">
             <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6">
               Découvrez comment booster votre logistique quotidienne
             </h2>
@@ -428,7 +428,7 @@ const Home = () => {
               Commencez gratuitement ou réservez une démo personnalisée avec notre équipe.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/register" className="bg-surface text-accent-strong px-8 py-3.5 rounded-xl font-bold hover:bg-surface/90 transition-all duration-300 shadow-xl shadow-black/10 hover:-translate-y-0.5 text-lg">
+              <Link to="/register" className="bg-surface text-accent-strong px-8 py-3.5 rounded-none font-bold hover:bg-surface/90 transition-all duration-300 shadow-xl shadow-black/10 hover:-translate-y-0.5 text-lg">
                 Créer un compte
               </Link>
               <Link to="/simulation" className="btn-outline-white text-lg">

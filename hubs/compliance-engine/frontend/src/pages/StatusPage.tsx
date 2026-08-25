@@ -67,11 +67,18 @@ export default function StatusPage() {
         <Breadcrumbs items={[{ label: 'Statut' }]} />
 
         <div className="text-center my-10">
-          <h1 className="text-3xl font-extrabold text-ink mb-3">Statut du service</h1>
+          <h1 className="text-3xl font-extrabold text-ink mb-3">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Statut du service
+          </h1>
           <p className="text-ink-soft">Vérification en direct de la disponibilité d'IncoKalk.</p>
         </div>
 
-        <div className={`rounded-2xl border p-8 text-center ${display.bg}`}>
+        <div className={`relative rounded-none border p-8 text-center ${display.bg}`}>
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <Icon size={48} className={`mx-auto mb-4 ${display.color}`} />
           <h2 className={`text-xl font-bold mb-2 ${display.color}`}>{display.title}</h2>
           {lastChecked && (
@@ -82,7 +89,7 @@ export default function StatusPage() {
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-ink-soft border border-line hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-none text-sm font-medium text-ink-soft border border-line hover:border-accent hover:text-accent transition-colors disabled:opacity-50"
           >
             <RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} />
             Vérifier maintenant

@@ -35,14 +35,21 @@ const ClientLogin = () => {
     <div className="min-h-screen bg-bg flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-accent-soft rounded-2xl mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-accent-soft rounded-none mb-4">
             <Package className="w-8 h-8 text-accent" />
           </div>
-          <h1 className="text-2xl font-bold text-ink">Espace Client</h1>
+          <h1 className="text-2xl font-bold text-ink">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            Espace Client
+          </h1>
           <p className="text-ink-soft mt-1">Connectez-vous pour suivre vos expéditions</p>
         </div>
 
-        <div className="bg-surface rounded-2xl shadow-sm border border-line p-8">
+        <div className="relative bg-surface rounded-none shadow-sm border border-line p-8">
+          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+          <span className="hud-corner hud-corner-br" aria-hidden="true" />
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-ink mb-1.5">Email</label>
@@ -50,7 +57,7 @@ const ClientLogin = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2.5 border border-line rounded-xl focus:ring-2 focus:ring-accent focus:border-accent outline-none transition"
+                className="w-full px-4 py-2.5 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-accent outline-none transition"
                 placeholder="client@entreprise.com"
                 required
               />
@@ -62,7 +69,7 @@ const ClientLogin = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 border border-line rounded-xl focus:ring-2 focus:ring-accent focus:border-accent outline-none transition pr-10"
+                  className="w-full px-4 py-2.5 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-accent outline-none transition pr-10"
                   required
                 />
                 <button

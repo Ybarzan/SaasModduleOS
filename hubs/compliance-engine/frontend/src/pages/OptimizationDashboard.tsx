@@ -48,7 +48,7 @@ const StatusBadge = ({ status }: { status: string }) => {
 };
 
 const StatsCard = ({ icon: Icon, label, value, color, sub }: { icon: LucideIcon; label: string; value: string; color: string; sub?: string }) => (
-  <div className="bg-surface rounded-xl shadow-sm border border-[#DEB887]/30 p-5 relative overflow-hidden">
+  <div className="bg-surface rounded-none shadow-sm border border-[#DEB887]/30 p-5 relative overflow-hidden">
     <div className={`absolute left-0 top-0 bottom-0 w-1 ${color}`} />
     <div className="flex items-start justify-between pl-3">
       <div>
@@ -56,7 +56,7 @@ const StatsCard = ({ icon: Icon, label, value, color, sub }: { icon: LucideIcon;
         <p className="text-2xl font-bold text-ink">{value}</p>
         {sub && <p className="text-xs text-ink-soft mt-1">{sub}</p>}
       </div>
-      <div className={`p-2.5 rounded-lg ${color.replace('bg-', 'bg-')}/10`}>
+      <div className={`p-2.5 rounded-none ${color.replace('bg-', 'bg-')}/10`}>
         <Icon size={20} className={color.replace('bg-', 'text-')} />
       </div>
     </div>
@@ -178,7 +178,7 @@ const OptimizationDashboard = () => {
     <div className="min-h-screen bg-[#FAF0E6] py-10">
       <div className="container mx-auto px-4 max-w-7xl">
         {toastMessage && (
-          <div className="fixed top-20 right-4 z-50 bg-[#556B2F] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-fade-in">
+          <div className="fixed top-20 right-4 z-50 bg-[#556B2F] text-white px-4 py-3 rounded-none shadow-lg flex items-center gap-2 animate-fade-in">
             <CheckCircle size={16} />
             <span className="text-sm font-medium">{toastMessage}</span>
           </div>
@@ -188,9 +188,10 @@ const OptimizationDashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-[#1a1a2e] flex items-center gap-3">
-              <div className="p-2 bg-[#C04000]/10 rounded-xl">
+              <div className="p-2 bg-[#C04000]/10 rounded-none">
                 <TrendingDown size={28} className="text-[#C04000]" />
               </div>
+              <span className="text-accent font-normal" aria-hidden="true">:: </span>
               Moteur d'optimisation tarifaire
             </h1>
             <p className="text-ink-soft mt-2 ml-[52px]">Analysez, prédisez et optimisez vos coûts d'expédition</p>
@@ -198,7 +199,7 @@ const OptimizationDashboard = () => {
           <button
             onClick={() => analyzeMutation.mutate()}
             disabled={analyzeMutation.isPending}
-            className="bg-[#C04000] text-white px-6 py-3 rounded-xl hover:bg-[#A03000] transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50"
+            className="bg-[#C04000] text-white px-6 py-3 rounded-none hover:bg-[#A03000] transition-colors flex items-center gap-2 font-medium shadow-sm disabled:opacity-50"
           >
             {analyzeMutation.isPending ? (
               <Loader2 size={18} className="animate-spin" />
@@ -242,7 +243,7 @@ const OptimizationDashboard = () => {
         </div>
 
         {/* Prediction Form */}
-        <div className="bg-surface rounded-xl shadow-sm border border-[#DEB887]/30 p-6 mb-8">
+        <div className="bg-surface rounded-none shadow-sm border border-[#DEB887]/30 p-6 mb-8">
           <h2 className="text-lg font-semibold text-[#1a1a2e] flex items-center gap-2 mb-4">
             <Search size={20} className="text-[#C04000]" />
             Prédiction de tarif
@@ -254,7 +255,7 @@ const OptimizationDashboard = () => {
                 type="text"
                 value={predictForm.origin}
                 onChange={(e) => setPredictForm({ ...predictForm, origin: e.target.value })}
-                className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
+                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
                 placeholder="Ex: FR"
                 maxLength={2}
               />
@@ -265,7 +266,7 @@ const OptimizationDashboard = () => {
                 type="text"
                 value={predictForm.destination}
                 onChange={(e) => setPredictForm({ ...predictForm, destination: e.target.value })}
-                className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
+                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
                 placeholder="Ex: DE"
                 maxLength={2}
               />
@@ -275,7 +276,7 @@ const OptimizationDashboard = () => {
               <select
                 value={predictForm.mode}
                 onChange={(e) => setPredictForm({ ...predictForm, mode: e.target.value })}
-                className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
+                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
               >
                 <option value="">Tous</option>
                 <option value="SEA">Maritime</option>
@@ -291,7 +292,7 @@ const OptimizationDashboard = () => {
                 min="0"
                 value={predictForm.weight}
                 onChange={(e) => setPredictForm({ ...predictForm, weight: e.target.value })}
-                className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
+                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
                 placeholder="Ex: 500"
               />
             </div>
@@ -303,7 +304,7 @@ const OptimizationDashboard = () => {
                 min="0"
                 value={predictForm.volume}
                 onChange={(e) => setPredictForm({ ...predictForm, volume: e.target.value })}
-                className="w-full border border-line rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
+                className="w-full border border-line rounded-none px-3 py-2 text-sm focus:ring-2 focus:ring-[#C04000] focus:border-[#C04000]"
                 placeholder="Ex: 2.5"
               />
             </div>
@@ -311,7 +312,7 @@ const OptimizationDashboard = () => {
               <button
                 type="submit"
                 disabled={predictMutation.isPending}
-                className="bg-[#C04000] text-white px-6 py-2.5 rounded-lg hover:bg-[#A03000] transition-colors flex items-center gap-2 text-sm font-medium disabled:opacity-50"
+                className="bg-[#C04000] text-white px-6 py-2.5 rounded-none hover:bg-[#A03000] transition-colors flex items-center gap-2 text-sm font-medium disabled:opacity-50"
               >
                 {predictMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
                 Prédire le tarif
@@ -321,7 +322,7 @@ const OptimizationDashboard = () => {
 
           {/* Predict Result */}
           {predictResult && (
-            <div className="mt-6 p-5 bg-[#FAF0E6]/50 rounded-xl border border-[#DEB887]/40">
+            <div className="mt-6 p-5 bg-[#FAF0E6]/50 rounded-none border border-[#DEB887]/40">
               <h3 className="font-semibold text-[#1a1a2e] mb-3 flex items-center gap-2">
                 <TrendingDown size={16} className="text-[#C04000]" />
                 Résultat de la prédiction
@@ -349,7 +350,7 @@ const OptimizationDashboard = () => {
         </div>
 
         {/* Lane Analysis Table */}
-        <div className="bg-surface rounded-xl shadow-sm border border-[#DEB887]/30 p-6 mb-8">
+        <div className="bg-surface rounded-none shadow-sm border border-[#DEB887]/30 p-6 mb-8">
           <h2 className="text-lg font-semibold text-[#1a1a2e] flex items-center gap-2 mb-4">
             <Truck size={20} className="text-[#C04000]" />
             Tableau de bord des lanes
@@ -411,7 +412,7 @@ const OptimizationDashboard = () => {
         </div>
 
         {/* Recommendations */}
-        <div className="bg-surface rounded-xl shadow-sm border border-[#DEB887]/30 p-6 mb-8">
+        <div className="bg-surface rounded-none shadow-sm border border-[#DEB887]/30 p-6 mb-8">
           <h2 className="text-lg font-semibold text-[#1a1a2e] flex items-center gap-2 mb-4">
             <Zap size={20} className="text-[#C04000]" />
             Recommandations
@@ -428,7 +429,7 @@ const OptimizationDashboard = () => {
           ) : (
             <div className="space-y-3">
               {recommendations.map((rec: RateOptimization) => (
-                <div key={rec.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border border-line hover:border-[#DEB887]/60 bg-[#FAF0E6]/20 transition-colors gap-3">
+                <div key={rec.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-none border border-line hover:border-[#DEB887]/60 bg-[#FAF0E6]/20 transition-colors gap-3">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
                       <span className="font-medium text-[#1a1a2e] flex items-center gap-1.5">
@@ -456,7 +457,7 @@ const OptimizationDashboard = () => {
                       <button
                         onClick={() => acceptOptMutation.mutate(rec.id)}
                         disabled={acceptOptMutation.isPending}
-                        className="bg-[#556B2F] text-white px-4 py-2 rounded-lg hover:bg-[#445820] transition-colors text-sm font-medium disabled:opacity-50"
+                        className="bg-[#556B2F] text-white px-4 py-2 rounded-none hover:bg-[#445820] transition-colors text-sm font-medium disabled:opacity-50"
                       >
                         Accepter
                       </button>
@@ -469,7 +470,7 @@ const OptimizationDashboard = () => {
         </div>
 
         {/* Consolidation */}
-        <div className="bg-surface rounded-xl shadow-sm border border-[#DEB887]/30 p-6">
+        <div className="bg-surface rounded-none shadow-sm border border-[#DEB887]/30 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[#1a1a2e] flex items-center gap-2">
               <Package size={20} className="text-[#C04000]" />
@@ -478,7 +479,7 @@ const OptimizationDashboard = () => {
             <button
               onClick={() => findConsolMutation.mutate()}
               disabled={findConsolMutation.isPending}
-              className="bg-[#556B2F] text-white px-4 py-2 rounded-lg hover:bg-[#445820] transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
+              className="bg-[#556B2F] text-white px-4 py-2 rounded-none hover:bg-[#445820] transition-colors text-sm font-medium flex items-center gap-2 disabled:opacity-50"
             >
               {findConsolMutation.isPending ? <Loader2 size={14} className="animate-spin" /> : <Package size={14} />}
               Rechercher
@@ -496,7 +497,7 @@ const OptimizationDashboard = () => {
           ) : (
             <div className="space-y-3">
               {consolidations.map((consol: ConsolidationOpportunity) => (
-                <div key={consol.id} className="p-4 rounded-xl border border-line hover:border-[#DEB887]/60 bg-[#FAF0E6]/20 transition-colors">
+                <div key={consol.id} className="p-4 rounded-none border border-line hover:border-[#DEB887]/60 bg-[#FAF0E6]/20 transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-3 mb-1">
@@ -527,7 +528,7 @@ const OptimizationDashboard = () => {
                         <button
                           onClick={() => acceptConsolMutation.mutate(consol.id)}
                           disabled={acceptConsolMutation.isPending}
-                          className="bg-[#556B2F] text-white px-4 py-2 rounded-lg hover:bg-[#445820] transition-colors text-sm font-medium disabled:opacity-50"
+                          className="bg-[#556B2F] text-white px-4 py-2 rounded-none hover:bg-[#445820] transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Accepter
                         </button>

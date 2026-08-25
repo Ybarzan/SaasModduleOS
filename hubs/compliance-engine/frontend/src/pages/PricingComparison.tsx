@@ -96,7 +96,7 @@ export default function PricingComparison() {
         </div>
 
         {/* Table */}
-        <div className="bg-surface rounded-2xl border border-line overflow-hidden mb-12 shadow-sm">
+        <div className="bg-surface rounded-none border border-line overflow-hidden mb-12 shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -134,21 +134,21 @@ export default function PricingComparison() {
 
         {/* Angles */}
         <div className="grid md:grid-cols-3 gap-6 mb-12">
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <h3 className="font-bold text-ink mb-2">Douane française native</h3>
             <p className="text-sm text-ink-soft">
               TARIC réel, DEB, Intrastat, screening DPS, EORI, facture douanière — inclus dans le
               plan Pro, pas en add-on payant.
             </p>
           </div>
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <h3 className="font-bold text-ink mb-2">Pas d'intermédiaire</h3>
             <p className="text-sm text-ink-soft">
               Vous gardez le contrôle total sur vos tarifs négociés et vos relations transporteurs.
               Pas de frais de courtage cachés.
             </p>
           </div>
-          <div className="bg-surface rounded-2xl border border-line p-6">
+          <div className="bg-surface rounded-none border border-line p-6">
             <h3 className="font-bold text-ink mb-2">Conçu en France, pour l'EU</h3>
             <p className="text-sm text-ink-soft">
               DGDDI native, EUR.1, EORI FR, seuils DEB 2026 — là où Flexport (US-centric) et Easyship
@@ -161,7 +161,7 @@ export default function PricingComparison() {
         <div className="text-center">
           <Link
             to="/pricing"
-            className="inline-flex items-center gap-2 bg-accent text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-accent-strong shadow-md shadow-accent/20 transition-all"
+            className="inline-flex items-center gap-2 bg-accent text-white font-semibold px-8 py-3.5 rounded-none hover:bg-accent-strong shadow-md shadow-accent/20 transition-all"
           >
             Voir les plans IncoKalk
             <ArrowRight size={16} />

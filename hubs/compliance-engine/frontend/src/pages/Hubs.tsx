@@ -47,9 +47,9 @@ function HubCard({ group }: { group: NavGroup }) {
   const remaining = group.items.length - preview.length;
 
   return (
-    <div className="bg-surface border border-line rounded-2xl p-6 flex flex-col h-full">
+    <div className="bg-surface border border-line rounded-none p-6 flex flex-col h-full">
       <div className="flex items-center gap-3 mb-3">
-        <span className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-accent-soft text-accent-strong shrink-0">
+        <span className="inline-flex items-center justify-center w-11 h-11 rounded-none bg-accent-soft text-accent-strong shrink-0">
           <Icon size={20} />
         </span>
         <div>
@@ -103,7 +103,7 @@ export default function Hubs() {
           ))}
         </div>
 
-        <div className="text-center bg-surface border border-line rounded-2xl p-8">
+        <div className="text-center bg-surface border border-line rounded-none p-8">
           <h2 className="text-xl font-bold text-ink mb-2">Quel plan débloque quels Hubs ?</h2>
           <p className="text-ink-soft mb-6">
             Comparez les 4 plans IncoKalk et le détail des modules inclus dans chacun.
@@ -115,7 +115,7 @@ export default function Hubs() {
             </Link>
             <Link
               to="/register"
-              className="px-6 py-3 rounded-lg font-semibold border border-line text-ink hover:bg-surface-2 transition-colors inline-flex items-center justify-center gap-2"
+              className="px-6 py-3 rounded-none font-semibold border border-line text-ink hover:bg-surface-2 transition-colors inline-flex items-center justify-center gap-2"
             >
               Essayer gratuitement
             </Link>

@@ -57,13 +57,16 @@ const ProviderHealth = () => {
     <div className="min-h-screen bg-bg py-12">
       <div className="container mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-ink mb-2">État de santé</h1>
+          <h1 className="text-4xl font-bold text-ink mb-2">
+            <span className="text-accent font-normal" aria-hidden="true">:: </span>
+            État de santé
+          </h1>
           <p className="text-ink-soft">Vue d'ensemble de vos fournisseurs de tarifs</p>
         </div>
 
         {/* Stats Row */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-surface rounded-lg shadow p-5 border-l-4 border-accent">
+          <div className="bg-surface rounded-none shadow p-5 border-l-4 border-accent">
             <div className="flex items-center space-x-3">
               <Server className="h-8 w-8 text-accent" />
               <div>
@@ -72,7 +75,7 @@ const ProviderHealth = () => {
               </div>
             </div>
           </div>
-          <div className="bg-surface rounded-lg shadow p-5 border-l-4 border-success">
+          <div className="bg-surface rounded-none shadow p-5 border-l-4 border-success">
             <div className="flex items-center space-x-3">
               <ShieldCheck className="h-8 w-8 text-success" />
               <div>
@@ -81,7 +84,7 @@ const ProviderHealth = () => {
               </div>
             </div>
           </div>
-          <div className="bg-surface rounded-lg shadow p-5 border-l-4 border-warning">
+          <div className="bg-surface rounded-none shadow p-5 border-l-4 border-warning">
             <div className="flex items-center space-x-3">
               <AlertTriangle className="h-8 w-8 text-warning" />
               <div>
@@ -90,7 +93,7 @@ const ProviderHealth = () => {
               </div>
             </div>
           </div>
-          <div className="bg-surface rounded-lg shadow p-5 border-l-4 border-danger">
+          <div className="bg-surface rounded-none shadow p-5 border-l-4 border-danger">
             <div className="flex items-center space-x-3">
               <WifiOff className="h-8 w-8 text-danger" />
               <div>
@@ -102,7 +105,7 @@ const ProviderHealth = () => {
         </div>
 
         {/* Timeline / Status List */}
-        <div className="bg-surface rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-surface rounded-none shadow-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-line">
             <div className="flex items-center space-x-2">
               <Activity size={20} className="text-ink-soft" />

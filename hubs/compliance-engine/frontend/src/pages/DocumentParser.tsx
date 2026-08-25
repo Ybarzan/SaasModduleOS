@@ -121,7 +121,10 @@ const DocumentParser = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-ink">Parser de documents</h1>
+        <h1 className="text-2xl font-bold text-ink">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Parser de documents
+        </h1>
         <p className="text-ink-soft mt-1">Extraction automatique de données depuis des documents trade</p>
       </div>
 
@@ -136,7 +139,7 @@ const DocumentParser = () => {
       </div>
 
       {/* Parser form */}
-      <div className="bg-surface rounded-xl border border-line p-6 mb-8">
+      <div className="bg-surface rounded-none border border-line p-6 mb-8">
         <h2 className="text-lg font-semibold text-ink mb-4">Parser un document</h2>
 
         {/* Document type selector */}
@@ -145,7 +148,7 @@ const DocumentParser = () => {
             <button
               key={dt.value}
               onClick={() => setDocType(dt.value)}
-              className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all text-sm font-medium ${
+              className={`flex items-center gap-2 p-3 rounded-none border-2 transition-all text-sm font-medium ${
                 docType === dt.value
                   ? `border-${dt.color}-500 bg-${dt.color}-50 text-${dt.color}-700`
                   : 'border-line text-ink-soft hover:border-line'
@@ -164,7 +167,7 @@ const DocumentParser = () => {
             value={textInput}
             onChange={(e) => setTextInput(e.target.value)}
             rows={8}
-            className="w-full px-4 py-3 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
+            className="w-full px-4 py-3 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
             placeholder={`Collez le texte extrait de votre document ici...\n\nExemple facture:\nSeller: ACME Corp\nBuyer: Import SARL\nInvoice No: INV-2026-001\nTotal Amount: 15,000.00 EUR\nHS Code: 6109.10`}
           />
         </div>
@@ -173,7 +176,7 @@ const DocumentParser = () => {
         <div className="mb-4">
           <label className="block text-sm font-medium text-ink mb-2">Ou uploader un PDF</label>
           <div className="flex items-center gap-3">
-            <label className="flex-1 flex items-center justify-center px-4 py-3 border-2 border-dashed border-line rounded-lg cursor-pointer hover:border-accent/60 transition-colors">
+            <label className="flex-1 flex items-center justify-center px-4 py-3 border-2 border-dashed border-line rounded-none cursor-pointer hover:border-accent/60 transition-colors">
               <Upload size={18} className="text-ink-soft mr-2" />
               <span className="text-sm text-ink-soft">
                 {selectedFile ? selectedFile.name : 'Choisir un PDF'}
@@ -193,7 +196,7 @@ const DocumentParser = () => {
           <button
             onClick={handleParseText}
             disabled={!textInput.trim() || parseTextMutation.isPending}
-            className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {parseTextMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
             Parser le texte
@@ -201,7 +204,7 @@ const DocumentParser = () => {
           <button
             onClick={handleParsePdf}
             disabled={!selectedFile || parsePdfMutation.isPending}
-            className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {parsePdfMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
             Parser le PDF
@@ -210,7 +213,7 @@ const DocumentParser = () => {
       </div>
 
       {/* History */}
-      <div className="bg-surface rounded-xl border border-line overflow-hidden">
+      <div className="bg-surface rounded-none border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">Historique des parsings</h2>
         </div>

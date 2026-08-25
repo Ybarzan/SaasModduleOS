@@ -51,8 +51,15 @@ const Login = () => {
         description="Connectez-vous à votre compte IncoKalk pour accéder à vos simulations Incoterms, devis transport et expéditions."
         path="/login"
       />
-      <div className="max-w-md w-full bg-surface rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-bold text-center mb-8">Connexion</h2>
+      <div className="relative max-w-md w-full bg-surface rounded-none shadow-lg p-8">
+        <span className="hud-corner hud-corner-tl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-tr" aria-hidden="true" />
+        <span className="hud-corner hud-corner-bl" aria-hidden="true" />
+        <span className="hud-corner hud-corner-br" aria-hidden="true" />
+        <h2 className="text-3xl font-bold text-center mb-8">
+          <span className="text-accent font-normal" aria-hidden="true">:: </span>
+          Connexion
+        </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -62,7 +69,7 @@ const Login = () => {
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               autoComplete="email"
-              className="w-full px-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full px-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent"
               required
             />
           </div>
@@ -74,7 +81,7 @@ const Login = () => {
               autoComplete="current-password"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full px-4 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent"
+              className="w-full px-4 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent"
               required
             />
           </div>
@@ -88,7 +95,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent text-white py-3 rounded-lg font-semibold hover:bg-accent-strong disabled:opacity-50 transition-colors"
+            className="w-full bg-accent text-white py-3 rounded-none font-semibold hover:bg-accent-strong disabled:opacity-50 transition-colors"
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>
