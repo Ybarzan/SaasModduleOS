@@ -33,10 +33,10 @@ export default function ConditionTreeEditor({ node, onChange, fields, depth = 0 
   };
 
   return (
-    <div className={`border border-line rounded-lg p-3 ${depth > 0 ? 'bg-surface' : 'bg-bg'}`}>
+    <div className={`border border-line rounded-none p-3 ${depth > 0 ? 'bg-surface' : 'bg-bg'}`}>
       <div className="flex items-center gap-2 mb-2">
         <span className="text-xs text-ink-soft">Combiner avec :</span>
-        <div className="flex gap-1 bg-surface-2 p-0.5 rounded-md">
+        <div className="flex gap-1 bg-surface-2 p-0.5 rounded-none">
           {(['AND', 'OR'] as const).map((t) => (
             <button
               key={t}
@@ -73,7 +73,7 @@ export default function ConditionTreeEditor({ node, onChange, fields, depth = 0 
               <select
                 value={child.field}
                 onChange={(e) => updateChild(i, { ...child, field: e.target.value })}
-                className="border border-line rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
+                className="border border-line rounded-none px-2 py-1.5 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
               >
                 {fields.map((f) => (
                   <option key={f.value} value={f.value}>{f.label}</option>
@@ -82,7 +82,7 @@ export default function ConditionTreeEditor({ node, onChange, fields, depth = 0 
               <select
                 value={child.operator}
                 onChange={(e) => updateChild(i, { ...child, operator: e.target.value })}
-                className="border border-line rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
+                className="border border-line rounded-none px-2 py-1.5 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
               >
                 {OPERATORS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -93,7 +93,7 @@ export default function ConditionTreeEditor({ node, onChange, fields, depth = 0 
                 value={child.value}
                 onChange={(e) => updateChild(i, { ...child, value: e.target.value })}
                 placeholder="Valeur"
-                className="flex-1 min-w-0 border border-line rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
+                className="flex-1 min-w-0 border border-line rounded-none px-2 py-1.5 text-sm focus:ring-2 focus:ring-accent focus:border-accent"
               />
               <button
                 type="button"
