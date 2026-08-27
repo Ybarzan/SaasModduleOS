@@ -4,6 +4,9 @@
 !.env.example
 !.env.example.*
 
+# Certificats TLS locaux (auto-signés, générés par machine — jamais commit)
+infrastructure/nginx/ssl/
+
 # IDE
 .idea/
 .vscode/
