@@ -41,9 +41,10 @@ class HsCodeSuggestionServiceTest {
         MockitoAnnotations.openMocks(this);
         companyId = UUID.randomUUID();
         company = Company.builder().id(companyId).name("ACME").build();
-        // Source par defaut : pas de contribution semantique, sauf surcharge explicite
-        // par un test qui veut exercer le blending avec cette 4e source.
+        // Sources par defaut : pas de contribution semantique, sauf surcharge explicite
+        // par un test qui veut exercer le blending avec ces 4e/5e sources.
         when(semanticClassification.classify(anyString(), eq(3))).thenReturn(List.of());
+        when(semanticClassification.classifyFromCompanyHistory(any(), anyString(), eq(3))).thenReturn(List.of());
     }
 
     // ------------------------------------------------------------------
@@ -258,6 +259,51 @@ class HsCodeSuggestionServiceTest {
 
             assertThat(result.getSuggestedCode1()).isEqualTo("8517");
             assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.60));
+        }
+    }
+
+    @Test
+    @DisplayName("suggest → historique de l'entreprise seul contribue un code, avec le bon companyId")
+    void suggest_companyHistoryOnlySource_addsNewCodeScopedToCurrentCompany() {
+        try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
+            ctx.when(TenantContext::get).thenReturn(companyId);
+            when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+            when(hsMlService.getTotalCorrections()).thenReturn(0);
+            when(hsMlService.predict(anyString(), eq(3))).thenReturn(List.of());
+            when(taricClassification.classify(anyString(), eq(3))).thenReturn(List.of());
+            when(semanticClassification.classifyFromCompanyHistory(eq(companyId), anyString(), eq(3))).thenReturn(
+                List.of(new SemanticClassificationService.ClassificationResult("6403", "Chaussures", 0.7))
+            );
+
+            HsCodeSuggestion result = service.suggest("bottes de sécurité renforcées");
+
+            assertThat(result.getSuggestedCode1()).isEqualTo("6403");
+            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.70));
+            // Jamais l'ID d'une autre entreprise -- c'est tout le point de cette source (V72).
+            verify(semanticClassification).classifyFromCompanyHistory(eq(companyId), anyString(), eq(3));
+        }
+    }
+
+    @Test
+    @DisplayName("suggest → historique d'entreprise sous le seuil 0.4 est ignoré")
+    void suggest_companyHistoryBelowThreshold_ignored() {
+        try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
+            ctx.when(TenantContext::get).thenReturn(companyId);
+            when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+            when(hsMlService.getTotalCorrections()).thenReturn(0);
+            when(hsMlService.predict(anyString(), eq(3))).thenReturn(List.of());
+            when(taricClassification.classify(anyString(), eq(3))).thenReturn(List.of());
+            when(semanticClassification.classifyFromCompanyHistory(eq(companyId), anyString(), eq(3))).thenReturn(
+                List.of(new SemanticClassificationService.ClassificationResult("6403", "Chaussures", 0.3))
+            );
+
+            HsCodeSuggestion result = service.suggest("Achat d'une voiture rouge");
+
+            // Repli mot-clé : 0.3 < 0.4, donc le code d'historique n'entre jamais dans le blend.
+            assertThat(result.getSuggestedCode1()).isEqualTo("8703");
+            assertThat(result.getSuggestedCode1()).isNotEqualTo("6403");
         }
     }
 

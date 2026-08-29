@@ -1,6 +1,8 @@
 package com.incokalk.service;
 
+import com.incokalk.repository.CompanyHsEmbeddingRepository;
 import com.incokalk.repository.TaricEmbeddingRepository;
+import com.incokalk.repository.TaricRateRepository;
 import com.incokalk.service.ml.EmbeddingsClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,10 +12,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +31,12 @@ class SemanticClassificationServiceTest {
 
     @Mock
     private TaricEmbeddingRepository embeddingRepo;
+
+    @Mock
+    private CompanyHsEmbeddingRepository companyEmbeddingRepo;
+
+    @Mock
+    private TaricRateRepository taricRateRepo;
 
     @InjectMocks
     private SemanticClassificationService service;
@@ -70,5 +82,87 @@ class SemanticClassificationServiceTest {
         List<SemanticClassificationService.ClassificationResult> results = service.classify("produit obscur", 1);
 
         assertThat(results.get(0).confidence()).isZero();
+    }
+
+    // ------------------------------------------------------------------
+    // classifyFromCompanyHistory() — Phase B, V72
+    // ------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Historique d'entreprise -> résout la description OFFICIELLE TARIC, pas le libellé produit historique")
+    void classifyFromCompanyHistory_resolvesOfficialDescription_notRawProductText() {
+        UUID companyId = UUID.randomUUID();
+        float[] vector = {0.4f, 0.5f};
+        when(embeddingsClient.encodeOne("iPhone 15 Pro reconditionné")).thenReturn(vector);
+        when(companyEmbeddingRepo.findNearest(eq(companyId), eq(vector), eq(3))).thenReturn(List.of(
+            // Le "libellé" ici est le texte produit historique de l'entreprise, pas la
+            // description officielle du code -- le service doit la résoudre séparément.
+            new CompanyHsEmbeddingRepository.Neighbor("8517", "iPhone 15 Pro reconditionné", 0.1)
+        ));
+        when(taricRateRepo.findDescriptionsByCodes(List.of("8517"))).thenReturn(List.<Object[]>of(
+            new Object[]{"8517", "Appareils telephonie smartphones"}
+        ));
+
+        List<SemanticClassificationService.ClassificationResult> results =
+            service.classifyFromCompanyHistory(companyId, "iPhone 15 Pro reconditionné", 3);
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).hsCode()).isEqualTo("8517");
+        assertThat(results.get(0).description()).isEqualTo("Appareils telephonie smartphones");
+    }
+
+    @Test
+    @DisplayName("Code sans correspondance TARIC officielle -> repli sur le libellé historique plutôt qu'un vide")
+    void classifyFromCompanyHistory_noOfficialDescriptionFound_fallsBackToHistoricalLabel() {
+        UUID companyId = UUID.randomUUID();
+        float[] vector = {0.1f};
+        when(embeddingsClient.encodeOne("produit interne")).thenReturn(vector);
+        when(companyEmbeddingRepo.findNearest(eq(companyId), eq(vector), eq(3))).thenReturn(List.of(
+            new CompanyHsEmbeddingRepository.Neighbor("0000", "produit interne custom", 0.2)
+        ));
+        when(taricRateRepo.findDescriptionsByCodes(List.of("0000"))).thenReturn(List.of());
+
+        List<SemanticClassificationService.ClassificationResult> results =
+            service.classifyFromCompanyHistory(companyId, "produit interne", 3);
+
+        assertThat(results.get(0).description()).isEqualTo("produit interne custom");
+    }
+
+    @Test
+    @DisplayName("Service d'embeddings indisponible -> aucune interrogation de l'historique d'entreprise")
+    void classifyFromCompanyHistory_embeddingsUnavailable_neverQueriesRepo() {
+        when(embeddingsClient.encodeOne(any())).thenReturn(null);
+
+        List<SemanticClassificationService.ClassificationResult> results =
+            service.classifyFromCompanyHistory(UUID.randomUUID(), "un produit", 3);
+
+        assertThat(results).isEmpty();
+        verify(companyEmbeddingRepo, never()).findNearest(any(), any(), anyInt());
+    }
+
+    // ------------------------------------------------------------------
+    // indexConfirmation() — appelé depuis HsCodeSuggestionController au confirm
+    // ------------------------------------------------------------------
+
+    @Test
+    @DisplayName("indexConfirmation encode puis upsert, scopé à l'entreprise donnée")
+    void indexConfirmation_encodesAndUpsertsScopedToCompany() {
+        UUID companyId = UUID.randomUUID();
+        float[] vector = {0.7f, 0.8f};
+        when(embeddingsClient.encodeOne("bottes de sécurité")).thenReturn(vector);
+
+        service.indexConfirmation(companyId, "bottes de sécurité", "6403");
+
+        verify(companyEmbeddingRepo).upsert(companyId, "bottes de sécurité", "6403", vector);
+    }
+
+    @Test
+    @DisplayName("indexConfirmation : service d'embeddings indisponible -> aucun upsert, pas d'exception")
+    void indexConfirmation_embeddingsUnavailable_skipsUpsertSilently() {
+        when(embeddingsClient.encodeOne(any())).thenReturn(null);
+
+        service.indexConfirmation(UUID.randomUUID(), "un produit", "1234");
+
+        verify(companyEmbeddingRepo, never()).upsert(any(), any(), any(), any());
     }
 }

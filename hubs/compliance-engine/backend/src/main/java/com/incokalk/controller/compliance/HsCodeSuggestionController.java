@@ -6,6 +6,7 @@ import com.incokalk.model.HsCodeSuggestion;
 import com.incokalk.security.RequiresPlan;
 import com.incokalk.security.RolesAllowed;
 import com.incokalk.service.HsCodeSuggestionService;
+import com.incokalk.service.SemanticClassificationService;
 import com.incokalk.service.ml.HsMlService;
 import com.incokalk.service.ocr.OcrService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +32,7 @@ public class HsCodeSuggestionController {
     private final HsCodeSuggestionService hsCodeSuggestionService;
     private final OcrService ocrService;
     private final HsMlService hsMlService;
+    private final SemanticClassificationService semanticClassificationService;
 
     @PostMapping("/suggest")
     @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
@@ -87,6 +89,8 @@ public class HsCodeSuggestionController {
         try {
             HsCodeSuggestion updated = hsCodeSuggestionService.confirmSelection(id, req.selectedCode());
             hsMlService.recordCorrection(updated.getProductDescription(), req.selectedCode());
+            semanticClassificationService.indexConfirmation(
+                updated.getCompany().getId(), updated.getProductDescription(), req.selectedCode());
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));

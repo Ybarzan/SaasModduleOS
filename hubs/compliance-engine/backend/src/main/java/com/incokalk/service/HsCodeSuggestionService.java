@@ -293,6 +293,26 @@ public class HsCodeSuggestionService {
             }
         }
 
+        // 3ter. Historique sémantique DE CETTE ENTREPRISE (V72, scopé company_id) —
+        // un rapprochement avec un produit que cette même société a déjà classé et
+        // confirmé elle-même est un signal fort, même à similarité modérée : seuil
+        // plus bas que pour le TARIC générique.
+        List<SemanticClassificationService.ClassificationResult> historyResults =
+            semanticClassification.classifyFromCompanyHistory(companyId, productDescription, 3);
+
+        for (SemanticClassificationService.ClassificationResult h : historyResults) {
+            String code = h.hsCode();
+            double hConfidence = h.confidence();
+            if (blended.containsKey(code)) {
+                HsSuggestion existing = blended.get(code);
+                double combined = (existing.confidence() + hConfidence) / 2;
+                blended.put(code, new HsSuggestion(code, existing.description(), combined,
+                    existing.source() + "+history"));
+            } else if (hConfidence >= 0.4) {
+                blended.put(code, new HsSuggestion(code, h.description(), hConfidence, "history"));
+            }
+        }
+
         if (!blended.isEmpty() && blended.values().stream().anyMatch(s -> s.confidence() > 0.1)) {
             results = blended.values().stream()
                 .sorted(Comparator.comparingDouble(HsSuggestion::confidence).reversed())
