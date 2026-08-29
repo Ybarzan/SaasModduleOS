@@ -30,6 +30,7 @@ class HsCodeSuggestionServiceTest {
     @Mock CompanyRepository companyRepo;
     @Mock TaricClassificationService taricClassification;
     @Mock HsMlService hsMlService;
+    @Mock SemanticClassificationService semanticClassification;
     @InjectMocks HsCodeSuggestionService service;
 
     UUID companyId;
@@ -40,6 +41,9 @@ class HsCodeSuggestionServiceTest {
         MockitoAnnotations.openMocks(this);
         companyId = UUID.randomUUID();
         company = Company.builder().id(companyId).name("ACME").build();
+        // Source par defaut : pas de contribution semantique, sauf surcharge explicite
+        // par un test qui veut exercer le blending avec cette 4e source.
+        when(semanticClassification.classify(anyString(), eq(3))).thenReturn(List.of());
     }
 
     // ------------------------------------------------------------------
@@ -210,6 +214,50 @@ class HsCodeSuggestionServiceTest {
             assertThat(result.getSuggestedCode2()).isNull();
             assertThat(result.getSuggestedDescription2()).isNull();
             assertThat(result.getSuggestedCode3()).isNull();
+        }
+    }
+
+    @Test
+    @DisplayName("suggest → source sémantique seule contribue un code absent du ML/TARIC")
+    void suggest_semanticOnlySource_addsNewCode() {
+        try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
+            ctx.when(TenantContext::get).thenReturn(companyId);
+            when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+            when(hsMlService.getTotalCorrections()).thenReturn(0);
+            when(hsMlService.predict(anyString(), eq(3))).thenReturn(List.of());
+            when(taricClassification.classify(anyString(), eq(3))).thenReturn(List.of());
+            when(semanticClassification.classify(anyString(), eq(3))).thenReturn(
+                List.of(new SemanticClassificationService.ClassificationResult("8517", "Téléphonie", 0.9))
+            );
+
+            HsCodeSuggestion result = service.suggest("GSM dernier cri");
+
+            assertThat(result.getSuggestedCode1()).isEqualTo("8517");
+            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.90));
+        }
+    }
+
+    @Test
+    @DisplayName("suggest → source sémantique et TARIC sur le même code se combinent, tag '+semantic'")
+    void suggest_semanticMergesWithTaricSameCode() {
+        try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
+            ctx.when(TenantContext::get).thenReturn(companyId);
+            when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+            when(hsMlService.getTotalCorrections()).thenReturn(0);
+            when(hsMlService.predict(anyString(), eq(3))).thenReturn(List.of());
+            when(taricClassification.classify(anyString(), eq(3))).thenReturn(
+                List.of(new TaricClassificationService.ClassificationResult("8517", "Appareils télécom", 0.4))
+            );
+            when(semanticClassification.classify(anyString(), eq(3))).thenReturn(
+                List.of(new SemanticClassificationService.ClassificationResult("8517", "Téléphonie", 0.8))
+            );
+
+            HsCodeSuggestion result = service.suggest("GSM dernier cri");
+
+            assertThat(result.getSuggestedCode1()).isEqualTo("8517");
+            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.60));
         }
     }
 

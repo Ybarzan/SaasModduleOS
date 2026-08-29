@@ -26,6 +26,7 @@ public class HsCodeSuggestionService {
     private final CompanyRepository companyRepo;
     private final TaricClassificationService taricClassification;
     private final HsMlService hsMlService;
+    private final SemanticClassificationService semanticClassification;
 
     public record HsSuggestion(String code, String description, double confidence, String source) {}
 
@@ -270,6 +271,25 @@ public class HsCodeSuggestionService {
                     existing.source() + "+taric"));
             } else if (tConfidence >= 0.15) {
                 blended.put(code, new HsSuggestion(code, t.description(), tConfidence, "taric"));
+            }
+        }
+
+        // 3bis. Similarité sémantique (embeddings locaux) — comble ce que le TF-IDF
+        // au-dessus ne peut pas voir : deux formulations différentes du même produit
+        // sans mot en commun (ex: "smartphone" vs "téléphone intelligent").
+        List<SemanticClassificationService.ClassificationResult> semanticResults =
+            semanticClassification.classify(productDescription, 3);
+
+        for (SemanticClassificationService.ClassificationResult s : semanticResults) {
+            String code = s.hsCode();
+            double sConfidence = s.confidence();
+            if (blended.containsKey(code)) {
+                HsSuggestion existing = blended.get(code);
+                double combined = (existing.confidence() + sConfidence) / 2;
+                blended.put(code, new HsSuggestion(code, existing.description(), combined,
+                    existing.source() + "+semantic"));
+            } else if (sConfidence >= 0.5) {
+                blended.put(code, new HsSuggestion(code, s.description(), sConfidence, "semantic"));
             }
         }
 

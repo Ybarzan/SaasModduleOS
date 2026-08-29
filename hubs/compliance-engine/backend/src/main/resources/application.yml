@@ -213,6 +213,10 @@ incokalk:
       enabled: ${ML_ETA_ENABLED:true}
       timeout-ms: ${ML_ETA_TIMEOUT:5000}
       blend-weight: ${ML_ETA_BLEND:0.7}
+    embeddings:
+      base-url: ${ML_EMBEDDINGS_URL:http://localhost:8001}
+      enabled: ${ML_EMBEDDINGS_ENABLED:true}
+      timeout-ms: ${ML_EMBEDDINGS_TIMEOUT:10000}
 
 # ===========================================
 # Configuration Swagger / OpenAPI
