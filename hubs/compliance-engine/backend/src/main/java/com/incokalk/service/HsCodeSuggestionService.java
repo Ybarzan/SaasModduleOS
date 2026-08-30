@@ -313,6 +313,25 @@ public class HsCodeSuggestionService {
             }
         }
 
+        // 3quater. Notes explicatives officielles de la nomenclature combinée (NENC,
+        // V73, ~2935 codes) — corpus bien plus riche que les descriptions TARIC de
+        // démo, avec du texte interprétatif au lieu d'un simple libellé.
+        List<SemanticClassificationService.ClassificationResult> nencResults =
+            semanticClassification.classifyFromExplanatoryNotes(productDescription, 3);
+
+        for (SemanticClassificationService.ClassificationResult n : nencResults) {
+            String code = n.hsCode();
+            double nConfidence = n.confidence();
+            if (blended.containsKey(code)) {
+                HsSuggestion existing = blended.get(code);
+                double combined = (existing.confidence() + nConfidence) / 2;
+                blended.put(code, new HsSuggestion(code, existing.description(), combined,
+                    existing.source() + "+nenc"));
+            } else if (nConfidence >= 0.5) {
+                blended.put(code, new HsSuggestion(code, n.description(), nConfidence, "nenc"));
+            }
+        }
+
         if (!blended.isEmpty() && blended.values().stream().anyMatch(s -> s.confidence() > 0.1)) {
             results = blended.values().stream()
                 .sorted(Comparator.comparingDouble(HsSuggestion::confidence).reversed())

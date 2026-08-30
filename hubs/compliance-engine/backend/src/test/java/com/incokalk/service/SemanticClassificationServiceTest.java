@@ -1,6 +1,7 @@
 package com.incokalk.service;
 
 import com.incokalk.repository.CompanyHsEmbeddingRepository;
+import com.incokalk.repository.NencEmbeddingRepository;
 import com.incokalk.repository.TaricEmbeddingRepository;
 import com.incokalk.repository.TaricRateRepository;
 import com.incokalk.service.ml.EmbeddingsClient;
@@ -37,6 +38,9 @@ class SemanticClassificationServiceTest {
 
     @Mock
     private TaricRateRepository taricRateRepo;
+
+    @Mock
+    private NencEmbeddingRepository nencEmbeddingRepo;
 
     @InjectMocks
     private SemanticClassificationService service;
@@ -164,5 +168,71 @@ class SemanticClassificationServiceTest {
         service.indexConfirmation(UUID.randomUUID(), "un produit", "1234");
 
         verify(companyEmbeddingRepo, never()).upsert(any(), any(), any(), any());
+    }
+
+    // ------------------------------------------------------------------
+    // classifyFromExplanatoryNotes() — Phase C, V73 (NENC)
+    // ------------------------------------------------------------------
+
+    @Test
+    @DisplayName("Encode la description puis cherche dans les notes NENC, confiance = 1 - distance")
+    void classifyFromExplanatoryNotes_returnsNearestNeighbors() {
+        float[] vector = {0.2f, 0.3f};
+        when(embeddingsClient.encodeOne("chevaux sauvages")).thenReturn(vector);
+        when(nencEmbeddingRepo.findNearest(eq(vector), eq(3))).thenReturn(List.of(
+            new NencEmbeddingRepository.Neighbor("01012910", "Les chevaux sauvages tels que le cheval de Przewalski...", 0.1)
+        ));
+
+        List<SemanticClassificationService.ClassificationResult> results =
+            service.classifyFromExplanatoryNotes("chevaux sauvages", 3);
+
+        assertThat(results).hasSize(1);
+        assertThat(results.get(0).hsCode()).isEqualTo("01012910");
+        assertThat(results.get(0).confidence()).isCloseTo(0.9, org.assertj.core.data.Offset.offset(0.0001));
+    }
+
+    @Test
+    @DisplayName("Texte NENC > 480 caractères tronqué avec ellipse -- suggested_description_N est VARCHAR(500)")
+    void classifyFromExplanatoryNotes_truncatesLongText() {
+        float[] vector = {0.1f};
+        String longText = "x".repeat(600);
+        when(embeddingsClient.encodeOne("produit")).thenReturn(vector);
+        when(nencEmbeddingRepo.findNearest(eq(vector), eq(3))).thenReturn(List.of(
+            new NencEmbeddingRepository.Neighbor("1234", longText, 0.2)
+        ));
+
+        List<SemanticClassificationService.ClassificationResult> results =
+            service.classifyFromExplanatoryNotes("produit", 3);
+
+        String description = results.get(0).description();
+        assertThat(description).hasSize(480);
+        assertThat(description).endsWith("…");
+    }
+
+    @Test
+    @DisplayName("Texte NENC court -- pas de troncature, retourné tel quel")
+    void classifyFromExplanatoryNotes_shortText_notTruncated() {
+        float[] vector = {0.1f};
+        when(embeddingsClient.encodeOne("orge")).thenReturn(vector);
+        when(nencEmbeddingRepo.findNearest(eq(vector), eq(3))).thenReturn(List.of(
+            new NencEmbeddingRepository.Neighbor("1003", "Orge", 0.05)
+        ));
+
+        List<SemanticClassificationService.ClassificationResult> results =
+            service.classifyFromExplanatoryNotes("orge", 3);
+
+        assertThat(results.get(0).description()).isEqualTo("Orge");
+    }
+
+    @Test
+    @DisplayName("Service d'embeddings indisponible -> aucune interrogation de l'index NENC")
+    void classifyFromExplanatoryNotes_embeddingsUnavailable_returnsEmptyWithoutQueryingIndex() {
+        when(embeddingsClient.encodeOne(any())).thenReturn(null);
+
+        List<SemanticClassificationService.ClassificationResult> results =
+            service.classifyFromExplanatoryNotes("un produit", 3);
+
+        assertThat(results).isEmpty();
+        verify(nencEmbeddingRepo, never()).findNearest(any(), anyInt());
     }
 }

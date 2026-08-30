@@ -1,6 +1,7 @@
 package com.incokalk.service;
 
 import com.incokalk.repository.CompanyHsEmbeddingRepository;
+import com.incokalk.repository.NencEmbeddingRepository;
 import com.incokalk.repository.TaricEmbeddingRepository;
 import com.incokalk.repository.TaricRateRepository;
 import com.incokalk.service.ml.EmbeddingsClient;
@@ -37,6 +38,7 @@ public class SemanticClassificationService {
     private final TaricEmbeddingRepository embeddingRepo;
     private final CompanyHsEmbeddingRepository companyEmbeddingRepo;
     private final TaricRateRepository taricRateRepo;
+    private final NencEmbeddingRepository nencEmbeddingRepo;
 
     public record ClassificationResult(String hsCode, String description, double confidence) {
     }
@@ -79,6 +81,38 @@ public class SemanticClassificationService {
                 toConfidence(n.cosineDistance())
             ))
             .toList();
+    }
+
+    /**
+     * Classification par similarité sémantique sur les notes explicatives
+     * officielles de la nomenclature combinée (NENC, UE) — voir
+     * NencEmbeddingIngestionService et data/SOURCES.md pour la provenance.
+     * Table globale comme {@link #classify}, pas de scoping tenant.
+     */
+    // hs_code_suggestions.suggested_description_N est VARCHAR(500) (V1) -- une
+    // note NENC peut dépasser 2000 caractères (paragraphe interprétatif complet),
+    // contrairement aux libellés courts de TARIC. Tronquer ici, pas dans le
+    // repository : c'est une contrainte du consommateur (HsCodeSuggestion), pas
+    // du stockage sémantique lui-même (nenc_embeddings garde le texte complet).
+    private static final int MAX_DESCRIPTION_LENGTH = 480;
+
+    public List<ClassificationResult> classifyFromExplanatoryNotes(String productDescription, int topN) {
+        float[] queryEmbedding = embeddingsClient.encodeOne(productDescription);
+        if (queryEmbedding == null) {
+            return List.of();
+        }
+
+        return nencEmbeddingRepo.findNearest(queryEmbedding, topN).stream()
+            .map(n -> new ClassificationResult(
+                n.cnCode(), truncate(n.explanatoryText()), toConfidence(n.cosineDistance())))
+            .toList();
+    }
+
+    private static String truncate(String text) {
+        if (text == null || text.length() <= MAX_DESCRIPTION_LENGTH) {
+            return text;
+        }
+        return text.substring(0, MAX_DESCRIPTION_LENGTH - 1) + "…";
     }
 
     /**

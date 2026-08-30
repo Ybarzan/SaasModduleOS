@@ -42,9 +42,10 @@ class HsCodeSuggestionServiceTest {
         companyId = UUID.randomUUID();
         company = Company.builder().id(companyId).name("ACME").build();
         // Sources par defaut : pas de contribution semantique, sauf surcharge explicite
-        // par un test qui veut exercer le blending avec ces 4e/5e sources.
+        // par un test qui veut exercer le blending avec ces 4e/5e/6e sources.
         when(semanticClassification.classify(anyString(), eq(3))).thenReturn(List.of());
         when(semanticClassification.classifyFromCompanyHistory(any(), anyString(), eq(3))).thenReturn(List.of());
+        when(semanticClassification.classifyFromExplanatoryNotes(anyString(), eq(3))).thenReturn(List.of());
     }
 
     // ------------------------------------------------------------------
@@ -304,6 +305,51 @@ class HsCodeSuggestionServiceTest {
             // Repli mot-clé : 0.3 < 0.4, donc le code d'historique n'entre jamais dans le blend.
             assertThat(result.getSuggestedCode1()).isEqualTo("8703");
             assertThat(result.getSuggestedCode1()).isNotEqualTo("6403");
+        }
+    }
+
+    @Test
+    @DisplayName("suggest → source NENC seule contribue un code absent des autres sources")
+    void suggest_nencOnlySource_addsNewCode() {
+        try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
+            ctx.when(TenantContext::get).thenReturn(companyId);
+            when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+            when(hsMlService.getTotalCorrections()).thenReturn(0);
+            when(hsMlService.predict(anyString(), eq(3))).thenReturn(List.of());
+            when(taricClassification.classify(anyString(), eq(3))).thenReturn(List.of());
+            when(semanticClassification.classifyFromExplanatoryNotes(anyString(), eq(3))).thenReturn(
+                List.of(new SemanticClassificationService.ClassificationResult("01012910", "Chevaux sauvages...", 0.85))
+            );
+
+            HsCodeSuggestion result = service.suggest("cheval de Przewalski sauvage");
+
+            assertThat(result.getSuggestedCode1()).isEqualTo("01012910");
+            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.85));
+        }
+    }
+
+    @Test
+    @DisplayName("suggest → NENC et sémantique TARIC sur le même code se combinent, tag '+nenc'")
+    void suggest_nencMergesWithSemanticSameCode() {
+        try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
+            ctx.when(TenantContext::get).thenReturn(companyId);
+            when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+            when(hsMlService.getTotalCorrections()).thenReturn(0);
+            when(hsMlService.predict(anyString(), eq(3))).thenReturn(List.of());
+            when(taricClassification.classify(anyString(), eq(3))).thenReturn(List.of());
+            when(semanticClassification.classify(anyString(), eq(3))).thenReturn(
+                List.of(new SemanticClassificationService.ClassificationResult("8517", "Téléphonie", 0.6))
+            );
+            when(semanticClassification.classifyFromExplanatoryNotes(anyString(), eq(3))).thenReturn(
+                List.of(new SemanticClassificationService.ClassificationResult("8517", "Note NENC détaillée", 0.8))
+            );
+
+            HsCodeSuggestion result = service.suggest("téléphone portable");
+
+            assertThat(result.getSuggestedCode1()).isEqualTo("8517");
+            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.70));
         }
     }
 

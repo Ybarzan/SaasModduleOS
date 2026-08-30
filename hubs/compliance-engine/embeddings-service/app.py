@@ -16,6 +16,16 @@ MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
 app = FastAPI(title="Praxio Embeddings Service")
 model = SentenceTransformer(MODEL_NAME)
 
+# La toute premiere inference apres le chargement du modele a une latence
+# nettement plus elevee que les suivantes (warm-up PyTorch/threads) -- sans
+# ca, un appel batch reel (ex: l'ingestion NENC au demarrage du backend, ~250
+# textes) peut depasser le timeout HTTP cote Java alors que le conteneur est
+# deja marque "healthy" (le /health ne fait qu'une verification statique,
+# sans inference). Ce warm-up absorbe ce cout une seule fois, avant que le
+# service n'accepte des requetes.
+model.encode(["warm-up"], normalize_embeddings=True)
+logger.info("Modele charge et rechauffe: %s", MODEL_NAME)
+
 
 class EncodeRequest(BaseModel):
     texts: list[str]
