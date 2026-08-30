@@ -152,4 +152,31 @@ class RateLimitFilterTest {
         verify(builder).build(any(byte[].class), any(Supplier.class));
         verify(chain).doFilter(request, response);
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    @DisplayName("Redis indisponible/en timeout -> fail-open : requête laissée passer, jamais 429")
+    void redisUnavailable_failsOpenInsteadOfBlockingRequest() throws Exception {
+        ProxyManager<byte[]> proxyManager = org.mockito.Mockito.mock(ProxyManager.class);
+        RemoteBucketBuilder<byte[]> builder = org.mockito.Mockito.mock(RemoteBucketBuilder.class);
+        io.github.bucket4j.distributed.BucketProxy bucket =
+            org.mockito.Mockito.mock(io.github.bucket4j.distributed.BucketProxy.class);
+        when(proxyManager.builder()).thenReturn(builder);
+        when(builder.build(any(byte[].class), any(Supplier.class))).thenReturn(bucket);
+        // Simule le timeout Lettuce (voir RateLimitRedisConfig) qui se produit quand Redis
+        // est injoignable.
+        when(bucket.tryConsumeAndReturnRemaining(1))
+            .thenThrow(new RuntimeException("Command timed out after 2 second(s)"));
+
+        RateLimitFilter distributedFilter = new RateLimitFilter(Optional.of(proxyManager));
+        ReflectionTestUtils.setField(distributedFilter, "freeDaily", 10L);
+        when(request.getAttribute("plan")).thenReturn("FREE");
+        when(request.getAttribute("userId")).thenReturn(UUID.randomUUID());
+
+        distributedFilter.doFilter(request, response, chain);
+
+        verify(chain).doFilter(request, response);
+        verify(response, never()).setStatus(429);
+        verify(response, never()).setHeader(eq("X-RateLimit-Limit"), anyString());
+    }
 }

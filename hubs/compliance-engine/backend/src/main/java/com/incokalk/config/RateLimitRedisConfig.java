@@ -32,7 +32,15 @@ public class RateLimitRedisConfig {
 
     @Bean(destroyMethod = "shutdown")
     public RedisClient bucket4jRedisClient() {
-        RedisURI.Builder uriBuilder = RedisURI.builder().withHost(host).withPort(port);
+        // Sans .withTimeout() explicite, Lettuce retombe sur son defaut de 60s -- bloquer
+        // 60s sur le chemin chaud de CHAQUE requete /v1/** si Redis est injoignable est pire
+        // que l'incident lui-meme. 2s est deja tres genereux pour un aller-retour local ;
+        // RateLimitFilter.doFilterInternal reste responsable du fail-open si ce timeout
+        // (ou toute autre erreur Redis) se declenche quand meme.
+        RedisURI.Builder uriBuilder = RedisURI.builder()
+            .withHost(host)
+            .withPort(port)
+            .withTimeout(Duration.ofSeconds(2));
         if (password != null && !password.isBlank()) {
             uriBuilder.withPassword(password.toCharArray());
         }

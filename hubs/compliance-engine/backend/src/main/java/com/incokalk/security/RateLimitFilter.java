@@ -73,7 +73,18 @@ public class RateLimitFilter extends OncePerRequestFilter {
         long quota = dailyQuotaFor(plan);
         String clientKey = resolveClientKey(req, plan);
         Bucket bucket = resolveBucket(clientKey, quota);
-        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
+
+        ConsumptionProbe probe;
+        try {
+            probe = bucket.tryConsumeAndReturnRemaining(1);
+        } catch (Exception e) {
+            // Backend Redis injoignable/en timeout (voir RateLimitRedisConfig) : bloquer
+            // TOUTE l'API le temps d'un incident Redis serait pire que l'incident lui-meme.
+            // On laisse passer sans compter le quota plutot que de fail-closed.
+            log.warn("Rate limiter indisponible (Redis), requete laissee passer sans quota: {}", e.getMessage());
+            chain.doFilter(req, res);
+            return;
+        }
 
         res.setHeader("X-RateLimit-Limit", String.valueOf(quota));
         res.setHeader("X-RateLimit-Remaining", String.valueOf(probe.getRemainingTokens()));
