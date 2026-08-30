@@ -36,6 +36,8 @@ class OrchestrationSuggestionE2eTest extends E2eTestBase {
 
     private String createShipment(double quotedCost) {
         var body = new LinkedHashMap<String, Object>();
+        body.put("shipperName", "E2E Shipper");
+        body.put("consigneeName", "E2E Consignee");
         body.put("origin", "Paris");
         body.put("destination", "New York");
         body.put("incotermCode", "CIF");

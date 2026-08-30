@@ -1,6 +1,7 @@
 package com.incokalk.dto.shipment;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,10 @@ public class ShipmentOrderDTO {
     private UUID clientId;
 
     // Shipper
+    // Seuls shipperName/consigneeName sont obligatoires -- meme regle que le
+    // formulaire de creation cote frontend (Shipments.tsx, handleSubmit), pas une
+    // contrainte inventee ici. Le reste des champs reste optionnel a dessein.
+    @NotBlank(message = "Le nom de l'expéditeur est obligatoire")
     private String shipperName;
     private String shipperAddress;
     private String shipperCity;
@@ -36,6 +41,7 @@ public class ShipmentOrderDTO {
     private String shipperPostalCode;
 
     // Consignee
+    @NotBlank(message = "Le nom du destinataire est obligatoire")
     private String consigneeName;
     private String consigneeAddress;
     private String consigneeCity;

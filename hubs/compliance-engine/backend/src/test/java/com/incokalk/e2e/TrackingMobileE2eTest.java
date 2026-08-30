@@ -97,6 +97,8 @@ public class TrackingMobileE2eTest extends E2eTestBase {
 
     private Map<String, Object> shipmentBody() {
         var b = new LinkedHashMap<String, Object>();
+        b.put("shipperName", "E2E Shipper");
+        b.put("consigneeName", "E2E Consignee");
         b.put("origin", "Paris");
         b.put("destination", "New York");
         b.put("incoterm", "CIF");
