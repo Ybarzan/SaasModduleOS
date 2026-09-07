@@ -133,6 +133,7 @@ public class DriverController {
         tachographRepository.deleteByDriver(d);
         costRecordRepository.deleteByDriver(d);
         pointageEventRepository.deleteByDriver(d);
+        pointageService.deletePortalAccount(id);
         driverRepository.delete(d);
     }
 

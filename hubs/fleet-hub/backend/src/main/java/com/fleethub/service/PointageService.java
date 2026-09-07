@@ -68,6 +68,12 @@ public class PointageService {
         appUserRepository.save(account);
     }
 
+    /** Supprime le compte du portail lié à ce chauffeur, s'il existe (avant suppression du chauffeur). */
+    @Transactional
+    public void deletePortalAccount(Long driverId) {
+        appUserRepository.findByDriverId(driverId).ifPresent(appUserRepository::delete);
+    }
+
     @Transactional(readOnly = true)
     public PointageRosterDto roster(String accessCode) {
         Company company = companyRepository.findByAccessCode(accessCode)
