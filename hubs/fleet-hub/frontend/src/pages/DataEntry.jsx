@@ -101,7 +101,14 @@ const columnsByTab = {
     { key: 'licenseNumber', label: 'Permis' },
     { key: 'phone', label: 'Téléphone' },
     { key: 'email', label: 'Email' },
-    { key: 'active', label: 'Actif', render: (d) => (d.active ? 'Oui' : 'Non') }
+    { key: 'active', label: 'Actif', render: (d) => (d.active ? 'Oui' : 'Non') },
+    {
+      key: 'hasPin',
+      label: 'Portail',
+      render: (d) => (d.hasPin
+        ? <span className="badge badge-green">Configuré</span>
+        : <span className="badge badge-gray">Non configuré</span>)
+    }
   ],
   [TAB_TRUCKS]: [
     { key: 'registration', label: 'Véhicule', render: (t) => `${t.brand} ${t.model}` },
@@ -241,6 +248,20 @@ function CrudTab({ tab, options, onChanged }) {
 
   const setValue = (key, value) => setForm((prev) => ({ ...prev, [key]: value }))
 
+  const setDriverPin = (item) => {
+    const pin = window.prompt(
+      `Nouveau code à 4 chiffres pour ${item.firstName} ${item.lastName} (portail chauffeur) :`
+    )
+    if (pin === null) return
+    if (!/^\d{4}$/.test(pin)) {
+      setError('Le code doit contenir exactement 4 chiffres')
+      return
+    }
+    api.post(`/drivers/${item.id}/pin`, { pin })
+      .then(() => { load(); setSuccess('Code du portail enregistré') })
+      .catch((err) => setError(err.response?.data?.message || "L'enregistrement du code a échoué"))
+  }
+
   return (
     <div>
       <div className="card">
@@ -347,6 +368,11 @@ function CrudTab({ tab, options, onChanged }) {
                       <button className="btn btn-outline btn-sm" onClick={() => startEdit(item)}>
                         Éditer
                       </button>
+                      {tab === TAB_DRIVERS && (
+                        <button className="btn btn-outline btn-sm" onClick={() => setDriverPin(item)}>
+                          Code portail
+                        </button>
+                      )}
                       <button className="btn btn-danger btn-sm" onClick={() => remove(item)}>
                         Supprimer
                       </button>

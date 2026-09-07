@@ -89,6 +89,34 @@ export default function Settings() {
         </div>
       </div>
 
+      {user?.companyAccessCode && (
+        <div className="card">
+          <div className="card-title">
+            <h3>Portail chauffeur</h3>
+          </div>
+          <p className="muted" style={{ marginBottom: '1rem' }}>
+            Donnez ce lien à vos chauffeurs (à ajouter à leurs favoris ou en raccourci sur l'écran d'accueil).
+            Ils choisissent leur nom et entrent leur code à 4 chiffres — voir « Code portail » dans Saisie › Chauffeurs
+            pour en attribuer un.
+          </p>
+          <div className="row-actions">
+            <input
+              readOnly
+              value={`${window.location.origin}/pointage/${user.companyAccessCode}`}
+              onFocus={(e) => e.target.select()}
+              style={{ flex: 1, minWidth: 0 }}
+            />
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/pointage/${user.companyAccessCode}`)}
+            >
+              Copier
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="card">
         <div className="card-title">
           <h3>Double authentification (2FA)</h3>

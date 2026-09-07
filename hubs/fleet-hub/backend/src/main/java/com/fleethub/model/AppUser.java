@@ -63,4 +63,11 @@ public class AppUser {
     /** true si l'utilisateur a activé la 2FA (le secret est validé). */
     @Column(nullable = false)
     private boolean totpEnabled = false;
+
+    /** Renseigné uniquement pour les comptes de rôle CHAUFFEUR (portail de pointage) :
+     *  lie le compte au chauffeur qu'il représente. Le "mot de passe" de ces
+     *  comptes est un code PIN à 4 chiffres, pas un mot de passe classique. */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "driver_id")
+    private Driver driver;
 }

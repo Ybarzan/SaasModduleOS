@@ -47,14 +47,37 @@ export default function Dashboard() {
   const [selectedGroup, setSelectedGroup] = useState(null)
   const [showScore, setShowScore] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [retryToken, setRetryToken] = useState(0)
   const panelRef = useRef(null)
+  const autoRetried = useRef(false)
 
   useEffect(() => {
+    setLoading(true)
+    setError('')
     api
       .get('/dashboard/summary', { params: { period } })
-      .then((res) => setSummary(res.data))
-      .catch(() => setError('Impossible de charger le tableau de bord'))
-  }, [period])
+      .then((res) => {
+        setSummary(res.data)
+        autoRetried.current = false
+      })
+      .catch(() => {
+        // Panne réseau ponctuelle (tunnel/4G en démo) : un essai silencieux
+        // avant d'afficher l'échec, pour ne pas bloquer sur un simple aléa.
+        if (!autoRetried.current) {
+          autoRetried.current = true
+          setTimeout(() => setRetryToken((t) => t + 1), 1500)
+          return
+        }
+        setError('Impossible de charger le tableau de bord')
+      })
+      .finally(() => setLoading(false))
+  }, [period, retryToken])
+
+  const retry = () => {
+    autoRetried.current = true // le prochain échec affiche directement l'erreur
+    setRetryToken((t) => t + 1)
+  }
 
   useEffect(() => {
     const load = () => {
@@ -103,7 +126,18 @@ export default function Dashboard() {
         <PeriodSelector value={period} onChange={setPeriod} />
       </div>
 
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && (
+        <div className="alert alert-error">
+          {error}
+          <button type="button" className="btn btn-outline btn-sm" onClick={retry} style={{ marginLeft: 12 }}>
+            Réessayer
+          </button>
+        </div>
+      )}
+
+      {loading && !summary && !error && (
+        <div className="loading-spinner" aria-label="Chargement du tableau de bord…">Chargement…</div>
+      )}
 
       {summary && (
         <>

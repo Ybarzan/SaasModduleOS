@@ -51,7 +51,7 @@ Puis lancez le déploiement (il installe Docker, clone le dépôt, crée un `.en
 avec des secrets aléatoires et démarre tout) :
 
 ```bash
-sudo DOMAIN=fleethub-demo.fr bash -c "$(curl -fsSL https://raw.githubusercontent.com/Ybarzan/fleet-hub/master/deploy.sh)"
+sudo DOMAIN=fleethub-demo.fr bash -c "$(curl -fsSL https://raw.githubusercontent.com/Ybarzan/SaasModduleOS/main/hubs/fleet-hub/deploy.sh)"
 ```
 
 > Si vous préférez exécuter le script local : clonez le dépôt et faites

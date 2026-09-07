@@ -129,6 +129,35 @@ export default function Privacy() {
         )}
       </div>
 
+      {!loading && (
+        <div className="record-cards">
+          {logs.length === 0 ? (
+            <p className="muted table-empty">Aucun événement</p>
+          ) : (
+            logs.map((l) => (
+              <div key={l.id} className="record-card">
+                <div className="record-card-title">
+                  <span className="badge badge-blue">{l.action}</span>
+                  <span className="muted">{fmtDate(l.createdAt)}</span>
+                </div>
+                <div className="record-card-row">
+                  <span>Utilisateur</span>
+                  <span>{l.username}</span>
+                </div>
+                <div className="record-card-row">
+                  <span>Détail</span>
+                  <span className="muted">{l.detail}</span>
+                </div>
+                <div className="record-card-row">
+                  <span>Adresse IP</span>
+                  <span>{l.ipAddress || '—'}</span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
       <div className="card">
         <div className="card-title">
           <h3>Suppression du compte (art. 17)</h3>

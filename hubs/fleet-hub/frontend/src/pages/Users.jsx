@@ -236,6 +236,64 @@ export default function Users() {
           </div>
         )}
       </div>
+
+      {!loading && (
+        <div className="record-cards">
+          {users.length === 0 ? (
+            <p className="muted table-empty">Aucun utilisateur</p>
+          ) : (
+            users.map((u) => {
+              const isSelf = me?.username === u.username
+              return (
+                <div key={u.id} className="record-card">
+                  <div className="record-card-title">
+                    <strong>{u.displayName}{isSelf && <span className="muted"> (vous)</span>}</strong>
+                    <span className={`badge ${u.enabled ? 'badge-green' : 'badge-red'}`}>
+                      {u.enabled ? 'Actif' : 'Désactivé'}
+                    </span>
+                  </div>
+                  <div className="record-card-row">
+                    <span>Email</span>
+                    <span>{u.email || u.username}</span>
+                  </div>
+                  <div className="record-card-row">
+                    <span>Rôle</span>
+                    <select
+                      className="form-select"
+                      value={u.role}
+                      disabled={busyId === u.id || isSelf}
+                      onChange={(e) => update(u.id, { role: e.target.value })}
+                    >
+                      <option value="GESTIONNAIRE">Gestionnaire</option>
+                      <option value="ADMIN">Administrateur</option>
+                    </select>
+                  </div>
+                  <div className="record-card-row">
+                    <span>Créé le</span>
+                    <span>{fmtDate(u.createdAt)}</span>
+                  </div>
+                  <div className="record-card-actions">
+                    <button
+                      className="btn btn-outline btn-sm"
+                      disabled={busyId === u.id || isSelf}
+                      onClick={() => update(u.id, { enabled: !u.enabled })}
+                    >
+                      {u.enabled ? 'Désactiver' : 'Réactiver'}
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      disabled={busyId === u.id || isSelf}
+                      onClick={() => remove(u)}
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      )}
     </div>
   )
 }

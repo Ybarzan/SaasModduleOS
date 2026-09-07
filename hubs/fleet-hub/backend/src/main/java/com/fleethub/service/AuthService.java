@@ -88,6 +88,7 @@ public class AuthService {
         company.setTrialEndsAt(LocalDateTime.now().plusDays(trialDays));
         company.setCreatedAt(LocalDateTime.now());
         company.setCountry("FR");
+        company.setAccessCode(Company.generateAccessCode());
         companyRepository.save(company);
 
         AppUser owner = new AppUser();
@@ -166,6 +167,7 @@ public class AuthService {
                 user.getEmail(),
                 companyId,
                 user.getCompany() != null ? user.getCompany().getName() : null,
+                user.getCompany() != null ? user.getCompany().getAccessCode() : null,
                 user.getCompany() != null ? user.getCompany().getPlan().name() : null,
                 user.getCompany() != null ? user.getCompany().getStatus().name() : null,
                 user.getCompany() == null || user.getCompany().hasActiveSubscription(),
@@ -184,7 +186,7 @@ public class AuthService {
                 user.getDisplayName(),
                 user.getRole(),
                 user.getEmail(),
-                null, null, null, null, false,
+                null, null, null, null, null, false,
                 true,
                 user.isTotpEnabled());
     }

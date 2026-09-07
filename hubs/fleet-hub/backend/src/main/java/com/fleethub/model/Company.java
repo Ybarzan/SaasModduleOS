@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
 /**
@@ -39,6 +40,11 @@ public class Company {
     private CompanyStatus status;
 
     private LocalDateTime trialEndsAt;
+
+    /** Code public (non devinable) donnant accès au portail de pointage chauffeur
+     *  de cette société — jamais l'id numérique séquentiel. */
+    @Column(nullable = false, unique = true)
+    private String accessCode;
 
     /** Fournisseur de paiement (stripe, …) — réservé pour la facturation. */
     private String subscriptionProvider;
@@ -105,5 +111,17 @@ public class Company {
         return status == CompanyStatus.ACTIVE
                 || (status == CompanyStatus.TRIAL
                 && (trialEndsAt == null || trialEndsAt.isAfter(LocalDateTime.now())));
+    }
+
+    private static final SecureRandom ACCESS_CODE_RANDOM = new SecureRandom();
+    private static final String ACCESS_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans 0/O/1/I
+
+    /** Génère un code d'accès public au portail de pointage (8 caractères, non ambigus à l'oral). */
+    public static String generateAccessCode() {
+        StringBuilder sb = new StringBuilder(8);
+        for (int i = 0; i < 8; i++) {
+            sb.append(ACCESS_CODE_ALPHABET.charAt(ACCESS_CODE_RANDOM.nextInt(ACCESS_CODE_ALPHABET.length())));
+        }
+        return sb.toString();
     }
 }

@@ -69,6 +69,7 @@ public class DataSeeder {
             demo.setCountry("FR");
             demo.setContactEmail("demo@fleethub.fr");
             demo.setCreatedAt(LocalDateTime.now());
+            demo.setAccessCode(Company.generateAccessCode());
             companyRepository.save(demo);
 
             // ---- Utilisateurs ----

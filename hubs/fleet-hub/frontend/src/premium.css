@@ -107,8 +107,18 @@
     rgba(var(--primary-rgb), 0.02) 100%) !important;
   border-right: 1px solid rgba(var(--primary-rgb), 0.08) !important;
   backdrop-filter: blur(12px);
-  position: relative;
   overflow: hidden;
+}
+
+/* position:relative sert d'ancre aux pseudo-éléments ::before/::after ci-dessous.
+   Limité au desktop : en dessous de 768px, styles.css bascule .sidebar en
+   position:fixed (tiroir hors écran) — sans cette limite, la règle plus
+   spécifique en cascade écrasait le fixed et le sidebar restait dans le flux
+   flex, poussant .content dans l'espace restant à droite. */
+@media (min-width: 769px) {
+  .sidebar {
+    position: relative;
+  }
 }
 
 .sidebar::before {

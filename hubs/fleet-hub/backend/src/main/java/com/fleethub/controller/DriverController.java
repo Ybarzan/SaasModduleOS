@@ -3,21 +3,26 @@ package com.fleethub.controller;
 import com.fleethub.config.ResourceNotFoundException;
 import com.fleethub.dto.DriverDto;
 import com.fleethub.dto.DriverRequest;
+import com.fleethub.dto.SetDriverPinRequest;
 import com.fleethub.model.Driver;
 import com.fleethub.model.DriverTruckAssignment;
 import com.fleethub.repository.AssignmentRepository;
 import com.fleethub.repository.CostRecordRepository;
 import com.fleethub.repository.DriverRepository;
 import com.fleethub.repository.DrivingEventRepository;
+import com.fleethub.repository.PointageEventRepository;
 import com.fleethub.repository.TachographDayRepository;
 import com.fleethub.repository.TripRepository;
+import com.fleethub.security.AppUserPrincipal;
 import com.fleethub.security.TenantContext;
+import com.fleethub.service.PointageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +31,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -44,6 +50,8 @@ public class DriverController {
     private final DrivingEventRepository eventRepository;
     private final TachographDayRepository tachographRepository;
     private final CostRecordRepository costRecordRepository;
+    private final PointageEventRepository pointageEventRepository;
+    private final PointageService pointageService;
 
     @GetMapping
     @Operation(summary = "Lister les chauffeurs", description = "Retourne la liste de tous les chauffeurs avec leur affectation actuelle")
@@ -124,7 +132,29 @@ public class DriverController {
         eventRepository.deleteByDriver(d);
         tachographRepository.deleteByDriver(d);
         costRecordRepository.deleteByDriver(d);
+        pointageEventRepository.deleteByDriver(d);
         driverRepository.delete(d);
+    }
+
+    @PostMapping("/{id}/pin")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Définir le code de pointage", description = "Crée ou réinitialise le code PIN à 4 chiffres du portail de pointage pour ce chauffeur")
+    @ApiResponse(responseCode = "204", description = "Code défini avec succès")
+    @ApiResponse(responseCode = "403", description = "Réservé aux administrateurs")
+    @ApiResponse(responseCode = "404", description = "Chauffeur introuvable")
+    public void setPin(@PathVariable Long id, @Valid @RequestBody SetDriverPinRequest request) {
+        requireAdmin();
+        Long companyId = TenantContext.companyId();
+        driverRepository.findByIdAndCompanyId(id, companyId)
+                .orElseThrow(() -> new ResourceNotFoundException("Chauffeur introuvable"));
+        pointageService.setPin(companyId, id, request.pin());
+    }
+
+    private void requireAdmin() {
+        Object p = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(p instanceof AppUserPrincipal principal) || !"ADMIN".equals(principal.getRole())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Réservé aux administrateurs");
+        }
     }
 
     private void apply(Driver d, DriverRequest req) {
@@ -142,6 +172,7 @@ public class DriverController {
                 d.getId(), d.getFirstName(), d.getLastName(), d.getLicenseNumber(),
                 d.getPhone(), d.getEmail(), d.getHireDate(), d.isActive(),
                 a != null ? a.getTruck().getId() : null,
-                a != null ? a.getTruck().getRegistration() : null);
+                a != null ? a.getTruck().getRegistration() : null,
+                pointageService.hasPin(d.getId()));
     }
 }

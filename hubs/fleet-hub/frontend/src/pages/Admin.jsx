@@ -184,6 +184,68 @@ export default function Admin() {
         )}
       </div>
 
+      {!loading && (
+        <div className="record-cards">
+          {companies.length === 0 ? (
+            <p className="muted table-empty">Aucune société inscrite</p>
+          ) : (
+            companies.map((c) => (
+              <div key={c.id} className="record-card">
+                <div className="record-card-title">
+                  <strong>{c.name}{c.city && <span className="muted"> — {c.city}{c.country ? `, ${c.country}` : ''}</span>}</strong>
+                  <span className={`badge ${statusBadge[c.status] || 'badge-gray'}`}>
+                    {statusLabel[c.status] || c.status}
+                  </span>
+                </div>
+                <div className="record-card-row">
+                  <span>Plan</span>
+                  <select
+                    className="form-select"
+                    value={c.plan}
+                    disabled={busyId === c.id}
+                    onChange={(e) => setPlan(c, e.target.value)}
+                  >
+                    {PLANS.map((p) => (
+                      <option key={p} value={p}>
+                        {p} ({planLimits[p]})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="record-card-row">
+                  <span>Essai jusqu'au</span>
+                  <span>{fmtDate(c.trialEndsAt)}</span>
+                </div>
+                <div className="record-card-row">
+                  <span>Utilisateurs / Chauffeurs / Camions</span>
+                  <span>{c.userCount} / {c.driverCount} / {c.truckCount}</span>
+                </div>
+                <div className="record-card-row">
+                  <span>Accès</span>
+                  <span className={`badge ${c.loginAllowed ? 'badge-green' : 'badge-red'}`}>
+                    {c.loginAllowed ? 'Autorisé' : 'Bloqué'}
+                  </span>
+                </div>
+                <div className="record-card-actions">
+                  {c.status === 'SUSPENDED' ? (
+                    <button className="btn btn-sm btn-primary" disabled={busyId === c.id} onClick={() => activate(c)}>
+                      Réactiver
+                    </button>
+                  ) : (
+                    <button className="btn btn-sm btn-danger" disabled={busyId === c.id} onClick={() => suspend(c)}>
+                      Suspendre
+                    </button>
+                  )}
+                  <button className="btn btn-sm btn-outline" disabled={busyId === c.id} onClick={() => extendTrial(c)}>
+                    +30 j essai
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
       <div className="card" style={{ marginTop: '1.5rem' }}>
         <div className="card-title">
           <h3>IP Allowlisting</h3>

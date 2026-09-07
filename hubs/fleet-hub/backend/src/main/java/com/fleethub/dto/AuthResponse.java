@@ -8,6 +8,7 @@ public record AuthResponse(
         String email,
         Long companyId,
         String companyName,
+        String companyAccessCode,
         String plan,
         String companyStatus,
         boolean subscriptionActive,

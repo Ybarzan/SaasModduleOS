@@ -400,6 +400,64 @@ export default function Integrations() {
         )}
       </div>
 
+      {!loading && (
+        <div className="record-cards">
+          {configs.length === 0 ? (
+            <p className="muted table-empty">Aucune intégration — créez-en une ci-dessus</p>
+          ) : (
+            configs.map((cfg) => (
+              <div key={cfg.id} className="record-card">
+                <div className="record-card-title">
+                  <strong>{cfg.providerLabel}</strong>
+                  <span className={`badge ${cfg.enabled ? 'badge-green' : 'badge-gray'}`}>
+                    {cfg.enabled ? 'Active' : 'Désactivée'}
+                  </span>
+                </div>
+                <div className="record-card-row">
+                  <span>Catégorie</span>
+                  <span className="muted">{CATEGORY_LABEL[cfg.category] || cfg.category}</span>
+                </div>
+                <div className="record-card-row">
+                  <span>URL</span>
+                  <span className="muted">{cfg.baseUrl}</span>
+                </div>
+                <div className="record-card-row">
+                  <span>Clé API</span>
+                  <span>{cfg.hasApiKey ? cfg.apiKeyMasked : <span className="muted">—</span>}</span>
+                </div>
+                <div className="record-card-row">
+                  <span>Dernier test</span>
+                  {cfg.lastTestAt ? (
+                    <span>
+                      <span className={`badge ${cfg.lastTestOk ? 'badge-green' : 'badge-red'}`}>
+                        {cfg.lastTestOk ? 'OK' : 'Échec'}
+                      </span>{' '}
+                      <span className="muted">{fmtDate(cfg.lastTestAt)}</span>
+                    </span>
+                  ) : (
+                    <span className="muted">Jamais testé</span>
+                  )}
+                </div>
+                <div className="record-card-actions">
+                  <button className="btn btn-outline btn-sm" disabled={busyId === cfg.id} onClick={() => testSaved(cfg)}>
+                    Tester
+                  </button>
+                  <button className="btn btn-outline btn-sm" onClick={() => edit(cfg)}>
+                    Modifier
+                  </button>
+                  <button className="btn btn-outline btn-sm" disabled={busyId === cfg.id} onClick={() => toggleEnabled(cfg)}>
+                    {cfg.enabled ? 'Désactiver' : 'Activer'}
+                  </button>
+                  <button className="btn btn-danger btn-sm" disabled={busyId === cfg.id} onClick={() => remove(cfg)}>
+                    Supprimer
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
       {configs.filter((c) => c.enabled && c.webhookKey).length > 0 && (
         <div className="card">
           <div className="card-title">

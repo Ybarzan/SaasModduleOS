@@ -12,24 +12,29 @@
 #
 # Ce script :
 #   1. installe Docker + le plugin compose s'ils manquent
-#   2. clone (ou met à jour) le dépôt dans /opt/fleethub
-#   3. crée /opt/fleethub/.env s'il n'existe pas, avec des secrets aléatoires
-#      et les URLs publiques dérivées de DOMAIN
+#   2. clone (ou met à jour) le monorepo dans /opt/fleethub
+#   3. crée /opt/fleethub/hubs/fleet-hub/.env s'il n'existe pas, avec des
+#      secrets aléatoires et les URLs publiques dérivées de DOMAIN
 #   4. docker compose up -d --build (Caddy, PostgreSQL, backend, frontend, backup)
+#
+# Fleet Hub vit dans le monorepo SaasModduleOS (hubs/fleet-hub/) — plus de
+# dépôt fleet-hub autonome, il a été abandonné au profit du monorepo. Le clone
+# récupère donc l'ensemble du monorepo ; seul hubs/fleet-hub/ est utilisé ici.
 #
 # Variables utiles (optionnelles) :
 #   DOMAIN         domaine public (défaut : localhost, certificat interne)
-#   REPO_URL       URL du dépôt (défaut : https://github.com/Ybarzan/fleet-hub.git)
-#   REPO_BRANCH    branche à déployer (défaut : master)
+#   REPO_URL       URL du dépôt (défaut : https://github.com/Ybarzan/SaasModduleOS.git)
+#   REPO_BRANCH    branche à déployer (défaut : main)
 #   ADMIN_PASSWORD mot de passe des comptes saasadmin/admin (généré si absent)
 #   GESTIONNAIRE_PASSWORD mot de passe du compte gestionnaire (généré si absent)
 
 set -euo pipefail
 
 DOMAIN="${DOMAIN:-localhost}"
-REPO_URL="${REPO_URL:-https://github.com/Ybarzan/fleet-hub.git}"
-REPO_BRANCH="${REPO_BRANCH:-master}"
+REPO_URL="${REPO_URL:-https://github.com/Ybarzan/SaasModduleOS.git}"
+REPO_BRANCH="${REPO_BRANCH:-main}"
 APP_DIR="/opt/fleethub"
+WORK_DIR="$APP_DIR/hubs/fleet-hub"
 
 log()  { echo -e "\033[1;36m[fleethub]\033[0m $*"; }
 warn() { echo -e "\033[1;33m[fleethub]\033[0m $*"; }
@@ -59,10 +64,10 @@ else
   git -C "$APP_DIR" checkout "$REPO_BRANCH"
   git -C "$APP_DIR" pull --ff-only
 fi
-cd "$APP_DIR"
+cd "$WORK_DIR"
 
 # --- 3. .env ---------------------------------------------------------------
-ENV_FILE="$APP_DIR/.env"
+ENV_FILE="$WORK_DIR/.env"
 if [ ! -f "$ENV_FILE" ]; then
   log "Création de .env (secrets aléatoires) pour DOMAIN=$DOMAIN..."
   ADMIN_PASSWORD="${ADMIN_PASSWORD:-$(openssl rand -base64 18 | tr -d '/+=')}"

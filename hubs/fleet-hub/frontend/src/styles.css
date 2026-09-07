@@ -2170,6 +2170,68 @@ select:focus {
   font-size: 12px;
 }
 
+/* ---------- Cartes mobiles génériques (notifications, users, admin, intégrations, audit) ---------- */
+.record-cards {
+  display: none;
+}
+
+.record-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.record-card.notif-unread {
+  border-color: rgba(var(--primary-rgb), 0.4);
+}
+
+.record-card-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.record-card-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border-strong);
+  font-size: 13px;
+}
+
+.record-card-row:last-of-type {
+  border-bottom: none;
+}
+
+.record-card-row > span:first-child {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.record-card-row > span:last-child,
+.record-card-row > div:last-child {
+  text-align: right;
+  min-width: 0;
+}
+
+.record-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
 .truck-card-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -2187,7 +2249,7 @@ select:focus {
 }
 
 @media (max-width: 768px) {
-  .couple-cards, .truck-cards, .map-vehicles-cards {
+  .couple-cards, .truck-cards, .map-vehicles-cards, .record-cards {
     display: flex;
     flex-direction: column;
     gap: 12px;

@@ -178,6 +178,46 @@ export default function Notifications() {
         )}
       </div>
 
+      {!loading && (
+        <div className="record-cards">
+          {notifications.length === 0 ? (
+            <p className="muted table-empty">Aucune alerte pour le moment</p>
+          ) : (
+            notifications.map((n) => (
+              <div key={n.id} className={'record-card' + (n.read ? '' : ' notif-unread')}>
+                <div className="record-card-title">
+                  <span className="badge badge-blue">{TYPE_LABEL[n.type] || n.type}</span>
+                  {n.read ? (
+                    <span className="badge badge-gray">Lu</span>
+                  ) : (
+                    <span className="badge badge-green">Nouveau</span>
+                  )}
+                </div>
+                <div className="record-card-row">
+                  <span>Titre</span>
+                  <strong>{n.title}</strong>
+                </div>
+                <div className="record-card-row">
+                  <span>Message</span>
+                  <span className="muted">{n.message}</span>
+                </div>
+                <div className="record-card-row">
+                  <span>Date</span>
+                  <span>{fmtDate(n.createdAt)}</span>
+                </div>
+                {!n.read && (
+                  <div className="record-card-actions">
+                    <button className="btn btn-outline btn-sm" onClick={() => markRead(n.id)}>
+                      Marquer lu
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
       <div className="card">
         <div className="card-title">
           <h3>Règles d’alerte</h3>

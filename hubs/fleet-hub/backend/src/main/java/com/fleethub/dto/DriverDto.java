@@ -12,5 +12,6 @@ public record DriverDto(
         LocalDate hireDate,
         boolean active,
         Long truckId,
-        String truckRegistration
+        String truckRegistration,
+        boolean hasPin
 ) {}

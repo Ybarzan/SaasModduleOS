@@ -51,6 +51,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**", "/api/webhooks/**").permitAll()
                 .requestMatchers("/actuator/health", "/api/legal/**").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
+                .requestMatchers("/api/pointage/roster/**").permitAll()
+                .requestMatchers("/api/pointage/**").hasRole("CHAUFFEUR")
                 .requestMatchers("/api/admin/**").hasRole("SAAS_ADMIN")
                 .requestMatchers("/api/users/**", "/api/integrations/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/kpis/**", "/api/drivers/**", "/api/trucks/**", "/api/dashboard/**", "/api/map/**").hasAnyRole("ADMIN", "GESTIONNAIRE")

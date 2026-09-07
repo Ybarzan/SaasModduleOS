@@ -25,6 +25,7 @@ const Integrations = lazy(() => import('./pages/Integrations'))
 const DataImport = lazy(() => import('./pages/DataImport'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Settings = lazy(() => import('./pages/Settings'))
+const PointagePortal = lazy(() => import('./pages/pointage/PointagePortal'))
 
 function PageFallback() {
   return (
@@ -38,6 +39,8 @@ function RequireAuth({ children }) {
   const { user } = useAuth()
   const location = useLocation()
   if (!user) return <Navigate to="/login" state={{ from: location }} replace />
+  // Le portail chauffeur est un espace à part : jamais le back-office.
+  if (user.role === 'CHAUFFEUR') return <Navigate to="/pointage" replace />
   return children
 }
 
@@ -76,6 +79,8 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/legal/:key" element={<Legal />} />
+        <Route path="/pointage" element={<PointagePortal />} />
+        <Route path="/pointage/:accessCode" element={<PointagePortal />} />
         <Route element={<RequireAuth><RequireSubscription><Layout /></RequireSubscription></RequireAuth>}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/drivers" element={<Drivers />} />
