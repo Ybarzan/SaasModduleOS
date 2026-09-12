@@ -214,7 +214,18 @@ export default function Tachographie() {
               )}
               {journal.map((d) => (
                 <tr key={d.id}>
-                  <td className="cell-strong">{new Date(d.date).toLocaleDateString('fr-FR')}</td>
+                  <td className="cell-strong">
+                    {new Date(d.date).toLocaleDateString('fr-FR')}
+                    {d.dataSource === 'FILE_DDD_UNVALIDATED' && (
+                      <span
+                        className="badge badge-orange"
+                        style={{ marginLeft: 8 }}
+                        title="Importé depuis un fichier DDD (tachygraphe binaire) — ce décodeur n'a jamais été validé contre un fichier réel, à vérifier manuellement"
+                      >
+                        DDD à vérifier
+                      </span>
+                    )}
+                  </td>
                   <td>{d.driverName}</td>
                   <td>{d.drivingHours}</td>
                   <td>{d.workHours || '—'}</td>

@@ -214,7 +214,7 @@ public class DataSeeder {
                     }
                     TachographDay tacho = new TachographDay(null, demo, drivers[i], day,
                             round(drivingHours, 1), round(workHours, 1),
-                            round(rest, 0), false);
+                            round(rest, 0), false, "SEED");
                     tachoByDriver[i].add(tacho);
 
                     // Carburant aligné sur le kilométrage du jour

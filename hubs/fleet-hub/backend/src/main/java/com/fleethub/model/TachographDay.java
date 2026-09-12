@@ -40,4 +40,9 @@ public class TachographDay {
 
     @Column(nullable = false)
     private boolean compliant;
+
+    /** Provenance de la donnée (saisie manuelle, import CSV, import DDD non
+     *  validé...) — voir {@link com.fleethub.integration.dto.TachographDayDto#source()}.
+     *  Null pour une saisie manuelle ou les jours créés avant ce champ. */
+    private String dataSource;
 }

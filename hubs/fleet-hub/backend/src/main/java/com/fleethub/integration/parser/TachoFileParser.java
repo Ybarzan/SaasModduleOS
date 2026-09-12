@@ -93,7 +93,7 @@ public class TachoFileParser {
                     double rest = colRest >= 0 && colRest < cols.length
                             ? parseDouble(cols[colRest].trim()) : 0.0;
 
-                    rows.add(new TachographDayDto(licence, date, driving, work, rest, false));
+                    rows.add(new TachographDayDto(licence, date, driving, work, rest, false, "FILE_CSV"));
                 } catch (Exception e) {
                     errors.add("Ligne " + lineNum + ": " + e.getMessage());
                 }

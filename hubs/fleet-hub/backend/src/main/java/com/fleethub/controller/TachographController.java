@@ -187,6 +187,6 @@ public class TachographController {
                 d.getId(), d.getDriver().getId(),
                 d.getDriver().getFirstName() + " " + d.getDriver().getLastName(),
                 d.getDate(), d.getDrivingHours(), d.getWorkHours(), d.getRestMinutes(),
-                assessment.compliant(), assessment.reasons());
+                assessment.compliant(), assessment.reasons(), d.getDataSource());
     }
 }

@@ -12,5 +12,8 @@ public record TachographDayDto(
         double workHours,
         double restMinutes,
         boolean compliant,
-        List<String> reasons
+        List<String> reasons,
+        /** Provenance ("FILE_DDD_UNVALIDATED", "FILE_CSV", "SEED"...) ou null
+         *  pour une saisie manuelle. Voir com.fleethub.model.TachographDay#dataSource. */
+        String dataSource
 ) {}

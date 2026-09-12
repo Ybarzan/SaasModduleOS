@@ -111,6 +111,7 @@ public class IntegrationSyncService {
             day.setDrivingHours(dto.drivingHours());
             day.setWorkHours(dto.workHours());
             day.setRestMinutes(dto.restMinutes());
+            day.setDataSource(dto.source());
             day.setCompliant(assess(driver.get(), day).compliant());
             tachographRepository.save(day);
             saved++;

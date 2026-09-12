@@ -5,17 +5,17 @@ const FILE_TYPES = [
   {
     key: 'tachograph',
     label: 'Tachygraphe',
-    description: 'Importez les données de conduite depuis un fichier CSV (avec en-têtes) ou un fichier DDD binaire (export carte conducteur tachygraphe européen).',
+    description: 'Importez les données de conduite depuis un fichier CSV (avec en-têtes) ou un fichier DDD binaire (export carte conducteur tachygraphe européen). ⚠️ L\'import DDD n\'a jamais été validé contre un vrai fichier téléchargé — les lignes importées par ce canal sont marquées "à vérifier" dans Tachographie tant qu\'un fichier réel n\'aura pas confirmé le décodage.',
     accept: '.csv,.ddd',
     endpoint: '/import/tachograph',
-    format: 'CSV : licence_number,date,driving_hours,work_hours,rest_minutes\nDDD : Fichier binaire exporté depuis votre lecteur tachygraphe',
+    format: 'CSV : licence_number,date,driving_hours,work_hours,rest_minutes\nDDD : Fichier binaire exporté depuis votre lecteur tachygraphe (non validé, voir ci-dessus)',
     example: '123456789012,2026-08-15,8.5,10.0,480'
   },
   {
     key: 'fuel',
     label: 'Carburant',
-    description: 'Importez les transactions carburant (litres, montant, kilométrage) depuis un fichier CSV ou DSW/AS24 Infoservice.',
-    accept: '.csv,.dsw,.aul,.txt',
+    description: 'Importez les transactions carburant (litres, montant, kilométrage) depuis un fichier CSV, ou un fichier à colonnes fixes sans en-tête (immat;date;litres;montant;km). Le vrai format propriétaire AS24 Infoservice (DSW/AUL) n\'est pas encore reconnu tel quel — un export dans cette structure fonctionnera.',
+    accept: '.csv,.txt',
     endpoint: '/import/fuel',
     format: 'registration,date,liters,amount,odometer_km',
     example: 'AA-123-BB,2026-08-15,120.5,185.30,125000'
@@ -270,12 +270,12 @@ export default function DataImport() {
               <tr>
                 <td><strong>Tachygraphe</strong></td>
                 <td><code>licence_number, date, driving_hours, work_hours, rest_minutes</code></td>
-                <td>Export CSV depuis votre logiciel d'analyse tachygraphe ou l'extranet AS24 Tak&drive</td>
+                <td>Export CSV depuis votre logiciel d'analyse tachygraphe (le CSV natif de l'extranet AS24 Tak&drive n'a pas cette structure)</td>
               </tr>
               <tr>
                 <td><strong>Carburant</strong></td>
                 <td><code>registration, date, liters, amount, odometer_km</code></td>
-                <td>Export CSV / DSW / AUL depuis l'espace client AS24 Infoservice</td>
+                <td>Export CSV — le format propriétaire AS24 Infoservice (DSW/AUL, colonnes fixes) n'est pas encore reconnu</td>
               </tr>
             </tbody>
           </table>
