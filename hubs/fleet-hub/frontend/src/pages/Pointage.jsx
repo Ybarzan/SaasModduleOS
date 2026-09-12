@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import api from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 const STATE_BADGE = {
   ACTIVE: 'badge-green',
@@ -30,10 +31,22 @@ const fmtDuration = (totalSeconds) => {
 const fmtTime = (iso) => (iso ? new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—')
 
 export default function Pointage() {
+  const { user } = useAuth()
   const [statuses, setStatuses] = useState([])
   const [events, setEvents] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
+
+  const portalLink = user?.companyAccessCode
+    ? `${window.location.origin}/pointage/${user.companyAccessCode}`
+    : ''
+
+  const copyLink = () => {
+    navigator.clipboard?.writeText(portalLink)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   const load = useCallback(() => {
     Promise.all([api.get('/pointage/admin/status'), api.get('/pointage/admin/today')])
@@ -64,6 +77,23 @@ export default function Pointage() {
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
+
+      {portalLink && (
+        <div className="card">
+          <div className="card-title">
+            <h3>Lien du portail chauffeur</h3>
+          </div>
+          <p className="muted" style={{ marginBottom: '1rem' }}>
+            À donner à vos chauffeurs. Un PIN se règle depuis Saisie › Chauffeurs › « Code portail ».
+          </p>
+          <div className="row-actions">
+            <input readOnly value={portalLink} onFocus={(e) => e.target.select()} style={{ flex: 1, minWidth: 0 }} />
+            <button type="button" className="btn btn-outline btn-sm" onClick={copyLink}>
+              {copied ? '✓ Copié' : 'Copier'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="card desktop-table">
         <div className="card-title">
