@@ -1,5 +1,6 @@
 package com.fleethub.controller;
 
+import com.fleethub.dto.PointageAdminEventDto;
 import com.fleethub.dto.PointageRosterDto;
 import com.fleethub.dto.PointageStatusDto;
 import com.fleethub.dto.PointageSummaryDto;
@@ -15,6 +16,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 /**
  * Portail de pointage chauffeur (rôle CHAUFFEUR) : identification par code
@@ -75,6 +78,20 @@ public class PointageController {
     @ApiResponse(responseCode = "409", description = "Aucun service en cours")
     public PointageSummaryDto end() {
         return pointageService.end(TenantContext.companyId(), currentDriverId());
+    }
+
+    @GetMapping("/admin/status")
+    @Operation(summary = "Statut de tous les chauffeurs", description = "Vue gestionnaire : état courant (en service/pause/hors service) de chaque chauffeur actif")
+    @ApiResponse(responseCode = "200", description = "Liste retournée avec succès")
+    public List<PointageStatusDto> adminStatus() {
+        return pointageService.statusForAllDrivers(TenantContext.companyId());
+    }
+
+    @GetMapping("/admin/today")
+    @Operation(summary = "Journal du jour", description = "Vue gestionnaire : tous les événements de pointage du jour, tous chauffeurs confondus")
+    @ApiResponse(responseCode = "200", description = "Liste retournée avec succès")
+    public List<PointageAdminEventDto> adminToday() {
+        return pointageService.todayEvents(TenantContext.companyId());
     }
 
     private Long currentDriverId() {

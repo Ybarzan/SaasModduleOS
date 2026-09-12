@@ -17,6 +17,7 @@ const Trucks = lazy(() => import('./pages/Trucks'))
 const TruckDetail = lazy(() => import('./pages/TruckDetail'))
 const MapPage = lazy(() => import('./pages/MapPage'))
 const Tachographie = lazy(() => import('./pages/Tachographie'))
+const Pointage = lazy(() => import('./pages/Pointage'))
 const DataEntry = lazy(() => import('./pages/DataEntry'))
 const Billing = lazy(() => import('./pages/Billing'))
 const Users = lazy(() => import('./pages/Users'))
@@ -89,6 +90,7 @@ export default function App() {
           <Route path="/trucks/:truckId" element={<TruckDetail />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/tachographie" element={<Tachographie />} />
+          <Route path="/pointage-suivi" element={<Pointage />} />
           <Route path="/data" element={<DataEntry />} />
           <Route path="/import" element={<DataImport />} />
           <Route path="/billing" element={<Billing />} />

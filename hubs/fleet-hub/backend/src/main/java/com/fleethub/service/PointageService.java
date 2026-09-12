@@ -1,6 +1,7 @@
 package com.fleethub.service;
 
 import com.fleethub.config.ResourceNotFoundException;
+import com.fleethub.dto.PointageAdminEventDto;
 import com.fleethub.dto.PointageRosterDto;
 import com.fleethub.dto.PointageStatusDto;
 import com.fleethub.dto.PointageSummaryDto;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -157,6 +159,29 @@ public class PointageService {
         if (lastSeg > CONTINUOUS_DRIVING_LIMIT_SECONDS) compliant = false;
 
         return new PointageSummaryDto(startedAt, now, drivingSeconds, pauseSeconds, pauseCount, compliant);
+    }
+
+    /** Statut courant de chaque chauffeur actif de la société (vue gestionnaire). */
+    @Transactional(readOnly = true)
+    public List<PointageStatusDto> statusForAllDrivers(Long companyId) {
+        return driverRepository.findByCompanyId(companyId).stream()
+                .filter(Driver::isActive)
+                .map(d -> status(companyId, d.getId()))
+                .toList();
+    }
+
+    /** Journal brut des événements de pointage du jour, tous chauffeurs confondus (vue gestionnaire). */
+    @Transactional(readOnly = true)
+    public List<PointageAdminEventDto> todayEvents(Long companyId) {
+        LocalDateTime from = LocalDate.now().atStartOfDay();
+        LocalDateTime to = from.plusDays(1);
+        return eventRepository.findByCompanyIdAndOccurredAtBetweenOrderByOccurredAtDesc(companyId, from, to).stream()
+                .map(e -> new PointageAdminEventDto(
+                        e.getDriver().getId(),
+                        e.getDriver().getFirstName() + " " + e.getDriver().getLastName(),
+                        e.getType().name(),
+                        e.getOccurredAt()))
+                .toList();
     }
 
     private void requireState(List<PointageEvent> openShift, boolean expectPaused, String messageIfNot) {

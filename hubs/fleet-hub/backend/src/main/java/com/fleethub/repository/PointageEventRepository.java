@@ -17,6 +17,9 @@ public interface PointageEventRepository extends JpaRepository<PointageEvent, Lo
 
     List<PointageEvent> findByDriverIdOrderByOccurredAtAsc(Long driverId);
 
+    List<PointageEvent> findByCompanyIdAndOccurredAtBetweenOrderByOccurredAtDesc(
+            Long companyId, LocalDateTime from, LocalDateTime to);
+
     Optional<PointageEvent> findFirstByDriverIdOrderByOccurredAtDesc(Long driverId);
 
     @Query("select e from PointageEvent e where e.company.id = :companyId and e.driver.id = :driverId "

@@ -49,9 +49,15 @@ public class SecurityConfig {
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/api/webhooks/**").permitAll()
-                .requestMatchers("/actuator/health", "/api/legal/**").permitAll()
+                // /actuator/prometheus n'est jamais exposé hors du réseau Docker (aucun
+                // mapping de port hôte sur "backend", ni Caddy ni le nginx du frontend ne
+                // le relaient) — seul Prometheus, en scrape interne conteneur-à-conteneur,
+                // l'appelle. Sans ce permitAll il renvoyait 401 (pas de JWT), et le
+                // dashboard Grafana de supervision n'a jamais reçu la moindre métrique.
+                .requestMatchers("/actuator/health", "/actuator/prometheus", "/api/legal/**").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
                 .requestMatchers("/api/pointage/roster/**").permitAll()
+                .requestMatchers("/api/pointage/admin/**").hasAnyRole("ADMIN", "GESTIONNAIRE")
                 .requestMatchers("/api/pointage/**").hasRole("CHAUFFEUR")
                 .requestMatchers("/api/admin/**").hasRole("SAAS_ADMIN")
                 .requestMatchers("/api/users/**", "/api/integrations/**").hasRole("ADMIN")

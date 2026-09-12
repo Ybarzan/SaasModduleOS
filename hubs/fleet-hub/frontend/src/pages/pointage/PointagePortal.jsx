@@ -158,7 +158,7 @@ export default function PointagePortal() {
                 </b>
               </div>
             </div>
-            <p className="ptg-hint">Consultable par votre gestionnaire dans Tachographie.</p>
+            <p className="ptg-hint">Consultable par votre gestionnaire dans Pointage.</p>
             <div className="ptg-btn-stack">
               <button className="btn btn-primary" onClick={closeSummary}>Fermer</button>
             </div>

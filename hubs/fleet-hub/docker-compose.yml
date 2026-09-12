@@ -191,6 +191,11 @@ services:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: "false"
+      # Servi derrière Caddy sous /grafana (voir caddy/Caddyfile) : sans ces deux
+      # variables, Grafana ignore qu'il est monté sous un sous-chemin et redirige
+      # vers /login (racine) au lieu de /grafana/login, qui retombe sur le frontend.
+      GF_SERVER_ROOT_URL: https://${APP_DOMAIN:-localhost}/grafana/
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     volumes:
       - ./monitoring/grafana/grafana.ini:/etc/grafana/grafana.ini:ro
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
