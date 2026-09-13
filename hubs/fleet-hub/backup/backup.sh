@@ -37,12 +37,37 @@ mkdir -p "$BACKUP_DIR"
 backup() {
     ts=$(date +%Y%m%d-%H%M%S)
     file="$BACKUP_DIR/fleethub-$ts.sql.gz"
-    echo "[backup] $(date -Iseconds) démarrage de pg_dump..."
-    if PGPASSWORD="$DB_PASSWORD" pg_dump -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" | gzip > "$file"; then
+    tmp="$BACKUP_DIR/.fleethub-$ts.sql.tmp"
+
+    # pg_dump | gzip masque l'échec de pg_dump : en sh/dash (pas de pipefail),
+    # le code de sortie du pipe est celui de gzip, qui réussit même sur une
+    # entrée vide. On dump donc dans un fichier temporaire d'abord, et on
+    # vérifie le code de sortie de pg_dump directement.
+    #
+    # Quelques tentatives juste après un redémarrage de la stack (crash Docker,
+    # rebuild) échouaient systématiquement car le réseau entre conteneurs n'est
+    # pas encore stable au tout premier essai — d'où les 3 tentatives ci-dessous.
+    attempt=1
+    ok=0
+    while [ "$attempt" -le 3 ]; do
+        echo "[backup] $(date -Iseconds) démarrage de pg_dump (tentative $attempt/3)..."
+        if PGPASSWORD="$DB_PASSWORD" pg_dump -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" > "$tmp" 2>/tmp/pg_dump.err; then
+            ok=1
+            break
+        fi
+        echo "[backup] tentative $attempt échouée : $(cat /tmp/pg_dump.err)" >&2
+        attempt=$((attempt + 1))
+        [ "$attempt" -le 3 ] && sleep 10
+    done
+
+    if [ "$ok" -eq 1 ]; then
+        gzip -c "$tmp" > "$file"
+        rm -f "$tmp"
         size=$(wc -c < "$file")
         echo "[backup] $(date -Iseconds) terminé : $file ($size octets)"
     else
-        echo "[backup] ÉCHEC du pg_dump" >&2
+        rm -f "$tmp"
+        echo "[backup] ÉCHEC du pg_dump après 3 tentatives" >&2
         ping "/fail"
         return
     fi
