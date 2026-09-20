@@ -23,6 +23,7 @@ const Billing = lazy(() => import('./pages/Billing'))
 const Users = lazy(() => import('./pages/Users'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const Integrations = lazy(() => import('./pages/Integrations'))
+const Marketplace = lazy(() => import('./pages/Marketplace'))
 const DataImport = lazy(() => import('./pages/DataImport'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Settings = lazy(() => import('./pages/Settings'))
@@ -102,6 +103,10 @@ export default function App() {
           <Route
             path="/integrations"
             element={<RequireTenantAdmin><Integrations /></RequireTenantAdmin>}
+          />
+          <Route
+            path="/marketplace"
+            element={<RequireTenantAdmin><Marketplace /></RequireTenantAdmin>}
           />
           <Route
             path="/rgpd"

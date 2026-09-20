@@ -31,6 +31,7 @@ const icons = {
   billing: <Icon d={<><rect x="2.5" y="5" width="19" height="14" rx="2.5" /><path d="M2.5 10h19" /></>} />,
   users: <Icon d={<><circle cx="9" cy="8.5" r="3.4" /><path d="M3 20c0-3.2 2.7-5.3 6-5.3s6 2.1 6 5.3" /><path d="M16 5.6a3.4 3.4 0 0 1 0 5.8M18.5 15.3c2 .8 3.5 2.4 3.5 4.7" /></>} />,
   integrations: <Icon d={<><path d="M9 6h6v6H9zM9 12h6v6H9zM9 9h6" /><path d="M9 15h6" /></>} />,
+  marketplace: <Icon d={<><path d="M4 9l4-4 4 4" /><path d="M8 5v9a4 4 0 0 0 4 4h4" /><path d="M20 15l-4 4-4-4" /></>} />,
   import: <Icon d={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></>} />,
   rgpd: <Icon d={<><path d="M12 3l7 3v5c0 4.5-3 8.2-7 9-4-.8-7-4.5-7-9V6z" /></>} />,
   admin: <Icon d={<><circle cx="12" cy="12" r="3.2" /><path d="M12 2.8v2.4M12 18.8v2.4M4.6 5.6l2 1.4M17.4 17l2 1.4M2.8 12h2.4M18.8 12h2.4M4.6 18.4l2-1.4M17.4 7l2-1.4" /></>} />,
@@ -50,6 +51,7 @@ const navItems = [
   { to: '/billing', label: 'Abonnement', icon: 'billing', end: false },
   { to: '/users', label: 'Utilisateurs', icon: 'users', end: false, adminOnly: true },
   { to: '/integrations', label: 'Intégrations', icon: 'integrations', end: false, adminOnly: true },
+  { to: '/marketplace', label: 'Marketplace', icon: 'marketplace', end: false, adminOnly: true },
   { to: '/rgpd', label: 'Mes données', icon: 'rgpd', end: false, adminOnly: true },
   { to: '/admin', label: 'Administration', icon: 'admin', end: false, saasOnly: true },
   { to: '/settings', label: 'Paramètres', icon: 'settings', end: false }
