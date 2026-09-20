@@ -12,6 +12,8 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 
     Optional<Company> findByAccessCode(String accessCode);
 
+    Optional<Company> findByMarketplaceApiKeyAndMarketplaceOptInTrue(String marketplaceApiKey);
+
     Optional<Company> findBySubscriptionId(String subscriptionId);
 
     List<Company> findAllByOrderByCreatedAtDesc();

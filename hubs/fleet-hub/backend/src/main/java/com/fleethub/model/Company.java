@@ -70,6 +70,19 @@ public class Company {
 
     private LocalDateTime createdAt;
 
+    // ---- Marketplace FleetMarket (opt-in) ----
+    /** Publie la disponibilité camions + un score de conformité agrégé sur
+     *  GET /api/marketplace/availability. Désactivé par défaut : aucune donnée
+     *  ne sort tant que la société n'a pas explicitement activé ce partage. */
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean marketplaceOptIn = false;
+
+    /** Clé d'authentification machine-à-machine pour FleetMarket (présentée via
+     *  l'en-tête X-Marketplace-Key), générée à l'activation de l'opt-in. */
+    @Column(length = 64)
+    private String marketplaceApiKey;
+
     public enum SubscriptionPlan {
         TRIAL(10, 5),
         STARTER(25, 10),
@@ -122,6 +135,15 @@ public class Company {
         for (int i = 0; i < 8; i++) {
             sb.append(ACCESS_CODE_ALPHABET.charAt(ACCESS_CODE_RANDOM.nextInt(ACCESS_CODE_ALPHABET.length())));
         }
+        return sb.toString();
+    }
+
+    /** Génère une clé API machine-à-machine pour FleetMarket (32 caractères hexadécimaux). */
+    public static String generateMarketplaceApiKey() {
+        byte[] bytes = new byte[16];
+        ACCESS_CODE_RANDOM.nextBytes(bytes);
+        StringBuilder sb = new StringBuilder(32);
+        for (byte b : bytes) sb.append(String.format("%02x", b));
         return sb.toString();
     }
 }

@@ -29,6 +29,8 @@ public interface TachographDayRepository extends JpaRepository<TachographDay, Lo
                                   @Param("from") LocalDate from,
                                   @Param("to") LocalDate to);
 
+    long countByCompanyIdAndDateBetween(Long companyId, LocalDate from, LocalDate to);
+
     void deleteByDriver(Driver driver);
     void deleteByCompany_Id(Long companyId);
 }
