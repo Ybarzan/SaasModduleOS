@@ -2,6 +2,7 @@ package com.fleethub.service;
 
 import com.fleethub.dto.MarketplaceAvailabilityDto;
 import com.fleethub.dto.MarketplaceSettingsDto;
+import com.fleethub.dto.VehiclePositionDto;
 import com.fleethub.model.Company;
 import com.fleethub.model.Truck;
 import com.fleethub.repository.CompanyRepository;
@@ -77,6 +78,30 @@ public class MarketplaceService {
         Integer complianceScore = complianceScore(company.getId());
 
         return new MarketplaceAvailabilityDto(company.getName(), company.getCity(), complianceScore, trucks);
+    }
+
+    /**
+     * Position GPS d'UN SEUL camion, jamais la flotte entière — le camion
+     * doit appartenir à la société propriétaire de la clé (même
+     * findByRegistrationAndCompanyId que le reste de l'app, pas de nouvelle
+     * requête non scopée) : sans ça, une société opt-in pourrait interroger
+     * la position de n'importe quel camion d'une autre société en devinant
+     * son immatriculation.
+     */
+    @Transactional(readOnly = true)
+    public VehiclePositionDto vehiclePosition(String apiKey, String registration) {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé X-Marketplace-Key manquante");
+        }
+        Company company = companyRepository.findByMarketplaceApiKeyAndMarketplaceOptInTrue(apiKey)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé invalide ou partage désactivé"));
+        Truck truck = truckRepository.findByRegistrationAndCompanyId(registration, company.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Camion introuvable pour cette société"));
+        if (truck.getCurrentLatitude() == null || truck.getCurrentLongitude() == null) {
+            return new VehiclePositionDto(registration, false, null, null, null, null);
+        }
+        return new VehiclePositionDto(registration, true, truck.getCurrentLatitude(), truck.getCurrentLongitude(),
+                truck.getCurrentSpeedKph(), truck.getLastGpsUpdate());
     }
 
     private Integer complianceScore(Long companyId) {

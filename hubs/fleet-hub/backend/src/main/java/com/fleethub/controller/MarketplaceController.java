@@ -2,6 +2,7 @@ package com.fleethub.controller;
 
 import com.fleethub.dto.MarketplaceAvailabilityDto;
 import com.fleethub.dto.MarketplaceSettingsDto;
+import com.fleethub.dto.VehiclePositionDto;
 import com.fleethub.security.TenantContext;
 import com.fleethub.service.MarketplaceService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,5 +51,17 @@ public class MarketplaceController {
     @ApiResponse(responseCode = "401", description = "Clé manquante, invalide, ou partage désactivé")
     public MarketplaceAvailabilityDto availability(@RequestHeader(value = "X-Marketplace-Key", required = false) String apiKey) {
         return marketplaceService.availability(apiKey);
+    }
+
+    @GetMapping("/vehicle-position")
+    @Operation(summary = "Position GPS d'un véhicule (FleetMarket)",
+            description = "Appel machine-à-machine de FleetMarket, authentifié par X-Marketplace-Key. Le camion doit appartenir à la société propriétaire de la clé.")
+    @ApiResponse(responseCode = "200", description = "Position retournée (available=false si le camion n'a pas de position GPS connue)")
+    @ApiResponse(responseCode = "401", description = "Clé manquante, invalide, ou partage désactivé")
+    @ApiResponse(responseCode = "404", description = "Aucun camion avec cette immatriculation pour cette société")
+    public VehiclePositionDto vehiclePosition(
+            @RequestHeader(value = "X-Marketplace-Key", required = false) String apiKey,
+            @RequestParam String registration) {
+        return marketplaceService.vehiclePosition(apiKey, registration);
     }
 }
