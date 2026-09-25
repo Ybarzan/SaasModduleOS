@@ -208,7 +208,7 @@ services:
 
   # ── pgAdmin (dev profile only) ────────────────────────────────────────
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:9
     profiles: [dev]
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@incokalk.io}
