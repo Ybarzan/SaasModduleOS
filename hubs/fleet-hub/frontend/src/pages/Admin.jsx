@@ -82,7 +82,7 @@ export default function Admin() {
       setNewIpLabel('')
       loadIps()
     } catch (err) {
-      setIpError(err.response?.data?.message || 'Erreur lors de l\'ajout')
+      setIpError(err.response?.data?.message || "Erreur lors de l'ajout")
     }
   }
 
@@ -128,7 +128,12 @@ export default function Admin() {
                 <tr key={c.id}>
                   <td>
                     <strong>{c.name}</strong>
-                    {c.city && <span className="muted block">{c.city}{c.country ? `, ${c.country}` : ''}</span>}
+                    {c.city && (
+                      <span className="muted block">
+                        {c.city}
+                        {c.country ? `, ${c.country}` : ''}
+                      </span>
+                    )}
                   </td>
                   <td>
                     <select
@@ -161,15 +166,27 @@ export default function Admin() {
                   <td>
                     <div className="admin-actions">
                       {c.status === 'SUSPENDED' ? (
-                        <button className="btn btn-sm btn-primary" disabled={busyId === c.id} onClick={() => activate(c)}>
+                        <button
+                          className="btn btn-sm btn-primary"
+                          disabled={busyId === c.id}
+                          onClick={() => activate(c)}
+                        >
                           Réactiver
                         </button>
                       ) : (
-                        <button className="btn btn-sm btn-danger" disabled={busyId === c.id} onClick={() => suspend(c)}>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          disabled={busyId === c.id}
+                          onClick={() => suspend(c)}
+                        >
                           Suspendre
                         </button>
                       )}
-                      <button className="btn btn-sm btn-outline" disabled={busyId === c.id} onClick={() => extendTrial(c)}>
+                      <button
+                        className="btn btn-sm btn-outline"
+                        disabled={busyId === c.id}
+                        onClick={() => extendTrial(c)}
+                      >
                         +30 j essai
                       </button>
                     </div>
@@ -192,7 +209,16 @@ export default function Admin() {
             companies.map((c) => (
               <div key={c.id} className="record-card">
                 <div className="record-card-title">
-                  <strong>{c.name}{c.city && <span className="muted"> — {c.city}{c.country ? `, ${c.country}` : ''}</span>}</strong>
+                  <strong>
+                    {c.name}
+                    {c.city && (
+                      <span className="muted">
+                        {' '}
+                        — {c.city}
+                        {c.country ? `, ${c.country}` : ''}
+                      </span>
+                    )}
+                  </strong>
                   <span className={`badge ${statusBadge[c.status] || 'badge-gray'}`}>
                     {statusLabel[c.status] || c.status}
                   </span>
@@ -218,7 +244,9 @@ export default function Admin() {
                 </div>
                 <div className="record-card-row">
                   <span>Utilisateurs / Chauffeurs / Camions</span>
-                  <span>{c.userCount} / {c.driverCount} / {c.truckCount}</span>
+                  <span>
+                    {c.userCount} / {c.driverCount} / {c.truckCount}
+                  </span>
                 </div>
                 <div className="record-card-row">
                   <span>Accès</span>
@@ -228,15 +256,27 @@ export default function Admin() {
                 </div>
                 <div className="record-card-actions">
                   {c.status === 'SUSPENDED' ? (
-                    <button className="btn btn-sm btn-primary" disabled={busyId === c.id} onClick={() => activate(c)}>
+                    <button
+                      className="btn btn-sm btn-primary"
+                      disabled={busyId === c.id}
+                      onClick={() => activate(c)}
+                    >
                       Réactiver
                     </button>
                   ) : (
-                    <button className="btn btn-sm btn-danger" disabled={busyId === c.id} onClick={() => suspend(c)}>
+                    <button
+                      className="btn btn-sm btn-danger"
+                      disabled={busyId === c.id}
+                      onClick={() => suspend(c)}
+                    >
                       Suspendre
                     </button>
                   )}
-                  <button className="btn btn-sm btn-outline" disabled={busyId === c.id} onClick={() => extendTrial(c)}>
+                  <button
+                    className="btn btn-sm btn-outline"
+                    disabled={busyId === c.id}
+                    onClick={() => extendTrial(c)}
+                  >
                     +30 j essai
                   </button>
                 </div>
@@ -252,7 +292,8 @@ export default function Admin() {
           <span className="muted">Adresses IP autorisées pour /api/admin/**</span>
         </div>
         <p className="muted" style={{ marginBottom: '1rem', fontSize: '0.85rem' }}>
-          Seules les IPs listées ici (ou dans la variable d'environnement <code>APP_ADMIN_ALLOWED_IPS</code>) peuvent accéder aux endpoints admin plateforme.
+          Seules les IPs listées ici (ou dans la variable d'environnement{' '}
+          <code>APP_ADMIN_ALLOWED_IPS</code>) peuvent accéder aux endpoints admin plateforme.
         </p>
         {ipError && <div className="alert alert-error">{ipError}</div>}
 
@@ -273,7 +314,9 @@ export default function Admin() {
             onKeyDown={(e) => e.key === 'Enter' && addIp()}
             style={{ maxWidth: '200px' }}
           />
-          <button className="btn btn-sm btn-primary" onClick={addIp}>Ajouter</button>
+          <button className="btn btn-sm btn-primary" onClick={addIp}>
+            Ajouter
+          </button>
         </div>
 
         {ipList.length > 0 ? (
@@ -290,7 +333,9 @@ export default function Admin() {
               <tbody>
                 {ipList.map((entry) => (
                   <tr key={entry.id}>
-                    <td><code>{entry.ipAddress}</code></td>
+                    <td>
+                      <code>{entry.ipAddress}</code>
+                    </td>
                     <td className="muted">{entry.label || '—'}</td>
                     <td className="muted">{fmtDate(entry.createdAt)}</td>
                     <td>
@@ -305,7 +350,8 @@ export default function Admin() {
           </div>
         ) : (
           <p className="muted" style={{ fontSize: '0.85rem' }}>
-            Aucune IP en base. L'accès admin est contrôlé uniquement par la variable d'environnement.
+            Aucune IP en base. L'accès admin est contrôlé uniquement par la variable
+            d'environnement.
           </p>
         )}
       </div>

@@ -83,7 +83,15 @@ export default function App() {
         <Route path="/legal/:key" element={<Legal />} />
         <Route path="/pointage" element={<PointagePortal />} />
         <Route path="/pointage/:accessCode" element={<PointagePortal />} />
-        <Route element={<RequireAuth><RequireSubscription><Layout /></RequireSubscription></RequireAuth>}>
+        <Route
+          element={
+            <RequireAuth>
+              <RequireSubscription>
+                <Layout />
+              </RequireSubscription>
+            </RequireAuth>
+          }
+        >
           <Route path="/" element={<Dashboard />} />
           <Route path="/drivers" element={<Drivers />} />
           <Route path="/drivers/:assignmentId" element={<DriverDetail />} />
@@ -98,23 +106,43 @@ export default function App() {
           <Route path="/notifications" element={<Notifications />} />
           <Route
             path="/users"
-            element={<RequireTenantAdmin><Users /></RequireTenantAdmin>}
+            element={
+              <RequireTenantAdmin>
+                <Users />
+              </RequireTenantAdmin>
+            }
           />
           <Route
             path="/integrations"
-            element={<RequireTenantAdmin><Integrations /></RequireTenantAdmin>}
+            element={
+              <RequireTenantAdmin>
+                <Integrations />
+              </RequireTenantAdmin>
+            }
           />
           <Route
             path="/marketplace"
-            element={<RequireTenantAdmin><Marketplace /></RequireTenantAdmin>}
+            element={
+              <RequireTenantAdmin>
+                <Marketplace />
+              </RequireTenantAdmin>
+            }
           />
           <Route
             path="/rgpd"
-            element={<RequireTenantAdmin><Privacy /></RequireTenantAdmin>}
+            element={
+              <RequireTenantAdmin>
+                <Privacy />
+              </RequireTenantAdmin>
+            }
           />
           <Route
             path="/admin"
-            element={<RequireRole role="SAAS_ADMIN"><Admin /></RequireRole>}
+            element={
+              <RequireRole role="SAAS_ADMIN">
+                <Admin />
+              </RequireRole>
+            }
           />
           <Route path="/settings" element={<Settings />} />
         </Route>

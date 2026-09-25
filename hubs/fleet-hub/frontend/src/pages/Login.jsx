@@ -33,9 +33,11 @@ export default function Login() {
       if (totpRequired && err.response?.status === 401) {
         setError('Code TOTP invalide')
       } else {
-        setError(err.response?.status === 403 || err.response?.status === 401
-          ? 'Identifiants invalides'
-          : 'Erreur de connexion au serveur')
+        setError(
+          err.response?.status === 403 || err.response?.status === 401
+            ? 'Identifiants invalides'
+            : 'Erreur de connexion au serveur'
+        )
       }
     } finally {
       setLoading(false)

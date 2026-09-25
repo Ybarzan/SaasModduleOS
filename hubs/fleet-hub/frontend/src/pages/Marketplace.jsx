@@ -36,7 +36,8 @@ export default function Marketplace() {
   }
 
   const deactivate = async () => {
-    if (!window.confirm('Désactiver le partage ? Votre flotte disparaîtra du tableau FleetMarket.')) return
+    if (!window.confirm('Désactiver le partage ? Votre flotte disparaîtra du tableau FleetMarket.'))
+      return
     setError('')
     setNotice('')
     setBusy(true)
@@ -66,7 +67,9 @@ export default function Marketplace() {
       <div className="page-header">
         <div>
           <h2>Marketplace</h2>
-          <p>Publiez la disponibilité de votre flotte sur FleetMarket, la bourse de fret entre PME</p>
+          <p>
+            Publiez la disponibilité de votre flotte sur FleetMarket, la bourse de fret entre PME
+          </p>
         </div>
       </div>
 

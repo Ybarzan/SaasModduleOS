@@ -2,11 +2,31 @@ import { useEffect, useState } from 'react'
 import api from '../services/api'
 
 const RULES = [
-  { title: 'Conduite journalière', value: '9 h / 10 h', desc: '9 h max par jour, prolongeable à 10 h au plus 2 jours par semaine.' },
-  { title: 'Conduite continue', value: '4 h 30', desc: '4 h 30 de conduite max, puis pause obligatoire de 45 min.' },
-  { title: 'Repos quotidien', value: '11 h', desc: '11 h de repos minimum entre deux journées (9 h réduit, 3 fois max par semaine).' },
-  { title: 'Repos hebdomadaire', value: '45 h', desc: '45 h de repos hebdomadaire minimum après 6 journées de travail.' },
-  { title: 'Cumuls glissants', value: '56 h / 90 h', desc: '56 h de conduite max par semaine et 90 h sur deux semaines consécutives.' }
+  {
+    title: 'Conduite journalière',
+    value: '9 h / 10 h',
+    desc: '9 h max par jour, prolongeable à 10 h au plus 2 jours par semaine.'
+  },
+  {
+    title: 'Conduite continue',
+    value: '4 h 30',
+    desc: '4 h 30 de conduite max, puis pause obligatoire de 45 min.'
+  },
+  {
+    title: 'Repos quotidien',
+    value: '11 h',
+    desc: '11 h de repos minimum entre deux journées (9 h réduit, 3 fois max par semaine).'
+  },
+  {
+    title: 'Repos hebdomadaire',
+    value: '45 h',
+    desc: '45 h de repos hebdomadaire minimum après 6 journées de travail.'
+  },
+  {
+    title: 'Cumuls glissants',
+    value: '56 h / 90 h',
+    desc: '56 h de conduite max par semaine et 90 h sur deux semaines consécutives.'
+  }
 ]
 
 const iso = (d) => d.toISOString().slice(0, 10)
@@ -15,7 +35,9 @@ const rateTone = (rate) => (rate >= 90 ? 'green' : rate >= 75 ? 'orange' : 'red'
 
 export default function Tachographie() {
   const today = new Date()
-  const [from, setFrom] = useState(iso(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29)))
+  const [from, setFrom] = useState(
+    iso(new Date(today.getFullYear(), today.getMonth(), today.getDate() - 29))
+  )
   const [to, setTo] = useState(iso(today))
   const [drivers, setDrivers] = useState([])
   const [selectedDriver, setSelectedDriver] = useState('')
@@ -26,7 +48,9 @@ export default function Tachographie() {
   useEffect(() => {
     api
       .get('/drivers')
-      .then((res) => setDrivers(res.data.map((d) => ({ id: d.id, label: `${d.firstName} ${d.lastName}` }))))
+      .then((res) =>
+        setDrivers(res.data.map((d) => ({ id: d.id, label: `${d.firstName} ${d.lastName}` })))
+      )
       .catch((err) => console.error('Failed to load drivers:', err))
   }, [])
 
@@ -70,7 +94,9 @@ export default function Tachographie() {
       <div className="card">
         <div className="card-title">
           <h3>Règles 561/2006 appliquées</h3>
-          <span className="muted">évaluées sur les relevés journaliers, fenêtres glissantes 7 et 14 jours</span>
+          <span className="muted">
+            évaluées sur les relevés journaliers, fenêtres glissantes 7 et 14 jours
+          </span>
         </div>
         <div className="tacho-rules">
           {RULES.map((r) => (
@@ -99,7 +125,8 @@ export default function Tachographie() {
           <div>
             <div className="stat-label">Non-conformités</div>
             <div className="stat-value">
-              {totals.nonCompliant}<span className="stat-unit">jour(s)</span>
+              {totals.nonCompliant}
+              <span className="stat-unit">jour(s)</span>
             </div>
             <div className="stat-sub">sur la période sélectionnée</div>
           </div>
@@ -109,7 +136,8 @@ export default function Tachographie() {
           <div>
             <div className="stat-label">Conduite 7 j</div>
             <div className="stat-value">
-              {totals.week7.toFixed(1)}<span className="stat-unit">h</span>
+              {totals.week7.toFixed(1)}
+              <span className="stat-unit">h</span>
             </div>
             <div className="stat-sub">cumul flotte (max 56 h/chauffeur)</div>
           </div>
@@ -119,7 +147,8 @@ export default function Tachographie() {
           <div>
             <div className="stat-label">Conduite 14 j</div>
             <div className="stat-value">
-              {totals.week14.toFixed(1)}<span className="stat-unit">h</span>
+              {totals.week14.toFixed(1)}
+              <span className="stat-unit">h</span>
             </div>
             <div className="stat-sub">cumul flotte (max 90 h/chauffeur)</div>
           </div>
@@ -148,7 +177,9 @@ export default function Tachographie() {
             <tbody>
               {summary.length === 0 && (
                 <tr>
-                  <td colSpan="8" className="table-empty">Aucune donnée tachygraphe sur la période</td>
+                  <td colSpan="8" className="table-empty">
+                    Aucune donnée tachygraphe sur la période
+                  </td>
                 </tr>
               )}
               {summary.map((s) => (
@@ -158,11 +189,17 @@ export default function Tachographie() {
                   <td>{s.compliantDays}</td>
                   <td>{s.nonCompliantDays}</td>
                   <td>
-                    <span className={`badge badge-${rateTone(s.complianceRate)}`}>{Math.round(s.complianceRate)}%</span>
+                    <span className={`badge badge-${rateTone(s.complianceRate)}`}>
+                      {Math.round(s.complianceRate)}%
+                    </span>
                   </td>
                   <td>{s.totalDrivingLast7d.toFixed(1)} h</td>
                   <td>{s.totalDrivingLast14d.toFixed(1)} h</td>
-                  <td>{s.lastNonCompliantDate ? new Date(s.lastNonCompliantDate).toLocaleDateString('fr-FR') : '—'}</td>
+                  <td>
+                    {s.lastNonCompliantDate
+                      ? new Date(s.lastNonCompliantDate).toLocaleDateString('fr-FR')
+                      : '—'}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -177,16 +214,27 @@ export default function Tachographie() {
         <div className="filter-bar">
           <div className="form-field">
             <label htmlFor="tacho-driver">Chauffeur</label>
-            <select id="tacho-driver" value={selectedDriver} onChange={(e) => setSelectedDriver(e.target.value)}>
+            <select
+              id="tacho-driver"
+              value={selectedDriver}
+              onChange={(e) => setSelectedDriver(e.target.value)}
+            >
               <option value="">Tous</option>
               {drivers.map((d) => (
-                <option key={d.id} value={d.id}>{d.label}</option>
+                <option key={d.id} value={d.id}>
+                  {d.label}
+                </option>
               ))}
             </select>
           </div>
           <div className="form-field">
             <label htmlFor="tacho-from">Du</label>
-            <input id="tacho-from" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+            <input
+              id="tacho-from"
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+            />
           </div>
           <div className="form-field">
             <label htmlFor="tacho-to">Au</label>
@@ -209,7 +257,9 @@ export default function Tachographie() {
             <tbody>
               {journal.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="table-empty">Aucun jour de tachygraphe sur la période</td>
+                  <td colSpan="7" className="table-empty">
+                    Aucun jour de tachygraphe sur la période
+                  </td>
                 </tr>
               )}
               {journal.map((d) => (

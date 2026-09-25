@@ -32,8 +32,20 @@ const truckFields = [
   { key: 'brand', label: 'Marque', type: 'text', required: true },
   { key: 'model', label: 'Modèle', type: 'text', required: true },
   { key: 'modelYear', label: 'Année', type: 'number' },
-  { key: 'truckType', label: 'Type', type: 'select', required: true, options: ['TRACTEUR', 'PORTEUR', 'FOURGON'] },
-  { key: 'fuelType', label: 'Énergie', type: 'select', required: true, options: ['DIESEL', 'ELECTRIC'] },
+  {
+    key: 'truckType',
+    label: 'Type',
+    type: 'select',
+    required: true,
+    options: ['TRACTEUR', 'PORTEUR', 'FOURGON']
+  },
+  {
+    key: 'fuelType',
+    label: 'Énergie',
+    type: 'select',
+    required: true,
+    options: ['DIESEL', 'ELECTRIC']
+  },
   { key: 'capacityTons', label: 'Capacité (t)', type: 'number' },
   { key: 'expectedConsumptionL100Km', label: 'Conso réf. (L/100)', type: 'number', required: true },
   { key: 'acquisitionDate', label: "Date d'acquisition", type: 'date' },
@@ -57,8 +69,14 @@ const tripFields = [
   { key: 'distanceKm', label: 'Distance (km)', type: 'number', required: true },
   { key: 'cargoWeightTons', label: 'Charge (t)', type: 'number' },
   { key: 'loaded', label: 'En charge', type: 'checkbox', default: true },
-  { key: 'status', label: 'Statut', type: 'select', required: true, options: ['EN_COURS', 'TERMINE', 'ANNULE'] },
-  { key: 'onTime', label: 'À l\'heure', type: 'checkbox', default: true }
+  {
+    key: 'status',
+    label: 'Statut',
+    type: 'select',
+    required: true,
+    options: ['EN_COURS', 'TERMINE', 'ANNULE']
+  },
+  { key: 'onTime', label: "À l'heure", type: 'checkbox', default: true }
 ]
 
 const fuelFields = [
@@ -105,9 +123,12 @@ const columnsByTab = {
     {
       key: 'hasPin',
       label: 'Portail',
-      render: (d) => (d.hasPin
-        ? <span className="badge badge-green">Configuré</span>
-        : <span className="badge badge-gray">Non configuré</span>)
+      render: (d) =>
+        d.hasPin ? (
+          <span className="badge badge-green">Configuré</span>
+        ) : (
+          <span className="badge badge-gray">Non configuré</span>
+        )
     }
   ],
   [TAB_TRUCKS]: [
@@ -115,7 +136,12 @@ const columnsByTab = {
     { key: 'registration', label: 'Immatriculation' },
     { key: 'truckType', label: 'Type' },
     { key: 'fuelType', label: 'Énergie' },
-    { key: 'expectedConsumptionL100Km', label: 'Conso réf.', render: (t) => (t.expectedConsumptionL100Km == null ? '—' : `${t.expectedConsumptionL100Km} L`) }
+    {
+      key: 'expectedConsumptionL100Km',
+      label: 'Conso réf.',
+      render: (t) =>
+        t.expectedConsumptionL100Km == null ? '—' : `${t.expectedConsumptionL100Km} L`
+    }
   ],
   [TAB_ASSIGNMENTS]: [
     { key: 'driverName', label: 'Chauffeur' },
@@ -127,10 +153,18 @@ const columnsByTab = {
   [TAB_TRIPS]: [
     { key: 'driverName', label: 'Chauffeur' },
     { key: 'truckRegistration', label: 'Camion' },
-    { key: 'startTime', label: 'Départ', render: (t) => new Date(t.startTime).toLocaleString('fr-FR') },
-    { key: 'distanceKm', label: 'Km', render: (t) => (t.distanceKm == null ? '—' : Math.round(t.distanceKm)) },
+    {
+      key: 'startTime',
+      label: 'Départ',
+      render: (t) => new Date(t.startTime).toLocaleString('fr-FR')
+    },
+    {
+      key: 'distanceKm',
+      label: 'Km',
+      render: (t) => (t.distanceKm == null ? '—' : Math.round(t.distanceKm))
+    },
     { key: 'status', label: 'Statut' },
-    { key: 'onTime', label: 'À l\'heure', render: (t) => (t.onTime ? 'Oui' : 'Non') }
+    { key: 'onTime', label: "À l'heure", render: (t) => (t.onTime ? 'Oui' : 'Non') }
   ],
   [TAB_FUEL]: [
     { key: 'truckRegistration', label: 'Camion' },
@@ -145,8 +179,22 @@ const columnsByTab = {
     { key: 'drivingHours', label: 'Conduite (h)' },
     { key: 'workHours', label: 'Travail (h)' },
     { key: 'restMinutes', label: 'Repos (min)' },
-    { key: 'compliant', label: 'Conforme', render: (d) => (d.compliant ? <span className="badge badge-green">Oui</span> : <span className="badge badge-red">Non</span>) },
-    { key: 'reasons', label: 'Motifs', render: (d) => (d.reasons?.length ? <span className="muted">{d.reasons.join(' · ')}</span> : '—') }
+    {
+      key: 'compliant',
+      label: 'Conforme',
+      render: (d) =>
+        d.compliant ? (
+          <span className="badge badge-green">Oui</span>
+        ) : (
+          <span className="badge badge-red">Non</span>
+        )
+    },
+    {
+      key: 'reasons',
+      label: 'Motifs',
+      render: (d) =>
+        d.reasons?.length ? <span className="muted">{d.reasons.join(' · ')}</span> : '—'
+    }
   ]
 }
 
@@ -257,8 +305,12 @@ function CrudTab({ tab, options, onChanged }) {
       setError('Le code doit contenir exactement 4 chiffres')
       return
     }
-    api.post(`/drivers/${item.id}/pin`, { pin })
-      .then(() => { load(); setSuccess('Code du portail enregistré') })
+    api
+      .post(`/drivers/${item.id}/pin`, { pin })
+      .then(() => {
+        load()
+        setSuccess('Code du portail enregistré')
+      })
       .catch((err) => setError(err.response?.data?.message || "L'enregistrement du code a échoué"))
   }
 
@@ -301,7 +353,10 @@ function CrudTab({ tab, options, onChanged }) {
               }
               return (
                 <div key={f.key} className="form-field">
-                  <label>{f.label}{f.required ? ' *' : ''}</label>
+                  <label>
+                    {f.label}
+                    {f.required ? ' *' : ''}
+                  </label>
                   {f.type === 'select' ? (
                     <select
                       value={form[f.key] ?? ''}
@@ -360,7 +415,7 @@ function CrudTab({ tab, options, onChanged }) {
                 <tr key={item.id}>
                   {columns.map((c, i) => (
                     <td key={`${c.label}-${i}`}>
-                      {c.render ? c.render(item) : item[c.key] ?? '—'}
+                      {c.render ? c.render(item) : (item[c.key] ?? '—')}
                     </td>
                   ))}
                   <td>
@@ -369,7 +424,10 @@ function CrudTab({ tab, options, onChanged }) {
                         Éditer
                       </button>
                       {tab === TAB_DRIVERS && (
-                        <button className="btn btn-outline btn-sm" onClick={() => setDriverPin(item)}>
+                        <button
+                          className="btn btn-outline btn-sm"
+                          onClick={() => setDriverPin(item)}
+                        >
                           Code portail
                         </button>
                       )}

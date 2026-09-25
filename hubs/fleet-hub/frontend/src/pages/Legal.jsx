@@ -30,7 +30,9 @@ export default function Legal() {
       <div className="legal-card">
         <div className="legal-header">
           <span className="legal-logo">🚛 Fleet Hub</span>
-          <Link to="/login" className="link">← Retour à la connexion</Link>
+          <Link to="/login" className="link">
+            ← Retour à la connexion
+          </Link>
         </div>
         {loading ? (
           <p className="muted">Chargement…</p>
@@ -45,9 +47,13 @@ export default function Legal() {
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content.body) }}
             />
             <p className="legal-footer">
-              <Link to="/legal/terms" className="link">Conditions d’utilisation</Link>
+              <Link to="/legal/terms" className="link">
+                Conditions d’utilisation
+              </Link>
               <span>·</span>
-              <Link to="/legal/privacy" className="link">Politique de confidentialité</Link>
+              <Link to="/legal/privacy" className="link">
+                Politique de confidentialité
+              </Link>
             </p>
           </>
         )}

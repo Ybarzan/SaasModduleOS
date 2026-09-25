@@ -44,9 +44,11 @@ export default function Register() {
       })
       navigate('/', { replace: true })
     } catch (err) {
-      setError(err.response?.status === 409
-        ? 'Un compte existe déjà avec cet email'
-        : 'Erreur lors de la création du compte')
+      setError(
+        err.response?.status === 409
+          ? 'Un compte existe déjà avec cet email'
+          : 'Erreur lors de la création du compte'
+      )
     } finally {
       setLoading(false)
     }
@@ -72,11 +74,21 @@ export default function Register() {
           <div className="form-row">
             <label>
               Prénom
-              <input type="text" value={form.firstName} onChange={set('firstName')} autoComplete="given-name" />
+              <input
+                type="text"
+                value={form.firstName}
+                onChange={set('firstName')}
+                autoComplete="given-name"
+              />
             </label>
             <label>
               Nom
-              <input type="text" value={form.lastName} onChange={set('lastName')} autoComplete="family-name" />
+              <input
+                type="text"
+                value={form.lastName}
+                onChange={set('lastName')}
+                autoComplete="family-name"
+              />
             </label>
           </div>
           <label>
@@ -106,12 +118,9 @@ export default function Register() {
             {loading ? 'Création…' : 'Créer mon compte'}
           </button>
         </form>
+        <p className="login-hint">Essai gratuit 14 jours · Données hébergées en France (RGPD)</p>
         <p className="login-hint">
-          Essai gratuit 14 jours · Données hébergées en France (RGPD)
-        </p>
-        <p className="login-hint">
-          En créant votre compte, vous acceptez nos{' '}
-          <Link to="/legal/terms">CGU</Link> et notre{' '}
+          En créant votre compte, vous acceptez nos <Link to="/legal/terms">CGU</Link> et notre{' '}
           <Link to="/legal/privacy">politique de confidentialité</Link>.
         </p>
         <p className="login-hint">

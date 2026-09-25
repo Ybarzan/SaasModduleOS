@@ -7,10 +7,38 @@ import ScoreGauge from '../components/ScoreGauge'
 import StatusBadge from '../components/StatusBadge'
 
 const STATUS_GROUPS = [
-  { key: 'ROULAGE', label: 'En route', icon: '🚚', tone: 'green', statuses: ['ROULAGE'], sub: 'chauffeurs sur la route' },
-  { key: 'REPOS', label: 'Repos', icon: '🔵', tone: 'blue', statuses: ['REPOS'], sub: 'pause réglementaire' },
-  { key: 'ARRET', label: "À l'arrêt", icon: '🛑', tone: 'orange', statuses: ['ARRET'], sub: 'arrêt / déchargement' },
-  { key: 'ALERTE', label: 'Alertes / immobilisés', icon: '🚨', tone: 'red', statuses: ['ALERTE', 'IMMOBILISE'], sub: 'intervention requise' }
+  {
+    key: 'ROULAGE',
+    label: 'En route',
+    icon: '🚚',
+    tone: 'green',
+    statuses: ['ROULAGE'],
+    sub: 'chauffeurs sur la route'
+  },
+  {
+    key: 'REPOS',
+    label: 'Repos',
+    icon: '🔵',
+    tone: 'blue',
+    statuses: ['REPOS'],
+    sub: 'pause réglementaire'
+  },
+  {
+    key: 'ARRET',
+    label: "À l'arrêt",
+    icon: '🛑',
+    tone: 'orange',
+    statuses: ['ARRET'],
+    sub: 'arrêt / déchargement'
+  },
+  {
+    key: 'ALERTE',
+    label: 'Alertes / immobilisés',
+    icon: '🚨',
+    tone: 'red',
+    statuses: ['ALERTE', 'IMMOBILISE'],
+    sub: 'intervention requise'
+  }
 ]
 
 const COMPOSITE_PARTS = [
@@ -112,9 +140,9 @@ export default function Dashboard() {
 
   const focusKpi = (key) => navigate(`/drivers?kpi=${key}`)
 
-  const coupleAlerts = summary ? summary.topCouples.flatMap((c) =>
-    (c.alerts || []).map((a) => ({ ...c, text: a }))
-  ) : []
+  const coupleAlerts = summary
+    ? summary.topCouples.flatMap((c) => (c.alerts || []).map((a) => ({ ...c, text: a })))
+    : []
 
   return (
     <div>
@@ -129,14 +157,21 @@ export default function Dashboard() {
       {error && (
         <div className="alert alert-error">
           {error}
-          <button type="button" className="btn btn-outline btn-sm" onClick={retry} style={{ marginLeft: 12 }}>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={retry}
+            style={{ marginLeft: 12 }}
+          >
             Réessayer
           </button>
         </div>
       )}
 
       {loading && !summary && !error && (
-        <div className="loading-spinner" aria-label="Chargement du tableau de bord…">Chargement…</div>
+        <div className="loading-spinner" aria-label="Chargement du tableau de bord…">
+          Chargement…
+        </div>
       )}
 
       {summary && (
@@ -144,7 +179,9 @@ export default function Dashboard() {
           <div className="card ops-card">
             <div className="card-title">
               <h3>🚦 Flotte en temps réel</h3>
-              <span className="live-badge"><span className="live-dot" /> maj 15 s</span>
+              <span className="live-badge">
+                <span className="live-dot" /> maj 15 s
+              </span>
             </div>
             <div className="ops-grid">
               {STATUS_GROUPS.map((g) => {
@@ -162,16 +199,46 @@ export default function Dashboard() {
                   />
                 )
               })}
-              <LiveTile tone="purple" icon="⚡" label="Vitesse moyenne" value={avgSpeed !== null ? `${avgSpeed} km/h` : '—'} sub="camions en circulation" onClick={() => navigate('/map')} />
-              <LiveTile tone="default" icon="📍" label="Km parcourus" value={`${summary.totalKm.toLocaleString('fr-FR')}`} sub="période sélectionnée" onClick={() => navigate('/map')} />
-              <LiveTile tone={summary.nonCompliantDrivingDays > 0 ? 'red' : 'default'} icon="⏰" label="Conduite non conforme" value={`${summary.nonCompliantDrivingDays} j`} sub="règlement 561/2006" onClick={() => navigate('/drivers')} />
+              <LiveTile
+                tone="purple"
+                icon="⚡"
+                label="Vitesse moyenne"
+                value={avgSpeed !== null ? `${avgSpeed} km/h` : '—'}
+                sub="camions en circulation"
+                onClick={() => navigate('/map')}
+              />
+              <LiveTile
+                tone="default"
+                icon="📍"
+                label="Km parcourus"
+                value={`${summary.totalKm.toLocaleString('fr-FR')}`}
+                sub="période sélectionnée"
+                onClick={() => navigate('/map')}
+              />
+              <LiveTile
+                tone={summary.nonCompliantDrivingDays > 0 ? 'red' : 'default'}
+                icon="⏰"
+                label="Conduite non conforme"
+                value={`${summary.nonCompliantDrivingDays} j`}
+                sub="règlement 561/2006"
+                onClick={() => navigate('/drivers')}
+              />
             </div>
 
             {selectedGroupData && (
               <div className="ops-panel" ref={panelRef}>
                 <div className="ops-panel-head">
-                  <strong>{selectedGroupData.icon} {selectedGroupData.label} ({groupVehicles.length})</strong>
-                  <button type="button" className="ops-panel-close" onClick={() => setSelectedGroup(null)} aria-label="Fermer">✕</button>
+                  <strong>
+                    {selectedGroupData.icon} {selectedGroupData.label} ({groupVehicles.length})
+                  </strong>
+                  <button
+                    type="button"
+                    className="ops-panel-close"
+                    onClick={() => setSelectedGroup(null)}
+                    aria-label="Fermer"
+                  >
+                    ✕
+                  </button>
                 </div>
                 {groupVehicles.length === 0 ? (
                   <p className="muted table-empty">Aucun camion dans cet état actuellement</p>
@@ -181,18 +248,26 @@ export default function Dashboard() {
                       <li key={v.truckId}>
                         <StatusBadge status={v.status} />
                         <div className="ov-main">
-                          <Link to={`/trucks/${v.truckId}`} className="cell-link"><strong>{v.registration}</strong></Link>
-                          <span className="muted block">{v.brand} {v.model}</span>
+                          <Link to={`/trucks/${v.truckId}`} className="cell-link">
+                            <strong>{v.registration}</strong>
+                          </Link>
+                          <span className="muted block">
+                            {v.brand} {v.model}
+                          </span>
                         </div>
                         <div className="ov-info">
                           {v.driverName && v.assignmentId ? (
-                            <Link to={`/drivers/${v.assignmentId}`} className="link">{v.driverName}</Link>
+                            <Link to={`/drivers/${v.assignmentId}`} className="link">
+                              {v.driverName}
+                            </Link>
                           ) : (
                             <span>Non affecté</span>
                           )}
                           {v.speedKph > 0 && <span className="ov-speed">⚡ {v.speedKph} km/h</span>}
                         </div>
-                        <Link to="/map" className="link">Carte →</Link>
+                        <Link to="/map" className="link">
+                          Carte →
+                        </Link>
                       </li>
                     ))}
                   </ul>
@@ -211,7 +286,11 @@ export default function Dashboard() {
             <div className="card">
               <div className="card-title">
                 <h3>Score global de la flotte</h3>
-                <button type="button" className="btn btn-outline btn-sm" onClick={() => setShowScore((s) => !s)}>
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => setShowScore((s) => !s)}
+                >
                   {showScore ? 'Masquer le détail' : 'Décomposer le score'}
                 </button>
               </div>
@@ -225,16 +304,21 @@ export default function Dashboard() {
                     <StatusBadge status="ARRET" /> <b>{summary.vehiclesStopped}</b> à l'arrêt/repos
                   </div>
                   <div className="score-line">
-                    <StatusBadge status="ALERTE" /> <b>{summary.vehiclesAlerted}</b> en alerte / immobilisés
+                    <StatusBadge status="ALERTE" /> <b>{summary.vehiclesAlerted}</b> en alerte /
+                    immobilisés
                   </div>
                   <div className="score-line">
-                    <Link to="/drivers" className="link">Voir le classement des couples →</Link>
+                    <Link to="/drivers" className="link">
+                      Voir le classement des couples →
+                    </Link>
                   </div>
                 </div>
               </div>
               {showScore && (
                 <div className="score-breakdown">
-                  <p className="muted">Le score composite de chaque couple Chauffeur × Camion pondère 5 indicateurs :</p>
+                  <p className="muted">
+                    Le score composite de chaque couple Chauffeur × Camion pondère 5 indicateurs :
+                  </p>
                   <ul className="score-parts">
                     {COMPOSITE_PARTS.map((p) => (
                       <li key={p.label}>
@@ -273,7 +357,9 @@ export default function Dashboard() {
           <div className="card">
             <div className="card-title">
               <h3>Meilleurs couples Chauffeur × Camion</h3>
-              <Link to="/drivers" className="link">Voir tous les chauffeurs →</Link>
+              <Link to="/drivers" className="link">
+                Voir tous les chauffeurs →
+              </Link>
             </div>
             <div className="table-scroll">
               <table className="table table-hover">
@@ -302,7 +388,9 @@ export default function Dashboard() {
                         {c.brand} {c.model} <span className="muted">({c.registration})</span>
                       </td>
                       <td>
-                        <span className={`score-pill ${c.performanceScore >= 75 ? 'good' : c.performanceScore >= 50 ? 'mid' : 'bad'}`}>
+                        <span
+                          className={`score-pill ${c.performanceScore >= 75 ? 'good' : c.performanceScore >= 50 ? 'mid' : 'bad'}`}
+                        >
                           {c.performanceScore.toFixed(1)}
                         </span>
                       </td>

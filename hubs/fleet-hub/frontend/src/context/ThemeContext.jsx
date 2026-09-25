@@ -6,8 +6,13 @@ function getInitialTheme() {
   try {
     const stored = localStorage.getItem('fh_theme')
     if (stored === 'light' || stored === 'dark') return stored
-  } catch { /* ignore */ }
-  if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: light)').matches) {
+  } catch {
+    /* ignore */
+  }
+  if (
+    typeof window !== 'undefined' &&
+    window.matchMedia?.('(prefers-color-scheme: light)').matches
+  ) {
     return 'light'
   }
   return 'dark'
@@ -28,9 +33,7 @@ export function ThemeProvider({ children }) {
   const isDark = theme === 'dark'
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, isDark }}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={{ theme, toggleTheme, isDark }}>{children}</ThemeContext.Provider>
   )
 }
 

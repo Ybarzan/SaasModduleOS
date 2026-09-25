@@ -8,7 +8,8 @@ const CATEGORY_LABEL = {
   DHL: 'Transporteur'
 }
 
-const fmtDate = (s) => (s ? new Date(s).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—')
+const fmtDate = (s) =>
+  s ? new Date(s).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—'
 
 const emptyForm = () => ({
   provider: '',
@@ -113,7 +114,9 @@ export default function Integrations() {
       })
       setTestResult(res.data)
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'Le test de connexion a échoué')
+      setError(
+        err.response?.data?.message || err.response?.data?.error || 'Le test de connexion a échoué'
+      )
     } finally {
       setTesting(false)
     }
@@ -132,7 +135,9 @@ export default function Integrations() {
       )
       await load()
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'Le test de connexion a échoué')
+      setError(
+        err.response?.data?.message || err.response?.data?.error || 'Le test de connexion a échoué'
+      )
     } finally {
       setBusyId(null)
     }
@@ -162,7 +167,9 @@ export default function Integrations() {
       resetForm()
       await load()
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'L’enregistrement a échoué')
+      setError(
+        err.response?.data?.message || err.response?.data?.error || 'L’enregistrement a échoué'
+      )
     } finally {
       setSubmitting(false)
     }
@@ -179,7 +186,9 @@ export default function Integrations() {
       })
       await load()
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'La mise à jour a échoué')
+      setError(
+        err.response?.data?.message || err.response?.data?.error || 'La mise à jour a échoué'
+      )
     } finally {
       setBusyId(null)
     }
@@ -196,7 +205,9 @@ export default function Integrations() {
       if (editingId === cfg.id) resetForm()
       await load()
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'La suppression a échoué')
+      setError(
+        err.response?.data?.message || err.response?.data?.error || 'La suppression a échoué'
+      )
     } finally {
       setBusyId(null)
     }
@@ -228,15 +239,17 @@ export default function Integrations() {
       <div className="card">
         <div className="card-title">
           <h3>{editingId ? 'Modifier l’intégration' : 'Ajouter une intégration'}</h3>
-          <span className="muted">
-            Les clés API sont chiffrées et jamais réaffichées
-          </span>
+          <span className="muted">Les clés API sont chiffrées et jamais réaffichées</span>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="data-grid">
             <div className="form-field">
               <label>Fournisseur *</label>
-              <select value={form.provider} required onChange={(e) => chooseProvider(e.target.value)}>
+              <select
+                value={form.provider}
+                required
+                onChange={(e) => chooseProvider(e.target.value)}
+              >
                 <option value="" disabled>
                   Choisir un fournisseur…
                 </option>
@@ -292,7 +305,12 @@ export default function Integrations() {
             <span>Activer l’intégration</span>
           </label>
           <div className="form-actions">
-            <button type="button" className="btn btn-outline" disabled={testing} onClick={testDraft}>
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={testing}
+              onClick={testDraft}
+            >
               {testing ? 'Test en cours…' : 'Tester la connexion'}
             </button>
             {editingId && (
@@ -343,7 +361,9 @@ export default function Integrations() {
                   <tr key={cfg.id}>
                     <td>
                       <strong>{cfg.providerLabel}</strong>
-                      <span className="muted block">{CATEGORY_LABEL[cfg.category] || cfg.category}</span>
+                      <span className="muted block">
+                        {CATEGORY_LABEL[cfg.category] || cfg.category}
+                      </span>
                     </td>
                     <td className="muted">{cfg.baseUrl}</td>
                     <td>{cfg.hasApiKey ? cfg.apiKeyMasked : <span className="muted">—</span>}</td>
@@ -439,16 +459,28 @@ export default function Integrations() {
                   )}
                 </div>
                 <div className="record-card-actions">
-                  <button className="btn btn-outline btn-sm" disabled={busyId === cfg.id} onClick={() => testSaved(cfg)}>
+                  <button
+                    className="btn btn-outline btn-sm"
+                    disabled={busyId === cfg.id}
+                    onClick={() => testSaved(cfg)}
+                  >
                     Tester
                   </button>
                   <button className="btn btn-outline btn-sm" onClick={() => edit(cfg)}>
                     Modifier
                   </button>
-                  <button className="btn btn-outline btn-sm" disabled={busyId === cfg.id} onClick={() => toggleEnabled(cfg)}>
+                  <button
+                    className="btn btn-outline btn-sm"
+                    disabled={busyId === cfg.id}
+                    onClick={() => toggleEnabled(cfg)}
+                  >
                     {cfg.enabled ? 'Désactiver' : 'Activer'}
                   </button>
-                  <button className="btn btn-danger btn-sm" disabled={busyId === cfg.id} onClick={() => remove(cfg)}>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    disabled={busyId === cfg.id}
+                    onClick={() => remove(cfg)}
+                  >
                     Supprimer
                   </button>
                 </div>
@@ -483,7 +515,10 @@ export default function Integrations() {
                   <label>Clé webhook — {cfg.providerLabel}</label>
                   <div className="copy-row">
                     <code>{cfg.webhookKey}</code>
-                    <button className="btn btn-outline btn-sm" onClick={() => copyText(cfg.webhookKey)}>
+                    <button
+                      className="btn btn-outline btn-sm"
+                      onClick={() => copyText(cfg.webhookKey)}
+                    >
                       Copier
                     </button>
                   </div>

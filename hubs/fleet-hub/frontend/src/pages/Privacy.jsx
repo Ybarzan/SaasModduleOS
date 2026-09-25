@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 
-const fmtDate = (s) => (s ? new Date(s).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—')
+const fmtDate = (s) =>
+  s ? new Date(s).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—'
 
 export default function Privacy() {
   const { user, logout } = useAuth()
@@ -57,7 +58,9 @@ export default function Privacy() {
       logout()
       window.location.href = '/login'
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'La suppression a échoué')
+      setError(
+        err.response?.data?.message || err.response?.data?.error || 'La suppression a échoué'
+      )
     } finally {
       setDeleting(false)
     }
@@ -120,7 +123,9 @@ export default function Privacy() {
                 ))}
                 {logs.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="muted table-empty">Aucun événement</td>
+                    <td colSpan="5" className="muted table-empty">
+                      Aucun événement
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -164,8 +169,8 @@ export default function Privacy() {
           <span className="muted">Effacement définitif de la société et de toutes ses données</span>
         </div>
         <div className="alert alert-warning">
-          Cette action est <strong>irréversible</strong> : toutes les données (chauffeurs, camions, trajets,
-          carburant, notifications) seront supprimées et l’abonnement Stripe résilié.
+          Cette action est <strong>irréversible</strong> : toutes les données (chauffeurs, camions,
+          trajets, carburant, notifications) seront supprimées et l’abonnement Stripe résilié.
         </div>
         <form onSubmit={handleDelete}>
           <input

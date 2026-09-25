@@ -71,7 +71,9 @@ export default function Users() {
       setNotice('Utilisateur mis à jour')
       await load()
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'La mise à jour a échoué')
+      setError(
+        err.response?.data?.message || err.response?.data?.error || 'La mise à jour a échoué'
+      )
     } finally {
       setBusyId(null)
     }
@@ -87,7 +89,9 @@ export default function Users() {
       setNotice('Compte supprimé')
       await load()
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || 'La suppression a échoué')
+      setError(
+        err.response?.data?.message || err.response?.data?.error || 'La suppression a échoué'
+      )
     } finally {
       setBusyId(null)
     }
@@ -247,7 +251,10 @@ export default function Users() {
               return (
                 <div key={u.id} className="record-card">
                   <div className="record-card-title">
-                    <strong>{u.displayName}{isSelf && <span className="muted"> (vous)</span>}</strong>
+                    <strong>
+                      {u.displayName}
+                      {isSelf && <span className="muted"> (vous)</span>}
+                    </strong>
                     <span className={`badge ${u.enabled ? 'badge-green' : 'badge-red'}`}>
                       {u.enabled ? 'Actif' : 'Désactivé'}
                     </span>

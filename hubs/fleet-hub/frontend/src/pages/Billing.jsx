@@ -3,10 +3,38 @@ import api from '../services/api'
 import { useAuth } from '../context/AuthContext'
 
 const PLANS = [
-  { key: 'TRIAL', name: 'Essai', price: '0 €', period: '14 jours', desc: 'Pour découvrir la plateforme', limits: '10 véh / 5 chauf' },
-  { key: 'STARTER', name: 'Starter', price: '49 €', period: '/ mois', desc: 'Pour les petites flottes', limits: '25 véh / 10 chauf' },
-  { key: 'PRO', name: 'Pro', price: '99 €', period: '/ mois', desc: 'Le meilleur rapport qualité / prix', limits: '100 véh / 50 chauf' },
-  { key: 'ENTERPRISE', name: 'Enterprise', price: 'Sur devis', period: '', desc: 'Flottes illimitées et accompagnement', limits: 'Illimité' }
+  {
+    key: 'TRIAL',
+    name: 'Essai',
+    price: '0 €',
+    period: '14 jours',
+    desc: 'Pour découvrir la plateforme',
+    limits: '10 véh / 5 chauf'
+  },
+  {
+    key: 'STARTER',
+    name: 'Starter',
+    price: '49 €',
+    period: '/ mois',
+    desc: 'Pour les petites flottes',
+    limits: '25 véh / 10 chauf'
+  },
+  {
+    key: 'PRO',
+    name: 'Pro',
+    price: '99 €',
+    period: '/ mois',
+    desc: 'Le meilleur rapport qualité / prix',
+    limits: '100 véh / 50 chauf'
+  },
+  {
+    key: 'ENTERPRISE',
+    name: 'Enterprise',
+    price: 'Sur devis',
+    period: '',
+    desc: 'Flottes illimitées et accompagnement',
+    limits: 'Illimité'
+  }
 ]
 
 const STATUS_LABEL = {
@@ -106,7 +134,12 @@ export default function Billing() {
               </div>
               <div className="form-field">
                 <label>Limites</label>
-                <input type="text" value={`${status.maxVehicles} véhicules · ${status.maxDrivers} chauffeurs`} readOnly disabled />
+                <input
+                  type="text"
+                  value={`${status.maxVehicles} véhicules · ${status.maxDrivers} chauffeurs`}
+                  readOnly
+                  disabled
+                />
               </div>
               <div className="form-field">
                 <label>Référence d’abonnement</label>

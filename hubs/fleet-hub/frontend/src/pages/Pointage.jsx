@@ -28,7 +28,8 @@ const fmtDuration = (totalSeconds) => {
   return `${h}h${m}`
 }
 
-const fmtTime = (iso) => (iso ? new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—')
+const fmtTime = (iso) =>
+  iso ? new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '—'
 
 export default function Pointage() {
   const { user } = useAuth()
@@ -84,10 +85,16 @@ export default function Pointage() {
             <h3>Lien du portail chauffeur</h3>
           </div>
           <p className="muted" style={{ marginBottom: '1rem' }}>
-            À donner à vos chauffeurs. Un PIN se règle depuis Saisie › Chauffeurs › « Code portail ».
+            À donner à vos chauffeurs. Un PIN se règle depuis Saisie › Chauffeurs › « Code portail
+            ».
           </p>
           <div className="row-actions">
-            <input readOnly value={portalLink} onFocus={(e) => e.target.select()} style={{ flex: 1, minWidth: 0 }} />
+            <input
+              readOnly
+              value={portalLink}
+              onFocus={(e) => e.target.select()}
+              style={{ flex: 1, minWidth: 0 }}
+            />
             <button type="button" className="btn btn-outline btn-sm" onClick={copyLink}>
               {copied ? '✓ Copié' : 'Copier'}
             </button>
@@ -119,8 +126,14 @@ export default function Pointage() {
               <tbody>
                 {statuses.map((s, i) => (
                   <tr key={i}>
-                    <td><strong>{s.driverName}</strong></td>
-                    <td><span className={`badge ${STATE_BADGE[s.state]}`}>{STATE_LABEL[s.state]}</span></td>
+                    <td>
+                      <strong>{s.driverName}</strong>
+                    </td>
+                    <td>
+                      <span className={`badge ${STATE_BADGE[s.state]}`}>
+                        {STATE_LABEL[s.state]}
+                      </span>
+                    </td>
                     <td>{fmtTime(s.serviceStartedAt)}</td>
                     <td>{s.state === 'IDLE' ? '—' : fmtDuration(s.continuousDrivingSeconds)}</td>
                     <td>{s.state === 'PAUSE' ? fmtDuration(s.pauseSeconds) : '—'}</td>
