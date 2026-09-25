@@ -325,6 +325,47 @@ class SharedLinkControllerTest extends ControllerTestBase {
     }
 
     @Test
+    @DisplayName("GET /v1/shared/access/{token} → 200 sans NPE quand un événement a eventTime=null (colonne nullable en base)")
+    void accessSharedLink_eventWithNullEventTime_doesNotThrow() throws Exception {
+        UUID shipmentId = UUID.randomUUID();
+        ShipmentOrder shipment = shipment(shipmentId, null);
+        TrackingEvent withDate = TrackingEvent.builder()
+            .id(UUID.randomUUID())
+            .shipment(shipment)
+            .status("IN_TRANSIT")
+            .eventTime(LocalDateTime.now())
+            .source("carrier-api")
+            .build();
+        TrackingEvent withoutDate = TrackingEvent.builder()
+            .id(UUID.randomUUID())
+            .shipment(shipment)
+            .status("CREATED")
+            .eventTime(null)
+            .source("manual")
+            .build();
+        shipment.setTrackingEvents(List.of(withoutDate, withDate));
+
+        SharedLink l = SharedLink.builder()
+            .id(UUID.randomUUID())
+            .company(company())
+            .shipment(shipment)
+            .token("tok-789")
+            .label("Suivi colis 3")
+            .active(true)
+            .accessCount(0)
+            .createdAt(LocalDateTime.now())
+            .build();
+
+        when(sharedLinkService.accessLink("tok-789")).thenReturn(l);
+
+        mockMvc.perform(get("/v1/shared/access/tok-789"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.trackingEvents[0].status").value("IN_TRANSIT"))
+            .andExpect(jsonPath("$.trackingEvents[1].status").value("CREATED"))
+            .andExpect(jsonPath("$.trackingEvents[1].eventTime").doesNotExist());
+    }
+
+    @Test
     @DisplayName("GET /v1/shared/access/{token} → 500 si le lien est introuvable/invalide")
     void accessSharedLink_notFound() throws Exception {
         when(sharedLinkService.accessLink("bad-token"))
