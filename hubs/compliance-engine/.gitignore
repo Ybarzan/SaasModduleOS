@@ -26,6 +26,13 @@ backend/target/
 frontend/node_modules/
 frontend/dist/
 
+# Python
+embeddings-service/__pycache__/
+embeddings-service/**/__pycache__/
+embeddings-service/.pytest_cache/
+embeddings-service/venv/
+embeddings-service/.venv/
+
 # Logs
 *.log
 logs/
