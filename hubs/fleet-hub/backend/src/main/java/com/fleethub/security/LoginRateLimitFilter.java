@@ -48,6 +48,18 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         this.clientIpResolver = clientIpResolver;
     }
 
+    /**
+     * Endpoints GET anonymes (permitAll côté SecurityConfig, protégés uniquement par
+     * l'imprévisibilité d'un code/clé) : exemptés par défaut comme tout GET (voir
+     * shouldNotFilter), donc sans aucune limite de débit sans ceci — un simple flood
+     * reste possible même si le bruteforce de la clé elle-même est infaisable.
+     */
+    private static final String[] PUBLIC_GET_PREFIXES = {
+        "/api/pointage/roster/",
+        "/api/marketplace/availability",
+        "/api/marketplace/vehicle-position"
+    };
+
     @jakarta.annotation.PostConstruct
     void init() {
         routeLimits.put("/api/auth/login", authLimit);
@@ -57,9 +69,22 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         if (!enabled) return true;
-        if (!"POST".equalsIgnoreCase(request.getMethod())) return true;
         String uri = request.getRequestURI();
-        return !uri.startsWith("/api/") || uri.startsWith("/api/webhooks/");
+        String method = request.getMethod();
+        if ("POST".equalsIgnoreCase(method)) {
+            return !uri.startsWith("/api/") || uri.startsWith("/api/webhooks/");
+        }
+        if ("GET".equalsIgnoreCase(method)) {
+            return !isPublicGetRoute(uri);
+        }
+        return true;
+    }
+
+    private boolean isPublicGetRoute(String uri) {
+        for (String prefix : PUBLIC_GET_PREFIXES) {
+            if (uri.startsWith(prefix)) return true;
+        }
+        return false;
     }
 
     @Override
