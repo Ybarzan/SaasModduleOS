@@ -38,6 +38,10 @@ app:
     admin-password: "${ADMIN_PASSWORD:admin}"
     gest-password: "${GESTIONNAIRE_PASSWORD:gestion}"
     admin-allowed-ips: "${APP_ADMIN_ALLOWED_IPS:}"
+    # Nombre de reverse proxies de confiance devant le backend (Caddy + nginx dans
+    # docker-compose.yml) : chacun ajoute sa propre valeur en fin de X-Forwarded-For
+    # plutôt que de le remplacer. Voir ClientIpResolver pour le détail du calcul.
+    trusted-proxy-hops: "${APP_TRUSTED_PROXY_HOPS:2}"
     rate-limit:
       enabled: false
       window-seconds: 60

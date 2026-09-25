@@ -27,11 +27,14 @@ public class AdminIpFilter extends OncePerRequestFilter {
 
     private final Set<String> envAllowedIps;
     private final AdminIpAllowlistRepository ipAllowlistRepository;
+    private final ClientIpResolver clientIpResolver;
 
     public AdminIpFilter(
             @Value("${app.security.admin-allowed-ips:}") String allowedIpsCsv,
-            AdminIpAllowlistRepository ipAllowlistRepository) {
+            AdminIpAllowlistRepository ipAllowlistRepository,
+            ClientIpResolver clientIpResolver) {
         this.ipAllowlistRepository = ipAllowlistRepository;
+        this.clientIpResolver = clientIpResolver;
         this.envAllowedIps = allowedIpsCsv == null || allowedIpsCsv.isBlank()
                 ? Set.of()
                 : Set.of(allowedIpsCsv.split(",")).stream()
@@ -50,7 +53,7 @@ public class AdminIpFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String ip = clientIp(request);
+        String ip = clientIpResolver.resolve(request);
         if (!isAllowed(ip)) {
             log.warn("Admin IP refusé : {} sur {}", ip, request.getRequestURI());
             response.setStatus(403);
@@ -65,13 +68,5 @@ public class AdminIpFilter extends OncePerRequestFilter {
     private boolean isAllowed(String ip) {
         if (envAllowedIps.contains(ip)) return true;
         return ipAllowlistRepository.existsByIpAddress(ip);
-    }
-
-    private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 }

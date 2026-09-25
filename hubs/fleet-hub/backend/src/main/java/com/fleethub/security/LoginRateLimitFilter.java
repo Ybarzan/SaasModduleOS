@@ -39,8 +39,14 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     @Value("${app.security.rate-limit.default-limit:60}")
     private int defaultLimit;
 
-    @Value("${app.security.rate-limit.auth-limit:5}")
+    @Value("${app.security.login.rate-limit:5}")
     private int authLimit;
+
+    private final ClientIpResolver clientIpResolver;
+
+    public LoginRateLimitFilter(ClientIpResolver clientIpResolver) {
+        this.clientIpResolver = clientIpResolver;
+    }
 
     @jakarta.annotation.PostConstruct
     void init() {
@@ -62,7 +68,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                                     FilterChain chain) throws ServletException, IOException {
         cleanupIfNeeded();
 
-        String ip = clientIp(request);
+        String ip = clientIpResolver.resolve(request);
         String uri = request.getRequestURI();
         int limit = resolveLimit(uri);
         String key = ip + ":" + resolveRouteKey(uri);
@@ -121,14 +127,6 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                 it.remove();
             }
         }
-    }
-
-    private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 
     private static final class Counter {
