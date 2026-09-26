@@ -41,6 +41,17 @@ public class TenantFilter extends OncePerRequestFilter {
     }
 
     private Optional<UUID> extractTenantId(HttpServletRequest req) {
+        // Un appelant anonyme n'a aucun tenant : l'en-tête X-Tenant-ID et le slug d'hôte sont
+        // choisis librement par le client, et sans utilisateur il n'y a pas d'appartenance à
+        // vérifier. Les honorer ici exposait les endpoints permitAll qui lisent TenantContext
+        // (ex. POST /v1/tracking/lookup en mode FLEET_HUB : position GPS + chauffeur de la
+        // flotte d'une autre société, via les identifiants fleet-hub de celle-ci). Aucun
+        // endpoint public n'a besoin du tenant ; les pages publiques passent par un jeton.
+        Object userIdAttr = req.getAttribute("userId");
+        if (userIdAttr == null) {
+            return Optional.empty();
+        }
+
         String header = req.getHeader("X-Tenant-ID");
         UUID headerTenant = null;
         if (header != null) {
@@ -61,12 +72,6 @@ public class TenantFilter extends OncePerRequestFilter {
 
         UUID tenantId = headerTenant != null ? headerTenant : hostTenant;
         if (tenantId == null) return Optional.empty();
-
-        Object userIdAttr = req.getAttribute("userId");
-        if (userIdAttr == null) {
-            log.debug("[Tenant] Pas d'utilisateur authentifié, tenant={}", tenantId);
-            return Optional.of(tenantId);
-        }
 
         UUID userId = userIdAttr instanceof UUID u ? u : UUID.fromString(userIdAttr.toString());
         boolean belongs = companyRoleRepository.findByCompanyIdAndUserId(tenantId, userId).isPresent();
