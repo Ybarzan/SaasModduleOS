@@ -195,6 +195,19 @@ public class SecurityConfig {
                 res.setHeader("X-RateLimit-Limit", String.valueOf(vk.dailyLimit()));
                 res.setHeader("X-RateLimit-Remaining",
                     String.valueOf(vk.dailyLimit() - vk.callsToday()));
+                // La clé est créée pour UNE société : c'est elle qui fixe le tenant. Sans cela,
+                // l'appelant pouvait viser n'importe quelle autre société dont le propriétaire
+                // de la clé est membre via X-Tenant-ID, hors du périmètre de la clé.
+                UUID keyCompany = vk.companyId();
+                if (keyCompany != null) {
+                    String tenantHeader = req.getHeader("X-Tenant-ID");
+                    if (tenantHeader != null && !tenantHeader.equalsIgnoreCase(keyCompany.toString())) {
+                        writeError(res, 403, "TENANT_MISMATCH", "Clé API rattachée à une autre société");
+                        return;
+                    }
+                    TenantContext.set(keyCompany);
+                    req.setAttribute("companyId", keyCompany);
+                }
                 req.setAttribute("userId", vk.userId());
                 req.setAttribute("plan", vk.plan());
                 setAuth(vk.userId().toString(), "ROLE_API");

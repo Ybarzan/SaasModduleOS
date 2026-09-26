@@ -68,6 +68,9 @@ public class ApiKeyService {
         return new CreatedApiKey(key.getId(), rawKey, prefix, plan.name(), limit);
     }
 
+    // @Transactional indispensable : incrementCalls est une requête @Modifying (sans transaction,
+    // chaque clé VALIDE faisait planter la requête → 401) et getUser()/getCompany() sont lazy.
+    @Transactional
     public Optional<ValidatedKey> validate(String rawKey) {
         if (rawKey == null || !rawKey.startsWith("ic_")) return Optional.empty();
         String prefix = extractPrefix(rawKey);
@@ -85,7 +88,8 @@ public class ApiKeyService {
                 return Optional.of(new ValidatedKey(
                     k.getId(), k.getUser().getId(),
                     k.getPlan().name(), k.getDailyLimit(),
-                    k.getCallsToday() + 1, exceeded
+                    k.getCallsToday() + 1, exceeded,
+                    k.getCompany() != null ? k.getCompany().getId() : null
                 ));
             }
         }
@@ -121,5 +125,10 @@ public class ApiKeyService {
     }
 
     public record CreatedApiKey(UUID id, String rawKey, String prefix, String plan, int dailyLimit) {}
-    public record ValidatedKey(UUID keyId, UUID userId, String plan, int dailyLimit, int callsToday, boolean quotaExceeded) {}
+    /**
+     * @param companyId société à laquelle la clé a été rattachée à sa création (null pour
+     *                  les anciennes clés sans société) — c'est elle qui fixe le tenant.
+     */
+    public record ValidatedKey(UUID keyId, UUID userId, String plan, int dailyLimit, int callsToday,
+                               boolean quotaExceeded, UUID companyId) {}
 }
