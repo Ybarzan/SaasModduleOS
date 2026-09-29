@@ -19,6 +19,10 @@ public class TruckingRateRequest {
     private Double volumeM3;
 
     private Integer palletCount;
+
+    /** Distance routière réelle (km). Sans elle, aucun délai de transit n'est calculé. */
+    @DecimalMin("1")
+    private Double distanceKm;
     private Double goodsValue;
     private String currency;
 }

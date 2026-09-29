@@ -97,17 +97,28 @@ public class CumulationService {
             List<Material> materials) {
 
         List<String> warnings = new ArrayList<>();
+        // Les accords sont indexés par pays partenaire (hors UE). Import dans l'UE : le partenaire
+        // est l'exportateur. Export depuis l'UE (ex. FR→KR) : le partenaire est la destination —
+        // avant, ce sens ne trouvait jamais d'accord et renvoyait « aucun accord ».
+        String exporter = norm(originCountry);
+        boolean euExporter = EU_ORIGIN_COUNTRIES.contains(exporter);
         Optional<TradeAgreement> agreementOpt = agreementRepo
-                .findByPartnerCountryAndIsActiveTrue(norm(originCountry))
+                .findByPartnerCountryAndIsActiveTrue(exporter)
                 .stream()
                 .findFirst();
+        if (agreementOpt.isEmpty() && euExporter) {
+            agreementOpt = agreementRepo
+                    .findByPartnerCountryAndIsActiveTrue(norm(destCountry))
+                    .stream()
+                    .findFirst();
+        }
 
         if (agreementOpt.isEmpty()) {
             return new CumulationResult(
                     false, null, null, CumulationType.NONE, null, null,
                     0, 0, 0, pct(valueAdded, totalCost), DEFAULT_VA_THRESHOLD_PCT,
                     List.of(), warnings,
-                    "Aucun accord commercial actif pour le pays exportateur " + originCountry);
+                    "Aucun accord commercial actif entre " + originCountry + " et " + destCountry);
         }
 
         TradeAgreement agreement = agreementOpt.get();
@@ -118,12 +129,16 @@ public class CumulationService {
 
         CumulationGroup group = resolveGroup(agreement, type);
 
+        // Les deux parties de l'accord : l'UE (un seul territoire d'origine) et le partenaire.
+        Set<String> exporterParty = euExporter ? EU_ORIGIN_COUNTRIES : Set.of(exporter);
+        Set<String> otherParty = euExporter ? Set.of(norm(agreement.getPartnerCountry())) : EU_ORIGIN_COUNTRIES;
+
         List<MaterialAssessment> assessments = new ArrayList<>();
         double originatingContentValue = 0.0;
         double nonOriginatingValue = 0.0;
 
         for (Material material : materials) {
-            MaterialAssessment ma = classify(material, originCountry, type, group, warnings);
+            MaterialAssessment ma = classify(material, exporterParty, otherParty, type, group, warnings);
             assessments.add(ma);
             switch (ma.status()) {
                 case ORIGINATING, LOCAL, CUMULATED_BILATERAL, CUMULATED_REGIONAL ->
@@ -217,20 +232,20 @@ public class CumulationService {
 
     private MaterialAssessment classify(
             Material material,
-            String exporterCountry,
+            Set<String> exporterParty,
+            Set<String> otherParty,
             CumulationType type,
             CumulationGroup group,
             List<String> warnings) {
 
         String origin = norm(material.originCountry());
-        String exporter = norm(exporterCountry);
 
-        if (origin.equals(exporter)) {
+        if (exporterParty.contains(origin)) {
             return new MaterialAssessment(material.originCountry(), material.value(), false,
                     MaterialStatus.LOCAL, "Matière produite dans le pays exportateur");
         }
 
-        boolean euOrigin = EU_ORIGIN_COUNTRIES.contains(origin);
+        boolean otherPartyOrigin = otherParty.contains(origin);
         boolean inGroup = group != null && group.getMemberCountries() != null
                 && group.getMemberCountries().stream().anyMatch(m -> norm(m).equals(origin));
 
@@ -245,10 +260,10 @@ public class CumulationService {
                     MaterialStatus.ORIGINATING, "Matière avec preuve d'origine");
         }
 
-        if ((type == CumulationType.BILATERAL || type == CumulationType.FULL) && euOrigin) {
+        if ((type == CumulationType.BILATERAL || type == CumulationType.FULL) && otherPartyOrigin) {
             return new MaterialAssessment(material.originCountry(), material.value(), false,
                     MaterialStatus.CUMULATED_BILATERAL,
-                    "Matière originaire UE cumulée bilatéralement");
+                    "Matière originaire de l'autre partie à l'accord, cumulée bilatéralement");
         }
 
         if ((type == CumulationType.DIAGONAL || type == CumulationType.FULL) && inGroup) {

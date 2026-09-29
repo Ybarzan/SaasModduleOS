@@ -21,6 +21,8 @@ public class PackagingResult {
 
     private List<BoxInfo> boxes;
     private List<ItemInfo> unpackedItems;
+    /** Alertes (ex. contenant rempli à moins de 60 %). */
+    private List<String> warnings;
 
     @Data
     @Builder

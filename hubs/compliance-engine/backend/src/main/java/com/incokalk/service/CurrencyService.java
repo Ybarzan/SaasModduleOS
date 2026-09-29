@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,6 +79,22 @@ public class CurrencyService {
     private String supportedCodes() {
         Set<String> codes = new TreeSet<>(rates.keySet());
         return String.join(", ", codes);
+    }
+
+    /**
+     * @param rateToEur montant en EUR pour 1 unité de la devise
+     * @param source    STATIC_FALLBACK = taux codé en dur, non daté, sans source officielle (BCE) ;
+     *                  LIVE = récupéré via CurrencyExchangeService ; IDENTITY = EUR
+     */
+    public record FxQuote(String currency, double rateToEur, String source) {}
+
+    /** Taux effectivement utilisé par toEur(), avec sa provenance — pour le déclarer dans les réponses. */
+    public FxQuote quote(String currency) {
+        String code = currency.toUpperCase();
+        if ("EUR".equals(code)) return new FxQuote(code, 1.0, "IDENTITY");
+        double rate = resolveRate(code);
+        String source = Objects.equals(FALLBACK_RATES.get(code), rate) ? "STATIC_FALLBACK" : "LIVE";
+        return new FxQuote(code, rate, source);
     }
 
     public Map<String, Double> getAllRates() {

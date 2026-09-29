@@ -35,6 +35,15 @@ public class TaricApiClient {
     @Value("${incokalk.taric.simulation-mode:true}")
     private boolean simulationMode;
 
+    /**
+     * true = aucune source TARIC réelle branchée : fetchRates renvoie des taux INVENTÉS
+     * (moyenne codée en dur par chapitre). Ces valeurs ne doivent jamais servir à un calcul
+     * de droits ni être persistées comme données tarifaires.
+     */
+    public boolean isSimulationMode() {
+        return simulationMode;
+    }
+
     @Cacheable(value = "taric-rates", key = "#hsCode + ':' + #origin + ':' + #dest")
     public List<TaricMeasureDto> fetchRates(String hsCode, String origin, String dest) {
         if (simulationMode) {

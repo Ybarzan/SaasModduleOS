@@ -20,6 +20,9 @@ interface HsSuggestion {
   confidence3: number;
   userSelection: string | null;
   createdAt: string;
+  /** true = aucune proposition n'atteint 70 % de confiance : rien n'est suggéré. */
+  manualClassificationRequired?: boolean;
+  message?: string;
 }
 
 const confidenceColor = (pct: number) => {
@@ -101,7 +104,7 @@ const HsClassification = () => {
         { code: result.suggestedCode1, description: result.suggestedDescription1, confidence: result.confidence1, rank: 1 },
         { code: result.suggestedCode2, description: result.suggestedDescription2, confidence: result.confidence2, rank: 2 },
         { code: result.suggestedCode3, description: result.suggestedDescription3, confidence: result.confidence3, rank: 3 },
-      ]
+      ].filter((s) => !!s.code)
     : [];
 
   const history = historyData ?? [];
@@ -210,6 +213,15 @@ const HsClassification = () => {
       </div>
 
       {/* Results */}
+      {result && suggestions.length === 0 && (
+        <div role="status" className="mb-8 bg-warning/10 border border-warning/40 rounded-none p-4">
+          <p className="text-sm font-semibold text-ink">Classement manuel requis</p>
+          <p className="text-sm text-ink-soft mt-1">
+            {result.message || "Aucune proposition n'atteint un niveau de confiance suffisant."}
+          </p>
+        </div>
+      )}
+
       {result && suggestions.length > 0 && (
         <div className="mb-8">
           <h2 className="text-lg font-semibold text-ink mb-4">Résultats de la classification</h2>
