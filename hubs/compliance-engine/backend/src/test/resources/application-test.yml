@@ -22,8 +22,8 @@ spring:
     cache-names:
       - exchange-rates
       - customs-duties
-      - customs-duties-detailed
-      - customs-fallback-rate
+      - customs-duties-detailed-v2
+      - customs-rate-v2
       - incoterms
       - taric-rates
       - taric-hs-descriptions
@@ -31,6 +31,8 @@ spring:
       - vat-calculation
       - mfn-rates
       - pref-rates
+      - vies-check
+      - eori-check
 
   autoconfigure:
     exclude:

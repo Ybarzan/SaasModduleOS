@@ -69,6 +69,15 @@ public class LandedCostService {
             nvl(cost.getInsuranceCost()).doubleValue()
         );
 
+        if (!dutyResult.rateAvailable()) {
+            // Le total ci-dessous exclut alors les droits : on le dit dans la fiche plutôt que
+            // d'enregistrer un taux inventé (colonne non nullable → 0, explicité dans notes).
+            String flag = "[Droits non inclus] " + dutyResult.notes();
+            String existing = cost.getNotes();
+            if (existing == null || !existing.contains("[Droits non inclus]")) {
+                cost.setNotes(existing == null || existing.isBlank() ? flag : existing + "\n" + flag);
+            }
+        }
         cost.setDutyRate(BigDecimal.valueOf(dutyResult.dutyRate()));
         cost.setDutyAmount(BigDecimal.valueOf(dutyResult.dutyAmount()));
 

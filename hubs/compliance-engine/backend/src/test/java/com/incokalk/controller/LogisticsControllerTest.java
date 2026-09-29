@@ -20,6 +20,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -94,13 +97,17 @@ class LogisticsControllerTest extends ControllerTestBase {
             .andExpect(jsonPath("$.originCountry").value("FR"));
     }
 
+    private static com.incokalk.service.CustomsDutyService.DutyResult duty(double amount, double rate,
+                                                                           boolean pref, String agreement) {
+        return new com.incokalk.service.CustomsDutyService.DutyResult(amount, rate, "AD", pref,
+            pref ? "CODE" : null, agreement, rate, 0.0, pref ? "Droit préférentiel" : "Droit MFN standard appliqué");
+    }
+
     @Test
-    @DisplayName("POST /v1/logistics/customs-duty → 200, devise par défaut EUR, pas d'accord (branche else, agreement null)")
+    @DisplayName("POST /v1/logistics/customs-duty → 200, EUR : taux, montant, devise et base déclarés")
     void calculateCustomsDuty_defaultCurrency_noAgreement() throws Exception {
-        when(customsDutyService.findRate(anyString(), anyString(), anyString())).thenReturn(0.05);
-        when(customsDutyService.calculate(anyString(), anyString(), anyString(), anyDouble(), anyDouble(), anyDouble()))
-            .thenReturn(50.0);
-        when(customsDutyService.getEUAgreement(anyString())).thenReturn(null);
+        when(customsDutyService.calculateDetailed(anyString(), anyString(), anyString(), anyDouble(), anyDouble(), anyDouble()))
+            .thenReturn(duty(50.0, 5.0, false, null));
 
         mockMvc.perform(post("/v1/logistics/customs-duty")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -110,17 +117,20 @@ class LogisticsControllerTest extends ControllerTestBase {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.originCountry").value("CN"))
             .andExpect(jsonPath("$.destinationCountry").value("FR"))
+            .andExpect(jsonPath("$.rateAvailable").value(true))
+            .andExpect(jsonPath("$.dutyRate").value(5.0))
             .andExpect(jsonPath("$.dutyAmount").value(50.0))
-            .andExpect(jsonPath("$.note").value("Droit de douane standard"));
+            .andExpect(jsonPath("$.currency").value("EUR"))
+            .andExpect(jsonPath("$.basisType").value("CIF_EU"))
+            .andExpect(jsonPath("$.fxRate").value(1.0))
+            .andExpect(jsonPath("$.agreement").doesNotExist());
     }
 
     @Test
-    @DisplayName("POST /v1/logistics/customs-duty → 200, devise étrangère + droit positif → conversion")
+    @DisplayName("POST /v1/logistics/customs-duty → 200, devise étrangère → montant converti, taux de change exposé")
     void calculateCustomsDuty_foreignCurrency_positiveDuty_converts() throws Exception {
-        when(customsDutyService.findRate(anyString(), anyString(), anyString())).thenReturn(0.1);
-        when(customsDutyService.calculate(anyString(), anyString(), anyString(), anyDouble(), anyDouble(), anyDouble()))
-            .thenReturn(100.0);
-        when(customsDutyService.getEUAgreement(anyString())).thenReturn(null);
+        when(customsDutyService.calculateDetailed(anyString(), anyString(), anyString(), anyDouble(), anyDouble(), anyDouble()))
+            .thenReturn(duty(100.0, 10.0, false, null));
         when(currencyExchangeService.convert(eq(100.0), eq("EUR"), eq("USD"))).thenReturn(110.0);
         when(currencyExchangeService.getRate(eq("EUR"), eq("USD"))).thenReturn(1.1);
 
@@ -132,27 +142,46 @@ class LogisticsControllerTest extends ControllerTestBase {
                     """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.dutyAmount").value(110.0))
-            .andExpect(jsonPath("$.note").value("Montant converti en USD (taux: 1.1)"));
+            .andExpect(jsonPath("$.currency").value("USD"))
+            .andExpect(jsonPath("$.fxRate").value(1.1))
+            .andExpect(jsonPath("$.note").value(org.hamcrest.Matchers.containsString("converti de EUR en USD (taux: 1.1)")));
     }
 
     @Test
-    @DisplayName("POST /v1/logistics/customs-duty → 200, devise étrangère + droit nul → pas de conversion, accord présent")
-    void calculateCustomsDuty_foreignCurrency_zeroDuty_withAgreement() throws Exception {
-        when(customsDutyService.findRate(anyString(), anyString(), anyString())).thenReturn(0.0);
-        when(customsDutyService.calculate(anyString(), anyString(), anyString(), anyDouble(), anyDouble(), anyDouble()))
-            .thenReturn(0.0);
-        when(customsDutyService.getEUAgreement(anyString())).thenReturn("EU-CN FTA");
+    @DisplayName("POST /v1/logistics/customs-duty → agreement = accord réellement appliqué, pas un accord existant de l'origine")
+    void calculateCustomsDuty_agreementOnlyWhenApplied() throws Exception {
+        when(customsDutyService.calculateDetailed(anyString(), anyString(), anyString(), anyDouble(), anyDouble(), anyDouble()))
+            .thenReturn(duty(0.0, 0.0, true, "Accord UE-Vietnam"));
 
         mockMvc.perform(post("/v1/logistics/customs-duty")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {"hsCode":"85235110","originCountry":"CN","destinationCountry":"FR",
-                     "goodsValue":1000,"currency":"USD"}
+                    {"hsCode":"85235110","originCountry":"VN","destinationCountry":"FR","goodsValue":1000}
                     """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.dutyAmount").value(0.0))
-            .andExpect(jsonPath("$.agreement").value("EU-CN FTA"))
-            .andExpect(jsonPath("$.note").value("Accord commercial préférentiel applicable: EU-CN FTA"));
+            .andExpect(jsonPath("$.agreement").value("Accord UE-Vietnam"));
+        verify(customsDutyService, never()).getEUAgreement(anyString());
+    }
+
+    @Test
+    @DisplayName("POST /v1/logistics/customs-duty → taux indisponible : rateAvailable=false, ni taux ni montant")
+    void calculateCustomsDuty_unavailable_returnsNulls() throws Exception {
+        when(customsDutyService.calculateDetailed(anyString(), anyString(), anyString(), anyDouble(), anyDouble(), anyDouble()))
+            .thenReturn(com.incokalk.service.CustomsDutyService.DutyResult.unavailable("Aucun référentiel pour US."));
+
+        mockMvc.perform(post("/v1/logistics/customs-duty")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"hsCode":"847130","originCountry":"FR","destinationCountry":"US","goodsValue":10000,"currency":"USD"}
+                    """))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.rateAvailable").value(false))
+            .andExpect(jsonPath("$.dutyRate").doesNotExist())
+            .andExpect(jsonPath("$.dutyAmount").doesNotExist())
+            .andExpect(jsonPath("$.basisType").doesNotExist())
+            .andExpect(jsonPath("$.note").value(org.hamcrest.Matchers.containsString("non disponibles")));
+        verifyNoInteractions(currencyExchangeService);
     }
 
     @Test

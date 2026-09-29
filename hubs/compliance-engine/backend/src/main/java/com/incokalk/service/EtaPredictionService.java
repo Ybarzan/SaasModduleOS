@@ -122,9 +122,10 @@ public class EtaPredictionService {
             prediction.setConfidenceLevel(EtaPrediction.ConfidenceLevel.LOW);
         }
 
-        if (prediction.getPredictedArrival() == null) {
-            prediction.setPredictedArrival(LocalDateTime.now().plusDays(predictedDays));
-        }
+        // Invariant : predictedArrival − départ == predictedDays. Le départ de référence est
+        // l'instant de la prédiction (l'entité n'a pas de date de départ). Une date d'arrivée
+        // envoyée par le client n'est plus conservée : elle contredisait predictedDays.
+        prediction.setPredictedArrival(LocalDateTime.now().plusDays(predictedDays));
 
         StringBuilder riskFactors = new StringBuilder();
         if (isCapeRoutingLane(prediction.getOrigin(), prediction.getDestination(), mode)) {

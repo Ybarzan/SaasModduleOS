@@ -51,6 +51,23 @@ public interface TaricRateRepository extends JpaRepository<TaricRate, UUID> {
         @Param("date") LocalDate date
     );
 
+    /**
+     * Candidats pour une recherche hiérarchique : codes = préfixes du code HS demandé (sans points),
+     * origins = pays d'origine + "XX" (erga omnes), dests = pays appliquant le même tarif (UE).
+     * Le choix du meilleur candidat (code le plus long, origine spécifique d'abord) est fait côté service.
+     */
+    @Query("SELECT t FROM TaricRate t WHERE replace(t.hsCode, '.', '') IN :codes " +
+           "AND t.originCountry IN :origins AND t.destinationCountry IN :dests " +
+           "AND t.isPrefential = :preferential AND t.validFrom <= :date " +
+           "AND (t.validTo IS NULL OR t.validTo >= :date)")
+    List<TaricRate> findRateCandidates(
+        @Param("codes") List<String> codes,
+        @Param("origins") List<String> origins,
+        @Param("dests") java.util.Collection<String> dests,
+        @Param("preferential") boolean preferential,
+        @Param("date") LocalDate date
+    );
+
     Optional<TaricRate> findFirstByHsCodeAndOriginCountryAndDestinationCountryAndIsPrefentialFalse(
         String hsCode, String originCountry, String destinationCountry
     );

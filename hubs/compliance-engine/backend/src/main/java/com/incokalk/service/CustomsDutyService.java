@@ -33,6 +33,22 @@ public class CustomsDutyService {
         "PL","CZ","SK","HU","RO","BG","HR","SI","EE","LV","LT","CY","MT"
     );
 
+    /** Code pays des mesures erga omnes (toutes origines) dans taric_rates. */
+    private static final String ERGA_OMNES = "XX";
+
+    /** Base de calcul du droit : valeur CIF, méthode de l'Union (art. 70 Règl. d'exécution 2015/2447). */
+    public static final String BASIS_CIF_EU = "CIF_EU";
+    public static final String CURRENCY = "EUR";
+
+    /** Au-delà, un taux « ad valorem » est presque sûrement un droit spécifique (€/t, €/100 kg) mal encodé. */
+    static final double MAX_PLAUSIBLE_AD_VALOREM = 100.0;
+
+    /**
+     * @param rateAvailable false = aucun taux fiable pour ce code/cette lane : dutyAmount vaut 0 mais
+     *                      NE DOIT PAS être lu comme « 0 % de droits » (la raison est dans notes).
+     * @param basisType     base de calcul (BASIS_CIF_EU), null si indisponible
+     * @param currency      devise de dutyAmount / savings
+     */
     public record DutyResult(
         double dutyAmount,
         double dutyRate,
@@ -42,14 +58,32 @@ public class CustomsDutyService {
         String agreementName,
         double mfnRate,
         double savings,
-        String notes
-    ) implements Serializable {}
+        String notes,
+        boolean rateAvailable,
+        String basisType,
+        String currency
+    ) implements Serializable {
+        /** Résultat calculé (taux trouvé) — base CIF UE, en EUR. */
+        public DutyResult(double dutyAmount, double dutyRate, String dutyType, boolean isPrefential,
+                          String agreementCode, String agreementName, double mfnRate, double savings,
+                          String notes) {
+            this(dutyAmount, dutyRate, dutyType, isPrefential, agreementCode, agreementName,
+                mfnRate, savings, notes, true, BASIS_CIF_EU, CURRENCY);
+        }
+
+        public static DutyResult unavailable(String reason) {
+            return new DutyResult(0.0, 0.0, "UNAVAILABLE", false, null, null, 0.0, 0.0,
+                "Données tarifaires non disponibles — rapprochement transitaire requis. " + reason,
+                false, null, CURRENCY);
+        }
+    }
 
     public double calculate(String hsCode, String origin, String dest,
                              double goodsValue, double freight, double insurance) {
         return calculate(hsCode, origin, dest, goodsValue, freight, insurance, 0.0, null);
     }
 
+    /** Montant seul. Vaut 0 si le taux est indisponible : préférer calculateDetailed + rateAvailable. */
     public double calculate(String hsCode, String origin, String dest,
                              double goodsValue, double freight, double insurance,
                              double weightKg, Double quantity) {
@@ -57,13 +91,13 @@ public class CustomsDutyService {
         return result.dutyAmount();
     }
 
-    @Cacheable("customs-duties-detailed")
+    @Cacheable("customs-duties-detailed-v2")
     public DutyResult calculateDetailed(String hsCode, String origin, String dest,
                                          double goodsValue, double freight, double insurance) {
         return calculateDetailed(hsCode, origin, dest, goodsValue, freight, insurance, 0.0, null);
     }
 
-    @Cacheable("customs-duties-detailed")
+    @Cacheable("customs-duties-detailed-v2")
     public DutyResult calculateDetailed(String hsCode, String origin, String dest,
                                          double goodsValue, double freight, double insurance,
                                          double weightKg, Double quantity) {
@@ -72,54 +106,73 @@ public class CustomsDutyService {
                 "Commerce intracommunautaire — droits de douane = 0%");
         }
 
-        double cifValue = goodsValue + freight + insurance;
         String originUpper = origin.toUpperCase();
         String destUpper = dest.toUpperCase();
 
-        ensureTaricDataLoaded(hsCode, originUpper, destUpper);
+        // Seul le tarif douanier commun de l'UE (TARIC) est chargé. L'appliquer à une importation
+        // aux États-Unis, en Chine ou au Royaume-Uni n'a pas de sens (autre nomenclature, autre base
+        // de valeur) : mieux vaut « indisponible » qu'un chiffre crédible et faux.
+        if (!EU.contains(destUpper)) {
+            return DutyResult.unavailable("Aucun référentiel tarifaire chargé pour la destination "
+                + destUpper + " (seul le TARIC de l'Union européenne est disponible).");
+        }
 
-        List<TaricRate> mfnRates = taricRepo.findMFNRates(hsCode, originUpper, destUpper, LocalDate.now());
-        double mfnRate = mfnRates.isEmpty() ? fallbackRate(hsCode) : mfnRates.get(0).getDutyRate();
+        String digits = hsCode == null ? "" : hsCode.replaceAll("[^0-9]", "");
+        if (digits.length() < 4) {
+            return DutyResult.unavailable("Code HS manquant ou incomplet (4 chiffres minimum).");
+        }
 
-        List<TaricRate> prefentialRates = taricRepo.findPrefentialRates(hsCode, originUpper, destUpper, LocalDate.now());
+        ensureTaricDataLoaded(digits, originUpper, destUpper);
 
-        double bestPrefentialRate = Double.MAX_VALUE;
-        String bestAgreementCode = null;
-        String bestAgreementName = null;
-        String bestOriginCriteria = null;
+        LocalDate today = LocalDate.now();
+        Optional<TaricRate> mfnOpt = bestCandidate(taricRepo.findRateCandidates(
+            prefixes(digits), List.of(originUpper, ERGA_OMNES), EU, false, today), originUpper);
+        if (mfnOpt.isEmpty()) {
+            return DutyResult.unavailable("Aucun taux TARIC trouvé pour " + digits
+                + " (origine " + originUpper + ").");
+        }
+        TaricRate mfn = mfnOpt.get();
+        String mfnProblem = unusableReason(mfn);
+        if (mfnProblem != null) {
+            return DutyResult.unavailable(mfnProblem);
+        }
+        double mfnRate = mfn.getDutyRate();
 
+        List<TaricRate> prefentialRates = taricRepo.findRateCandidates(
+                prefixes(digits), List.of(originUpper), EU, true, today).stream()
+            .filter(r -> unusableReason(r) == null)
+            .toList();
+
+        TaricRate bestPref = null;
         for (TaricRate pr : prefentialRates) {
-            if (pr.getDutyRate() < bestPrefentialRate ||
-                (pr.getDutyRate() == bestPrefentialRate && bestAgreementCode == null && pr.getTradeAgreementCode() != null)) {
-                bestPrefentialRate = pr.getDutyRate();
-                bestAgreementCode = pr.getTradeAgreementCode();
-                bestOriginCriteria = pr.getPrefentialOriginCriteria();
+            if (bestPref == null || pr.getDutyRate() < bestPref.getDutyRate()
+                || (pr.getDutyRate() == bestPref.getDutyRate() && bestPref.getTradeAgreementCode() == null
+                    && pr.getTradeAgreementCode() != null)) {
+                bestPref = pr;
             }
         }
 
+        String bestAgreementCode = bestPref != null ? bestPref.getTradeAgreementCode() : null;
+        String bestAgreementName = null;
         if (bestAgreementCode != null) {
             Optional<TradeAgreement> agrOpt = agreementRepo.findByCode(bestAgreementCode);
             bestAgreementName = agrOpt.map(TradeAgreement::getName).orElse(bestAgreementCode);
         }
 
-        boolean usePrefential = bestAgreementCode != null && bestPrefentialRate <= mfnRate;
-        double finalRate = usePrefential ? bestPrefentialRate : mfnRate;
+        boolean usePrefential = bestAgreementCode != null && bestPref.getDutyRate() <= mfnRate;
+        double finalRate = usePrefential ? bestPref.getDutyRate() : mfnRate;
 
         String dutyType = "AD";
         double specificAmount = 0.0;
         String specificUnit = null;
-        if (usePrefential && !prefentialRates.isEmpty()) {
-            final double targetRate = bestPrefentialRate;
-            TaricRate bestRate = prefentialRates.stream()
-                .filter(t -> Double.compare(t.getDutyRate(), targetRate) == 0)
-                .findFirst().orElse(null);
-            if (bestRate != null && bestRate.getSpecificAmount() != null) {
-                dutyType = "MIX";
-                specificAmount = bestRate.getSpecificAmount();
-                specificUnit = bestRate.getSpecificUnit();
-            }
+        if (usePrefential && bestPref.getSpecificAmount() != null) {
+            dutyType = "MIX";
+            specificAmount = bestPref.getSpecificAmount();
+            specificUnit = bestPref.getSpecificUnit();
         }
 
+        // Taux en points de % (1.8 = 1,8 %) : montant = CIF × taux / 100, arrondi au centime.
+        double cifValue = goodsValue + freight + insurance;
         double dutyAmount = Math.round(cifValue * finalRate) / 100.0;
         if (specificAmount > 0) {
             dutyAmount += computeSpecificDuty(specificAmount, specificUnit, weightKg, quantity);
@@ -128,8 +181,10 @@ public class CustomsDutyService {
         double savings = Math.round(cifValue * (mfnRate - finalRate)) / 100.0;
 
         String notes = usePrefential
-            ? String.format("Droit préférentiel applicable via %s (critère origine: %s)", bestAgreementName, bestOriginCriteria)
-            : "Droit MFN standard appliqué";
+            ? String.format("Droit préférentiel applicable via %s (critère origine: %s)",
+                bestAgreementName, bestPref.getPrefentialOriginCriteria())
+            : "Droit MFN standard appliqué (TARIC " + mfn.getHsCode()
+                + (ERGA_OMNES.equals(mfn.getOriginCountry()) ? ", erga omnes)" : ", origine " + mfn.getOriginCountry() + ")");
 
         return new DutyResult(
             dutyAmount, finalRate, dutyType,
@@ -138,9 +193,42 @@ public class CustomsDutyService {
         );
     }
 
-    @Cacheable("customs-fallback-rate")
+    /** "847130" -> ["847130", "84713", "8471"] : du plus précis au moins précis (position à 4 chiffres). */
+    static List<String> prefixes(String digits) {
+        List<String> out = new ArrayList<>();
+        for (int len = Math.min(digits.length(), 10); len >= 4; len--) {
+            out.add(digits.substring(0, len));
+        }
+        return out;
+    }
+
+    /** Code le plus long d'abord, puis origine spécifique avant erga omnes, puis taux le plus bas. */
+    private static Optional<TaricRate> bestCandidate(List<TaricRate> candidates, String origin) {
+        return candidates.stream().min(Comparator
+            .comparingInt((TaricRate r) -> -r.getHsCode().replace(".", "").length())
+            .thenComparingInt(r -> origin.equals(r.getOriginCountry()) ? 0 : 1)
+            .thenComparingDouble(TaricRate::getDutyRate));
+    }
+
+    /** null si le taux peut être appliqué en ad valorem, sinon la raison du refus. */
+    private static String unusableReason(TaricRate r) {
+        String type = r.getDutyType() == null ? "AD" : r.getDutyType().toUpperCase();
+        if (!"AD".equals(type) && r.getSpecificAmount() == null) {
+            return "Droit de type " + type + " (" + r.getDutyRate() + ") pour " + r.getHsCode()
+                + " : droit spécifique non calculable automatiquement.";
+        }
+        if (r.getDutyRate() < 0 || r.getDutyRate() > MAX_PLAUSIBLE_AD_VALOREM) {
+            return "Taux " + r.getDutyRate() + " % incohérent pour " + r.getHsCode()
+                + " (probablement un droit spécifique €/t mal encodé) — vérification requise.";
+        }
+        return null;
+    }
+
+    /** Taux appliqué, ou NaN si aucun taux fiable (ne jamais afficher un taux inventé). */
+    @Cacheable("customs-rate-v2")
     public double findRate(String hsCode, String origin, String dest) {
-        return calculateDetailed(hsCode, origin, dest, 0, 0, 0).dutyRate();
+        DutyResult r = calculateDetailed(hsCode, origin, dest, 0, 0, 0);
+        return r.rateAvailable() ? r.dutyRate() : Double.NaN;
     }
 
     public String getEUAgreement(String countryCode) {
@@ -205,8 +293,9 @@ public class CustomsDutyService {
         info.put("hsCode", hsCode);
         info.put("origin", origin);
         info.put("destination", dest);
-        info.put("mfnRate", result.mfnRate());
-        info.put("appliedRate", result.dutyRate());
+        info.put("rateAvailable", result.rateAvailable());
+        info.put("mfnRate", result.rateAvailable() ? result.mfnRate() : null);
+        info.put("appliedRate", result.rateAvailable() ? result.dutyRate() : null);
         info.put("isPrefential", result.isPrefential());
         info.put("agreement", result.agreementName());
         info.put("savings", result.savings());
@@ -263,10 +352,17 @@ public class CustomsDutyService {
         return specificAmount * qty;
     }
 
+    /**
+     * Charge les mesures depuis la vraie source TARIC si elle est branchée. En mode simulation,
+     * TaricApiClient invente un taux par chapitre : on ne l'appelle pas, et surtout on ne le
+     * persiste pas (avant correctif, ces taux « MFN simulés » étaient enregistrés dans
+     * taric_rates et relus ensuite comme de vraies données, y compris pour FR→US).
+     */
     private void ensureTaricDataLoaded(String hsCode, String origin, String dest) {
-        if (hsCode == null || hsCode.length() < 2) return;
-        boolean hasData = !taricRepo.findMFNRates(hsCode, origin, dest, LocalDate.now()).isEmpty()
-            || !taricRepo.findPrefentialRates(hsCode, origin, dest, LocalDate.now()).isEmpty();
+        if (taricApiClient.isSimulationMode()) return;
+        if (hsCode == null || hsCode.length() < 4) return;
+        boolean hasData = !taricRepo.findRateCandidates(prefixes(hsCode), List.of(origin, ERGA_OMNES),
+            EU, false, LocalDate.now()).isEmpty();
         if (hasData) return;
 
         log.info("[TARIC] Aucune donnée en cache pour {} ({}->{}), appel API", hsCode, origin, dest);
@@ -276,60 +372,10 @@ public class CustomsDutyService {
                 taricSyncService.saveRates(apiRates);
                 log.info("[TARIC] {} taux chargés depuis API pour {} ({}->{})",
                     apiRates.size(), hsCode, origin, dest);
-            } else {
-                log.debug("[TARIC] Aucun taux trouvé via API, utilisation fallback");
             }
         } catch (Exception e) {
             log.warn("[TARIC] Erreur chargement API {} ({}->{}): {}",
                 hsCode, origin, dest, e.getMessage());
         }
-    }
-
-    private double fallbackRate(String hsCode) {
-        if (hsCode == null || hsCode.length() < 2) return 3.5;
-
-        try {
-            List<TaricMeasureDto> apiRates = taricApiClient.fetchRates(hsCode, "CN", "FR");
-            if (!apiRates.isEmpty()) {
-                double rate = apiRates.get(0).getDutyRate();
-                if (rate > 0) return rate;
-            }
-        } catch (Exception ignored) {}
-
-        Map<String, Double> fallbacks = Map.ofEntries(
-            Map.entry("01", 8.3), Map.entry("02", 12.8), Map.entry("03", 7.5),
-            Map.entry("04", 10.9), Map.entry("05", 6.5), Map.entry("06", 8.0),
-            Map.entry("07", 10.4), Map.entry("08", 8.5), Map.entry("09", 6.0),
-            Map.entry("10", 12.0), Map.entry("11", 9.2), Map.entry("12", 5.7),
-            Map.entry("13", 4.0), Map.entry("14", 3.5), Map.entry("15", 10.5),
-            Map.entry("16", 13.5), Map.entry("17", 15.0), Map.entry("18", 7.0),
-            Map.entry("19", 9.5), Map.entry("20", 11.0), Map.entry("21", 8.5),
-            Map.entry("22", 6.5), Map.entry("23", 5.0), Map.entry("24", 57.0),
-            Map.entry("25", 3.0), Map.entry("26", 0.0), Map.entry("27", 2.5),
-            Map.entry("28", 5.5), Map.entry("29", 5.5), Map.entry("30", 0.0),
-            Map.entry("31", 4.0), Map.entry("32", 6.5), Map.entry("33", 0.0),
-            Map.entry("34", 4.5), Map.entry("35", 7.0), Map.entry("36", 6.5),
-            Map.entry("37", 0.0), Map.entry("38", 6.0), Map.entry("39", 6.5),
-            Map.entry("40", 3.5), Map.entry("41", 3.0), Map.entry("42", 8.0),
-            Map.entry("43", 4.5), Map.entry("44", 3.0), Map.entry("45", 5.5),
-            Map.entry("46", 4.0), Map.entry("47", 0.0), Map.entry("48", 1.5),
-            Map.entry("49", 2.0), Map.entry("50", 5.0), Map.entry("51", 4.0),
-            Map.entry("52", 7.0), Map.entry("53", 3.5), Map.entry("54", 8.0),
-            Map.entry("55", 8.0), Map.entry("56", 5.0), Map.entry("57", 6.5),
-            Map.entry("58", 6.5), Map.entry("59", 6.0), Map.entry("60", 9.0),
-            Map.entry("61", 12.0), Map.entry("62", 12.0), Map.entry("63", 10.0),
-            Map.entry("64", 17.0), Map.entry("65", 3.0), Map.entry("66", 3.5),
-            Map.entry("67", 3.5), Map.entry("68", 2.5), Map.entry("69", 5.0),
-            Map.entry("70", 5.0), Map.entry("71", 2.5), Map.entry("72", 2.0),
-            Map.entry("73", 2.5), Map.entry("74", 3.5), Map.entry("75", 2.0),
-            Map.entry("76", 5.0), Map.entry("78", 3.5), Map.entry("79", 3.5),
-            Map.entry("80", 2.0), Map.entry("81", 2.5), Map.entry("82", 2.5),
-            Map.entry("83", 2.5), Map.entry("84", 1.8), Map.entry("85", 1.4),
-            Map.entry("86", 1.5), Map.entry("87", 6.5), Map.entry("88", 2.5),
-            Map.entry("89", 2.5), Map.entry("90", 2.5), Map.entry("91", 4.0),
-            Map.entry("92", 3.0), Map.entry("93", 0.0), Map.entry("94", 3.5),
-            Map.entry("95", 4.5), Map.entry("96", 5.0), Map.entry("97", 0.0)
-        );
-        return fallbacks.getOrDefault(hsCode.substring(0, 2), 3.5);
     }
 }

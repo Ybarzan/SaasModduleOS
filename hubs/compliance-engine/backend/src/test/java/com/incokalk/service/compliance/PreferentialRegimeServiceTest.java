@@ -88,7 +88,7 @@ class PreferentialRegimeServiceTest {
                 100.0, List.of());
         when(rulesOfOriginService.verifyOrigin(eq(HS), eq("VN"), eq(DEST), anyDouble(), anyDouble(), anyList()))
                 .thenReturn(origin);
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry(HS, "VN", DEST))
+        when(taricRepo.findPreferentialRates(HS, "VN", DEST, false))
                 .thenReturn(List.of(rate(8.3)));
         when(taricRepo.findPreferentialRates(HS, "VN", DEST, true))
                 .thenReturn(List.of(rate(0.0)));
@@ -108,14 +108,14 @@ class PreferentialRegimeServiceTest {
     }
 
     @Test
-    @DisplayName("Origine confirmée sans critère explicite (CUM) -> originCriterion=null, taux simulés en fallback")
-    void calculatePreferentialDuty_originating_nullCriterion_fallbackSimulatedRates() {
+    @DisplayName("Origine confirmée mais aucun taux TARIC -> pas d'économie inventée (avant : MFN simulé 8,3 %, préférentiel 0 %)")
+    void calculatePreferentialDuty_originating_noTaricRates_noInventedSavings() {
         OriginVerificationResult origin = new OriginVerificationResult(
                 true, null, "EVFTA", "Accord UE-Vietnam",
                 "Origine confirmée par cumul", 45.0, List.of());
         when(rulesOfOriginService.verifyOrigin(eq(HS), eq("VN"), eq(DEST), anyDouble(), anyDouble(), anyList()))
                 .thenReturn(origin);
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry(HS, "VN", DEST))
+        when(taricRepo.findPreferentialRates(HS, "VN", DEST, false))
                 .thenReturn(List.of());
         when(taricRepo.findPreferentialRates(HS, "VN", DEST, true))
                 .thenReturn(List.of());
@@ -123,12 +123,14 @@ class PreferentialRegimeServiceTest {
         PreferentialRegimeService.PreferentialResult result =
                 service.calculatePreferentialDuty(HS, "VN", DEST, 1000, 45, 100);
 
-        assertThat(result.isPreferential()).isTrue();
+        assertThat(result.isPreferential()).isFalse();
+        assertThat(result.isOriginating()).isTrue();
+        assertThat(result.agreementCode()).isEqualTo("EVFTA");
         assertThat(result.originCriterion()).isNull();
-        // chapitre "01" -> taux MFN simulé = 8.3, fallback préférentiel = 0.0
-        assertThat(result.mfnDutyRate()).isEqualTo(8.3);
+        assertThat(result.mfnDutyRate()).isEqualTo(0.0);
         assertThat(result.preferentialDutyRate()).isEqualTo(0.0);
-        assertThat(result.savings()).isEqualTo(83.0);
+        assertThat(result.savings()).isEqualTo(0.0);
+        assertThat(result.originExplanation()).contains("taux TARIC non disponibles");
         assertThat(result.valueAddedPct()).isEqualTo(45.0);
     }
 
@@ -139,7 +141,7 @@ class PreferentialRegimeServiceTest {
     @Test
     @DisplayName("getMfnRate : taux trouvé en base -> premier taux retourné")
     void getMfnRate_ratesFound_returnsFirstRate() {
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("0202", "XX", DEST))
+        when(taricRepo.findPreferentialRates("0202", "XX", DEST, false))
                 .thenReturn(List.of(rate(12.8), rate(99.0)));
 
         double result = service.getMfnRate("0202", "XX", DEST);
@@ -148,25 +150,25 @@ class PreferentialRegimeServiceTest {
     }
 
     @Test
-    @DisplayName("getMfnRate : aucun taux en base, chapitre connu -> taux simulé du chapitre")
-    void getMfnRate_noRates_knownChapter_simulatedRate() {
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("0202", "XX", DEST))
+    @DisplayName("getMfnRate : aucun taux en base -> NaN (plus de moyenne de chapitre inventée)")
+    void getMfnRate_noRates_isNaN() {
+        when(taricRepo.findPreferentialRates("0202", "XX", DEST, false))
                 .thenReturn(List.of());
 
         double result = service.getMfnRate("0202", "XX", DEST);
 
-        assertThat(result).isEqualTo(12.8);
+        assertThat(result).isNaN();
     }
 
     @Test
-    @DisplayName("getMfnRate : hsCode trop court -> chapitre '00', taux par défaut")
-    void getMfnRate_hsCodeTooShort_defaultFallback() {
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("5", "XX", DEST))
+    @DisplayName("getMfnRate : hsCode trop court -> NaN (plus de 3,5 % par défaut)")
+    void getMfnRate_hsCodeTooShort_isNaN() {
+        when(taricRepo.findPreferentialRates("5", "XX", DEST, false))
                 .thenReturn(List.of());
 
         double result = service.getMfnRate("5", "XX", DEST);
 
-        assertThat(result).isEqualTo(3.5);
+        assertThat(result).isNaN();
     }
 
     // ---------------------------------------------------------------
@@ -185,14 +187,14 @@ class PreferentialRegimeServiceTest {
     }
 
     @Test
-    @DisplayName("getPreferentialRate : aucun taux en base -> fallback 0.0")
-    void getPreferentialRate_noRates_fallbackZero() {
+    @DisplayName("getPreferentialRate : aucun taux en base -> NaN (plus de 0 % supposé)")
+    void getPreferentialRate_noRates_isNaN() {
         when(taricRepo.findPreferentialRates(HS, "VN", DEST, true))
                 .thenReturn(List.of());
 
         double result = service.getPreferentialRate(HS, "VN", DEST, "EVFTA");
 
-        assertThat(result).isEqualTo(0.0);
+        assertThat(result).isNaN();
     }
 
     // ---------------------------------------------------------------
@@ -224,7 +226,7 @@ class PreferentialRegimeServiceTest {
                 .thenReturn(new OriginVerificationResult(
                         true, OriginCriterion.WO, "EVFTA", "Accord UE-Vietnam",
                         "Produit entièrement obtenu", 100.0, List.of()));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry(HS, "VN", DEST))
+        when(taricRepo.findPreferentialRates(HS, "VN", DEST, false))
                 .thenReturn(List.of(rate(10.0)));
         when(taricRepo.findPreferentialRates(HS, "VN", DEST, true))
                 .thenReturn(List.of(rate(0.0)));
@@ -234,7 +236,7 @@ class PreferentialRegimeServiceTest {
                 .thenReturn(new OriginVerificationResult(
                         true, OriginCriterion.CTH, "EUJEPA", "Accord UE-Japon",
                         "Changement de classification tarifaire", 40.0, List.of()));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry(HS, "JP", DEST))
+        when(taricRepo.findPreferentialRates(HS, "JP", DEST, false))
                 .thenReturn(List.of(rate(5.0)));
         when(taricRepo.findPreferentialRates(HS, "JP", DEST, true))
                 .thenReturn(List.of(rate(2.0)));

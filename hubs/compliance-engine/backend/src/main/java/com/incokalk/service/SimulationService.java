@@ -63,10 +63,11 @@ public class SimulationService {
         // 3. Assurance
         double insurance = calcInsurance(goodsEur, freight, req.getInsuranceLevel());
 
-        // 4. Droits de douane
-        double duties = dutySvc.calculate(req.getHsCode(), req.getOriginCountry(),
-            req.getDestinationCountry(), goodsEur, freight, insurance,
+        // 4. Droits de douane — jamais de taux inventé : si aucun taux fiable, 0 + drapeau explicite.
+        CustomsDutyService.DutyResult dutyResult = dutySvc.calculateDetailed(req.getHsCode(),
+            req.getOriginCountry(), req.getDestinationCountry(), goodsEur, freight, insurance,
             req.getWeightKg() != null ? req.getWeightKg() : 0.0, null);
+        double duties = dutyResult.dutyAmount();
 
         // 5. TVA (import / intracommunautaire / export)
         VatService.VatResult vatResult = vatService.calculate(
@@ -78,6 +79,23 @@ public class SimulationService {
         // 6. Construire la décomposition selon l'Incoterm
         SimulationResult result = buildResult(req.getIncoterm(), goodsEur, freight,
             insurance, duties, vatResult, estimatedDays, req);
+
+        CurrencyService.FxQuote fx = currencySvc.quote(req.getCurrency());
+        result.setCurrency(CustomsDutyService.CURRENCY);
+        result.setInputCurrency(fx.currency());
+        result.setFxRate(fx.rateToEur());
+        result.setFxSource(fx.source());
+        if (!"IDENTITY".equals(fx.source())) {
+            result.getWarnings().add("ℹ️ Montants convertis de " + fx.currency() + " en EUR au taux "
+                + fx.rateToEur() + ("STATIC_FALLBACK".equals(fx.source())
+                    ? " (taux interne non daté, pas un cours BCE — à vérifier)" : " (taux récupéré en ligne)"));
+        }
+        result.setDutiesAvailable(dutyResult.rateAvailable());
+        result.setDutyBasisType(dutyResult.basisType());
+        result.setDutiesNote(dutyResult.notes());
+        if (!dutyResult.rateAvailable()) {
+            result.getWarnings().add("⚠️ Droits de douane non inclus dans le total : " + dutyResult.notes());
+        }
 
         // 7. Vérification de la conformité
         result.setComplianceAlerts(complianceService.checkCompliance(req, req.getIncoterm()));
@@ -173,7 +191,6 @@ public class SimulationService {
             + buyer.getImportDuties() + buyer.getImportVat() + buyer.getLastMileDelivery();
 
         List<String> warnings = new ArrayList<>();
-        if (req.getHsCode() == null) warnings.add("⚠️ Sans code HS, les droits de douane sont estimés à 3.5%");
         if (it == Incoterm.EXW) warnings.add("⚠️ EXW : risque maximal pour l'acheteur — peu recommandé à l'export");
         if (it == Incoterm.DDP) warnings.add("ℹ️ DDP : vérifiez que le vendeur peut être importateur de record dans votre pays");
         if (vatResult.isExempt() || vatResult.reverseCharge()) {

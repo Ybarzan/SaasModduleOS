@@ -45,7 +45,10 @@ public class EoriOnlineService {
     @Value("${incokalk.eori.online-validation:false}")
     private boolean onlineValidation;
 
-    public record EoriCheck(boolean valid, String traderName, String traderAddress, String message) {}
+    /** Serializable : le résultat est mis en cache Redis (sérialisation JDK) — sans cela, tout
+     *  EORI au format valide faisait échouer /v1/eori/validate en 500 ("Cannot serialize"). */
+    public record EoriCheck(boolean valid, String traderName, String traderAddress, String message)
+        implements java.io.Serializable {}
 
     @Cacheable(value = "eori-check", key = "#eoriNumber")
     public EoriCheck checkEori(String eoriNumber) {
