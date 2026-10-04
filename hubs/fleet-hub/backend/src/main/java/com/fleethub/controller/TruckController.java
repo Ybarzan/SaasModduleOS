@@ -10,6 +10,7 @@ import com.fleethub.repository.CostRecordRepository;
 import com.fleethub.repository.DrivingEventRepository;
 import com.fleethub.repository.FuelRecordRepository;
 import com.fleethub.repository.MaintenanceRepository;
+import com.fleethub.repository.TourRepository;
 import com.fleethub.repository.TripRepository;
 import com.fleethub.repository.TruckRepository;
 import com.fleethub.security.TenantContext;
@@ -45,6 +46,7 @@ public class TruckController {
     private final FuelRecordRepository fuelRecordRepository;
     private final MaintenanceRepository maintenanceRepository;
     private final CostRecordRepository costRecordRepository;
+    private final TourRepository tourRepository;
 
     @GetMapping
     @Operation(summary = "Lister les camions", description = "Retourne la liste de tous les camions avec leur affectation actuelle")
@@ -116,6 +118,7 @@ public class TruckController {
         fuelRecordRepository.deleteByTruck(t);
         maintenanceRepository.deleteByTruck(t);
         costRecordRepository.deleteByTruck(t);
+        tourRepository.detachTruck(t); // les tournées passées restent, sans véhicule
         truckRepository.delete(t);
     }
 

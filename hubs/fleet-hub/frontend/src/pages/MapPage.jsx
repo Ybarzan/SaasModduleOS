@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet'
 import api from '../services/api'
+import { TILE_ATTRIBUTION, TILE_URL } from '../mapTiles'
 import StatusBadge from '../components/StatusBadge'
 
 const statusColor = {
@@ -59,10 +60,7 @@ export default function MapPage() {
 
       <div className="map-container">
         <MapContainer center={center} zoom={6} style={{ height: '100%', width: '100%' }}>
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; OpenStreetMap contributors &copy; CARTO'
-          />
+          <TileLayer url={TILE_URL} attribution={TILE_ATTRIBUTION} />
           {vehicles.map((v) => {
             const meta = statusColor[v.status] || { color: 'var(--muted)', label: v.status }
             return (
