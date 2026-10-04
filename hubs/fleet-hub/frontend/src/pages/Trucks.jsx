@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../services/api'
 import StatusBadge from '../components/StatusBadge'
+import { useAuth } from '../context/AuthContext'
+import { fleetTerms, fuelLabel, vehicleTypeLabel } from '../fleet'
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tous les statuts' },
@@ -13,6 +15,8 @@ const STATUS_OPTIONS = [
 ]
 
 export default function Trucks() {
+  const { user } = useAuth()
+  const terms = fleetTerms(user)
   const [trucks, setTrucks] = useState([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -24,7 +28,7 @@ export default function Trucks() {
     api
       .get('/trucks')
       .then((res) => setTrucks(res.data))
-      .catch(() => setError('Impossible de charger les camions'))
+      .catch(() => setError('Impossible de charger les véhicules'))
       .finally(() => setLoading(false))
   }, [])
 
@@ -50,7 +54,7 @@ export default function Trucks() {
     <div>
       <div className="page-header">
         <div>
-          <h2>Camions</h2>
+          <h2>{terms.vehicles}</h2>
           <p>État de la flotte et affectation des chauffeurs</p>
         </div>
         <div className="header-actions">
@@ -79,18 +83,18 @@ export default function Trucks() {
             <div className="truck-card-top">
               <div>
                 <strong>{t.brand} {t.model}</strong>
-                <span className="muted block">{t.registration} · {t.modelYear}</span>
+                <span className="muted block">{t.registration}{t.year ? ` · ${t.year}` : ''}</span>
               </div>
               <StatusBadge status={t.currentStatus} />
             </div>
             <div className="truck-card-grid">
               <div className="couple-stat">
-                <span>Type</span>
-                <b>{t.truckType.toLowerCase()}</b>
+                <span>Catégorie</span>
+                <b>{vehicleTypeLabel(t.truckType)}</b>
               </div>
               <div className="couple-stat">
                 <span>Énergie</span>
-                <b>{t.fuelType === 'DIESEL' ? 'Diesel' : 'Électrique'}</b>
+                <b>{fuelLabel(t.fuelType)}</b>
               </div>
               <div className="couple-stat">
                 <span>Conso réf.</span>
@@ -110,7 +114,7 @@ export default function Trucks() {
           </Link>
         ))}
         {filtered.length === 0 && !error && (
-          <p className="muted table-empty">Aucun camion ne correspond aux filtres</p>
+          <p className="muted table-empty">Aucun véhicule ne correspond aux filtres</p>
         )}
       </div>
 
@@ -124,7 +128,7 @@ export default function Trucks() {
             <thead>
               <tr>
                 <th>Véhicule</th>
-                <th>Type</th>
+                <th>Catégorie</th>
                 <th>Énergie</th>
                 <th>Statut</th>
                 <th>Chauffeur</th>
@@ -138,11 +142,11 @@ export default function Trucks() {
                   <td className="cell-strong">
                     <Link to={`/trucks/${t.id}`} className="cell-link">
                       <strong>{t.brand} {t.model}</strong>
-                      <span className="muted block">{t.registration} · {t.modelYear}</span>
+                      <span className="muted block">{t.registration}{t.year ? ` · ${t.year}` : ''}</span>
                     </Link>
                   </td>
-                  <td>{t.truckType.toLowerCase()}</td>
-                  <td>{t.fuelType === 'DIESEL' ? 'Diesel' : 'Électrique'}</td>
+                  <td>{vehicleTypeLabel(t.truckType)}</td>
+                  <td>{fuelLabel(t.fuelType)}</td>
                   <td><StatusBadge status={t.currentStatus} /></td>
                   <td>
                     {t.driverName && t.assignmentId ? (
@@ -156,7 +160,7 @@ export default function Trucks() {
                 </tr>
               ))}
               {filtered.length === 0 && !error && (
-                <tr><td colSpan="7" className="table-empty">Aucun camion ne correspond aux filtres</td></tr>
+                <tr><td colSpan="7" className="table-empty">Aucun véhicule ne correspond aux filtres</td></tr>
               )}
             </tbody>
           </table>

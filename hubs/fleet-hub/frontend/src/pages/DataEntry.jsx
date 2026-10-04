@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
+import { useAuth } from '../context/AuthContext'
+import { FUEL_TYPES, VEHICLE_TYPES, fleetTerms, fuelLabel, usesTachograph, vehicleTypeLabel } from '../fleet'
 
 const TAB_DRIVERS = 'drivers'
 const TAB_TRUCKS = 'trucks'
@@ -32,10 +34,20 @@ const truckFields = [
   { key: 'brand', label: 'Marque', type: 'text', required: true },
   { key: 'model', label: 'Modèle', type: 'text', required: true },
   { key: 'modelYear', label: 'Année', type: 'number' },
-  { key: 'truckType', label: 'Type', type: 'select', required: true, options: ['TRACTEUR', 'PORTEUR', 'FOURGON'] },
-  { key: 'fuelType', label: 'Énergie', type: 'select', required: true, options: ['DIESEL', 'ELECTRIC'] },
+  { key: 'truckType', label: 'Catégorie', type: 'select', required: true, options: VEHICLE_TYPES },
+  { key: 'fuelType', label: 'Énergie', type: 'select', required: true, options: FUEL_TYPES },
   { key: 'capacityTons', label: 'Capacité (t)', type: 'number' },
-  { key: 'expectedConsumptionL100Km', label: 'Conso réf. (L/100)', type: 'number', required: true },
+  { key: 'expectedConsumptionL100Km', label: 'Conso réf. (L/100, vide = valeur type)', type: 'number' },
+  {
+    key: 'tachographEquipped',
+    label: 'Tachygraphe',
+    type: 'tristate',
+    options: [
+      { value: 'true', label: 'Équipé' },
+      { value: 'false', label: 'Non équipé' }
+    ],
+    emptyLabel: 'Auto (PL = équipé)'
+  },
   { key: 'acquisitionDate', label: "Date d'acquisition", type: 'date' },
   { key: 'purchasePrice', label: "Prix d'achat (€)", type: 'number' },
   { key: 'active', label: 'Actif', type: 'checkbox', default: true }
@@ -113,8 +125,9 @@ const columnsByTab = {
   [TAB_TRUCKS]: [
     { key: 'registration', label: 'Véhicule', render: (t) => `${t.brand} ${t.model}` },
     { key: 'registration', label: 'Immatriculation' },
-    { key: 'truckType', label: 'Type' },
-    { key: 'fuelType', label: 'Énergie' },
+    { key: 'truckType', label: 'Catégorie', render: (t) => vehicleTypeLabel(t.truckType) },
+    { key: 'fuelType', label: 'Énergie', render: (t) => fuelLabel(t.fuelType) },
+    { key: 'requiresTachograph', label: 'Tachy.', render: (t) => (t.requiresTachograph ? 'Oui' : 'Non') },
     { key: 'expectedConsumptionL100Km', label: 'Conso réf.', render: (t) => (t.expectedConsumptionL100Km == null ? '—' : `${t.expectedConsumptionL100Km} L`) }
   ],
   [TAB_ASSIGNMENTS]: [
@@ -158,6 +171,7 @@ function buildForm(fields, item) {
     if (f.type === 'number') form[f.key] = v === '' ? '' : String(v)
     else if (f.type === 'checkbox') form[f.key] = !!v
     else if (f.type === 'datetime') form[f.key] = v ? String(v).slice(0, 16) : ''
+    else if (f.type === 'tristate') form[f.key] = v == null ? '' : String(v)
     else form[f.key] = v
   }
   return form
@@ -169,6 +183,7 @@ function toPayload(fields, form) {
     const v = form[f.key]
     if (f.type === 'number') payload[f.key] = v === '' || v == null ? null : Number(v)
     else if (f.type === 'checkbox') payload[f.key] = !!v
+    else if (f.type === 'tristate') payload[f.key] = v === '' || v == null ? null : v === 'true'
     else payload[f.key] = v
   }
   return payload
@@ -297,18 +312,18 @@ function CrudTab({ tab, options, onChanged }) {
                   label: o.label
                 }))
               } else if (f.options) {
-                optionsList = f.options.map((o) => ({ value: o, label: o }))
+                optionsList = f.options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o))
               }
               return (
                 <div key={f.key} className="form-field">
                   <label>{f.label}{f.required ? ' *' : ''}</label>
-                  {f.type === 'select' ? (
+                  {f.type === 'select' || f.type === 'tristate' ? (
                     <select
                       value={form[f.key] ?? ''}
                       required={f.required}
                       onChange={(e) => setValue(f.key, e.target.value)}
                     >
-                      <option value="">—</option>
+                      <option value="">{f.emptyLabel || '—'}</option>
                       {optionsList.map((o) => (
                         <option key={o.value} value={o.value}>
                           {o.label}
@@ -389,6 +404,10 @@ function CrudTab({ tab, options, onChanged }) {
 }
 
 export default function DataEntry() {
+  const { user } = useAuth()
+  const visibleTabs = tabs
+    .filter((t) => t.key !== TAB_TACHO || usesTachograph(user))
+    .map((t) => (t.key === TAB_TRUCKS ? { ...t, label: fleetTerms(user).vehicles } : t))
   const [activeTab, setActiveTab] = useState(TAB_DRIVERS)
   const [drivers, setDrivers] = useState([])
   const [trucks, setTrucks] = useState([])
@@ -428,7 +447,7 @@ export default function DataEntry() {
       </div>
 
       <div className="tabs">
-        {tabs.map((t) => (
+        {visibleTabs.map((t) => (
           <button
             key={t.key}
             className={`tab ${activeTab === t.key ? 'active' : ''}`}

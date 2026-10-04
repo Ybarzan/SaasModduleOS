@@ -5,6 +5,7 @@ import {
   BarChart, Bar, Cell, PieChart, Pie, Legend, CartesianGrid
 } from 'recharts'
 import api from '../services/api'
+import { fuelLabel } from '../fleet'
 import PeriodSelector from '../components/PeriodSelector'
 import ScoreGauge from '../components/ScoreGauge'
 import StatCard from '../components/StatCard'
@@ -94,7 +95,7 @@ export default function DriverDetail() {
           <h2>{k.driverName}</h2>
           <p className="muted">
             <Link to={`/trucks/${k.truckId}`} className="link">🚛 {k.brand} {k.model} · {k.registration}</Link>
-            {' · '}{k.fuelType} · licence {k.licenseNumber}
+            {' · '}{fuelLabel(k.fuelType)} · licence {k.licenseNumber}
           </p>
         </div>
         <PeriodSelector value={period} onChange={setPeriod} />
@@ -129,7 +130,7 @@ export default function DriverDetail() {
             <div className="kpi-item"><span>Temps de roulage</span><b>{k.driveTimeShare.toFixed(0)}%</b></div>
             <div className="kpi-item"><span>Ralenti</span><b>{k.idleShare.toFixed(1)}%</b></div>
             <div className="kpi-item"><span>Ponctualité</span><b>{k.onTimeRate.toFixed(0)}%</b></div>
-            <div className="kpi-item"><span>Conformité 561/2006</span><b>{k.drivingTimeComplianceRate.toFixed(0)}%</b></div>
+            <div className="kpi-item"><span>Conformité 561/2006</span><b>{k.tachographApplicable === false ? "N/A" : `${k.drivingTimeComplianceRate.toFixed(0)}%`}</b></div>
           </div>
         </div>
 

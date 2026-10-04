@@ -35,7 +35,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/trucks")
 @RequiredArgsConstructor
-@Tag(name = "Camions", description = "Gestion des camions de la flotte")
+@Tag(name = "Véhicules", description = "Gestion des véhicules de la flotte (poids lourds, VUL, VL)")
 public class TruckController {
 
     private final TruckRepository truckRepository;
@@ -129,8 +129,11 @@ public class TruckController {
         t.setCapacityTons(req.capacityTons());
         t.setAcquisitionDate(req.acquisitionDate());
         t.setPurchasePrice(req.purchasePrice());
-        t.setExpectedConsumptionL100Km(req.expectedConsumptionL100Km());
+        t.setExpectedConsumptionL100Km(req.expectedConsumptionL100Km() != null
+                ? req.expectedConsumptionL100Km()
+                : t.getTruckType().getDefaultConsumptionL100Km());
         t.setActive(req.active());
+        t.setTachographEquipped(req.tachographEquipped());
     }
 
     private TruckDto toDto(Truck t, DriverTruckAssignment a) {
@@ -142,6 +145,7 @@ public class TruckController {
                 t.getLastGpsUpdate(), t.isActive(),
                 a != null ? a.getId() : null,
                 a != null ? a.getDriver().getId() : null,
-                a != null ? a.getDriver().getFirstName() + " " + a.getDriver().getLastName() : null);
+                a != null ? a.getDriver().getFirstName() + " " + a.getDriver().getLastName() : null,
+                t.getTachographEquipped(), t.requiresTachograph(), t.getTruckType().isHeavy());
     }
 }

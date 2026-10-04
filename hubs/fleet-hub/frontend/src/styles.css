@@ -2672,3 +2672,29 @@ button.kpi-widget-clickable:active {
   font-size: 12px;
 }
 
+
+/* ---- Profil de flotte (paramètres) ---- */
+.profile-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.profile-option {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+  cursor: pointer;
+}
+
+.profile-option.active {
+  border-color: var(--primary);
+}
+
+.profile-option input {
+  margin-top: 3px;
+}

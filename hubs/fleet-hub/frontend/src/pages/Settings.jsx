@@ -1,6 +1,70 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
+import { FLEET_PROFILES, profileOf } from '../fleet'
+
+function FleetProfileCard() {
+  const { user, updateUser } = useAuth()
+  const [profile, setProfile] = useState(profileOf(user))
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const isAdmin = user?.role === 'ADMIN'
+
+  const save = async () => {
+    setMessage('')
+    setError('')
+    try {
+      const res = await api.put('/company/fleet-profile', { fleetProfile: profile })
+      updateUser({ fleetProfile: res.data.fleetProfile })
+      setMessage('Profil de flotte mis à jour')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Mise à jour impossible')
+    }
+  }
+
+  return (
+    <div className="card" style={{ marginTop: '1.5rem' }}>
+      <div className="card-title">
+        <h3>Activité de la flotte</h3>
+      </div>
+      <p className="muted" style={{ marginBottom: '1rem' }}>
+        Adapte les modules mis en avant (tachygraphe, tournées, collecte) et le vocabulaire de l'application.
+      </p>
+      {error && <div className="alert alert-error">{error}</div>}
+      {message && <div className="alert">{message}</div>}
+      <div className="profile-options">
+        {FLEET_PROFILES.map((p) => (
+          <label key={p.value} className={'profile-option' + (profile === p.value ? ' active' : '')}>
+            <input
+              type="radio"
+              name="fleetProfile"
+              value={p.value}
+              checked={profile === p.value}
+              disabled={!isAdmin}
+              onChange={() => setProfile(p.value)}
+            />
+            <span>
+              <strong>{p.label}</strong>
+              <span className="muted block">{p.hint}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+      {isAdmin ? (
+        <button
+          className="btn btn-primary"
+          style={{ marginTop: '1rem' }}
+          onClick={save}
+          disabled={profile === profileOf(user)}
+        >
+          Enregistrer
+        </button>
+      ) : (
+        <p className="muted" style={{ marginTop: '1rem' }}>Seul un administrateur peut modifier ce réglage.</p>
+      )}
+    </div>
+  )
+}
 
 export default function Settings() {
   const { user, logout } = useAuth()
@@ -237,6 +301,8 @@ export default function Settings() {
           </div>
         )}
       </div>
+
+      {user?.companyId && <FleetProfileCard />}
 
       <div className="card" style={{ marginTop: '1.5rem' }}>
         <div className="card-title">

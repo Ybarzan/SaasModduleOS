@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { FLEET_PROFILES } from '../fleet'
 
 export default function Register() {
   const { register } = useAuth()
@@ -11,7 +12,8 @@ export default function Register() {
     lastName: '',
     email: '',
     password: '',
-    confirm: ''
+    confirm: '',
+    fleetProfile: 'POIDS_LOURD'
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -40,7 +42,8 @@ export default function Register() {
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
-        password: form.password
+        password: form.password,
+        fleetProfile: form.fleetProfile
       })
       navigate('/', { replace: true })
     } catch (err) {
@@ -65,9 +68,19 @@ export default function Register() {
               type="text"
               value={form.companyName}
               onChange={set('companyName')}
-              placeholder="Transports Martin SAS"
+              placeholder="Transports Martin SAS, Bio Coursiers…"
               autoComplete="organization"
             />
+          </label>
+          <label>
+            Votre activité
+            <select value={form.fleetProfile} onChange={set('fleetProfile')}>
+              {FLEET_PROFILES.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label} — {p.hint}
+                </option>
+              ))}
+            </select>
           </label>
           <div className="form-row">
             <label>

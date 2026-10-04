@@ -220,7 +220,7 @@ export default function Drivers() {
                   <td>{c.costPerKm.toFixed(2)} €</td>
                   <td>{c.utilizationRate.toFixed(0)}%</td>
                   <td>{c.ecoScore.toFixed(0)}</td>
-                  <td>{c.drivingTimeComplianceRate.toFixed(0)}%</td>
+                  <td>{c.tachographApplicable === false ? <span className="muted">N/A</span> : `${c.drivingTimeComplianceRate.toFixed(0)}%`}</td>
                   <td>{c.consumptionPer100Km.toFixed(1)} L</td>
                   <td>{c.riskEventsTotal}</td>
                 </tr>

@@ -1,7 +1,6 @@
 package com.fleethub.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
@@ -15,6 +14,9 @@ public record TruckRequest(
         Double capacityTons,
         LocalDate acquisitionDate,
         Double purchasePrice,
-        @NotNull(message = "La consommation de référence est obligatoire") Double expectedConsumptionL100Km,
-        boolean active
+        /** Facultatif : à défaut, valeur type de la catégorie de véhicule. */
+        Double expectedConsumptionL100Km,
+        boolean active,
+        /** Facultatif : null = déduit de la catégorie (poids lourd => équipé). */
+        Boolean tachographEquipped
 ) {}

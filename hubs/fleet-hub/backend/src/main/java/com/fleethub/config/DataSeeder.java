@@ -294,7 +294,7 @@ public class DataSeeder {
                         double lat, double lon, Truck.VehicleStatus status, double speed, String city) {
         return new Truck(id, company, reg, brand, model, year, type, fuel, capacity,
                 LocalDate.now().minusYears(year > 2020 ? 3 : 4), 95000.0 + year * 0, expected,
-                lat, lon, speed, status, LocalDateTime.now().minusMinutes(15), true);
+                lat, lon, speed, status, LocalDateTime.now().minusMinutes(15), true, null);
     }
 
     private Driver driver(Company company, Long id, String first, String last, String license, String phone,

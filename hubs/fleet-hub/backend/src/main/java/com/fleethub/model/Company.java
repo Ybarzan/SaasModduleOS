@@ -70,6 +70,12 @@ public class Company {
 
     private LocalDateTime createdAt;
 
+    /** Métier principal de la flotte (voir {@link FleetProfile}). */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 32)
+    @Builder.Default
+    private FleetProfile fleetProfile = FleetProfile.POIDS_LOURD;
+
     // ---- Marketplace FleetMarket (opt-in) ----
     /** Publie la disponibilité camions + un score de conformité agrégé sur
      *  GET /api/marketplace/availability. Désactivé par défaut : aucune donnée
@@ -108,6 +114,26 @@ public class Company {
 
     public enum CompanyStatus {
         TRIAL, ACTIVE, SUSPENDED, CANCELLED
+    }
+
+    /**
+     * Métier principal de la flotte : adapte le vocabulaire, les modules mis en
+     * avant et les KPIs (le tachygraphe n'a de sens que pour les poids lourds,
+     * les tournées que pour la messagerie et la collecte).
+     */
+    public enum FleetProfile {
+        /** Transport routier poids lourds longue distance. */
+        POIDS_LOURD,
+        /** Messagerie / distribution : tournées multi-arrêts. */
+        MESSAGERIE,
+        /** Collecte santé (pharmacies ↔ laboratoires) : tournées + traçabilité + froid. */
+        COLLECTE_SANTE,
+        /** Flotte mixte : tous les modules visibles. */
+        MIXTE;
+
+        public boolean usesTours() {
+            return this != POIDS_LOURD;
+        }
     }
 
     /** Peut se connecter : les comptes résiliés sont exclus, les essais expirés

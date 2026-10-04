@@ -64,6 +64,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/marketplace/availability", "/api/marketplace/vehicle-position").permitAll()
                 .requestMatchers("/api/marketplace/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("SAAS_ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/company/**").hasRole("ADMIN")
                 .requestMatchers("/api/users/**", "/api/integrations/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/kpis/**", "/api/drivers/**", "/api/trucks/**", "/api/dashboard/**", "/api/map/**").hasAnyRole("ADMIN", "GESTIONNAIRE")
                 .anyRequest().hasAnyRole("ADMIN", "GESTIONNAIRE")
