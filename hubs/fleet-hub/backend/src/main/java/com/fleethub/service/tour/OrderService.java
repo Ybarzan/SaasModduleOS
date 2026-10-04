@@ -202,6 +202,7 @@ public class OrderService {
                 stop.setServiceMinutes(o.getServiceMinutes());
                 stop.setTemperatureMinCelsius(o.getTemperatureMinCelsius());
                 stop.setTemperatureMaxCelsius(o.getTemperatureMaxCelsius());
+                stop.setExpectedQuantity(o.getQuantity());
                 stop.setNotes(joinNotes(o));
                 tour.getStops().add(stop);
             }

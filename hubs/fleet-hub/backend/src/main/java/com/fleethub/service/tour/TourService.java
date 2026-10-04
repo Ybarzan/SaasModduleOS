@@ -33,6 +33,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -73,10 +74,20 @@ public class TourService {
     /** Tournées du jour d'un chauffeur (vue mobile), avec leurs arrêts. */
     @Transactional(readOnly = true)
     public List<TourDto> forDriver(Long driverId, LocalDate date) {
-        return tourRepository.findByCompanyIdAndDriverIdAndDateOrderByPlannedStartAsc(
+        List<Tour> tours = tourRepository.findByCompanyIdAndDriverIdAndDateOrderByPlannedStartAsc(
                         TenantContext.companyId(), driverId, date).stream()
                 .filter(t -> t.getStatus() != Tour.TourStatus.ANNULEE)
-                .map(t -> TourDto.of(t, true)).toList();
+                .toList();
+        // Suggestion du signataire habituel de chaque site (évite la saisie au chauffeur)
+        Set<Long> siteIds = new HashSet<>();
+        tours.forEach(t -> t.getStops().forEach(s -> siteIds.add(s.getSite().getId())));
+        Map<Long, String> signers = new java.util.HashMap<>();
+        if (!siteIds.isEmpty()) {
+            for (Object[] row : stopRepository.recentSigners(TenantContext.companyId(), siteIds)) {
+                signers.putIfAbsent((Long) row[0], (String) row[1]);
+            }
+        }
+        return tours.stream().map(t -> TourDto.of(t, true, signers)).toList();
     }
 
     /** Vérifie qu'une tournée est bien affectée à ce chauffeur (accès mobile). */
@@ -187,6 +198,7 @@ public class TourService {
             c.setServiceMinutes(s.getServiceMinutes());
             c.setTemperatureMinCelsius(s.getTemperatureMinCelsius());
             c.setTemperatureMaxCelsius(s.getTemperatureMaxCelsius());
+            c.setExpectedQuantity(s.getExpectedQuantity());
             c.setNotes(s.getNotes());
             copy.getStops().add(c);
         }
@@ -328,11 +340,22 @@ public class TourService {
     /** Signale l'arrivée sur site (horodatage réel). */
     @Transactional
     public TourDto arrive(Long tourId, Long stopId) {
+        return arrive(tourId, stopId, null);
+    }
+
+    /** Arrivée sur site, éventuellement horodatée par le téléphone (action faite hors connexion). */
+    @Transactional
+    public TourDto arrive(Long tourId, Long stopId, LocalDateTime occurredAt) {
         Tour tour = load(tourId);
+        if (tour.getStatus() == Tour.TourStatus.PLANIFIEE) {
+            // Arriver au premier arrêt démarre la tournée : une action de moins pour le chauffeur
+            tour.setStatus(Tour.TourStatus.EN_COURS);
+            tour.setStartedAt(effectiveTime(occurredAt));
+        }
         requireRunning(tour);
         TourStop stop = findStop(tour, stopId);
         if (stop.getArrivedAt() == null) {
-            stop.setArrivedAt(LocalDateTime.now());
+            stop.setArrivedAt(effectiveTime(occurredAt));
         }
         return TourDto.of(tourRepository.save(tour), true);
     }
@@ -351,8 +374,8 @@ public class TourService {
         if (status == TourStop.StopStatus.ECHEC && (req.failureReason() == null || req.failureReason().isBlank())) {
             throw new IllegalArgumentException("Le motif d'échec est obligatoire");
         }
-        LocalDateTime now = LocalDateTime.now();
-        if (stop.getArrivedAt() == null) {
+        LocalDateTime now = effectiveTime(req.occurredAt());
+        if (stop.getArrivedAt() == null || stop.getArrivedAt().isAfter(now)) {
             stop.setArrivedAt(now);
         }
         stop.setCompletedAt(now);
@@ -363,8 +386,11 @@ public class TourService {
         stop.setTemperatureCelsius(req.temperatureCelsius());
         stop.setScannedCodes(req.scannedCodes());
         stop.setFailureReason(status == TourStop.StopStatus.ECHEC ? req.failureReason() : null);
-        if (req.notes() != null) {
-            stop.setNotes(req.notes());
+        if (req.notes() != null && !req.notes().isBlank()) {
+            // On conserve les consignes de l'exploitant : la remarque du chauffeur s'ajoute
+            String driverNote = "Chauffeur : " + req.notes().trim();
+            String merged = stop.getNotes() == null || stop.getNotes().isBlank() ? driverNote : stop.getNotes() + " · " + driverNote;
+            stop.setNotes(merged.length() > 1000 ? merged.substring(0, 1000) : merged);
         }
         boolean allClosed = tour.getStops().stream().allMatch(s -> s.getStatus() != TourStop.StopStatus.A_FAIRE);
         if (allClosed) {
@@ -434,6 +460,7 @@ public class TourService {
                 : site.getServiceMinutes() != null ? site.getServiceMinutes() : DEFAULT_SERVICE_MINUTES);
         stop.setTemperatureMinCelsius(req.temperatureMinCelsius());
         stop.setTemperatureMaxCelsius(req.temperatureMaxCelsius());
+        stop.setExpectedQuantity(req.expectedQuantity());
         stop.setNotes(req.notes());
     }
 
@@ -507,6 +534,19 @@ public class TourService {
         if (!tour.isEditable()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Tournée " + tour.getStatus().name().toLowerCase() + " : modification impossible");
         }
+    }
+
+    /**
+     * Heure retenue pour une action terrain : celle du téléphone si l'action a été
+     * faite hors connexion, bornée à [maintenant − 24 h ; maintenant] pour éviter
+     * qu'une horloge déréglée ne fausse la traçabilité.
+     */
+    static LocalDateTime effectiveTime(LocalDateTime occurredAt) {
+        LocalDateTime now = LocalDateTime.now();
+        if (occurredAt == null || occurredAt.isAfter(now.plusMinutes(5)) || occurredAt.isBefore(now.minusHours(24))) {
+            return now;
+        }
+        return occurredAt.isAfter(now) ? now : occurredAt;
     }
 
     private static void requireRunning(Tour tour) {

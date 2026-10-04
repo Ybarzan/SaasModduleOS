@@ -35,4 +35,8 @@
     <!-- Scan des codes-barres (preuve de passage, application chauffeur) -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <!-- Détection automatique de l'arrivée sur site (application chauffeur, pendant la tournée uniquement) -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 </manifest>
