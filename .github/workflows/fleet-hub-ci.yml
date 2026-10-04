@@ -72,6 +72,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: [backend, frontend]
     timeout-minutes: 20
+    # Sans Redis, le backend démarre mais /actuator/health reste "DOWN"
+    # (RedisReactiveHealthIndicator), donc le webServer de playwright.config.js
+    # time out après 120s en attendant un serveur qui ne passera jamais "UP"
+    # — reproduit et confirmé localement (redis-server standalone, pas besoin
+    # de Docker) : avec Redis présent, /actuator/health passe à "UP" dans les
+    # ~13s de démarrage habituels.
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     defaults:
       run:
         working-directory: hubs/fleet-hub/frontend
