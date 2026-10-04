@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
 import { FAILURE_REASONS } from '../tours'
 import BarcodeScanner, { scanSupported } from './BarcodeScanner'
 
@@ -8,6 +8,7 @@ import BarcodeScanner, { scanSupported } from './BarcodeScanner'
  * d'exploitation et l'application chauffeur.
  */
 export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
+  const uid = useId()
   const [status, setStatus] = useState('FAIT')
   const [form, setForm] = useState({
     signedBy: '',
@@ -89,13 +90,19 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
       {status === 'FAIT' ? (
         <div className="data-grid">
           <div className="form-field">
-            <label>Remis à / signé par</label>
-            <input value={form.signedBy} onChange={set('signedBy')} autoComplete="off" />
+            <label htmlFor={`${uid}-signedBy`}>Remis à / signé par</label>
+            <input
+              id={`${uid}-signedBy`}
+              value={form.signedBy}
+              onChange={set('signedBy')}
+              autoComplete="off"
+            />
           </div>
           {isCollect ? (
             <div className="form-field">
-              <label>Échantillons / sachets</label>
+              <label htmlFor={`${uid}-samples`}>Échantillons / sachets</label>
               <input
+                id={`${uid}-samples`}
                 type="number"
                 min="0"
                 inputMode="numeric"
@@ -105,8 +112,9 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
             </div>
           ) : (
             <div className="form-field">
-              <label>Colis</label>
+              <label htmlFor={`${uid}-parcels`}>Colis</label>
               <input
+                id={`${uid}-parcels`}
                 type="number"
                 min="0"
                 inputMode="numeric"
@@ -117,7 +125,7 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
           )}
           {(needsTemperature || isCollect) && (
             <div className="form-field">
-              <label>
+              <label htmlFor={`${uid}-temperature`}>
                 Température (°C)
                 {needsTemperature && (
                   <span className="muted">
@@ -128,6 +136,7 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
                 )}
               </label>
               <input
+                id={`${uid}-temperature`}
                 type="number"
                 step="0.1"
                 inputMode="decimal"
@@ -141,9 +150,16 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
             </div>
           )}
           <div className="form-field form-field-wide">
-            <label>Codes scannés / saisis (séparés par des virgules)</label>
+            <label htmlFor={`${uid}-codes`}>
+              Codes scannés / saisis (séparés par des virgules)
+            </label>
             <div className="geocode-bar">
-              <input value={form.scannedCodes} onChange={set('scannedCodes')} autoComplete="off" />
+              <input
+                id={`${uid}-codes`}
+                value={form.scannedCodes}
+                onChange={set('scannedCodes')}
+                autoComplete="off"
+              />
               {scanSupported() && !scanning && (
                 <button type="button" className="btn btn-outline" onClick={() => setScanning(true)}>
                   📷 Scanner
@@ -156,8 +172,8 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
       ) : (
         <div className="data-grid">
           <div className="form-field">
-            <label>Motif *</label>
-            <select value={form.failureReason} onChange={set('failureReason')}>
+            <label htmlFor={`${uid}-reason`}>Motif *</label>
+            <select id={`${uid}-reason`} value={form.failureReason} onChange={set('failureReason')}>
               {FAILURE_REASONS.map((r) => (
                 <option key={r} value={r}>
                   {r}
@@ -169,8 +185,8 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
       )}
 
       <div className="form-field">
-        <label>Commentaire</label>
-        <input value={form.notes} onChange={set('notes')} />
+        <label htmlFor={`${uid}-notes`}>Commentaire</label>
+        <input id={`${uid}-notes`} value={form.notes} onChange={set('notes')} />
       </div>
 
       <div className="form-actions">
