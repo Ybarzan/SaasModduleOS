@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
+import DriverTours from './DriverTours'
+import { usesTours } from '../../fleet'
 import './pointage.css'
 
 const CONTINUOUS_LIMIT_SECONDS = 4.5 * 3600 // Art. 7, règlement (CE) 561/2006
@@ -29,6 +31,7 @@ export default function PointagePortal() {
   const navigate = useNavigate()
   const { user, login, logout } = useAuth()
   const isChauffeur = user?.role === 'CHAUFFEUR'
+  const showTours = isChauffeur && usesTours(user)
 
   useEffect(() => {
     // Titre distinct de l'app back-office : utile pour l'onglet et pour
@@ -49,6 +52,21 @@ export default function PointagePortal() {
   const [summary, setSummary] = useState(null)
   const [actionError, setActionError] = useState('')
   const [now, setNow] = useState(Date.now())
+  const [tab, setTab] = useState(() => {
+    try {
+      return localStorage.getItem('fh_driver_tab') || 'service'
+    } catch {
+      return 'service'
+    }
+  })
+  const switchTab = (t) => {
+    setTab(t)
+    try {
+      localStorage.setItem('fh_driver_tab', t)
+    } catch {
+      /* stockage indisponible : onglet non mémorisé */
+    }
+  }
 
   useEffect(() => {
     if (isChauffeur || !urlCode) return
@@ -153,7 +171,22 @@ export default function PointagePortal() {
           </button>
         </header>
 
-        {summary ? (
+        {showTours && (
+        <nav className="ptg-tabs" role="tablist">
+          <button role="tab" aria-selected={tab === 'service'} className={tab === 'service' ? 'active' : ''} onClick={() => switchTab('service')}>
+            ⏱ Mon service
+          </button>
+          <button role="tab" aria-selected={tab === 'tours'} className={tab === 'tours' ? 'active' : ''} onClick={() => switchTab('tours')}>
+            🗺 Ma tournée
+          </button>
+        </nav>
+        )}
+
+        {showTours && tab === 'tours' ? (
+          <div className="ptg-body">
+            <DriverTours />
+          </div>
+        ) : summary ? (
           <div className="ptg-body">
             <span className="ptg-pill active">
               <span className="ptg-pill-dot" /> Service terminé
