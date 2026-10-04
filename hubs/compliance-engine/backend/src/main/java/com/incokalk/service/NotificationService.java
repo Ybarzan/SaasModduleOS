@@ -1,5 +1,6 @@
 package com.incokalk.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.incokalk.dto.notification.NotificationDTO;
 import com.incokalk.dto.notification.NotificationRuleDTO;
@@ -571,7 +572,7 @@ public class NotificationService {
             if (rule.getWebhookSecret() != null && !rule.getWebhookSecret().isBlank()) {
                 String signature = computeHmacSha256(
                         rule.getWebhookSecret(),
-                        new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(payload));
+                        new ObjectMapper().writeValueAsString(payload));
                 headers.set("X-Signature", signature);
             }
 
@@ -585,7 +586,7 @@ public class NotificationService {
 
             log.info("[Webhook] Envoyé à {} avec code {}", rule.getWebhookUrl(),
                     response.getStatusCode().value());
-        } catch (Exception e) {
+        } catch (JsonProcessingException | RuntimeException e) {
             notification.setWebhookStatus("FAILED");
             log.error("[Webhook] Erreur lors de l'envoi vers {}: {}", rule.getWebhookUrl(), e.getMessage(), e);
         }
