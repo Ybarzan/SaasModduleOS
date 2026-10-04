@@ -39,8 +39,26 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     @Value("${app.security.rate-limit.default-limit:60}")
     private int defaultLimit;
 
-    @Value("${app.security.rate-limit.auth-limit:5}")
+    @Value("${app.security.login.rate-limit:5}")
     private int authLimit;
+
+    private final ClientIpResolver clientIpResolver;
+
+    public LoginRateLimitFilter(ClientIpResolver clientIpResolver) {
+        this.clientIpResolver = clientIpResolver;
+    }
+
+    /**
+     * Endpoints GET anonymes (permitAll côté SecurityConfig, protégés uniquement par
+     * l'imprévisibilité d'un code/clé) : exemptés par défaut comme tout GET (voir
+     * shouldNotFilter), donc sans aucune limite de débit sans ceci — un simple flood
+     * reste possible même si le bruteforce de la clé elle-même est infaisable.
+     */
+    private static final String[] PUBLIC_GET_PREFIXES = {
+        "/api/pointage/roster/",
+        "/api/marketplace/availability",
+        "/api/marketplace/vehicle-position"
+    };
 
     @jakarta.annotation.PostConstruct
     void init() {
@@ -51,9 +69,22 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         if (!enabled) return true;
-        if (!"POST".equalsIgnoreCase(request.getMethod())) return true;
         String uri = request.getRequestURI();
-        return !uri.startsWith("/api/") || uri.startsWith("/api/webhooks/");
+        String method = request.getMethod();
+        if ("POST".equalsIgnoreCase(method)) {
+            return !uri.startsWith("/api/") || uri.startsWith("/api/webhooks/");
+        }
+        if ("GET".equalsIgnoreCase(method)) {
+            return !isPublicGetRoute(uri);
+        }
+        return true;
+    }
+
+    private boolean isPublicGetRoute(String uri) {
+        for (String prefix : PUBLIC_GET_PREFIXES) {
+            if (uri.startsWith(prefix)) return true;
+        }
+        return false;
     }
 
     @Override
@@ -62,7 +93,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                                     FilterChain chain) throws ServletException, IOException {
         cleanupIfNeeded();
 
-        String ip = clientIp(request);
+        String ip = clientIpResolver.resolve(request);
         String uri = request.getRequestURI();
         int limit = resolveLimit(uri);
         String key = ip + ":" + resolveRouteKey(uri);
@@ -121,14 +152,6 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                 it.remove();
             }
         }
-    }
-
-    private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
     }
 
     private static final class Counter {

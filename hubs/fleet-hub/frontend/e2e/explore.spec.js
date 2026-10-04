@@ -1,18 +1,13 @@
 import { test, expect } from '@playwright/test'
+import { loginAsAdmin } from './helpers.js'
 
 const desktopOnly = async ({}, testInfo) =>
   test.skip(testInfo.project.name !== 'desktop', 'Couvert par mobile.spec')
 
 test.beforeEach(desktopOnly)
 
-async function login(page) {
-  await page.goto('/login')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: 'Tableau de bord' })).toBeVisible()
-}
-
 test('ouvre la fiche camion depuis la liste des camions', async ({ page }) => {
-  await login(page)
+  await loginAsAdmin(page)
   await page.getByRole('link', { name: /Camions/ }).click()
   await expect(page.getByRole('heading', { name: 'Camions' })).toBeVisible()
 
@@ -23,7 +18,7 @@ test('ouvre la fiche camion depuis la liste des camions', async ({ page }) => {
 })
 
 test('navigue depuis la fiche camion vers les données détaillées', async ({ page }) => {
-  await login(page)
+  await loginAsAdmin(page)
   await page.goto('/trucks')
   await page.locator('tbody tr').first().locator('a.cell-link').click()
   await expect(page).toHaveURL(/\/trucks\/\d+/)
@@ -37,7 +32,7 @@ test('navigue depuis la fiche camion vers les données détaillées', async ({ p
 })
 
 test('clique sur un couple du tableau de bord pour ouvrir le détail', async ({ page }) => {
-  await login(page)
+  await loginAsAdmin(page)
   const row = page.locator('.row-clickable').first()
   await row.click()
   await expect(page).toHaveURL(/\/drivers\/\d+/)
@@ -45,17 +40,21 @@ test('clique sur un couple du tableau de bord pour ouvrir le détail', async ({ 
 })
 
 test('les widgets KPI mènent au classement trié des chauffeurs', async ({ page }) => {
-  await login(page)
+  await loginAsAdmin(page)
   await page.locator('button.kpi-widget-clickable').first().click()
   await expect(page).toHaveURL(/\/drivers\?kpi=/)
   await expect(page.getByText('Effacer le focus')).toBeVisible()
 })
 
 test('les lignes de la carte mènent à la fiche camion', async ({ page }) => {
-  await login(page)
+  await loginAsAdmin(page)
   await page.getByRole('link', { name: /Carte temps réel/ }).click()
   await expect(page.getByRole('heading', { name: 'Carte temps réel' })).toBeVisible()
 
-  await page.locator('.desktop-table tbody tr').first().click()
+  // La cellule chauffeur contient un <Link> imbriqué (stopPropagation) vers
+  // /drivers/:id — cliquer la ligne entière peut atterrir sur ce lien selon
+  // la position du centre. La dernière cellule (lat/lon) n'a aucun lien
+  // imbriqué et déclenche sans ambiguïté le onClick de la ligne (/trucks/:id).
+  await page.locator('.desktop-table tbody tr').first().locator('td').last().click()
   await expect(page).toHaveURL(/\/trucks\/\d+/)
 })

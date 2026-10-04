@@ -30,11 +30,12 @@ export default function Trucks() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
-    return trucks.filter((t) =>
-      (statusFilter === '' || t.currentStatus === statusFilter) &&
-      `${t.brand} ${t.model} ${t.registration} ${t.driverName || ''} ${t.truckType}`
-        .toLowerCase()
-        .includes(q)
+    return trucks.filter(
+      (t) =>
+        (statusFilter === '' || t.currentStatus === statusFilter) &&
+        `${t.brand} ${t.model} ${t.registration} ${t.driverName || ''} ${t.truckType}`
+          .toLowerCase()
+          .includes(q)
     )
   }, [trucks, search, statusFilter])
 
@@ -63,7 +64,10 @@ export default function Trucks() {
           />
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             {STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}{o.value ? ` (${counts[o.value] ?? 0})` : ''}</option>
+              <option key={o.value} value={o.value}>
+                {o.label}
+                {o.value ? ` (${counts[o.value] ?? 0})` : ''}
+              </option>
             ))}
           </select>
         </div>
@@ -71,15 +75,23 @@ export default function Trucks() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      {loading && <div className="loading-spinner" aria-label="Chargement des données…">Chargement…</div>}
+      {loading && (
+        <div className="loading-spinner" aria-label="Chargement des données…">
+          Chargement…
+        </div>
+      )}
 
       <div className="truck-cards">
         {filtered.map((t) => (
           <Link key={t.id} to={`/trucks/${t.id}`} className="truck-card">
             <div className="truck-card-top">
               <div>
-                <strong>{t.brand} {t.model}</strong>
-                <span className="muted block">{t.registration} · {t.modelYear}</span>
+                <strong>
+                  {t.brand} {t.model}
+                </strong>
+                <span className="muted block">
+                  {t.registration} · {t.modelYear}
+                </span>
               </div>
               <StatusBadge status={t.currentStatus} />
             </div>
@@ -103,7 +115,8 @@ export default function Trucks() {
             </div>
             <div className="couple-card-footer">
               <span className="muted">
-                🛰️ {t.lastGpsUpdate ? new Date(t.lastGpsUpdate).toLocaleString('fr-FR') : 'Pas de GPS'}
+                🛰️{' '}
+                {t.lastGpsUpdate ? new Date(t.lastGpsUpdate).toLocaleString('fr-FR') : 'Pas de GPS'}
               </span>
               <span className="link">Détails →</span>
             </div>
@@ -137,26 +150,40 @@ export default function Trucks() {
                 <tr key={t.id}>
                   <td className="cell-strong">
                     <Link to={`/trucks/${t.id}`} className="cell-link">
-                      <strong>{t.brand} {t.model}</strong>
-                      <span className="muted block">{t.registration} · {t.modelYear}</span>
+                      <strong>
+                        {t.brand} {t.model}
+                      </strong>
+                      <span className="muted block">
+                        {t.registration} · {t.modelYear}
+                      </span>
                     </Link>
                   </td>
                   <td>{t.truckType.toLowerCase()}</td>
                   <td>{t.fuelType === 'DIESEL' ? 'Diesel' : 'Électrique'}</td>
-                  <td><StatusBadge status={t.currentStatus} /></td>
+                  <td>
+                    <StatusBadge status={t.currentStatus} />
+                  </td>
                   <td>
                     {t.driverName && t.assignmentId ? (
-                      <Link to={`/drivers/${t.assignmentId}`} className="link">{t.driverName}</Link>
+                      <Link to={`/drivers/${t.assignmentId}`} className="link">
+                        {t.driverName}
+                      </Link>
                     ) : (
                       <span className="muted">Non affecté</span>
                     )}
                   </td>
                   <td>{t.expectedConsumptionL100Km} L/100</td>
-                  <td className="muted">{t.lastGpsUpdate ? new Date(t.lastGpsUpdate).toLocaleString('fr-FR') : '—'}</td>
+                  <td className="muted">
+                    {t.lastGpsUpdate ? new Date(t.lastGpsUpdate).toLocaleString('fr-FR') : '—'}
+                  </td>
                 </tr>
               ))}
               {filtered.length === 0 && !error && (
-                <tr><td colSpan="7" className="table-empty">Aucun camion ne correspond aux filtres</td></tr>
+                <tr>
+                  <td colSpan="7" className="table-empty">
+                    Aucun camion ne correspond aux filtres
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

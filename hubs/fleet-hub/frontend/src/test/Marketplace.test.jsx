@@ -20,7 +20,9 @@ describe('Marketplace page', () => {
 
   it('shows disabled status and lets the admin activate sharing, revealing the key once', async () => {
     mockGet.mockResolvedValue({ data: { marketplaceOptIn: false, marketplaceApiKey: null } })
-    mockPost.mockResolvedValue({ data: { marketplaceOptIn: true, marketplaceApiKey: 'abc123def456' } })
+    mockPost.mockResolvedValue({
+      data: { marketplaceOptIn: true, marketplaceApiKey: 'abc123def456' }
+    })
     const user = userEvent.setup()
     render(<Marketplace />)
 
@@ -59,6 +61,8 @@ describe('Marketplace page', () => {
     mockGet.mockRejectedValue(new Error('network error'))
     render(<Marketplace />)
 
-    expect(await screen.findByText('Impossible de charger le statut du partage')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Impossible de charger le statut du partage')
+    ).toBeInTheDocument()
   })
 })

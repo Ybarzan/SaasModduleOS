@@ -19,7 +19,12 @@ const SORTABLE = [
   { key: 'costPerKm', label: 'Coût/km', accessor: (c) => c.costPerKm, dir: 'asc' },
   { key: 'utilization', label: 'Utilisation', accessor: (c) => c.utilizationRate, dir: 'desc' },
   { key: 'eco', label: 'Éco-conduite', accessor: (c) => c.ecoScore, dir: 'desc' },
-  { key: 'compliance', label: 'Conformité', accessor: (c) => c.drivingTimeComplianceRate, dir: 'desc' },
+  {
+    key: 'compliance',
+    label: 'Conformité',
+    accessor: (c) => c.drivingTimeComplianceRate,
+    dir: 'desc'
+  },
   { key: 'conso', label: 'Conso', accessor: (c) => c.consumptionPer100Km, dir: 'asc' },
   { key: 'events', label: 'Événements', accessor: (c) => c.riskEventsTotal, dir: 'asc' }
 ]
@@ -106,12 +111,18 @@ export default function Drivers() {
 
       {error && <div className="alert alert-error">{error}</div>}
 
-      {loading && <div className="loading-spinner" aria-label="Chargement des données…">Chargement…</div>}
+      {loading && (
+        <div className="loading-spinner" aria-label="Chargement des données…">
+          Chargement…
+        </div>
+      )}
 
       {focusMeta && (
         <div className="alert alert-info">
           Focus : <strong>{focusMeta.label}</strong> — classement trié (le meilleur en premier).
-          <Link to="/drivers" className="alert-close">✕ Effacer le focus</Link>
+          <Link to="/drivers" className="alert-close">
+            ✕ Effacer le focus
+          </Link>
         </div>
       )}
 
@@ -187,7 +198,8 @@ export default function Drivers() {
                     className={sortKey === s.key ? 'th-sorted' : 'th-sortable'}
                     onClick={() => toggleSort(s.key)}
                   >
-                    {s.label}{sortArrow(s.key)}
+                    {s.label}
+                    {sortArrow(s.key)}
                   </th>
                 ))}
               </tr>
@@ -200,14 +212,24 @@ export default function Drivers() {
                   onClick={() => navigate(`/drivers/${c.assignmentId}`)}
                 >
                   <td>
-                    <Link to={`/drivers/${c.assignmentId}`} className="cell-link" onClick={(e) => e.stopPropagation()}>
+                    <Link
+                      to={`/drivers/${c.assignmentId}`}
+                      className="cell-link"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <strong>{c.driverName}</strong>
                       <span className="muted block">{c.licenseNumber}</span>
                     </Link>
                   </td>
                   <td>
-                    <Link to={`/trucks/${c.truckId}`} className="cell-link" onClick={(e) => e.stopPropagation()}>
-                      <strong>{c.brand} {c.model}</strong>
+                    <Link
+                      to={`/trucks/${c.truckId}`}
+                      className="cell-link"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <strong>
+                        {c.brand} {c.model}
+                      </strong>
                       <span className="muted block">{c.registration}</span>
                     </Link>
                   </td>

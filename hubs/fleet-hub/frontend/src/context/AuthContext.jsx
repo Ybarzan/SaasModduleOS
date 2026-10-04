@@ -51,7 +51,11 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     clearInterval(refreshTimer.current)
-    try { await api.post('/auth/logout') } catch { /* best effort */ }
+    try {
+      await api.post('/auth/logout')
+    } catch {
+      /* best effort */
+    }
     localStorage.removeItem('fh_token')
     localStorage.removeItem('fh_user')
     setUser(null)

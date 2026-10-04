@@ -273,7 +273,7 @@
                     <environmentVariables>
                         <DB_URL>jdbc:postgresql://localhost:5432/incokalk</DB_URL>
                         <DB_USER>incokalk</DB_USER>
-                        <DB_PASSWORD>incokalk_dev_2026</DB_PASSWORD>
+                        <DB_PASSWORD>${env.DB_PASSWORD}</DB_PASSWORD>
                         <REDIS_HOST>localhost</REDIS_HOST>
                         <REDIS_PORT>6379</REDIS_PORT>
                         <REDIS_PASSWORD></REDIS_PASSWORD>

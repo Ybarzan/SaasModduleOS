@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Slf4j
 @Configuration
@@ -72,15 +73,21 @@ public class SecurityConfig {
 
   private static final String[] PUBLIC_DEV_ONLY = {
     "/h2-console/**",
-    "/swagger-ui/**", "/v3/api-docs/**"
+    // springdoc.api-docs.path est surchargé à /api-docs dans application.yml
+    // (pas le /v3/api-docs par défaut) -- swagger-ui.html ne peut pas charger
+    // le JSON OpenAPI sans que ce chemin corresponde au vrai chemin configuré.
+    "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**"
   };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         boolean isDev = Arrays.asList(environment.getActiveProfiles()).contains("dev");
-        String[] publicEndpoints = isDev ? PUBLIC : Arrays.stream(PUBLIC)
-            .filter(p -> !Arrays.asList(PUBLIC_DEV_ONLY).contains(p))
-            .toArray(String[]::new);
+        // PUBLIC_DEV_ONLY (h2-console/swagger-ui) n'a jamais fait partie de PUBLIC :
+        // il doit être ajouté en dev, pas filtré hors de PUBLIC (qui ne l'a jamais
+        // contenu) — l'ancienne logique ne l'exposait donc jamais, y compris en dev.
+        String[] publicEndpoints = isDev
+            ? Stream.concat(Arrays.stream(PUBLIC), Arrays.stream(PUBLIC_DEV_ONLY)).toArray(String[]::new)
+            : PUBLIC;
 
         http
             .csrf(AbstractHttpConfigurer::disable)

@@ -1,0 +1,11 @@
+# Dépendances de test unitaire uniquement — jamais installées dans l'image
+# Docker (voir Dockerfile, qui n'installe que requirements.txt).
+#
+# Ne réinclut délibérément PAS requirements.txt (sentence-transformers/torch) :
+# les tests dans tests/ mockent le modèle (voir conftest.py) pour ne pas avoir
+# à télécharger ~500 Mo depuis huggingface.co ni installer torch juste pour
+# valider la logique des endpoints. fastapi est donc listé ici explicitement,
+# à la même version que requirements.txt.
+fastapi==0.115.6
+pytest==8.3.4
+httpx==0.28.1

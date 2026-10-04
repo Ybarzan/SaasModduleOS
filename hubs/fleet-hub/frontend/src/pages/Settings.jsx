@@ -34,7 +34,7 @@ export default function Settings() {
       setSecret(res.data.secret)
       setStep('scan')
     } catch (err) {
-      setError(err.response?.data?.message || 'Erreur lors de l\'initialisation')
+      setError(err.response?.data?.message || "Erreur lors de l'initialisation")
     } finally {
       setLoading(false)
     }
@@ -95,9 +95,9 @@ export default function Settings() {
             <h3>Portail chauffeur</h3>
           </div>
           <p className="muted" style={{ marginBottom: '1rem' }}>
-            Donnez ce lien à vos chauffeurs (à ajouter à leurs favoris ou en raccourci sur l'écran d'accueil).
-            Ils choisissent leur nom et entrent leur code à 4 chiffres — voir « Code portail » dans Saisie › Chauffeurs
-            pour en attribuer un.
+            Donnez ce lien à vos chauffeurs (à ajouter à leurs favoris ou en raccourci sur l'écran
+            d'accueil). Ils choisissent leur nom et entrent leur code à 4 chiffres — voir « Code
+            portail » dans Saisie › Chauffeurs pour en attribuer un.
           </p>
           <div className="row-actions">
             <input
@@ -109,7 +109,11 @@ export default function Settings() {
             <button
               type="button"
               className="btn btn-outline btn-sm"
-              onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/pointage/${user.companyAccessCode}`)}
+              onClick={() =>
+                navigator.clipboard?.writeText(
+                  `${window.location.origin}/pointage/${user.companyAccessCode}`
+                )
+              }
             >
               Copier
             </button>
@@ -125,8 +129,8 @@ export default function Settings() {
           </span>
         </div>
         <p className="muted" style={{ marginBottom: '1rem' }}>
-          Protégez votre compte avec une seconde couche d'authentification via une application
-          comme Google Authenticator, Authy ou Microsoft Authenticator.
+          Protégez votre compte avec une seconde couche d'authentification via une application comme
+          Google Authenticator, Authy ou Microsoft Authenticator.
         </p>
 
         {error && <div className="alert alert-error">{error}</div>}
@@ -184,24 +188,45 @@ export default function Settings() {
                 {secret}
               </code>
             </details>
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.5rem',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
               <input
                 className="form-input"
                 placeholder="Code à 6 chiffres"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 maxLength={6}
-                style={{ maxWidth: '160px', textAlign: 'center', fontSize: '1.2rem', letterSpacing: '0.3em' }}
+                style={{
+                  maxWidth: '160px',
+                  textAlign: 'center',
+                  fontSize: '1.2rem',
+                  letterSpacing: '0.3em'
+                }}
                 onKeyDown={(e) => e.key === 'Enter' && handleEnable()}
               />
-              <button className="btn btn-primary" onClick={handleEnable} disabled={loading || code.length < 6}>
+              <button
+                className="btn btn-primary"
+                onClick={handleEnable}
+                disabled={loading || code.length < 6}
+              >
                 Vérifier et activer
               </button>
             </div>
             <button
               className="btn btn-outline"
               style={{ marginTop: '1rem' }}
-              onClick={() => { setStep('idle'); setCode(''); setOtpUri(''); setSecret('') }}
+              onClick={() => {
+                setStep('idle')
+                setCode('')
+                setOtpUri('')
+                setSecret('')
+              }}
             >
               Annuler
             </button>
@@ -213,24 +238,43 @@ export default function Settings() {
             <p style={{ marginBottom: '1rem' }}>
               Entrez un code TOTP pour confirmer la désactivation :
             </p>
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', alignItems: 'center' }}>
+            <div
+              style={{
+                display: 'flex',
+                gap: '0.5rem',
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+            >
               <input
                 className="form-input"
                 placeholder="Code à 6 chiffres"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 maxLength={6}
-                style={{ maxWidth: '160px', textAlign: 'center', fontSize: '1.2rem', letterSpacing: '0.3em' }}
+                style={{
+                  maxWidth: '160px',
+                  textAlign: 'center',
+                  fontSize: '1.2rem',
+                  letterSpacing: '0.3em'
+                }}
                 onKeyDown={(e) => e.key === 'Enter' && handleDisable()}
               />
-              <button className="btn btn-danger" onClick={handleDisable} disabled={loading || code.length < 6}>
+              <button
+                className="btn btn-danger"
+                onClick={handleDisable}
+                disabled={loading || code.length < 6}
+              >
                 Désactiver
               </button>
             </div>
             <button
               className="btn btn-outline"
               style={{ marginTop: '1rem' }}
-              onClick={() => { setStep('idle'); setCode('') }}
+              onClick={() => {
+                setStep('idle')
+                setCode('')
+              }}
             >
               Annuler
             </button>
@@ -242,22 +286,33 @@ export default function Settings() {
         <div className="card-title">
           <h3>Informations du compte</h3>
         </div>
-        <div className="data-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+        <div
+          className="data-grid"
+          style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}
+        >
           <div className="stat-card">
             <span className="stat-label">Utilisateur</span>
-            <span className="stat-value" style={{ fontSize: '1rem' }}>{user?.displayName || user?.username}</span>
+            <span className="stat-value" style={{ fontSize: '1rem' }}>
+              {user?.displayName || user?.username}
+            </span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Email</span>
-            <span className="stat-value" style={{ fontSize: '1rem' }}>{user?.email || '—'}</span>
+            <span className="stat-value" style={{ fontSize: '1rem' }}>
+              {user?.email || '—'}
+            </span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Rôle</span>
-            <span className="stat-value" style={{ fontSize: '1rem' }}>{user?.role}</span>
+            <span className="stat-value" style={{ fontSize: '1rem' }}>
+              {user?.role}
+            </span>
           </div>
           <div className="stat-card">
             <span className="stat-label">Société</span>
-            <span className="stat-value" style={{ fontSize: '1rem' }}>{user?.companyName || '—'}</span>
+            <span className="stat-value" style={{ fontSize: '1rem' }}>
+              {user?.companyName || '—'}
+            </span>
           </div>
         </div>
       </div>

@@ -24,7 +24,8 @@ if (SENTRY_DSN) {
       const t = event.exception?.values?.[0]
       if (!t) return event
       if (t.type === 'ChunkLoadError') return null
-      if (t.type === 'TypeError' && /failed to fetch|networkerror|load failed/i.test(t.value || '')) return null
+      if (t.type === 'TypeError' && /failed to fetch|networkerror|load failed/i.test(t.value || ''))
+        return null
       return event
     }
   })
@@ -58,10 +59,40 @@ window.__fhHaptics = {
 }
 
 const CrashFallback = () => (
-  <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, background: '#14100C', color: '#E8E1D2', fontFamily: '"JetBrains Mono", monospace', textAlign: 'center', padding: 24 }}>
-    <div style={{ fontSize: 28, fontWeight: 700, fontFamily: '"JetBrains Mono", monospace' }}>Oups, un écran a planté.</div>
-    <div style={{ color: '#CFC5B2' }}>Rechargez la page pour continuer. L'erreur a été enregistrée si la supervision est active.</div>
-    <button onClick={() => window.location.reload()} style={{ marginTop: 8, padding: '10px 20px', borderRadius: 0, border: '1px solid #362C22', background: '#1C1712', color: '#E8E1D2', cursor: 'pointer', fontFamily: '"JetBrains Mono", monospace' }}>
+  <div
+    style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+      background: '#14100C',
+      color: '#E8E1D2',
+      fontFamily: '"JetBrains Mono", monospace',
+      textAlign: 'center',
+      padding: 24
+    }}
+  >
+    <div style={{ fontSize: 28, fontWeight: 700, fontFamily: '"JetBrains Mono", monospace' }}>
+      Oups, un écran a planté.
+    </div>
+    <div style={{ color: '#CFC5B2' }}>
+      Rechargez la page pour continuer. L'erreur a été enregistrée si la supervision est active.
+    </div>
+    <button
+      onClick={() => window.location.reload()}
+      style={{
+        marginTop: 8,
+        padding: '10px 20px',
+        borderRadius: 0,
+        border: '1px solid #362C22',
+        background: '#1C1712',
+        color: '#E8E1D2',
+        cursor: 'pointer',
+        fontFamily: '"JetBrains Mono", monospace'
+      }}
+    >
       Recharger
     </button>
   </div>

@@ -10,14 +10,35 @@ const TYPE_LABEL = {
 }
 
 const RULE_META = {
-  MAINTENANCE_ECHEANCE: { label: 'Entretien à échéance', unit: 'jours avant échéance', desc: 'Alerte si un entretien planifié arrive à échéance sous ce délai.' },
-  TACHYGRAPHIE_NON_CONFORME: { label: 'Non-conformité tachygraphe', unit: '', desc: 'Alerte dès qu’un jour non conforme est détecté (règlement 561/2006).' },
-  TEMPS_CONDUITE: { label: 'Temps de conduite', unit: 'h / 7 jours', desc: 'Alerte si le temps de conduite hebdomadaire dépasse ce seuil.' },
-  USAGE_ANORMAL: { label: 'Usage anormal', unit: '', desc: 'Alerte en cas d’événement grave (freinage brusque, excès de vitesse…).' },
-  PAIEMENT: { label: 'Paiement', unit: '', desc: 'Alerte en cas d’échec de paiement de l’abonnement.' }
+  MAINTENANCE_ECHEANCE: {
+    label: 'Entretien à échéance',
+    unit: 'jours avant échéance',
+    desc: 'Alerte si un entretien planifié arrive à échéance sous ce délai.'
+  },
+  TACHYGRAPHIE_NON_CONFORME: {
+    label: 'Non-conformité tachygraphe',
+    unit: '',
+    desc: 'Alerte dès qu’un jour non conforme est détecté (règlement 561/2006).'
+  },
+  TEMPS_CONDUITE: {
+    label: 'Temps de conduite',
+    unit: 'h / 7 jours',
+    desc: 'Alerte si le temps de conduite hebdomadaire dépasse ce seuil.'
+  },
+  USAGE_ANORMAL: {
+    label: 'Usage anormal',
+    unit: '',
+    desc: 'Alerte en cas d’événement grave (freinage brusque, excès de vitesse…).'
+  },
+  PAIEMENT: {
+    label: 'Paiement',
+    unit: '',
+    desc: 'Alerte en cas d’échec de paiement de l’abonnement.'
+  }
 }
 
-const fmtDate = (s) => (s ? new Date(s).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—')
+const fmtDate = (s) =>
+  s ? new Date(s).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—'
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([])
@@ -28,10 +49,7 @@ export default function Notifications() {
   const [scanning, setScanning] = useState(false)
 
   const load = () =>
-    Promise.all([
-      api.get('/notifications'),
-      api.get('/notifications/rules')
-    ])
+    Promise.all([api.get('/notifications'), api.get('/notifications/rules')])
       .then(([n, r]) => {
         setNotifications(n.data)
         setRules(r.data)
@@ -73,7 +91,9 @@ export default function Notifications() {
 
   const markAllRead = async () => {
     try {
-      await Promise.all(notifications.filter((n) => !n.read).map((n) => api.patch(`/notifications/${n.id}/read`)))
+      await Promise.all(
+        notifications.filter((n) => !n.read).map((n) => api.patch(`/notifications/${n.id}/read`))
+      )
       setNotifications((list) => list.map((n) => ({ ...n, read: true })))
     } catch {
       setError('Impossible de marquer les notifications comme lues')
@@ -98,7 +118,8 @@ export default function Notifications() {
   }
 
   const toggleRule = (rule) => saveRule({ ...rule, enabled: !rule.enabled })
-  const changeThreshold = (rule, threshold) => saveRule({ ...rule, threshold: threshold === '' ? null : Number(threshold) })
+  const changeThreshold = (rule, threshold) =>
+    saveRule({ ...rule, threshold: threshold === '' ? null : Number(threshold) })
 
   const unread = notifications.filter((n) => !n.read).length
 
@@ -221,7 +242,9 @@ export default function Notifications() {
       <div className="card">
         <div className="card-title">
           <h3>Règles d’alerte</h3>
-          <span className="muted">Chaque règle génère au maximum une alerte par entité et par type sur 24 h</span>
+          <span className="muted">
+            Chaque règle génère au maximum une alerte par entité et par type sur 24 h
+          </span>
         </div>
         <div className="table-scroll">
           <table className="table">
@@ -236,7 +259,8 @@ export default function Notifications() {
             <tbody>
               {rules.map((r) => {
                 const meta = RULE_META[r.type] || { label: r.type, unit: '', desc: '' }
-                const hasThreshold = r.type === 'MAINTENANCE_ECHEANCE' || r.type === 'TEMPS_CONDUITE'
+                const hasThreshold =
+                  r.type === 'MAINTENANCE_ECHEANCE' || r.type === 'TEMPS_CONDUITE'
                 return (
                   <tr key={r.id}>
                     <td>

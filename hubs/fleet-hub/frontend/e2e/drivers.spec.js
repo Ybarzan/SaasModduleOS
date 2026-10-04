@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { loginAsAdmin } from './helpers.js'
 
 const desktopOnly = async ({}, testInfo) =>
   test.skip(testInfo.project.name !== 'desktop', 'Couvert par mobile.spec')
@@ -6,9 +7,7 @@ const desktopOnly = async ({}, testInfo) =>
 test.beforeEach(desktopOnly)
 
 async function openDrivers(page) {
-  await page.goto('/login')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
-  await expect(page.getByRole('heading', { name: 'Tableau de bord' })).toBeVisible()
+  await loginAsAdmin(page)
   await page.getByRole('link', { name: /Chauffeurs/ }).click()
   await expect(page.getByRole('heading', { name: 'Chauffeurs' })).toBeVisible()
 }

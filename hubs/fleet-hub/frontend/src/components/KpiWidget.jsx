@@ -1,10 +1,38 @@
 import { Area, AreaChart, ResponsiveContainer } from 'recharts'
 
 const CONFIG = {
-  costPerKm: { label: 'Coût au kilomètre', unit: '€/km', icon: '⛽', goodDown: true, good: 0.95, mid: 1.15 },
-  utilization: { label: "Taux d'utilisation", unit: '%', icon: '⏱', goodDown: false, good: 65, mid: 50 },
-  maintenance: { label: 'Conformité maintenance', unit: '%', icon: '⚙', goodDown: false, good: 90, mid: 75 },
-  downtime: { label: 'Indisponibilité imprévue', unit: '%', icon: '⛔', goodDown: true, good: 5, mid: 10 }
+  costPerKm: {
+    label: 'Coût au kilomètre',
+    unit: '€/km',
+    icon: '⛽',
+    goodDown: true,
+    good: 0.95,
+    mid: 1.15
+  },
+  utilization: {
+    label: "Taux d'utilisation",
+    unit: '%',
+    icon: '⏱',
+    goodDown: false,
+    good: 65,
+    mid: 50
+  },
+  maintenance: {
+    label: 'Conformité maintenance',
+    unit: '%',
+    icon: '⚙',
+    goodDown: false,
+    good: 90,
+    mid: 75
+  },
+  downtime: {
+    label: 'Indisponibilité imprévue',
+    unit: '%',
+    icon: '⛔',
+    goodDown: true,
+    good: 5,
+    mid: 10
+  }
 }
 
 const STATUS = {
@@ -17,7 +45,7 @@ function statusOf(key, value) {
   const cfg = CONFIG[key]
   const hit = (v) => (cfg.goodDown ? v <= cfg.good : v >= cfg.good)
   if (hit(value)) return 'good'
-  return cfg.goodDown ? (value <= cfg.mid ? 'mid' : 'bad') : (value >= cfg.mid ? 'mid' : 'bad')
+  return cfg.goodDown ? (value <= cfg.mid ? 'mid' : 'bad') : value >= cfg.mid ? 'mid' : 'bad'
 }
 
 export default function KpiWidget({ widget, onClick }) {

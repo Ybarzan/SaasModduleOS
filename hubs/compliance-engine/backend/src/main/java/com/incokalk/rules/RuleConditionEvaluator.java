@@ -93,6 +93,9 @@ public class RuleConditionEvaluator {
     }
 
     private boolean compareNumeric(String actual, String expected, String operator) {
+        if (actual == null || expected == null) {
+            return false;
+        }
         try {
             double a = Double.parseDouble(actual);
             double e = Double.parseDouble(expected);
@@ -103,7 +106,7 @@ public class RuleConditionEvaluator {
                 case "LTE" -> a <= e;
                 default -> false;
             };
-        } catch (NumberFormatException | NullPointerException ex) {
+        } catch (NumberFormatException ex) {
             return false;
         }
     }

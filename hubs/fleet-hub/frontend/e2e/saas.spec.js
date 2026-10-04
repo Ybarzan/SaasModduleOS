@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { loginAsAdmin } from './helpers.js'
 
 const desktopOnly = async ({}, testInfo) =>
   test.skip(testInfo.project.name !== 'desktop', 'Couvert par mobile.spec')
@@ -32,13 +33,10 @@ test('le back-office plateforme liste les sociétés pour saasadmin', async ({ p
   await page.getByRole('link', { name: 'Administration' }).click()
   await expect(page).toHaveURL(/\/admin/)
   await expect(page.getByRole('heading', { name: 'Back-office plateforme' })).toBeVisible()
-  await expect(page.getByText('Fleet Hub Démo')).toBeVisible()
+  await expect(page.getByText('Fleet Hub Démo').first()).toBeVisible()
 })
 
 test('un administrateur de société ne voit pas l’accès au back-office', async ({ page }) => {
-  await page.goto('/login')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
-
-  await expect(page.getByRole('heading', { name: 'Tableau de bord' })).toBeVisible()
+  await loginAsAdmin(page)
   await expect(page.getByRole('link', { name: 'Administration' })).toHaveCount(0)
 })

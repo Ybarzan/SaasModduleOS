@@ -27,6 +27,8 @@
 #   REPO_BRANCH    branche à déployer (défaut : main)
 #   ADMIN_PASSWORD mot de passe des comptes saasadmin/admin (généré si absent)
 #   GESTIONNAIRE_PASSWORD mot de passe du compte gestionnaire (généré si absent)
+#   APP_SEED_ENABLED données de démo au premier démarrage (défaut : true seulement
+#                    si DOMAIN=localhost, false pour tout domaine public réel)
 
 set -euo pipefail
 
@@ -76,6 +78,13 @@ if [ ! -f "$ENV_FILE" ]; then
   JWT_SECRET="$(openssl rand -hex 64)"
   INTEGRATION_SECRET_KEY="$(openssl rand -base64 32 | tr -d '/+=')"
   INTEGRATION_WEBHOOK_API_KEY="$(openssl rand -hex 24)"
+  # Démo activée seulement pour un déploiement local sans domaine public : un
+  # vrai domaine client ne doit jamais recevoir de données de démo par défaut.
+  if [ "$DOMAIN" = "localhost" ]; then
+    APP_SEED_ENABLED="${APP_SEED_ENABLED:-true}"
+  else
+    APP_SEED_ENABLED="${APP_SEED_ENABLED:-false}"
+  fi
 
   cat > "$ENV_FILE" <<EOF
 APP_DOMAIN=$DOMAIN
@@ -88,8 +97,9 @@ ADMIN_PASSWORD=$ADMIN_PASSWORD
 GESTIONNAIRE_PASSWORD=$GESTIONNAIRE_PASSWORD
 APP_LOGIN_RATE_LIMIT=10
 # Données de démonstration (admin + société démo avec données) au premier démarrage.
-# Mettre à false pour une production sans données de démo.
-APP_SEED_ENABLED=true
+# true seulement en local (DOMAIN=localhost) ; false par défaut pour tout domaine
+# public réel — éditer manuellement si un vrai déploiement a besoin de données de démo.
+APP_SEED_ENABLED=$APP_SEED_ENABLED
 INTEGRATION_SECRET_KEY=$INTEGRATION_SECRET_KEY
 INTEGRATION_WEBHOOK_API_KEY=$INTEGRATION_WEBHOOK_API_KEY
 # --- À compléter vous-même selon vos besoins (voir .env.example) ---

@@ -1,8 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Cell, PieChart, Pie, Legend, CartesianGrid
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
+  PieChart,
+  Pie,
+  Legend,
+  CartesianGrid
 } from 'recharts'
 import api from '../services/api'
 import PeriodSelector from '../components/PeriodSelector'
@@ -23,7 +34,15 @@ const EVENT_LABELS = {
   RALENTI: 'Ralenti'
 }
 
-const COST_COLORS = ['var(--primary)', 'var(--orange)', 'var(--primary-2)', 'var(--green)', 'var(--red)', 'var(--primary-3)', 'var(--purple)']
+const COST_COLORS = [
+  'var(--primary)',
+  'var(--orange)',
+  'var(--primary-2)',
+  'var(--green)',
+  'var(--red)',
+  'var(--primary-3)',
+  'var(--purple)'
+]
 
 const TAB_TRIPS = 'trips'
 const TAB_TACHO = 'tacho'
@@ -35,7 +54,8 @@ function periodRange(period) {
   if (period === 'WEEK') from.setDate(from.getDate() - 7)
   else if (period === 'MONTH') from.setMonth(from.getMonth() - 1)
   const pad = (n) => String(n).padStart(2, '0')
-  const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  const iso = (d) =>
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
   return { from: iso(from), to: iso(now) }
 }
 
@@ -65,13 +85,27 @@ export default function DriverDetail() {
     if (!driverId) return
     const range = periodRange(period)
     const params = { driverId, from: range.from, to: range.to }
-    api.get('/trips', { params }).then((res) => setTrips(res.data)).catch((err) => console.error('Failed to load trips:', err))
-    api.get('/tachograph-days', { params }).then((res) => setTacho(res.data)).catch((err) => console.error('Failed to load tachograph:', err))
-    api.get('/driving-events', { params }).then((res) => setEvents(res.data)).catch((err) => console.error('Failed to load events:', err))
+    api
+      .get('/trips', { params })
+      .then((res) => setTrips(res.data))
+      .catch((err) => console.error('Failed to load trips:', err))
+    api
+      .get('/tachograph-days', { params })
+      .then((res) => setTacho(res.data))
+      .catch((err) => console.error('Failed to load tachograph:', err))
+    api
+      .get('/driving-events', { params })
+      .then((res) => setEvents(res.data))
+      .catch((err) => console.error('Failed to load events:', err))
   }, [driverId, period])
 
   if (error) return <div className="alert alert-error">{error}</div>
-  if (loading) return <div className="loading-spinner" aria-label="Chargement du détail…">Chargement…</div>
+  if (loading)
+    return (
+      <div className="loading-spinner" aria-label="Chargement du détail…">
+        Chargement…
+      </div>
+    )
   if (!detail) return null
 
   const k = detail.kpis
@@ -90,11 +124,16 @@ export default function DriverDetail() {
     <div>
       <div className="page-header">
         <div>
-          <Link to="/drivers" className="link">← Retour aux chauffeurs</Link>
+          <Link to="/drivers" className="link">
+            ← Retour aux chauffeurs
+          </Link>
           <h2>{k.driverName}</h2>
           <p className="muted">
-            <Link to={`/trucks/${k.truckId}`} className="link">🚛 {k.brand} {k.model} · {k.registration}</Link>
-            {' · '}{k.fuelType} · licence {k.licenseNumber}
+            <Link to={`/trucks/${k.truckId}`} className="link">
+              🚛 {k.brand} {k.model} · {k.registration}
+            </Link>
+            {' · '}
+            {k.fuelType} · licence {k.licenseNumber}
           </p>
         </div>
         <PeriodSelector value={period} onChange={setPeriod} />
@@ -104,7 +143,9 @@ export default function DriverDetail() {
         <div className="alert alert-warning">
           <strong>Alertes ({k.alerts.length}) :</strong>
           <ul>
-            {k.alerts.map((a, i) => <li key={i}>{a}</li>)}
+            {k.alerts.map((a, i) => (
+              <li key={i}>{a}</li>
+            ))}
           </ul>
         </div>
       )}
@@ -112,10 +153,34 @@ export default function DriverDetail() {
       <div className="detail-hero">
         <ScoreGauge score={k.performanceScore} size={150} />
         <div className="detail-northstar">
-          <StatCard label="Coût au km" value={k.costPerKm.toFixed(2)} unit="€" icon="💰" tone="blue" />
-          <StatCard label="Utilisation" value={k.utilizationRate.toFixed(0)} unit="%" icon="⏱️" tone="green" />
-          <StatCard label="Maintenance" value={k.maintenanceComplianceRate.toFixed(0)} unit="%" icon="🔧" tone="purple" />
-          <StatCard label="Downtime imprévu" value={k.unplannedDowntimeRate.toFixed(1)} unit="%" icon="⚠️" tone="red" />
+          <StatCard
+            label="Coût au km"
+            value={k.costPerKm.toFixed(2)}
+            unit="€"
+            icon="💰"
+            tone="blue"
+          />
+          <StatCard
+            label="Utilisation"
+            value={k.utilizationRate.toFixed(0)}
+            unit="%"
+            icon="⏱️"
+            tone="green"
+          />
+          <StatCard
+            label="Maintenance"
+            value={k.maintenanceComplianceRate.toFixed(0)}
+            unit="%"
+            icon="🔧"
+            tone="purple"
+          />
+          <StatCard
+            label="Downtime imprévu"
+            value={k.unplannedDowntimeRate.toFixed(1)}
+            unit="%"
+            icon="⚠️"
+            tone="red"
+          />
         </div>
       </div>
 
@@ -123,26 +188,77 @@ export default function DriverDetail() {
         <div className="card">
           <h3>🧑‍✈️ Conduite (chauffeur)</h3>
           <div className="kpi-grid">
-            <div className="kpi-item"><span>Événements à risque</span><b>{k.riskEventsTotal}</b><small>pour {Math.round(k.totalKm)} km</small></div>
-            <div className="kpi-item"><span>Risque / 1000 km</span><b>{k.riskEventsPer1000Km}</b></div>
-            <div className="kpi-item"><span>Éco-conduite</span><b>{k.ecoScore.toFixed(0)}</b><small>score</small></div>
-            <div className="kpi-item"><span>Temps de roulage</span><b>{k.driveTimeShare.toFixed(0)}%</b></div>
-            <div className="kpi-item"><span>Ralenti</span><b>{k.idleShare.toFixed(1)}%</b></div>
-            <div className="kpi-item"><span>Ponctualité</span><b>{k.onTimeRate.toFixed(0)}%</b></div>
-            <div className="kpi-item"><span>Conformité 561/2006</span><b>{k.drivingTimeComplianceRate.toFixed(0)}%</b></div>
+            <div className="kpi-item">
+              <span>Événements à risque</span>
+              <b>{k.riskEventsTotal}</b>
+              <small>pour {Math.round(k.totalKm)} km</small>
+            </div>
+            <div className="kpi-item">
+              <span>Risque / 1000 km</span>
+              <b>{k.riskEventsPer1000Km}</b>
+            </div>
+            <div className="kpi-item">
+              <span>Éco-conduite</span>
+              <b>{k.ecoScore.toFixed(0)}</b>
+              <small>score</small>
+            </div>
+            <div className="kpi-item">
+              <span>Temps de roulage</span>
+              <b>{k.driveTimeShare.toFixed(0)}%</b>
+            </div>
+            <div className="kpi-item">
+              <span>Ralenti</span>
+              <b>{k.idleShare.toFixed(1)}%</b>
+            </div>
+            <div className="kpi-item">
+              <span>Ponctualité</span>
+              <b>{k.onTimeRate.toFixed(0)}%</b>
+            </div>
+            <div className="kpi-item">
+              <span>Conformité 561/2006</span>
+              <b>{k.drivingTimeComplianceRate.toFixed(0)}%</b>
+            </div>
           </div>
         </div>
 
         <div className="card">
           <h3>🚛 Camion</h3>
           <div className="kpi-grid">
-            <div className="kpi-item"><span>Consommation</span><b>{k.consumptionPer100Km.toFixed(1)} L</b><small>/100km</small></div>
-            <div className="kpi-item"><span>Dérive conso</span><b className={k.consumptionDeltaPct > 10 ? 'text-danger' : ''}>{k.consumptionDeltaPct > 0 ? '+' : ''}{k.consumptionDeltaPct.toFixed(0)}%</b><small>vs référence</small></div>
-            <div className="kpi-item"><span>Disponibilité</span><b>{k.truckUptimeRate.toFixed(0)}%</b><small>uptime</small></div>
-            <div className="kpi-item"><span>Immobilisation imprévue</span><b>{k.unplannedDowntimeHours} h</b></div>
-            <div className="kpi-item"><span>Km en charge</span><b>{k.loadedRunRate.toFixed(0)}%</b><small>chargé</small></div>
-            <div className="kpi-item"><span>Coût total</span><b>{k.totalCost.toLocaleString('fr-FR')} €</b></div>
-            <div className="kpi-item"><span>Heures de roulage</span><b>{k.totalDrivingHours.toFixed(0)} h</b></div>
+            <div className="kpi-item">
+              <span>Consommation</span>
+              <b>{k.consumptionPer100Km.toFixed(1)} L</b>
+              <small>/100km</small>
+            </div>
+            <div className="kpi-item">
+              <span>Dérive conso</span>
+              <b className={k.consumptionDeltaPct > 10 ? 'text-danger' : ''}>
+                {k.consumptionDeltaPct > 0 ? '+' : ''}
+                {k.consumptionDeltaPct.toFixed(0)}%
+              </b>
+              <small>vs référence</small>
+            </div>
+            <div className="kpi-item">
+              <span>Disponibilité</span>
+              <b>{k.truckUptimeRate.toFixed(0)}%</b>
+              <small>uptime</small>
+            </div>
+            <div className="kpi-item">
+              <span>Immobilisation imprévue</span>
+              <b>{k.unplannedDowntimeHours} h</b>
+            </div>
+            <div className="kpi-item">
+              <span>Km en charge</span>
+              <b>{k.loadedRunRate.toFixed(0)}%</b>
+              <small>chargé</small>
+            </div>
+            <div className="kpi-item">
+              <span>Coût total</span>
+              <b>{k.totalCost.toLocaleString('fr-FR')} €</b>
+            </div>
+            <div className="kpi-item">
+              <span>Heures de roulage</span>
+              <b>{k.totalDrivingHours.toFixed(0)} h</b>
+            </div>
           </div>
         </div>
       </div>
@@ -154,13 +270,55 @@ export default function DriverDetail() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trend} margin={{ top: 10, right: 8, left: -14, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" />
-                <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--muted)' }} interval="preserveStartEnd" minTickGap={28} stroke="var(--border-strong)" />
-                <YAxis yAxisId="km" tick={{ fontSize: 11, fill: 'var(--muted)' }} stroke="var(--border-strong)" />
-                <YAxis yAxisId="cost" orientation="right" tick={{ fontSize: 11, fill: 'var(--muted)' }} stroke="var(--border-strong)" width={40} />
-                <Tooltip contentStyle={{ background: '#16202e', border: '1px solid #32405a', borderRadius: 10, color: '#dbe3ee' }} labelStyle={{ color: '#a9b6c6' }} />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
+                  interval="preserveStartEnd"
+                  minTickGap={28}
+                  stroke="var(--border-strong)"
+                />
+                <YAxis
+                  yAxisId="km"
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
+                  stroke="var(--border-strong)"
+                />
+                <YAxis
+                  yAxisId="cost"
+                  orientation="right"
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
+                  stroke="var(--border-strong)"
+                  width={40}
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: '#16202e',
+                    border: '1px solid #32405a',
+                    borderRadius: 10,
+                    color: '#dbe3ee'
+                  }}
+                  labelStyle={{ color: '#a9b6c6' }}
+                />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-<Line yAxisId="km" type="monotone" dataKey="km" name="Km" stroke="var(--primary)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
-<Line yAxisId="cost" type="monotone" dataKey="cost" name="Coût (€)" stroke="var(--primary-2)" strokeWidth={2.5} dot={false} activeDot={{ r: 4 }} />
+                <Line
+                  yAxisId="km"
+                  type="monotone"
+                  dataKey="km"
+                  name="Km"
+                  stroke="var(--primary)"
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
+                <Line
+                  yAxisId="cost"
+                  type="monotone"
+                  dataKey="cost"
+                  name="Coût (€)"
+                  stroke="var(--primary-2)"
+                  strokeWidth={2.5}
+                  dot={false}
+                  activeDot={{ r: 4 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -172,13 +330,39 @@ export default function DriverDetail() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 layout="vertical"
-                data={detail.eventBreakdown.map((e) => ({ ...e, label: EVENT_LABELS[e.type] || e.type }))}
+                data={detail.eventBreakdown.map((e) => ({
+                  ...e,
+                  label: EVENT_LABELS[e.type] || e.type
+                }))}
                 margin={{ top: 4, right: 12, left: 0, bottom: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" horizontal={false} />
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11, fill: 'var(--muted)' }} stroke="var(--border-strong)" />
-                <YAxis type="category" dataKey="label" width={120} tick={{ fontSize: 11, fill: 'var(--muted)' }} stroke="var(--border-strong)" />
-                <Tooltip contentStyle={{ background: '#16202e', border: '1px solid #32405a', borderRadius: 10, color: '#dbe3ee' }} labelStyle={{ color: '#a9b6c6' }} />
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="rgba(148, 163, 184, 0.15)"
+                  horizontal={false}
+                />
+                <XAxis
+                  type="number"
+                  allowDecimals={false}
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
+                  stroke="var(--border-strong)"
+                />
+                <YAxis
+                  type="category"
+                  dataKey="label"
+                  width={120}
+                  tick={{ fontSize: 11, fill: 'var(--muted)' }}
+                  stroke="var(--border-strong)"
+                />
+                <Tooltip
+                  contentStyle={{
+                    background: '#16202e',
+                    border: '1px solid #32405a',
+                    borderRadius: 10,
+                    color: '#dbe3ee'
+                  }}
+                  labelStyle={{ color: '#a9b6c6' }}
+                />
                 <Bar dataKey="count" name="Nombre" radius={[0, 5, 5, 0]} barSize={20}>
                   {detail.eventBreakdown.map((e) => (
                     <Cell key={e.type} fill={eventColors[e.type] || '#64748b'} />
@@ -209,7 +393,16 @@ export default function DriverDetail() {
                     <Cell key={i} fill={COST_COLORS[i % COST_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: '#16202e', border: '1px solid #32405a', borderRadius: 10, color: '#dbe3ee' }} labelStyle={{ color: '#a9b6c6' }} formatter={(v) => `${v.toLocaleString('fr-FR')} €`} />
+                <Tooltip
+                  contentStyle={{
+                    background: '#16202e',
+                    border: '1px solid #32405a',
+                    borderRadius: 10,
+                    color: '#dbe3ee'
+                  }}
+                  labelStyle={{ color: '#a9b6c6' }}
+                  formatter={(v) => `${v.toLocaleString('fr-FR')} €`}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -218,10 +411,14 @@ export default function DriverDetail() {
               const total = detail.costBreakdown.reduce((s, c) => s + c.amount, 0)
               return detail.costBreakdown.map((c, i) => (
                 <li key={i}>
-                  <span className="cost-legend-dot" style={{ background: COST_COLORS[i % COST_COLORS.length] }} />
+                  <span
+                    className="cost-legend-dot"
+                    style={{ background: COST_COLORS[i % COST_COLORS.length] }}
+                  />
                   <span className="cost-legend-name">{c.category}</span>
                   <span className="cost-legend-val">
-                    {total ? Math.round((c.amount / total) * 100) : 0}% · {c.amount.toLocaleString('fr-FR')} €
+                    {total ? Math.round((c.amount / total) * 100) : 0}% ·{' '}
+                    {c.amount.toLocaleString('fr-FR')} €
                   </span>
                 </li>
               ))
@@ -258,7 +455,13 @@ export default function DriverDetail() {
                 </tr>
               </thead>
               <tbody>
-                {trips.length === 0 && <tr><td colSpan="7" className="table-empty">Aucun trajet sur la période</td></tr>}
+                {trips.length === 0 && (
+                  <tr>
+                    <td colSpan="7" className="table-empty">
+                      Aucun trajet sur la période
+                    </td>
+                  </tr>
+                )}
                 {trips.map((t) => (
                   <tr key={t.id}>
                     <td className="cell-strong">{t.truckRegistration}</td>
@@ -266,7 +469,13 @@ export default function DriverDetail() {
                     <td>{new Date(t.endTime).toLocaleString('fr-FR')}</td>
                     <td>{Math.round(t.distanceKm)}</td>
                     <td>{t.cargoWeightTons ? `${t.cargoWeightTons} t` : '—'}</td>
-                    <td>{t.status === 'EN_COURS' ? 'En cours' : t.status === 'TERMINE' ? 'Terminé' : 'Annulé'}</td>
+                    <td>
+                      {t.status === 'EN_COURS'
+                        ? 'En cours'
+                        : t.status === 'TERMINE'
+                          ? 'Terminé'
+                          : 'Annulé'}
+                    </td>
                     <td>{t.onTime ? 'Oui' : 'Non'}</td>
                   </tr>
                 ))}
@@ -289,7 +498,13 @@ export default function DriverDetail() {
                 </tr>
               </thead>
               <tbody>
-                {tacho.length === 0 && <tr><td colSpan="6" className="table-empty">Aucun jour de tachygraphe sur la période</td></tr>}
+                {tacho.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="table-empty">
+                      Aucun jour de tachygraphe sur la période
+                    </td>
+                  </tr>
+                )}
                 {tacho.map((d) => (
                   <tr key={d.id}>
                     <td className="cell-strong">{new Date(d.date).toLocaleDateString('fr-FR')}</td>
@@ -297,10 +512,18 @@ export default function DriverDetail() {
                     <td>{d.workHours}</td>
                     <td>{d.restMinutes}</td>
                     <td>
-                      {d.compliant ? <span className="badge badge-green">Conforme</span> : <span className="badge badge-red">Non conforme</span>}
+                      {d.compliant ? (
+                        <span className="badge badge-green">Conforme</span>
+                      ) : (
+                        <span className="badge badge-red">Non conforme</span>
+                      )}
                     </td>
                     <td>
-                      {d.reasons?.length ? <span className="muted">{d.reasons.join(' · ')}</span> : '—'}
+                      {d.reasons?.length ? (
+                        <span className="muted">{d.reasons.join(' · ')}</span>
+                      ) : (
+                        '—'
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -323,14 +546,23 @@ export default function DriverDetail() {
                 </tr>
               </thead>
               <tbody>
-                {events.length === 0 && <tr><td colSpan="6" className="table-empty">Aucun événement sur la période</td></tr>}
+                {events.length === 0 && (
+                  <tr>
+                    <td colSpan="6" className="table-empty">
+                      Aucun événement sur la période
+                    </td>
+                  </tr>
+                )}
                 {events.map((e) => (
                   <tr key={e.id}>
                     <td className="cell-strong">{new Date(e.timestamp).toLocaleString('fr-FR')}</td>
                     <td>{e.truckRegistration}</td>
                     <td>{EVENT_LABELS[e.type] || e.type}</td>
                     <td>
-                      <span className={`severity-dot severity-${Math.max(1, Math.min(5, Math.ceil(e.severity / 2)))}`} title={`Sévérité ${e.severity}/10`} />
+                      <span
+                        className={`severity-dot severity-${Math.max(1, Math.min(5, Math.ceil(e.severity / 2)))}`}
+                        title={`Sévérité ${e.severity}/10`}
+                      />
                       {e.severity}/10
                     </td>
                     <td>{e.speedKph ? `${Math.round(e.speedKph)} km/h` : '—'}</td>

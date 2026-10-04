@@ -104,11 +104,15 @@ public class SharedLinkController {
                 m.put("latitude", e.getLatitude());
                 m.put("longitude", e.getLongitude());
                 m.put("description", e.getDescription());
-                m.put("eventTime", e.getEventTime().toString());
+                m.put("eventTime", e.getEventTime() != null ? e.getEventTime().toString() : null);
                 m.put("source", e.getSource());
                 return m;
             })
-            .sorted((a, b) -> ((String) b.get("eventTime")).compareTo((String) a.get("eventTime")))
+            // event_time est nullable en base (pas de contrainte NOT NULL) : un événement
+            // sans date est relégué en fin de liste plutôt que de faire planter ce endpoint
+            // public avec une NPE.
+            .sorted(Comparator.comparing((Map<String, Object> m) -> (String) m.get("eventTime"),
+                Comparator.nullsLast(Comparator.reverseOrder())))
             .toList());
         result.put("companyName", link.getCompany().getName());
         result.put("companyLogo", link.getCompany().getLogoUrl());

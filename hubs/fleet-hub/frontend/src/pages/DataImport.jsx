@@ -5,16 +5,19 @@ const FILE_TYPES = [
   {
     key: 'tachograph',
     label: 'Tachygraphe',
-    description: 'Importez les données de conduite depuis un fichier CSV (avec en-têtes) ou un fichier DDD binaire (export carte conducteur tachygraphe européen). ⚠️ L\'import DDD n\'a jamais été validé contre un vrai fichier téléchargé — les lignes importées par ce canal sont marquées "à vérifier" dans Tachographie tant qu\'un fichier réel n\'aura pas confirmé le décodage.',
+    description:
+      "Importez les données de conduite depuis un fichier CSV (avec en-têtes) ou un fichier DDD binaire (export carte conducteur tachygraphe européen). ⚠️ L'import DDD n'a jamais été validé contre un vrai fichier téléchargé — les lignes importées par ce canal sont marquées \"à vérifier\" dans Tachographie tant qu'un fichier réel n'aura pas confirmé le décodage.",
     accept: '.csv,.ddd',
     endpoint: '/import/tachograph',
-    format: 'CSV : licence_number,date,driving_hours,work_hours,rest_minutes\nDDD : Fichier binaire exporté depuis votre lecteur tachygraphe (non validé, voir ci-dessus)',
+    format:
+      'CSV : licence_number,date,driving_hours,work_hours,rest_minutes\nDDD : Fichier binaire exporté depuis votre lecteur tachygraphe (non validé, voir ci-dessus)',
     example: '123456789012,2026-08-15,8.5,10.0,480'
   },
   {
     key: 'fuel',
     label: 'Carburant',
-    description: 'Importez les transactions carburant (litres, montant, kilométrage) depuis un fichier CSV, ou un fichier à colonnes fixes sans en-tête (immat;date;litres;montant;km). Le vrai format propriétaire AS24 Infoservice (DSW/AUL) n\'est pas encore reconnu tel quel — un export dans cette structure fonctionnera.',
+    description:
+      "Importez les transactions carburant (litres, montant, kilométrage) depuis un fichier CSV, ou un fichier à colonnes fixes sans en-tête (immat;date;litres;montant;km). Le vrai format propriétaire AS24 Infoservice (DSW/AUL) n'est pas encore reconnu tel quel — un export dans cette structure fonctionnera.",
     accept: '.csv,.txt',
     endpoint: '/import/fuel',
     format: 'registration,date,liters,amount,odometer_km',
@@ -86,7 +89,13 @@ export default function DataImport() {
   const formatDate = (dateStr) => {
     if (!dateStr) return '-'
     const d = new Date(dateStr)
-    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    return d.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
   }
 
   return (
@@ -154,21 +163,48 @@ export default function DataImport() {
             </>
           ) : (
             <>
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                aria-hidden="true"
+              >
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                 <polyline points="17 8 12 3 7 8" />
                 <line x1="12" y1="3" x2="12" y2="15" />
               </svg>
-              <p>Glissez votre fichier ici ou <strong>cliquez pour parcourir</strong></p>
+              <p>
+                Glissez votre fichier ici ou <strong>cliquez pour parcourir</strong>
+              </p>
               <span className="muted">Format : {currentType.format}</span>
             </>
           )}
         </div>
 
         <details style={{ marginTop: '1rem' }}>
-          <summary className="muted" style={{ cursor: 'pointer' }}>Voir un exemple de format</summary>
-          <pre className="code-block" style={{ marginTop: '0.5rem', padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: '6px', fontSize: '0.85rem', overflowX: 'auto' }}>
-            <code>{currentType.format}{'\n'}{currentType.example}</code>
+          <summary className="muted" style={{ cursor: 'pointer' }}>
+            Voir un exemple de format
+          </summary>
+          <pre
+            className="code-block"
+            style={{
+              marginTop: '0.5rem',
+              padding: '0.75rem',
+              background: 'var(--bg-secondary)',
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              overflowX: 'auto'
+            }}
+          >
+            <code>
+              {currentType.format}
+              {'\n'}
+              {currentType.example}
+            </code>
           </pre>
         </details>
       </div>
@@ -181,26 +217,45 @@ export default function DataImport() {
               {result.rowsImported > 0 ? 'Succès' : 'Aucune donnée importée'}
             </span>
           </div>
-          <div className="data-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}>
+          <div
+            className="data-grid"
+            style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}
+          >
             <div className="stat-card">
               <span className="stat-label">Lignes lues</span>
               <span className="stat-value">{result.rowsRead}</span>
             </div>
             <div className="stat-card">
               <span className="stat-label">Importées</span>
-              <span className="stat-value" style={{ color: 'var(--color-success)' }}>{result.rowsImported}</span>
+              <span className="stat-value" style={{ color: 'var(--color-success)' }}>
+                {result.rowsImported}
+              </span>
             </div>
             <div className="stat-card">
               <span className="stat-label">Ignorées</span>
-              <span className="stat-value" style={{ color: result.rowsSkipped > 0 ? 'var(--color-warning)' : undefined }}>{result.rowsSkipped}</span>
+              <span
+                className="stat-value"
+                style={{ color: result.rowsSkipped > 0 ? 'var(--color-warning)' : undefined }}
+              >
+                {result.rowsSkipped}
+              </span>
             </div>
           </div>
           {result.errors && result.errors.length > 0 && (
             <div style={{ marginTop: '1rem' }}>
-              <p className="muted" style={{ marginBottom: '0.5rem' }}>Erreurs :</p>
+              <p className="muted" style={{ marginBottom: '0.5rem' }}>
+                Erreurs :
+              </p>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {result.errors.map((err, i) => (
-                  <li key={i} style={{ padding: '0.25rem 0', color: 'var(--color-danger)', fontSize: '0.85rem' }}>
+                  <li
+                    key={i}
+                    style={{
+                      padding: '0.25rem 0',
+                      color: 'var(--color-danger)',
+                      fontSize: '0.85rem'
+                    }}
+                  >
                     {err}
                   </li>
                 ))}
@@ -214,7 +269,9 @@ export default function DataImport() {
         <div className="card">
           <div className="card-title">
             <h3>Historique des imports</h3>
-            <span className="muted">{history.length} import{history.length > 1 ? 's' : ''}</span>
+            <span className="muted">
+              {history.length} import{history.length > 1 ? 's' : ''}
+            </span>
           </div>
           <div className="table-scroll">
             <table className="table">
@@ -234,17 +291,33 @@ export default function DataImport() {
                   <tr key={h.id}>
                     <td>{formatDate(h.importedAt)}</td>
                     <td>
-                      <span className={'badge ' + (h.fileType === 'TACHOGRAPH' ? 'badge-blue' : 'badge-orange')}>
+                      <span
+                        className={
+                          'badge ' + (h.fileType === 'TACHOGRAPH' ? 'badge-blue' : 'badge-orange')
+                        }
+                      >
                         {h.fileType === 'TACHOGRAPH' ? 'Tachygraphe' : 'Carburant'}
                       </span>
                     </td>
-                    <td className="muted" style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <td
+                      className="muted"
+                      style={{
+                        maxWidth: '200px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
                       {h.fileName || '-'}
                     </td>
                     <td>{h.rowsRead}</td>
                     <td style={{ color: 'var(--color-success)' }}>{h.rowsImported}</td>
-                    <td style={{ color: h.rowsSkipped > 0 ? 'var(--color-warning)' : undefined }}>{h.rowsSkipped}</td>
-                    <td style={{ color: h.errorCount > 0 ? 'var(--color-danger)' : undefined }}>{h.errorCount}</td>
+                    <td style={{ color: h.rowsSkipped > 0 ? 'var(--color-warning)' : undefined }}>
+                      {h.rowsSkipped}
+                    </td>
+                    <td style={{ color: h.errorCount > 0 ? 'var(--color-danger)' : undefined }}>
+                      {h.errorCount}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -268,21 +341,36 @@ export default function DataImport() {
             </thead>
             <tbody>
               <tr>
-                <td><strong>Tachygraphe</strong></td>
-                <td><code>licence_number, date, driving_hours, work_hours, rest_minutes</code></td>
-                <td>Export CSV depuis votre logiciel d'analyse tachygraphe (le CSV natif de l'extranet AS24 Tak&drive n'a pas cette structure)</td>
+                <td>
+                  <strong>Tachygraphe</strong>
+                </td>
+                <td>
+                  <code>licence_number, date, driving_hours, work_hours, rest_minutes</code>
+                </td>
+                <td>
+                  Export CSV depuis votre logiciel d'analyse tachygraphe (le CSV natif de l'extranet
+                  AS24 Tak&drive n'a pas cette structure)
+                </td>
               </tr>
               <tr>
-                <td><strong>Carburant</strong></td>
-                <td><code>registration, date, liters, amount, odometer_km</code></td>
-                <td>Export CSV — le format propriétaire AS24 Infoservice (DSW/AUL, colonnes fixes) n'est pas encore reconnu</td>
+                <td>
+                  <strong>Carburant</strong>
+                </td>
+                <td>
+                  <code>registration, date, liters, amount, odometer_km</code>
+                </td>
+                <td>
+                  Export CSV — le format propriétaire AS24 Infoservice (DSW/AUL, colonnes fixes)
+                  n'est pas encore reconnu
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
         <p className="muted" style={{ marginTop: '0.75rem', fontSize: '0.85rem' }}>
-          Les clés de jointure sont le <strong>n° de permis</strong> (tachygraphe) et l'<strong>immatriculation</strong> (carburant).
-          Assurez-vous que ces identifiants correspondent à ceux déjà enregistrés dans Fleet Hub.
+          Les clés de jointure sont le <strong>n° de permis</strong> (tachygraphe) et l'
+          <strong>immatriculation</strong> (carburant). Assurez-vous que ces identifiants
+          correspondent à ceux déjà enregistrés dans Fleet Hub.
         </p>
       </div>
     </div>

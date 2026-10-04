@@ -42,14 +42,21 @@ api.interceptors.response.use(
   async (err) => {
     const originalRequest = err.config
     const url = originalRequest?.url || ''
-    const isAuthEndpoint = url.includes('/auth/login') ||
+    const isAuthEndpoint =
+      url.includes('/auth/login') ||
       url.includes('/auth/register') ||
       url.includes('/auth/accept-invitation') ||
       url.includes('/auth/forgot-password') ||
       url.includes('/auth/reset-password')
     const isRefreshRequest = url.includes('/auth/refresh')
 
-    if (err.response && err.response.status === 401 && !originalRequest._retry && !isRefreshRequest && !isAuthEndpoint) {
+    if (
+      err.response &&
+      err.response.status === 401 &&
+      !originalRequest._retry &&
+      !isRefreshRequest &&
+      !isAuthEndpoint
+    ) {
       originalRequest._retry = true
       try {
         await api.post('/auth/refresh')

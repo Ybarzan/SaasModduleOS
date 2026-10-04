@@ -118,6 +118,48 @@ class FreightRateServiceTest {
         assertThat(result.days()).isEqualTo(7);
     }
 
+    // ── ORIGINE/DESTINATION ABSENTES (pas de NPE) ─────────────────────────
+
+    @Test
+    @DisplayName("guess() ne lève pas de NPE quand origin est null")
+    void guess_nullOrigin_doesNotThrow() {
+        assertThatCode(() -> service.guess(null, 5000.0)).doesNotThrowAnyException();
+        assertThat(service.guess(null, 5000.0)).isEqualTo(TransportModeInput.SEA);
+        assertThat(service.guess(null, 100000.0)).isEqualTo(TransportModeInput.AIR);
+    }
+
+    @Test
+    @DisplayName("estimate() ne lève pas de NPE quand origin/dest sont null (SEA)")
+    void estimate_nullOriginAndDest_sea_doesNotThrow() {
+        assertThatCode(() ->
+                service.estimate(null, null, TransportModeInput.SEA, 1000.0, 5.0, 20000.0))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("estimate() ne lève pas de NPE quand origin/dest sont null (AIR)")
+    void estimate_nullOriginAndDest_air_doesNotThrow() {
+        assertThatCode(() ->
+                service.estimate(null, null, TransportModeInput.AIR, 50.0, 0.5, 30000.0))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("estimate() ne lève pas de NPE quand origin/dest sont null (ROAD)")
+    void estimate_nullOriginAndDest_road_doesNotThrow() {
+        assertThatCode(() ->
+                service.estimate(null, null, TransportModeInput.ROAD, 500.0, 2.0, 10000.0))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    @DisplayName("estimate() ne lève pas de NPE en auto-détection quand origin est null")
+    void estimate_nullOrigin_autoDetect_doesNotThrow() {
+        assertThatCode(() ->
+                service.estimate(null, null, null, 100.0, 2.0, 5000.0))
+                .doesNotThrowAnyException();
+    }
+
     // ── INVARIANTS ──────────────────────────────────────────────────────
 
     @Test

@@ -22,7 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
         "app.security.rate-limit.enabled=true",
-        "app.security.rate-limit.auth-limit=3",
+        "app.security.login.rate-limit=3",
         "app.security.rate-limit.window-seconds=60",
         "app.security.rate-limit.default-limit=100"
 })

@@ -189,9 +189,21 @@
   background: currentColor;
 }
 
-.ptg-pill.idle { background: var(--surface-alt); color: var(--muted); border-color: var(--border-strong); }
-.ptg-pill.active { background: var(--green-soft); color: var(--green); border-color: rgba(150, 166, 107, 0.3); }
-.ptg-pill.pause { background: var(--teal-soft, rgba(62, 145, 148, 0.12)); color: var(--primary-2); border-color: rgba(var(--primary-2-rgb), 0.35); }
+.ptg-pill.idle {
+  background: var(--surface-alt);
+  color: var(--muted);
+  border-color: var(--border-strong);
+}
+.ptg-pill.active {
+  background: var(--green-soft);
+  color: var(--green);
+  border-color: rgba(150, 166, 107, 0.3);
+}
+.ptg-pill.pause {
+  background: var(--teal-soft, rgba(62, 145, 148, 0.12));
+  color: var(--primary-2);
+  border-color: rgba(var(--primary-2-rgb), 0.35);
+}
 
 .ptg-timer {
   font-size: 46px;
@@ -219,11 +231,17 @@
 .ptg-progress-fill {
   height: 100%;
   background: var(--green);
-  transition: width 0.4s ease, background 0.4s ease;
+  transition:
+    width 0.4s ease,
+    background 0.4s ease;
 }
 
-.ptg-progress-fill.warn { background: var(--orange); }
-.ptg-progress-fill.crit { background: var(--red); }
+.ptg-progress-fill.warn {
+  background: var(--orange);
+}
+.ptg-progress-fill.crit {
+  background: var(--red);
+}
 
 .ptg-progress-caption {
   display: flex;
@@ -256,7 +274,9 @@
   border-bottom: 1px dashed var(--border);
 }
 
-.ptg-log-row:last-child { border-bottom: none; }
+.ptg-log-row:last-child {
+  border-bottom: none;
+}
 
 .ptg-btn-stack {
   display: flex;
@@ -275,7 +295,9 @@
   font-size: 12.5px;
 }
 
-.ptg-recap-row:last-child { border-bottom: none; }
+.ptg-recap-row:last-child {
+  border-bottom: none;
+}
 
 .ptg-recap-row span:first-child {
   color: var(--muted);
@@ -284,9 +306,15 @@
   letter-spacing: 0.05em;
 }
 
-.ptg-recap-row b { font-variant-numeric: tabular-nums; }
+.ptg-recap-row b {
+  font-variant-numeric: tabular-nums;
+}
 
-.ptg-hint { font-size: 11px; color: var(--muted); text-align: center; }
+.ptg-hint {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
 
 .ptg-code-input {
   width: 100%;

@@ -74,37 +74,42 @@ public class FreightRateService {
     }
 
     private FreightEstimate sea(String orig, String dest, Double w, Double v, double val) {
+        String o = upper(orig);
+        String d = upper(dest);
         double cost;
         if (v != null && v >= 25) {
-            double fcl = SEA_FCL_20FT.getOrDefault(orig.toUpperCase(), Map.of())
-                .getOrDefault(dest.toUpperCase(), FAR_EAST.contains(orig.toUpperCase()) ? 2800.0 : 900.0);
+            double fcl = SEA_FCL_20FT.getOrDefault(o, Map.of())
+                .getOrDefault(d, FAR_EAST.contains(o) ? 2800.0 : 900.0);
             cost = fcl * Math.ceil(v / 25.0) * 1.18;
         } else {
             double cbm = v != null ? v : (w != null ? w/1000.0 : val/8000.0);
             cost = Math.max(cbm, 1.0) * 65 * 1.18;
         }
-        int days = FAR_EAST.contains(orig.toUpperCase()) ? 35 : 15;
+        int days = FAR_EAST.contains(o) ? 35 : 15;
         return new FreightEstimate(Math.round(cost * 100.0) / 100.0, days);
     }
 
     private FreightEstimate air(String orig, Double w, Double v, double val) {
+        String o = upper(orig);
         double cw = (w != null && v != null) ? Math.max(w, v*1000000/6000.0) : (w != null ? w : val*0.15);
         double bw = Math.max(cw, 45);
-        double rate = FAR_EAST.contains(orig.toUpperCase()) ? 4.80 : (NEARSHORE.contains(orig.toUpperCase()) ? 1.80 : 3.80);
+        double rate = FAR_EAST.contains(o) ? 4.80 : (NEARSHORE.contains(o) ? 1.80 : 3.80);
         double cost = bw * (rate + 0.80 + 0.15);
-        int days = FAR_EAST.contains(orig.toUpperCase()) ? 7 : 3;
+        int days = FAR_EAST.contains(o) ? 7 : 3;
         return new FreightEstimate(Math.round(cost * 100.0) / 100.0, days);
     }
 
     private FreightEstimate road(String orig, String dest, Double w, double val) {
+        String o = upper(orig);
+        String d = upper(dest);
         double pallets = w != null ? Math.ceil(w/800.0) : Math.ceil(val/5000.0);
         if (pallets >= 33) return new FreightEstimate(1800.0, 14);
-        double rate = NEARSHORE.contains(orig.toUpperCase()) ? 95.0 : 150.0;
+        double rate = NEARSHORE.contains(o) ? 95.0 : 150.0;
         double cost = pallets * rate;
         int days;
-        if (EUROPE.contains(orig.toUpperCase()) && EUROPE.contains(dest.toUpperCase())) {
+        if (EUROPE.contains(o) && EUROPE.contains(d)) {
             days = 2;
-        } else if (NEARSHORE.contains(orig.toUpperCase())) {
+        } else if (NEARSHORE.contains(o)) {
             days = 7;
         } else {
             days = 12;
@@ -113,8 +118,14 @@ public class FreightRateService {
     }
 
     public TransportModeInput guess(String orig, double val) {
-        if (NEARSHORE.contains(orig.toUpperCase())) return TransportModeInput.ROAD;
+        if (NEARSHORE.contains(upper(orig))) return TransportModeInput.ROAD;
         if (val > 50000) return TransportModeInput.AIR;
         return TransportModeInput.SEA;
+    }
+
+    /** Pays inconnu/absent -> chaîne vide, qui ne matche aucun des Set ci-dessus
+     * (comportement identique à un pays réel mais non répertorié). */
+    private static String upper(String country) {
+        return country == null ? "" : country.toUpperCase();
     }
 }

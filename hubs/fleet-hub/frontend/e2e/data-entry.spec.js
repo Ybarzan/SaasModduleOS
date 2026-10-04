@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { loginAsAdmin } from './helpers.js'
 
 const desktopOnly = async ({}, testInfo) =>
   test.skip(testInfo.project.name !== 'desktop', 'Couvert par mobile.spec')
@@ -9,8 +10,7 @@ test('crée puis supprime un chauffeur via la saisie manuelle', async ({ page })
   const license = `FR-E2E-${Date.now()}`
   page.on('dialog', (d) => d.accept())
 
-  await page.goto('/login')
-  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await loginAsAdmin(page)
   await page.getByRole('link', { name: /Saisie/ }).click()
   await expect(page.getByRole('heading', { name: 'Saisie manuelle' })).toBeVisible()
 

@@ -1,6 +1,13 @@
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    # ${random.uuid} : une base H2 nommée en dur était partagée par toutes les
+    # ApplicationContext de test (chaque combinaison de @MockBean en crée une
+    # distincte). Le cache de contexte de Spring en évince une de temps en
+    # temps (create-drop -> DROP TABLE au shutdown), ce qui faisait échouer
+    # d'autres classes utilisant encore la même base physique partagée par le
+    # nom ("table not found"), de façon non déterministe selon l'ordre
+    # d'exécution. Un nom unique par contexte élimine la classe de bug entière.
+    url: jdbc:h2:mem:testdb-${random.uuid};MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
     password:

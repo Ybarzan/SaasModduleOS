@@ -100,7 +100,7 @@ Swagger UI : `http://localhost:8080/api/swagger-ui.html`
 |---|---|---|
 | `DB_URL` | URL PostgreSQL | `jdbc:postgresql://localhost:5432/incokalk` |
 | `DB_USERNAME` | Utilisateur DB | `postgres` |
-| `DB_PASSWORD` | Mot de passe DB | `postgres` |
+| `DB_PASSWORD` | Mot de passe DB | *(aucun — à exporter avant `mvn spring-boot:run`)* |
 | `JWT_SECRET` | Clé secrète JWT | (générée automatiquement en dev) |
 | `STRIPE_SECRET_KEY` | Clé Stripe | (optionnel) |
 | `MINIO_URL` | URL MinIO | `http://localhost:9000` |

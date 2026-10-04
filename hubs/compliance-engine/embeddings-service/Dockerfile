@@ -1,5 +1,8 @@
 FROM python:3.11-slim
 
+RUN useradd --system --create-home --home-dir /home/appuser --uid 1000 appuser
+ENV HOME=/home/appuser
+
 WORKDIR /app
 
 COPY requirements.txt .
@@ -8,11 +11,15 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu \
     -r requirements.txt
 
-# Télécharge et met en cache le modèle pendant le build — le conteneur n'a
-# besoin d'aucun accès réseau au runtime (aucune donnée ne sort une fois construit).
+# Télécharge et met en cache le modèle pendant le build (dans $HOME, cf. ci-dessus)
+# — le conteneur n'a besoin d'aucun accès réseau au runtime (aucune donnée ne
+# sort une fois construit).
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')"
 
 COPY app.py .
+RUN chown -R appuser:appuser /app /home/appuser
+
+USER appuser
 
 EXPOSE 8000
 
