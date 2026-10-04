@@ -107,6 +107,8 @@ services:
       context: ./frontend
       args:
         VITE_SENTRY_DSN: ${SENTRY_DSN_FRONTEND:-}
+        VITE_MAP_TILE_URL: ${MAP_TILE_URL:-}
+        VITE_MAP_ATTRIBUTION: ${MAP_ATTRIBUTION:-}
     container_name: fleethub-frontend
     restart: unless-stopped
     healthcheck:
