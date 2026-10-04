@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { FAILURE_REASONS } from '../tours'
+import BarcodeScanner, { scanSupported } from './BarcodeScanner'
 
 /**
  * Clôture d'un arrêt : preuve de passage (signataire, colis, échantillons,
@@ -18,9 +19,28 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
     notes: ''
   })
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+  const [scanning, setScanning] = useState(false)
   const needsTemperature = stop.temperatureMinCelsius != null || stop.temperatureMaxCelsius != null
   const isCollect =
     stop.type === 'COLLECTE' || stop.siteKind === 'PHARMACIE' || stop.siteKind === 'LABORATOIRE'
+
+  // Chaque code scanné s'ajoute à la liste et met à jour le nombre d'échantillons / colis
+  const countKey = isCollect ? 'sampleCount' : 'parcelCount'
+  const addCode = useCallback(
+    (code) =>
+      setForm((f) => {
+        const codes = f.scannedCodes
+          ? f.scannedCodes
+              .split(',')
+              .map((c) => c.trim())
+              .filter(Boolean)
+          : []
+        if (codes.includes(code)) return f
+        codes.push(code)
+        return { ...f, scannedCodes: codes.join(','), [countKey]: String(codes.length) }
+      }),
+    [countKey]
+  )
 
   const temp = form.temperatureCelsius === '' ? null : Number(form.temperatureCelsius)
   const excursion =
@@ -122,7 +142,15 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
           )}
           <div className="form-field form-field-wide">
             <label>Codes scannés / saisis (séparés par des virgules)</label>
-            <input value={form.scannedCodes} onChange={set('scannedCodes')} autoComplete="off" />
+            <div className="geocode-bar">
+              <input value={form.scannedCodes} onChange={set('scannedCodes')} autoComplete="off" />
+              {scanSupported() && !scanning && (
+                <button type="button" className="btn btn-outline" onClick={() => setScanning(true)}>
+                  📷 Scanner
+                </button>
+              )}
+            </div>
+            {scanning && <BarcodeScanner onCode={addCode} onClose={() => setScanning(false)} />}
           </div>
         </div>
       ) : (

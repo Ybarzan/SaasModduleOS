@@ -59,6 +59,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/pointage/roster/**").permitAll()
                 .requestMatchers("/api/pointage/admin/**").hasAnyRole("ADMIN", "GESTIONNAIRE")
                 .requestMatchers("/api/pointage/**").hasRole("CHAUFFEUR")
+                .requestMatchers("/api/me/**").hasRole("CHAUFFEUR")
                 // Appel machine-à-machine de FleetMarket, authentifié par X-Marketplace-Key
                 // (pas un JWT) dans MarketplaceService, pas ici.
                 .requestMatchers(HttpMethod.GET, "/api/marketplace/availability", "/api/marketplace/vehicle-position").permitAll()
