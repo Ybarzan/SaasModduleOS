@@ -48,6 +48,7 @@ public class AccountService {
     private final IntegrationConfigRepository integrationConfigRepository;
     private final SiteRepository siteRepository;
     private final TourRepository tourRepository;
+    private final DeliveryOrderRepository deliveryOrderRepository;
     private final PasswordEncoder passwordEncoder;
     private final StripeService stripeService;
 
@@ -119,6 +120,7 @@ public class AccountService {
             }
         }
 
+        deliveryOrderRepository.deleteByCompany_Id(companyId); // avant les arrêts qu'elles référencent
         tourRepository.deleteByCompany_Id(companyId); // arrêts supprimés en cascade
         siteRepository.deleteByCompany_Id(companyId);
         drivingEventRepository.deleteByCompany_Id(companyId);

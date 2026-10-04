@@ -90,6 +90,8 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      # Répartition des tournées : solveur VROOM (vide = solveur intégré)
+      APP_ROUTING_VROOM_URL: ${VROOM_URL:-http://vroom:3000}
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8090/actuator/health"]
       interval: 10s
@@ -101,6 +103,17 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      vroom:
+        condition: service_started
+
+  # Solveur de tournées VROOM (vroom-express) : interrogé avec nos propres matrices
+  # de temps/distances, il n'a pas besoin de moteur cartographique (OSRM).
+  vroom:
+    image: ghcr.io/vroom-project/vroom-docker:v1.14.0
+    container_name: fleethub-vroom
+    restart: unless-stopped
+    expose:
+      - "3000"
 
   frontend:
     build:

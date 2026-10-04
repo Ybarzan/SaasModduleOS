@@ -2967,3 +2967,55 @@ button.kpi-widget-clickable:active {
     max-width: 100%;
   }
 }
+
+/* ---- Planification ---- */
+.dispatch-subtitle {
+  margin: 16px 0 8px;
+  font-size: 14px;
+}
+
+.vehicle-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.vehicle-pick {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-soft);
+}
+
+.vehicle-pick.on {
+  border-color: var(--primary);
+}
+
+.vehicle-pick-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.vehicle-pick-fields select,
+.vehicle-pick-fields input {
+  min-width: 0;
+}
+
+.dispatch-result {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.unassigned ul,
+.import-errors {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.unassigned li {
+  margin-bottom: 4px;
+}
