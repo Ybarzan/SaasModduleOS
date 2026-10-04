@@ -102,9 +102,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # mobile/ est sur vite 8 (^8.2.0), qui exige Node ^20.19.0 || >=22.12.0 —
+      # contrairement à frontend/ (vite 5, bien plus tolérant). '20' tout seul
+      # ne garantit pas un patch >= 20.19 sur le runner.
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
           cache-dependency-path: hubs/compliance-engine/mobile/package-lock.json
 
