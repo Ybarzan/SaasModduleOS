@@ -36,6 +36,11 @@ public record TourDto(
         List<TourStopDto> stops
 ) {
     public static TourDto of(Tour t, boolean withStops) {
+        return of(t, withStops, java.util.Map.of());
+    }
+
+    /** Variante avec suggestions de signataire par site (application chauffeur). */
+    public static TourDto of(Tour t, boolean withStops, java.util.Map<Long, String> signers) {
         List<TourStop> stops = t.getStops();
         int done = (int) stops.stream().filter(s -> s.getStatus() == TourStop.StopStatus.FAIT).count();
         int failed = (int) stops.stream().filter(s -> s.getStatus() == TourStop.StopStatus.ECHEC).count();
@@ -53,6 +58,6 @@ public record TourDto(
                 t.getPlannedStart(), t.getStatus().name(), t.getPlannedDistanceKm(),
                 t.getPlannedDurationMinutes(), t.getOptimizedAt(), t.getStartedAt(), t.getCompletedAt(),
                 t.getNotes(), stops.size(), done, failed, late,
-                withStops ? stops.stream().map(TourStopDto::of).toList() : List.of());
+                withStops ? stops.stream().map(s -> TourStopDto.of(s, signers.get(s.getSite().getId()))).toList() : List.of());
     }
 }

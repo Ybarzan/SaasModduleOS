@@ -36,9 +36,16 @@ public record TourStopDto(
         String scannedCodes,
         String failureReason,
         String notes,
-        Boolean onTime
+        Boolean onTime,
+        Integer expectedQuantity,
+        /** Dernier signataire connu sur ce site : suggestion pour éviter la saisie (application chauffeur). */
+        String suggestedSigner
 ) {
     public static TourStopDto of(TourStop s) {
+        return of(s, null);
+    }
+
+    public static TourStopDto of(TourStop s, String suggestedSigner) {
         Site site = s.getSite();
         return new TourStopDto(s.getId(), s.getSequence(), site.getId(), site.getName(), site.getKind().name(),
                 site.getAddress(), site.getCity(), site.getLatitude(), site.getLongitude(), site.getContactPhone(),
@@ -47,6 +54,6 @@ public record TourStopDto(
                 s.getArrivedAt(), s.getCompletedAt(), s.getSignedBy(), s.getParcelCount(), s.getSampleCount(),
                 s.getTemperatureCelsius(), s.getTemperatureMinCelsius(), s.getTemperatureMaxCelsius(),
                 s.isTemperatureExcursion(), s.getScannedCodes(), s.getFailureReason(), s.getNotes(),
-                s.deliveredOnTime());
+                s.deliveredOnTime(), s.getExpectedQuantity(), suggestedSigner);
     }
 }

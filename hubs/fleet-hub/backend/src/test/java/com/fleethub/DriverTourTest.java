@@ -121,6 +121,48 @@ class DriverTourTest {
     }
 
     @Test
+    void offlineTimestamps_suggestedSigner_andNotesAreKept() throws Exception {
+        long site = json(call(adminToken, post("/api/sites"),
+                "{\"name\":\"Pharmacie Habituelle\",\"kind\":\"PHARMACIE\",\"latitude\":45.76,\"longitude\":4.85}")).get("id").asLong();
+        long tour = json(call(adminToken, post("/api/tours"), "{\"name\":\"T\",\"date\":\"" + LocalDate.now()
+                + "\",\"driverId\":" + driverA + "}")).get("id").asLong();
+        call(adminToken, post("/api/tours/" + tour + "/stops"),
+                "{\"siteId\":" + site + ",\"type\":\"COLLECTE\",\"expectedQuantity\":4,\"notes\":\"Code porte 1234\"}")
+                .andExpect(status().isOk());
+        String token = chauffeurToken(driverA, "5678");
+        long stop = json(call(token, get("/api/me/tours"), null)).get(0).get("stops").get(0).get("id").asLong();
+
+        // Action faite hors connexion il y a 40 min : l'heure du téléphone est conservée
+        java.time.LocalDateTime offline = java.time.LocalDateTime.now().minusMinutes(40).withNano(0);
+        call(token, post("/api/me/tours/" + tour + "/stops/" + stop + "/arrive"), "{\"occurredAt\":\"" + offline + "\"}")
+                .andExpect(status().isOk());
+        JsonNode done = json(call(token, post("/api/me/tours/" + tour + "/stops/" + stop + "/complete"),
+                "{\"status\":\"FAIT\",\"signedBy\":\"M. Habitué\",\"sampleCount\":4,\"notes\":\"Sonnette HS\","
+                        + "\"occurredAt\":\"" + offline.plusMinutes(3) + "\"}").andExpect(status().isOk()));
+        JsonNode s = done.get("stops").get(0);
+        org.junit.jupiter.api.Assertions.assertTrue(s.get("arrivedAt").asText().startsWith(offline.toString().substring(0, 16)));
+        org.junit.jupiter.api.Assertions.assertTrue(s.get("completedAt").asText().startsWith(offline.plusMinutes(3).toString().substring(0, 16)));
+        org.junit.jupiter.api.Assertions.assertEquals("Code porte 1234 · Chauffeur : Sonnette HS", s.get("notes").asText());
+        org.junit.jupiter.api.Assertions.assertEquals(4, s.get("expectedQuantity").asInt());
+
+        // Le lendemain, le signataire habituel est suggéré pour ce site
+        long tour2 = json(call(adminToken, post("/api/tours"), "{\"name\":\"T2\",\"date\":\"" + LocalDate.now()
+                + "\",\"driverId\":" + driverA + "}")).get("id").asLong();
+        call(adminToken, post("/api/tours/" + tour2 + "/stops"), "{\"siteId\":" + site + "}").andExpect(status().isOk());
+        call(token, get("/api/me/tours"), null)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[1].stops[0].suggestedSigner").value("M. Habitué"));
+
+        // Une horloge déréglée (demain) est ignorée : heure serveur
+        long stop2 = json(call(token, get("/api/me/tours"), null)).get(1).get("stops").get(0).get("id").asLong();
+        JsonNode future = json(call(token, post("/api/me/tours/" + tour2 + "/stops/" + stop2 + "/complete"),
+                "{\"status\":\"FAIT\",\"occurredAt\":\"" + java.time.LocalDateTime.now().plusDays(1).withNano(0) + "\"}")
+                .andExpect(status().isOk()));
+        org.junit.jupiter.api.Assertions.assertTrue(java.time.LocalDateTime.parse(future.get("stops").get(0).get("completedAt").asText())
+                .isBefore(java.time.LocalDateTime.now().plusMinutes(1)));
+    }
+
+    @Test
     void chauffeur_cannotReachBackOffice() throws Exception {
         long tourA = tourFor(driverA, "Tournée Alice");
         String tokenA = chauffeurToken(driverA, "4321");

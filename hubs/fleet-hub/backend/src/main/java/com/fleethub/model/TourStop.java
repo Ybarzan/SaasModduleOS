@@ -66,6 +66,8 @@ public class TourStop {
     // ---- Preuve de passage ----
     private String signedBy;
     private Integer parcelCount;
+    /** Quantité attendue (colis / sachets), reprise de la commande : pré-remplit la saisie du chauffeur. */
+    private Integer expectedQuantity;
     /** Nombre d'échantillons / sachets remis ou collectés (collecte santé). */
     private Integer sampleCount;
     /** Température relevée au passage (°C, chaîne du froid). */

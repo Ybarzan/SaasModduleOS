@@ -18,5 +18,7 @@ public record TourStopRequest(
         @Min(0) @Max(480) Integer serviceMinutes,
         Double temperatureMinCelsius,
         Double temperatureMaxCelsius,
+        /** Quantité attendue (colis / sachets), facultative. */
+        @Min(0) Integer expectedQuantity,
         @Size(max = 1000) String notes
 ) {}

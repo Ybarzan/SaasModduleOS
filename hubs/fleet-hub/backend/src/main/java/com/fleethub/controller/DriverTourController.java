@@ -1,5 +1,6 @@
 package com.fleethub.controller;
 
+import com.fleethub.dto.tour.ArriveRequest;
 import com.fleethub.dto.tour.StopCompletionRequest;
 import com.fleethub.dto.tour.TourDto;
 import com.fleethub.model.AppUser;
@@ -52,9 +53,10 @@ public class DriverTourController {
 
     @PostMapping("/{id}/stops/{stopId}/arrive")
     @Operation(summary = "Je suis arrivé sur le site")
-    public TourDto arrive(@PathVariable Long id, @PathVariable Long stopId) {
+    public TourDto arrive(@PathVariable Long id, @PathVariable Long stopId,
+                          @RequestBody(required = false) ArriveRequest req) {
         tourService.requireAssignedTo(id, currentDriverId());
-        return tourService.arrive(id, stopId);
+        return tourService.arrive(id, stopId, req != null ? req.occurredAt() : null);
     }
 
     @PostMapping("/{id}/stops/{stopId}/complete")
