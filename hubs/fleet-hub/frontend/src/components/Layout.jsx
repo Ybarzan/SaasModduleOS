@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import { fleetTerms, usesTachograph } from '../fleet'
 
 /** @type {{fill: string, stroke: string, strokeWidth: number, strokeLinecap: 'round', strokeLinejoin: 'round'}} */
 const stroke = {
@@ -300,9 +301,9 @@ const icons = {
 const navItems = [
   { to: '/', label: 'Tableau de bord', icon: 'dashboard', end: true },
   { to: '/drivers', label: 'Chauffeurs', icon: 'drivers', end: false },
-  { to: '/tachographie', label: 'Tachographie', icon: 'tacho', end: false },
+  { to: '/tachographie', label: 'Tachographie', icon: 'tacho', end: false, show: usesTachograph },
   { to: '/pointage-suivi', label: 'Pointage', icon: 'pointage', end: false },
-  { to: '/trucks', label: 'Camions', icon: 'trucks', end: false },
+  { to: '/trucks', label: (user) => fleetTerms(user).vehicles, icon: 'trucks', end: false },
   { to: '/data', label: 'Saisie', icon: 'data', end: false },
   { to: '/import', label: 'Import fichiers', icon: 'import', end: false },
   { to: '/map', label: 'Carte temps réel', icon: 'map', end: false },
@@ -348,8 +349,12 @@ const navItems = [
 const visibleNav = (user) =>
   navItems.filter(
     (item) =>
-      (!item.saasOnly || user?.role === 'SAAS_ADMIN') && (!item.adminOnly || user?.role === 'ADMIN')
+      (!item.saasOnly || user?.role === 'SAAS_ADMIN') &&
+      (!item.adminOnly || user?.role === 'ADMIN') &&
+      (!item.show || item.show(user))
   )
+
+const labelFor = (item, user) => (typeof item.label === 'function' ? item.label(user) : item.label)
 
 const roleLabel = (role) =>
   role === 'SAAS_ADMIN'
@@ -399,7 +404,7 @@ export default function Layout() {
           </svg>
         </button>
         <div className="mobile-brand">
-          <span>🚛</span> Fleet Hub
+          <span>{fleetTerms(user).brandIcon}</span> Fleet Hub
         </div>
         <button
           className="theme-toggle theme-toggle-mobile"
@@ -440,7 +445,7 @@ export default function Layout() {
 
       <aside className={'sidebar' + (menuOpen ? ' open' : '')}>
         <div className="logo">
-          <span className="logo-icon">🚛</span>
+          <span className="logo-icon">{fleetTerms(user).brandIcon}</span>
           <div>
             <h1>Fleet Hub</h1>
             <p>{user?.companyName || 'SYSTÈME / GESTION FLOTTE'}</p>
@@ -474,7 +479,7 @@ export default function Layout() {
                 onClick={closeMenu}
                 className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
               >
-                <span>{icons[item.icon]}</span> {item.label}
+                <span>{icons[item.icon]}</span> {labelFor(item, user)}
               </NavLink>
             )
           )}

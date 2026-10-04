@@ -16,6 +16,7 @@ import {
   CartesianGrid
 } from 'recharts'
 import api from '../services/api'
+import { fuelLabel } from '../fleet'
 import PeriodSelector from '../components/PeriodSelector'
 import ScoreGauge from '../components/ScoreGauge'
 import StatCard from '../components/StatCard'
@@ -133,7 +134,7 @@ export default function DriverDetail() {
               🚛 {k.brand} {k.model} · {k.registration}
             </Link>
             {' · '}
-            {k.fuelType} · licence {k.licenseNumber}
+            {fuelLabel(k.fuelType)} · licence {k.licenseNumber}
           </p>
         </div>
         <PeriodSelector value={period} onChange={setPeriod} />
@@ -216,7 +217,11 @@ export default function DriverDetail() {
             </div>
             <div className="kpi-item">
               <span>Conformité 561/2006</span>
-              <b>{k.drivingTimeComplianceRate.toFixed(0)}%</b>
+              <b>
+                {k.tachographApplicable === false
+                  ? 'N/A'
+                  : `${k.drivingTimeComplianceRate.toFixed(0)}%`}
+              </b>
             </div>
           </div>
         </div>

@@ -20,5 +20,11 @@ public record TruckDto(
         boolean active,
         Long assignmentId,
         Long driverId,
-        String driverName
+        String driverName,
+        /** Valeur saisie (null = déduite de la catégorie). */
+        Boolean tachographEquipped,
+        /** Valeur effective : véhicule soumis au 561/2006. */
+        boolean requiresTachograph,
+        /** Poids lourd (tracteur, porteur, fourgon PL) vs VUL / VL. */
+        boolean heavy
 ) {}

@@ -193,6 +193,7 @@ public class AccountService {
         m.put("acquisitionDate", t.getAcquisitionDate());
         m.put("purchasePrice", t.getPurchasePrice());
         m.put("expectedConsumptionL100Km", t.getExpectedConsumptionL100Km());
+        m.put("tachographEquipped", t.getTachographEquipped());
         m.put("active", t.isActive());
         return m;
     }
