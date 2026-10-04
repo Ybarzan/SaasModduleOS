@@ -10,6 +10,7 @@ import com.fleethub.dto.tour.TourStopRequest;
 import com.fleethub.model.Site;
 import com.fleethub.model.Tour;
 import com.fleethub.model.TourStop;
+import com.fleethub.repository.DeliveryOrderRepository;
 import com.fleethub.repository.DriverRepository;
 import com.fleethub.repository.SiteRepository;
 import com.fleethub.repository.TourRepository;
@@ -54,6 +55,7 @@ public class TourService {
     private final DriverRepository driverRepository;
     private final TruckRepository truckRepository;
     private final RouteOptimizer optimizer;
+    private final DeliveryOrderRepository orderRepository;
 
     // ------------------------------------------------------------------ lecture
 
@@ -156,6 +158,7 @@ public class TourService {
         if (tour.getStatus() == Tour.TourStatus.EN_COURS) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Tournée en cours : terminez-la ou annulez-la d'abord");
         }
+        orderRepository.releaseByTour(tour); // les commandes redeviennent « à planifier »
         tourRepository.delete(tour);
     }
 
@@ -227,6 +230,7 @@ public class TourService {
         if (stop.getStatus() != TourStop.StopStatus.A_FAIRE) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Un arrêt déjà clôturé ne peut pas être retiré");
         }
+        orderRepository.releaseByStop(stop);
         tour.getStops().remove(stop);
         renumber(tour.getStops());
         replan(tour);
@@ -316,6 +320,7 @@ public class TourService {
         if (tour.getStatus() == Tour.TourStatus.TERMINEE) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Une tournée terminée ne peut pas être annulée");
         }
+        orderRepository.releaseByTour(tour); // commandes à replanifier
         tour.setStatus(Tour.TourStatus.ANNULEE);
         return TourDto.of(tourRepository.save(tour), true);
     }
@@ -433,6 +438,14 @@ public class TourService {
     }
 
     /** Recalcule heures d'arrivée, retards, distance et durée pour l'ordre courant. */
+    /** Enregistre une tournée composée ailleurs (répartition automatique) après calcul de son planning. */
+    @Transactional
+    public Tour saveWithPlan(Tour tour) {
+        renumber(tour.getStops());
+        replan(tour);
+        return tourRepository.save(tour);
+    }
+
     private void replan(Tour tour) {
         List<TourStop> stops = tour.getStops();
         if (stops.isEmpty()) {

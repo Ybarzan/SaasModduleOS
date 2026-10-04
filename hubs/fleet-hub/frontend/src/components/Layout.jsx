@@ -201,6 +201,17 @@ const icons = {
       }
     />
   ),
+  planning: (
+    <Icon
+      d={
+        <>
+          <rect x="3" y="4" width="18" height="17" rx="2" />
+          <path d="M3 9h18M8 2.5v3M16 2.5v3" />
+          <path d="M8 14l2.5 2.5L16 12" />
+        </>
+      }
+    />
+  ),
   sites: (
     <Icon
       d={
@@ -321,6 +332,7 @@ const icons = {
 
 const navItems = [
   { to: '/', label: 'Tableau de bord', icon: 'dashboard', end: true },
+  { to: '/planning', label: 'Planification', icon: 'planning', end: false, show: usesTours },
   { to: '/tours', label: 'Tournées', icon: 'tours', end: false, show: usesTours },
   { to: '/sites', label: 'Sites', icon: 'sites', end: false, show: usesTours },
   { to: '/drivers', label: 'Chauffeurs', icon: 'drivers', end: false },

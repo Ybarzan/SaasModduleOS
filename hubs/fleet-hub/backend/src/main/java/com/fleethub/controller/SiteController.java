@@ -4,6 +4,7 @@ import com.fleethub.config.ResourceNotFoundException;
 import com.fleethub.dto.tour.SiteDto;
 import com.fleethub.dto.tour.SiteRequest;
 import com.fleethub.model.Site;
+import com.fleethub.repository.DeliveryOrderRepository;
 import com.fleethub.repository.SiteRepository;
 import com.fleethub.repository.TourRepository;
 import com.fleethub.repository.TourStopRepository;
@@ -36,6 +37,7 @@ public class SiteController {
 
     private final SiteRepository siteRepository;
     private final TourStopRepository stopRepository;
+    private final DeliveryOrderRepository orderRepository;
     private final TourRepository tourRepository;
     private final GeocodingService geocodingService;
 
@@ -83,9 +85,9 @@ public class SiteController {
             description = "Refusé si le site figure dans une tournée (désactivez-le plutôt pour conserver la traçabilité)")
     public void delete(@PathVariable Long id) {
         Site site = load(id);
-        if (stopRepository.existsBySite(site)) {
+        if (stopRepository.existsBySite(site) || orderRepository.existsBySite(site)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Ce site figure dans des tournées : désactivez-le pour conserver l'historique");
+                    "Ce site figure dans des tournées ou des commandes : désactivez-le pour conserver l'historique");
         }
         tourRepository.detachDepot(site);
         siteRepository.delete(site);
