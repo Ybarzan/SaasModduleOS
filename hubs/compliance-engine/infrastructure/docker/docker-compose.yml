@@ -52,7 +52,7 @@ services:
 
   # ── MinIO (S3-compatible object storage) ───────────────────────────────
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
     ports:
       - "${MINIO_API_PORT:-9000}:9000"
       - "${MINIO_CONSOLE_PORT:-9001}:9001"
@@ -71,7 +71,8 @@ services:
 
   # ── Init MinIO buckets (runs once) ────────────────────────────────────
   minio-init:
-    image: minio/mc:latest
+    build:
+      context: ./minio-init
     depends_on:
       minio:
         condition: service_healthy
