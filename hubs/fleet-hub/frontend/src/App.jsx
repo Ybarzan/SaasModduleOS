@@ -29,6 +29,9 @@ const SsoEntry = lazy(() => import('./pages/SsoEntry'))
 const DataImport = lazy(() => import('./pages/DataImport'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Settings = lazy(() => import('./pages/Settings'))
+const Tours = lazy(() => import('./pages/Tours'))
+const TourDetail = lazy(() => import('./pages/TourDetail'))
+const Sites = lazy(() => import('./pages/Sites'))
 const PointagePortal = lazy(() => import('./pages/pointage/PointagePortal'))
 
 // Transport (expéditions, transporteurs, tarifs, suivi)
@@ -163,6 +166,9 @@ export default function App() {
           <Route path="/trucks" element={<Trucks />} />
           <Route path="/trucks/:truckId" element={<TruckDetail />} />
           <Route path="/map" element={<MapPage />} />
+          <Route path="/tours" element={<Tours />} />
+          <Route path="/tours/:tourId" element={<TourDetail />} />
+          <Route path="/sites" element={<Sites />} />
           <Route path="/tachographie" element={<Tachographie />} />
           <Route path="/pointage-suivi" element={<Pointage />} />
           <Route path="/data" element={<DataEntry />} />

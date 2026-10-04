@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import { fleetTerms, usesTachograph } from '../fleet'
+import { fleetTerms, usesTachograph, usesTours } from '../fleet'
 
 /** @type {{fill: string, stroke: string, strokeWidth: number, strokeLinecap: 'round', strokeLinejoin: 'round'}} */
 const stroke = {
@@ -190,6 +190,27 @@ const icons = {
       }
     />
   ),
+  tours: (
+    <Icon
+      d={
+        <>
+          <circle cx="6" cy="18" r="2.2" />
+          <circle cx="18" cy="6" r="2.2" />
+          <path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8" />
+        </>
+      }
+    />
+  ),
+  sites: (
+    <Icon
+      d={
+        <>
+          <path d="M4 21V9l8-5 8 5v12" />
+          <path d="M9 21v-6h6v6" />
+        </>
+      }
+    />
+  ),
   settings: (
     <Icon
       d={
@@ -300,6 +321,8 @@ const icons = {
 
 const navItems = [
   { to: '/', label: 'Tableau de bord', icon: 'dashboard', end: true },
+  { to: '/tours', label: 'Tournées', icon: 'tours', end: false, show: usesTours },
+  { to: '/sites', label: 'Sites', icon: 'sites', end: false, show: usesTours },
   { to: '/drivers', label: 'Chauffeurs', icon: 'drivers', end: false },
   { to: '/tachographie', label: 'Tachographie', icon: 'tacho', end: false, show: usesTachograph },
   { to: '/pointage-suivi', label: 'Pointage', icon: 'pointage', end: false },

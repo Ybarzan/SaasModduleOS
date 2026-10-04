@@ -46,6 +46,8 @@ public class AccountService {
     private final NotificationRepository notificationRepository;
     private final NotificationRuleRepository notificationRuleRepository;
     private final IntegrationConfigRepository integrationConfigRepository;
+    private final SiteRepository siteRepository;
+    private final TourRepository tourRepository;
     private final PasswordEncoder passwordEncoder;
     private final StripeService stripeService;
 
@@ -75,6 +77,11 @@ public class AccountService {
                         "lastTestOk", c.getLastTestOk(),
                         "createdAt", c.getCreatedAt()))
                 .toList());
+        data.put("sites", siteRepository.findByCompanyIdOrderByNameAsc(companyId).stream()
+                .map(com.fleethub.dto.tour.SiteDto::of).toList());
+        data.put("tours", tourRepository.findByCompanyIdAndDateBetweenOrderByDateAscPlannedStartAsc(
+                        companyId, java.time.LocalDate.of(2000, 1, 1), java.time.LocalDate.of(2999, 12, 31)).stream()
+                .map(t -> com.fleethub.dto.tour.TourDto.of(t, true)).toList());
         return data;
     }
 
@@ -112,6 +119,8 @@ public class AccountService {
             }
         }
 
+        tourRepository.deleteByCompany_Id(companyId); // arrêts supprimés en cascade
+        siteRepository.deleteByCompany_Id(companyId);
         drivingEventRepository.deleteByCompany_Id(companyId);
         tripRepository.deleteByCompany_Id(companyId);
         tachographDayRepository.deleteByCompany_Id(companyId);

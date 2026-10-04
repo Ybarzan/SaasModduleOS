@@ -12,6 +12,7 @@ import com.fleethub.repository.DriverRepository;
 import com.fleethub.repository.DrivingEventRepository;
 import com.fleethub.repository.PointageEventRepository;
 import com.fleethub.repository.TachographDayRepository;
+import com.fleethub.repository.TourRepository;
 import com.fleethub.repository.TripRepository;
 import com.fleethub.security.AppUserPrincipal;
 import com.fleethub.security.TenantContext;
@@ -52,6 +53,7 @@ public class DriverController {
     private final CostRecordRepository costRecordRepository;
     private final PointageEventRepository pointageEventRepository;
     private final PointageService pointageService;
+    private final TourRepository tourRepository;
 
     @GetMapping
     @Operation(summary = "Lister les chauffeurs", description = "Retourne la liste de tous les chauffeurs avec leur affectation actuelle")
@@ -132,6 +134,7 @@ public class DriverController {
         eventRepository.deleteByDriver(d);
         tachographRepository.deleteByDriver(d);
         costRecordRepository.deleteByDriver(d);
+        tourRepository.detachDriver(d); // les tournées passées restent, sans chauffeur
         pointageEventRepository.deleteByDriver(d);
         pointageService.deletePortalAccount(id);
         driverRepository.delete(d);
