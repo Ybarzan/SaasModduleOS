@@ -1,13 +1,22 @@
-name: CI
+name: Compliance Engine CI
+
+# Ce dépôt étant un monorepo, GitHub Actions ne lit que .github/workflows à la
+# racine — hubs/compliance-engine/.github/workflows/ci.yml n'a jamais été
+# exécuté depuis la fusion en monorepo (même constat et même fix que pour
+# fleet-hub-ci.yml juste à côté). Ce fichier réactive la CI pour
+# compliance-engine spécifiquement (filtrée par path pour ne pas se
+# déclencher sur des changements fleet-hub).
 
 on:
   push:
     branches: [main, master]
+    paths: ['hubs/compliance-engine/**']
   pull_request:
     branches: [main, master]
+    paths: ['hubs/compliance-engine/**']
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: compliance-engine-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -17,7 +26,13 @@ jobs:
     timeout-minutes: 20
     defaults:
       run:
-        working-directory: backend
+        working-directory: hubs/compliance-engine/backend
+    # JWT_SECRET est requis par CredentialEncryptionService (pas de valeur par
+    # défaut sur ce placeholder précis) — sans lui, tout @SpringBootTest échoue
+    # au démarrage du contexte. Valeur CI uniquement, jamais utilisée en prod
+    # (voir SecurityPropertiesValidator qui rejette les secrets dev connus).
+    env:
+      JWT_SECRET: ci-only-test-jwt-secret-never-used-in-prod-32chars-min
     steps:
       - uses: actions/checkout@v4
 
@@ -26,15 +41,14 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
+          cache-dependency-path: hubs/compliance-engine/backend/pom.xml
 
-      # Suite complete auto-suffisante (H2 en memoire, aucun service externe requis
-      # -- confirme cette session : mvn test passe sans Docker/Postgres).
+      # Suite complete auto-suffisante (H2 en memoire, aucun service externe requis).
       - name: mvn test
         run: mvn -B test
 
       # Non lie a une phase du lifecycle (cf. pom.xml) donc jamais execute par
-      # `mvn test` ci-dessus -- sans cette etape, aucune regression SpotBugs
-      # n'aurait ete detectee en CI depuis son ajout le 2026-08-21.
+      # `mvn test` ci-dessus.
       - name: SpotBugs (analyse statique)
         run: mvn -B spotbugs:check
 
@@ -42,16 +56,16 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: backend-spotbugs-report
-          path: backend/target/spotbugsXml.xml
+          name: compliance-engine-backend-spotbugs-report
+          path: hubs/compliance-engine/backend/target/spotbugsXml.xml
           retention-days: 14
 
       - name: Publier le rapport JaCoCo
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: backend-jacoco-report
-          path: backend/target/site/jacoco/
+          name: compliance-engine-backend-jacoco-report
+          path: hubs/compliance-engine/backend/target/site/jacoco/
           retention-days: 14
 
   frontend:
@@ -60,7 +74,7 @@ jobs:
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: frontend
+        working-directory: hubs/compliance-engine/frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -68,7 +82,7 @@ jobs:
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: hubs/compliance-engine/frontend/package-lock.json
 
       - run: npm ci
       - name: Lint
@@ -84,7 +98,7 @@ jobs:
     timeout-minutes: 15
     defaults:
       run:
-        working-directory: mobile
+        working-directory: hubs/compliance-engine/mobile
     steps:
       - uses: actions/checkout@v4
 
@@ -92,7 +106,7 @@ jobs:
         with:
           node-version: '20'
           cache: npm
-          cache-dependency-path: mobile/package-lock.json
+          cache-dependency-path: hubs/compliance-engine/mobile/package-lock.json
 
       - run: npm ci
       - name: Lint
@@ -112,7 +126,7 @@ jobs:
     timeout-minutes: 10
     defaults:
       run:
-        working-directory: embeddings-service
+        working-directory: hubs/compliance-engine/embeddings-service
     steps:
       - uses: actions/checkout@v4
 
@@ -120,7 +134,7 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
-          cache-dependency-path: embeddings-service/requirements-dev.txt
+          cache-dependency-path: hubs/compliance-engine/embeddings-service/requirements-dev.txt
 
       # requirements-dev.txt n'installe volontairement PAS sentence-transformers/torch
       # (voir tests/conftest.py) : ces tests unitaires valident la logique des
@@ -141,7 +155,7 @@ jobs:
       - name: Build de l'image (sans push)
         uses: docker/build-push-action@v6
         with:
-          context: backend
+          context: hubs/compliance-engine/backend
           push: false
           tags: incokalk-backend:ci
 
@@ -156,7 +170,7 @@ jobs:
       - name: Build de l'image (sans push)
         uses: docker/build-push-action@v6
         with:
-          context: frontend
+          context: hubs/compliance-engine/frontend
           push: false
           tags: incokalk-frontend:ci
 
@@ -174,6 +188,6 @@ jobs:
       - name: Build de l'image (sans push)
         uses: docker/build-push-action@v6
         with:
-          context: embeddings-service
+          context: hubs/compliance-engine/embeddings-service
           push: false
           tags: incokalk-embeddings:ci
