@@ -92,8 +92,15 @@ export default function FlightRadar() {
       </div>
 
       <div className="map-container tracker-fullscreen">
-        <MapContainer center={DEFAULT_CENTER} zoom={DEFAULT_ZOOM} style={{ height: '100%', width: '100%' }}>
-          <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" attribution="&copy; CARTO &copy; OpenStreetMap" />
+        <MapContainer
+          center={DEFAULT_CENTER}
+          zoom={DEFAULT_ZOOM}
+          style={{ height: '100%', width: '100%' }}
+        >
+          <TileLayer
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution="&copy; CARTO &copy; OpenStreetMap"
+          />
           <BboxWatcher onChange={setBbox} />
           {flights.map((f) => (
             <Marker

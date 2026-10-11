@@ -38,7 +38,10 @@ export default function SharedTracking() {
 
   if (loading) {
     return (
-      <div className="cp-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        className="cp-page"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
         <span className="spinner" />
       </div>
     )
@@ -46,7 +49,10 @@ export default function SharedTracking() {
 
   if (error || !data) {
     return (
-      <div className="cp-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div
+        className="cp-page"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      >
         <div style={{ textAlign: 'center' }}>
           <h3>Lien invalide</h3>
           <p className="muted">{error || "Ce lien de suivi n'est plus disponible"}</p>
@@ -63,7 +69,11 @@ export default function SharedTracking() {
         <div className="cp-header-inner">
           <div className="cp-brand">
             {companyLogo ? (
-              <img src={companyLogo} alt={companyName} style={{ width: 38, height: 38, objectFit: 'cover' }} />
+              <img
+                src={companyLogo}
+                alt={companyName}
+                style={{ width: 38, height: 38, objectFit: 'cover' }}
+              />
             ) : (
               <span className="cp-brand-icon">📦</span>
             )}
@@ -80,7 +90,10 @@ export default function SharedTracking() {
         <div className="card">
           <div style={{ marginBottom: 14 }}>
             <div className="muted">Statut</div>
-            <span className={`badge badge-${STATUS_COLORS[shipment.status] || 'gray'}`} style={{ fontSize: 14, marginTop: 4 }}>
+            <span
+              className={`badge badge-${STATUS_COLORS[shipment.status] || 'gray'}`}
+              style={{ fontSize: 14, marginTop: 4 }}
+            >
               {STATUS_LABELS[shipment.status] || shipment.status}
             </span>
           </div>
@@ -135,7 +148,9 @@ export default function SharedTracking() {
                     {event.source && <span className="muted"> · via {event.source}</span>}
                     {event.description && <p className="muted">{event.description}</p>}
                     {event.location && <div className="muted">📍 {event.location}</div>}
-                    <span className="timeline-time">{new Date(event.eventTime).toLocaleString('fr-FR')}</span>
+                    <span className="timeline-time">
+                      {new Date(event.eventTime).toLocaleString('fr-FR')}
+                    </span>
                   </div>
                 </div>
               ))}

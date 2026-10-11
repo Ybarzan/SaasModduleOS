@@ -117,7 +117,11 @@ export default function SharedLinks() {
               </div>
               <div className="form-field">
                 <label>Label (optionnel)</label>
-                <input type="text" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
+                <input
+                  type="text"
+                  value={form.label}
+                  onChange={(e) => setForm({ ...form, label: e.target.value })}
+                />
               </div>
               <div className="form-field">
                 <label>Expiration en heures (optionnel)</label>
@@ -165,20 +169,36 @@ export default function SharedLinks() {
               {links.map((link) => (
                 <tr key={link.id}>
                   <td className="cell-strong">{link.label || '—'}</td>
-                  <td className="muted" style={{ fontFamily: 'var(--font-mono)' }}>{link.orderNumber}</td>
+                  <td className="muted" style={{ fontFamily: 'var(--font-mono)' }}>
+                    {link.orderNumber}
+                  </td>
                   <td>👁️ {link.accessCount}</td>
-                  <td className="muted">{link.expiresAt ? new Date(link.expiresAt).toLocaleDateString('fr-FR') : 'Jamais'}</td>
+                  <td className="muted">
+                    {link.expiresAt
+                      ? new Date(link.expiresAt).toLocaleDateString('fr-FR')
+                      : 'Jamais'}
+                  </td>
                   <td>
-                    <span className={`badge ${link.active ? 'badge-green' : 'badge-red'}`}>{link.active ? 'Actif' : 'Révoqué'}</span>
+                    <span className={`badge ${link.active ? 'badge-green' : 'badge-red'}`}>
+                      {link.active ? 'Actif' : 'Révoqué'}
+                    </span>
                   </td>
                   <td className="muted">{new Date(link.createdAt).toLocaleDateString('fr-FR')}</td>
                   <td>
                     {link.active && (
                       <div className="row-actions">
-                        <button className="btn btn-outline btn-sm" onClick={() => copyLink(link.url)}>
+                        <button
+                          className="btn btn-outline btn-sm"
+                          onClick={() => copyLink(link.url)}
+                        >
                           Copier
                         </button>
-                        <a href={link.url} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
+                        <a
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn btn-outline btn-sm"
+                        >
                           Ouvrir
                         </a>
                         <button className="btn btn-danger btn-sm" onClick={() => revoke(link.id)}>

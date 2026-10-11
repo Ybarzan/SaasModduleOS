@@ -65,7 +65,8 @@ export default function Clients() {
   }
 
   const remove = async (c) => {
-    if (!window.confirm(`Supprimer définitivement le compte client ${c.fullName || c.email} ?`)) return
+    if (!window.confirm(`Supprimer définitivement le compte client ${c.fullName || c.email} ?`))
+      return
     setBusyId(c.id)
     try {
       await api.delete(`/clients/${c.id}`)
@@ -138,19 +139,39 @@ export default function Clients() {
             <div className="data-grid">
               <div className="form-field">
                 <label>Nom complet *</label>
-                <input type="text" value={form.fullName} required onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
+                <input
+                  type="text"
+                  value={form.fullName}
+                  required
+                  onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                />
               </div>
               <div className="form-field">
                 <label>Email *</label>
-                <input type="email" value={form.email} required onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                <input
+                  type="email"
+                  value={form.email}
+                  required
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                />
               </div>
               <div className="form-field">
                 <label>Mot de passe (min. 8 car.) *</label>
-                <input type="password" value={form.password} required minLength={8} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                <input
+                  type="password"
+                  value={form.password}
+                  required
+                  minLength={8}
+                  onChange={(e) => setForm({ ...form, password: e.target.value })}
+                />
               </div>
               <div className="form-field">
                 <label>Téléphone</label>
-                <input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+                <input
+                  type="text"
+                  value={form.phone}
+                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                />
               </div>
             </div>
             <div className="form-actions">
@@ -179,7 +200,11 @@ export default function Clients() {
             />
           </div>
           <div className="form-actions">
-            <button className="btn btn-primary" disabled={newPw.length < 8 || submitting} onClick={resetPassword}>
+            <button
+              className="btn btn-primary"
+              disabled={newPw.length < 8 || submitting}
+              onClick={resetPassword}
+            >
               Réinitialiser
             </button>
             <button
@@ -221,18 +246,31 @@ export default function Clients() {
                   <td className="muted">{c.email}</td>
                   <td className="muted">{c.phone || '—'}</td>
                   <td>
-                    <span className={`badge ${c.active ? 'badge-green' : 'badge-red'}`}>{c.active ? 'Actif' : 'Inactif'}</span>
+                    <span className={`badge ${c.active ? 'badge-green' : 'badge-red'}`}>
+                      {c.active ? 'Actif' : 'Inactif'}
+                    </span>
                   </td>
                   <td className="muted">{new Date(c.createdAt).toLocaleDateString('fr-FR')}</td>
                   <td>
                     <div className="row-actions">
-                      <button className="btn btn-outline btn-sm" disabled={busyId === c.id} onClick={() => toggleActive(c)}>
+                      <button
+                        className="btn btn-outline btn-sm"
+                        disabled={busyId === c.id}
+                        onClick={() => toggleActive(c)}
+                      >
                         {c.active ? 'Désactiver' : 'Activer'}
                       </button>
-                      <button className="btn btn-outline btn-sm" onClick={() => setResetTarget(c.id)}>
+                      <button
+                        className="btn btn-outline btn-sm"
+                        onClick={() => setResetTarget(c.id)}
+                      >
                         Mot de passe
                       </button>
-                      <button className="btn btn-danger btn-sm" disabled={busyId === c.id} onClick={() => remove(c)}>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        disabled={busyId === c.id}
+                        onClick={() => remove(c)}
+                      >
                         Supprimer
                       </button>
                     </div>

@@ -64,7 +64,9 @@ export default function BrandingPortal() {
     if (!logoFile) return
     const fd = new FormData()
     fd.append('file', logoFile)
-    const res = await api.post('/branding/logo', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    const res = await api.post('/branding/logo', fd, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
     setLogoPreview(res.data?.logoUrl || logoPreview)
     setLogoFile(null)
     return res
@@ -148,19 +150,39 @@ export default function BrandingPortal() {
                 }}
               >
                 {logoPreview ? (
-                  <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  <img
+                    src={logoPreview}
+                    alt="Logo"
+                    style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  />
                 ) : (
                   <span style={{ fontSize: 24 }}>🖼️</span>
                 )}
               </div>
               <div>
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleLogoChange} style={{ display: 'none' }} />
-                <button type="button" className="btn btn-outline btn-sm" onClick={() => fileInputRef.current?.click()}>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  style={{ display: 'none' }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   Choisir un fichier
                 </button>
-                <p className="muted" style={{ fontSize: 11, marginTop: 6 }}>PNG, JPG ou SVG. Max 2 Mo.</p>
+                <p className="muted" style={{ fontSize: 11, marginTop: 6 }}>
+                  PNG, JPG ou SVG. Max 2 Mo.
+                </p>
                 {logoFile && (
-                  <button className="link" style={{ background: 'none', border: 'none', cursor: 'pointer', marginTop: 4 }} onClick={uploadLogo}>
+                  <button
+                    className="link"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', marginTop: 4 }}
+                    onClick={uploadLogo}
+                  >
                     Téléverser le logo
                   </button>
                 )}
@@ -176,15 +198,35 @@ export default function BrandingPortal() {
               <div className="form-field">
                 <label>Couleur primaire</label>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <input type="color" value={settings.primaryColor} onChange={(e) => updateField('primaryColor', e.target.value)} style={{ width: 44, padding: 2 }} />
-                  <input type="text" value={settings.primaryColor} onChange={(e) => updateField('primaryColor', e.target.value)} style={{ flex: 1, fontFamily: 'var(--font-mono)' }} />
+                  <input
+                    type="color"
+                    value={settings.primaryColor}
+                    onChange={(e) => updateField('primaryColor', e.target.value)}
+                    style={{ width: 44, padding: 2 }}
+                  />
+                  <input
+                    type="text"
+                    value={settings.primaryColor}
+                    onChange={(e) => updateField('primaryColor', e.target.value)}
+                    style={{ flex: 1, fontFamily: 'var(--font-mono)' }}
+                  />
                 </div>
               </div>
               <div className="form-field">
                 <label>Couleur secondaire</label>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <input type="color" value={settings.secondaryColor} onChange={(e) => updateField('secondaryColor', e.target.value)} style={{ width: 44, padding: 2 }} />
-                  <input type="text" value={settings.secondaryColor} onChange={(e) => updateField('secondaryColor', e.target.value)} style={{ flex: 1, fontFamily: 'var(--font-mono)' }} />
+                  <input
+                    type="color"
+                    value={settings.secondaryColor}
+                    onChange={(e) => updateField('secondaryColor', e.target.value)}
+                    style={{ width: 44, padding: 2 }}
+                  />
+                  <input
+                    type="text"
+                    value={settings.secondaryColor}
+                    onChange={(e) => updateField('secondaryColor', e.target.value)}
+                    style={{ flex: 1, fontFamily: 'var(--font-mono)' }}
+                  />
                 </div>
               </div>
             </div>
@@ -196,15 +238,27 @@ export default function BrandingPortal() {
             </div>
             <div className="form-field">
               <label>Titre du portail</label>
-              <input type="text" value={settings.portalTitle} onChange={(e) => updateField('portalTitle', e.target.value)} />
+              <input
+                type="text"
+                value={settings.portalTitle}
+                onChange={(e) => updateField('portalTitle', e.target.value)}
+              />
             </div>
             <div className="form-field" style={{ marginTop: 12 }}>
               <label>Message de bienvenue</label>
-              <textarea rows={3} value={settings.welcomeMessage} onChange={(e) => updateField('welcomeMessage', e.target.value)} />
+              <textarea
+                rows={3}
+                value={settings.welcomeMessage}
+                onChange={(e) => updateField('welcomeMessage', e.target.value)}
+              />
             </div>
             <div className="form-field" style={{ marginTop: 12 }}>
               <label>Texte du pied de page</label>
-              <input type="text" value={settings.footerText} onChange={(e) => updateField('footerText', e.target.value)} />
+              <input
+                type="text"
+                value={settings.footerText}
+                onChange={(e) => updateField('footerText', e.target.value)}
+              />
             </div>
           </div>
 
@@ -220,7 +274,9 @@ export default function BrandingPortal() {
                 onChange={(e) => updateField('customDomain', e.target.value)}
                 placeholder="portail.monentreprise.com"
               />
-              <p className="muted" style={{ fontSize: 11 }}>Configurez votre enregistrement DNS CNAME pointant vers votre portail Fleet Hub.</p>
+              <p className="muted" style={{ fontSize: 11 }}>
+                Configurez votre enregistrement DNS CNAME pointant vers votre portail Fleet Hub.
+              </p>
             </div>
           </div>
 
@@ -255,38 +311,145 @@ export default function BrandingPortal() {
               <h3>👁️ Aperçu</h3>
             </div>
             <div style={{ border: `1px solid ${settings.primaryColor}`, overflow: 'hidden' }}>
-              <div style={{ padding: '18px 20px', display: 'flex', alignItems: 'center', gap: 10, background: settings.primaryColor }}>
-                <div style={{ width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 11, background: 'rgba(255,255,255,0.2)' }}>
-                  {logoPreview ? <img src={logoPreview} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : 'FH'}
+              <div
+                style={{
+                  padding: '18px 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  background: settings.primaryColor
+                }}
+              >
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontWeight: 700,
+                    fontSize: 11,
+                    background: 'rgba(255,255,255,0.2)'
+                  }}
+                >
+                  {logoPreview ? (
+                    <img
+                      src={logoPreview}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                    />
+                  ) : (
+                    'FH'
+                  )}
                 </div>
-                <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{settings.portalTitle || 'Portail Client'}</span>
+                <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>
+                  {settings.portalTitle || 'Portail Client'}
+                </span>
               </div>
-              <div style={{ padding: 20, background: 'var(--card)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <h4 style={{ color: settings.primaryColor, margin: 0 }}>{settings.welcomeMessage || 'Bienvenue sur votre portail'}</h4>
+              <div
+                style={{
+                  padding: 20,
+                  background: 'var(--card)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12
+                }}
+              >
+                <h4 style={{ color: settings.primaryColor, margin: 0 }}>
+                  {settings.welcomeMessage || 'Bienvenue sur votre portail'}
+                </h4>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <div style={{ padding: 10, background: `${settings.primaryColor}1A`, borderLeft: `3px solid ${settings.primaryColor}` }}>
-                    <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: settings.primaryColor }}>Expéditions</p>
+                  <div
+                    style={{
+                      padding: 10,
+                      background: `${settings.primaryColor}1A`,
+                      borderLeft: `3px solid ${settings.primaryColor}`
+                    }}
+                  >
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: settings.primaryColor
+                      }}
+                    >
+                      Expéditions
+                    </p>
                     <p style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>12</p>
                   </div>
-                  <div style={{ padding: 10, background: `${settings.secondaryColor}1A`, borderLeft: `3px solid ${settings.secondaryColor}` }}>
-                    <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: settings.secondaryColor }}>En transit</p>
+                  <div
+                    style={{
+                      padding: 10,
+                      background: `${settings.secondaryColor}1A`,
+                      borderLeft: `3px solid ${settings.secondaryColor}`
+                    }}
+                  >
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: 11,
+                        fontWeight: 700,
+                        color: settings.secondaryColor
+                      }}
+                    >
+                      En transit
+                    </p>
                     <p style={{ margin: 0, fontSize: 22, fontWeight: 800 }}>5</p>
                   </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10, border: '1px solid var(--border)' }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: settings.primaryColor }} />
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: 10,
+                    border: '1px solid var(--border)'
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: settings.primaryColor
+                    }}
+                  />
                   <div style={{ flex: 1 }}>
                     <p style={{ margin: 0, fontSize: 12, fontWeight: 650 }}>EXP-2026-0042</p>
-                    <p className="muted" style={{ margin: 0, fontSize: 11 }}>Paris → New York</p>
+                    <p className="muted" style={{ margin: 0, fontSize: 11 }}>
+                      Paris → New York
+                    </p>
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 650, padding: '2px 8px', background: `${settings.secondaryColor}30`, color: settings.secondaryColor }}>En cours</span>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 650,
+                      padding: '2px 8px',
+                      background: `${settings.secondaryColor}30`,
+                      color: settings.secondaryColor
+                    }}
+                  >
+                    En cours
+                  </span>
                 </div>
               </div>
-              <div style={{ padding: '10px 20px', textAlign: 'center', fontSize: 11, background: `${settings.primaryColor}14`, color: settings.primaryColor }}>
+              <div
+                style={{
+                  padding: '10px 20px',
+                  textAlign: 'center',
+                  fontSize: 11,
+                  background: `${settings.primaryColor}14`,
+                  color: settings.primaryColor
+                }}
+              >
                 {settings.footerText || '© 2026 Fleet Hub'}
               </div>
             </div>
-            <p className="muted" style={{ fontSize: 11, textAlign: 'center', marginTop: 10 }}>Aperçu dynamique basé sur vos paramètres actuels</p>
+            <p className="muted" style={{ fontSize: 11, textAlign: 'center', marginTop: 10 }}>
+              Aperçu dynamique basé sur vos paramètres actuels
+            </p>
           </div>
         </div>
       </div>

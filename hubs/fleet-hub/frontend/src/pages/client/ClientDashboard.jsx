@@ -126,12 +126,17 @@ export default function ClientDashboard() {
               <div className="couple-card-top">
                 <div>
                   <strong style={{ fontFamily: 'var(--font-mono)' }}>{s.orderNumber}</strong>
-                  <span className={`badge badge-${STATUS_COLORS[s.status] || 'gray'}`} style={{ marginLeft: 8 }}>
+                  <span
+                    className={`badge badge-${STATUS_COLORS[s.status] || 'gray'}`}
+                    style={{ marginLeft: 8 }}
+                  >
                     {STATUS_LABELS[s.status] || s.status}
                   </span>
                 </div>
                 {s.estimatedDeliveryDate && (
-                  <span className="muted">{new Date(s.estimatedDeliveryDate).toLocaleDateString('fr-FR')}</span>
+                  <span className="muted">
+                    {new Date(s.estimatedDeliveryDate).toLocaleDateString('fr-FR')}
+                  </span>
                 )}
               </div>
               <div className="muted">

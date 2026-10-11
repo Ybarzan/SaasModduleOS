@@ -51,7 +51,10 @@ export default function Logistics() {
   const removeItem = (idx) => setItems(items.filter((_, i) => i !== idx))
 
   const totalWeight = items.reduce((s, i) => s + i.weightKg * i.quantity, 0)
-  const totalVolume = items.reduce((s, i) => s + ((i.lengthCm * i.widthCm * i.heightCm) / 1e6) * i.quantity, 0)
+  const totalVolume = items.reduce(
+    (s, i) => s + ((i.lengthCm * i.widthCm * i.heightCm) / 1e6) * i.quantity,
+    0
+  )
 
   const calculateAll = async () => {
     if (items.length === 0) {
@@ -148,11 +151,17 @@ export default function Logistics() {
                   {idx + 1}. <strong>{item.sku}</strong>
                 </span>
                 <span className="muted">
-                  {item.quantity}× {item.lengthCm}×{item.widthCm}×{item.heightCm}cm · {item.weightKg}kg{' '}
+                  {item.quantity}× {item.lengthCm}×{item.widthCm}×{item.heightCm}cm ·{' '}
+                  {item.weightKg}kg{' '}
                   <button
                     onClick={() => removeItem(idx)}
                     className="link"
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--red)' }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      color: 'var(--red)'
+                    }}
                   >
                     ✕
                   </button>
@@ -161,8 +170,15 @@ export default function Logistics() {
             ))}
           </div>
         )}
-        <div className="form-row" style={{ gridTemplateColumns: 'repeat(7, minmax(60px, 1fr))', alignItems: 'end' }}>
-          <input placeholder="SKU" value={newItem.sku} onChange={(e) => setNewItem({ ...newItem, sku: e.target.value })} />
+        <div
+          className="form-row"
+          style={{ gridTemplateColumns: 'repeat(7, minmax(60px, 1fr))', alignItems: 'end' }}
+        >
+          <input
+            placeholder="SKU"
+            value={newItem.sku}
+            onChange={(e) => setNewItem({ ...newItem, sku: e.target.value })}
+          />
           <input
             type="number"
             placeholder="L (cm)"
@@ -191,7 +207,9 @@ export default function Logistics() {
             type="number"
             placeholder="Qté"
             value={newItem.quantity}
-            onChange={(e) => setNewItem({ ...newItem, quantity: Math.max(1, Number(e.target.value)) })}
+            onChange={(e) =>
+              setNewItem({ ...newItem, quantity: Math.max(1, Number(e.target.value)) })
+            }
           />
           <button className="btn btn-primary" onClick={addItem}>
             + Ajouter
@@ -199,7 +217,11 @@ export default function Logistics() {
         </div>
 
         <div className="form-actions">
-          <button className="btn btn-primary btn-block" disabled={loading || items.length === 0} onClick={calculateAll}>
+          <button
+            className="btn btn-primary btn-block"
+            disabled={loading || items.length === 0}
+            onClick={calculateAll}
+          >
             {loading ? 'Calcul en cours…' : 'Calculer le packaging & les tarifs'}
           </button>
         </div>
@@ -222,7 +244,10 @@ export default function Logistics() {
               </div>
             </div>
             {packagingResult.boxes.map((box, idx) => (
-              <div key={idx} style={{ border: '1px solid var(--border)', padding: 10, marginBottom: 8 }}>
+              <div
+                key={idx}
+                style={{ border: '1px solid var(--border)', padding: 10, marginBottom: 8 }}
+              >
                 <div className="couple-card-top">
                   <strong>{box.boxRef}</strong>
                   <span className="muted">
@@ -234,12 +259,17 @@ export default function Logistics() {
                   <span className="muted">{box.utilizationPercent.toFixed(1)}% rempli</span>
                 </div>
                 <div className="ptg-progress-track" style={{ marginTop: 6 }}>
-                  <div className="ptg-progress-fill" style={{ width: `${Math.min(box.utilizationPercent, 100)}%` }} />
+                  <div
+                    className="ptg-progress-fill"
+                    style={{ width: `${Math.min(box.utilizationPercent, 100)}%` }}
+                  />
                 </div>
               </div>
             ))}
             {(packagingResult.unpackedItems?.length ?? 0) > 0 && (
-              <div className="alert alert-error">⚠️ {packagingResult.unpackedItems.length} article(s) non placé(s)</div>
+              <div className="alert alert-error">
+                ⚠️ {packagingResult.unpackedItems.length} article(s) non placé(s)
+              </div>
             )}
           </div>
 
@@ -249,15 +279,24 @@ export default function Logistics() {
                 <h3>🚛 Tarifs transport</h3>
               </div>
               <p className="muted">
-                {truckingResult.estimatedPallets} palette{truckingResult.estimatedPallets > 1 ? 's' : ''} —{' '}
-                {truckingResult.totalWeightKg} kg — {truckingResult.totalVolumeM3} m³
+                {truckingResult.estimatedPallets} palette
+                {truckingResult.estimatedPallets > 1 ? 's' : ''} — {truckingResult.totalWeightKg} kg
+                — {truckingResult.totalVolumeM3} m³
               </p>
               {truckingResult.options.map((opt) => (
-                <div key={opt.mode} className={`couple-card ${opt.recommended ? 'best-rate' : ''}`} style={{ marginBottom: 10 }}>
+                <div
+                  key={opt.mode}
+                  className={`couple-card ${opt.recommended ? 'best-rate' : ''}`}
+                  style={{ marginBottom: 10 }}
+                >
                   <div className="couple-card-top">
                     <div>
                       <strong>{opt.label}</strong>
-                      {opt.recommended && <span className="badge badge-green" style={{ marginLeft: 8 }}>Recommandé</span>}
+                      {opt.recommended && (
+                        <span className="badge badge-green" style={{ marginLeft: 8 }}>
+                          Recommandé
+                        </span>
+                      )}
                       <span className="muted block">{opt.description}</span>
                     </div>
                     <span className="score-pill good">{fmtEur(opt.costEur)}</span>

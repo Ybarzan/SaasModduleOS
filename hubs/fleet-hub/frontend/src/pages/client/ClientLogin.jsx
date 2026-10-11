@@ -18,7 +18,10 @@ export default function ClientLogin() {
       const res = await api.post('/client/auth/login', { email, password })
       const { token, clientId, email: em, fullName, companyId } = res.data
       localStorage.setItem('fh_client_token', token)
-      localStorage.setItem('fh_client_user', JSON.stringify({ id: clientId, email: em, fullName, companyId }))
+      localStorage.setItem(
+        'fh_client_user',
+        JSON.stringify({ id: clientId, email: em, fullName, companyId })
+      )
       navigate('/client/dashboard')
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur de connexion')
@@ -31,7 +34,10 @@ export default function ClientLogin() {
     <div className="cp-page cp-login-shell">
       <div className="cp-login-box">
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div className="cp-brand-icon" style={{ margin: '0 auto 12px', width: 56, height: 56, fontSize: 28 }}>
+          <div
+            className="cp-brand-icon"
+            style={{ margin: '0 auto 12px', width: 56, height: 56, fontSize: 28 }}
+          >
             📦
           </div>
           <h2>Espace client</h2>
@@ -43,11 +49,22 @@ export default function ClientLogin() {
           <form onSubmit={handleSubmit}>
             <div className="form-field">
               <label>Email</label>
-              <input type="email" value={email} required onChange={(e) => setEmail(e.target.value)} placeholder="client@entreprise.com" />
+              <input
+                type="email"
+                value={email}
+                required
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="client@entreprise.com"
+              />
             </div>
             <div className="form-field" style={{ marginTop: 14 }}>
               <label>Mot de passe</label>
-              <input type="password" value={password} required onChange={(e) => setPassword(e.target.value)} />
+              <input
+                type="password"
+                value={password}
+                required
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
             <div className="form-actions">
               <button type="submit" className="btn btn-primary btn-block" disabled={loading}>

@@ -58,7 +58,10 @@ export default function ClientShipmentDetail() {
 
   if (loading) {
     return (
-      <div className="cp-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        className="cp-page"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
         <span className="muted">Chargement…</span>
       </div>
     )
@@ -66,7 +69,10 @@ export default function ClientShipmentDetail() {
 
   if (!shipment) {
     return (
-      <div className="cp-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        className="cp-page"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+      >
         <span className="muted">Expédition introuvable</span>
       </div>
     )
@@ -88,7 +94,11 @@ export default function ClientShipmentDetail() {
               <span className={`badge badge-${STATUS_COLORS[shipment.status] || 'gray'}`}>
                 {STATUS_LABELS[shipment.status] || shipment.status}
               </span>
-              {shipment.incotermCode && <span className="badge badge-gray" style={{ marginLeft: 6 }}>{shipment.incotermCode}</span>}
+              {shipment.incotermCode && (
+                <span className="badge badge-gray" style={{ marginLeft: 6 }}>
+                  {shipment.incotermCode}
+                </span>
+              )}
             </div>
           </div>
           {shipment.carrierName && (
@@ -115,7 +125,9 @@ export default function ClientShipmentDetail() {
             <div className="cp-route-point end">
               <div className="muted">Destination</div>
               <strong>{shipment.consigneeCity || '—'}</strong>
-              {shipment.consigneeCountry && <div className="muted">{shipment.consigneeCountry}</div>}
+              {shipment.consigneeCountry && (
+                <div className="muted">{shipment.consigneeCountry}</div>
+              )}
             </div>
           </div>
         </div>
@@ -157,7 +169,11 @@ export default function ClientShipmentDetail() {
             </div>
             <div className="couple-stat">
               <span>Livraison est.</span>
-              <b>{shipment.estimatedDeliveryDate ? new Date(shipment.estimatedDeliveryDate).toLocaleDateString('fr-FR') : '—'}</b>
+              <b>
+                {shipment.estimatedDeliveryDate
+                  ? new Date(shipment.estimatedDeliveryDate).toLocaleDateString('fr-FR')
+                  : '—'}
+              </b>
             </div>
           </div>
         </div>
@@ -168,7 +184,11 @@ export default function ClientShipmentDetail() {
           </div>
           <div className="chip-row">
             {DOCUMENTS.map((doc) => (
-              <button key={doc.type} className="btn btn-outline btn-sm" onClick={() => downloadDoc(id, doc.type, shipment.orderNumber).catch(() => {})}>
+              <button
+                key={doc.type}
+                className="btn btn-outline btn-sm"
+                onClick={() => downloadDoc(id, doc.type, shipment.orderNumber).catch(() => {})}
+              >
                 ⬇ {doc.label}
               </button>
             ))}
@@ -189,10 +209,16 @@ export default function ClientShipmentDetail() {
                   <div className="timeline-body">
                     <span className="badge badge-blue">{event.status}</span>
                     {event.source && <span className="muted"> · via {event.source}</span>}
-                    {event.dataSource === 'MANUAL' && <span className="badge badge-gray" style={{ marginLeft: 6 }}>Manuel</span>}
+                    {event.dataSource === 'MANUAL' && (
+                      <span className="badge badge-gray" style={{ marginLeft: 6 }}>
+                        Manuel
+                      </span>
+                    )}
                     {event.description && <p className="muted">{event.description}</p>}
                     {event.location && <div className="muted">📍 {event.location}</div>}
-                    <span className="timeline-time">{new Date(event.eventTime).toLocaleString('fr-FR')}</span>
+                    <span className="timeline-time">
+                      {new Date(event.eventTime).toLocaleString('fr-FR')}
+                    </span>
                   </div>
                 </div>
               ))}
