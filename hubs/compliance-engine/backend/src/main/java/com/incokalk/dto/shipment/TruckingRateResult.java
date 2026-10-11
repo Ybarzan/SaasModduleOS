@@ -30,7 +30,11 @@ public class TruckingRateResult {
         private String mode;
         private String label;
         private double costEur;
-        private int transitDays;
+        /**
+         * Jours de transit bornés par les temps de conduite du Règl. (CE) 561/2006 ;
+         * null si la distance n'est pas fournie (jamais une valeur forfaitaire).
+         */
+        private Integer transitDays;
         private double co2Kg;
         private String description;
         private double costPerPallet;

@@ -40,7 +40,10 @@ class SimulationServiceTest {
         MockitoAnnotations.openMocks(this);
         when(currencySvc.toEur(anyDouble(), anyString())).thenAnswer(i -> i.getArgument(0));
         when(freightSvc.estimate(any(),any(),any(),any(),any(),anyDouble())).thenReturn(new com.incokalk.service.FreightRateService.FreightEstimate(2800.0, 35));
-        when(dutySvc.calculate(any(),any(),any(),anyDouble(),anyDouble(),anyDouble(),anyDouble(),any())).thenReturn(1500.0);
+        when(dutySvc.calculateDetailed(any(),any(),any(),anyDouble(),anyDouble(),anyDouble(),anyDouble(),any()))
+            .thenReturn(new CustomsDutyService.DutyResult(1500.0, 3.0, "AD", false, null, null, 3.0, 0.0, "MFN"));
+        when(currencySvc.quote(anyString())).thenAnswer(i -> new CurrencyService.FxQuote(
+            ((String) i.getArgument(0)).toUpperCase(), 1.0, "IDENTITY"));
         when(vatService.getStandardRate(anyString())).thenReturn(20.0);
         when(vatService.calculate(anyString(), anyString(), anyDouble(), anyDouble(), anyDouble(), anyString(), anyBoolean()))
             .thenReturn(new VatService.VatResult(10000.0, 20.0, "STANDARD", "IMPORT_TAI_REVERSE_CHARGE", true, false,
@@ -94,12 +97,43 @@ class SimulationServiceTest {
         assertThat(service.simulate(req, null).getTotalBuyerCost()).isPositive();
     }
 
-    @Test @DisplayName("Sans code HS → warning généré")
-    void noHsCode_warningPresent() {
+    @Test @DisplayName("Sans taux de droit fiable → droits exclus, drapeau + avertissement (plus de 3,5 % inventés)")
+    void dutiesUnavailable_flaggedAndExcluded() {
         req.setIncoterm(Incoterm.FOB);
         req.setHsCode(null);
+        when(dutySvc.calculateDetailed(any(),any(),any(),anyDouble(),anyDouble(),anyDouble(),anyDouble(),any()))
+            .thenReturn(CustomsDutyService.DutyResult.unavailable("Code HS manquant ou incomplet (4 chiffres minimum)."));
         SimulationResult r = service.simulate(req, null);
-        assertThat(r.getWarnings()).anyMatch(w -> w.contains("code HS"));
+        assertThat(r.isDutiesAvailable()).isFalse();
+        assertThat(r.getDutyBasisType()).isNull();
+        assertThat(r.getBuyerCosts().getImportDuties()).isZero();
+        assertThat(r.getWarnings()).anyMatch(w -> w.contains("Droits de douane non inclus") && w.contains("Code HS"));
+        assertThat(r.getWarnings()).noneMatch(w -> w.contains("3.5%"));
+    }
+
+    @Test @DisplayName("Réponse : devise, taux de change et base des droits déclarés")
+    void currencyAndBasisDeclared() {
+        req.setIncoterm(Incoterm.FOB);
+        SimulationResult r = service.simulate(req, null);
+        assertThat(r.getCurrency()).isEqualTo("EUR");
+        assertThat(r.getInputCurrency()).isEqualTo("EUR");
+        assertThat(r.getFxRate()).isEqualTo(1.0);
+        assertThat(r.getFxSource()).isEqualTo("IDENTITY");
+        assertThat(r.isDutiesAvailable()).isTrue();
+        assertThat(r.getDutyBasisType()).isEqualTo(CustomsDutyService.BASIS_CIF_EU);
+    }
+
+    @Test @DisplayName("Saisie en USD → conversion signalée avec son taux et sa provenance")
+    void foreignInputCurrency_conversionDeclared() {
+        req.setIncoterm(Incoterm.FOB);
+        req.setCurrency("USD");
+        when(currencySvc.quote("USD")).thenReturn(new CurrencyService.FxQuote("USD", 0.922, "STATIC_FALLBACK"));
+        SimulationResult r = service.simulate(req, null);
+        assertThat(r.getInputCurrency()).isEqualTo("USD");
+        assertThat(r.getCurrency()).isEqualTo("EUR");
+        assertThat(r.getFxRate()).isEqualTo(0.922);
+        assertThat(r.getFxSource()).isEqualTo("STATIC_FALLBACK");
+        assertThat(r.getWarnings()).anyMatch(w -> w.contains("USD") && w.contains("0.922") && w.contains("non daté"));
     }
 
     @Test @DisplayName("Total = somme des postes acheteur")

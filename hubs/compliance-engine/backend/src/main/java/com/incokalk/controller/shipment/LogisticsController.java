@@ -52,35 +52,43 @@ public class LogisticsController {
         double freight = request.getFreightCost() != null ? request.getFreightCost() : 0;
         double insurance = request.getInsuranceCost() != null ? request.getInsuranceCost() : 0;
         double cif = request.getGoodsValue() + freight + insurance;
-        double rate = customsDutyService.findRate(request.getHsCode(), request.getOriginCountry(), request.getDestinationCountry());
-        double duty = customsDutyService.calculate(request.getHsCode(), request.getOriginCountry(), request.getDestinationCountry(), request.getGoodsValue(), freight, insurance);
+        CustomsDutyService.DutyResult d = customsDutyService.calculateDetailed(request.getHsCode(),
+            request.getOriginCountry(), request.getDestinationCountry(), request.getGoodsValue(), freight, insurance);
 
-        String agreement = customsDutyService.getEUAgreement(request.getOriginCountry());
-
-        String currency = request.getCurrency() != null ? request.getCurrency() : "EUR";
-        if (!"EUR".equalsIgnoreCase(currency) && duty > 0) {
-            double converted = currencyExchangeService.convert(duty, "EUR", currency);
-            return ResponseEntity.ok(CustomsDutyResult.builder()
-                .hsCode(request.getHsCode())
-                .originCountry(request.getOriginCountry().toUpperCase())
-                .destinationCountry(request.getDestinationCountry().toUpperCase())
-                .cifValue(Math.round(cif * 100.0) / 100.0)
-                .dutyRate(Math.round(rate * 10000.0) / 10000.0)
-                .dutyAmount(Math.round(converted * 100.0) / 100.0)
-                .agreement(agreement)
-                .note("Montant converti en " + currency + " (taux: " + currencyExchangeService.getRate("EUR", currency) + ")")
-                .build());
-        }
-
-        return ResponseEntity.ok(CustomsDutyResult.builder()
+        var builder = CustomsDutyResult.builder()
             .hsCode(request.getHsCode())
             .originCountry(request.getOriginCountry().toUpperCase())
             .destinationCountry(request.getDestinationCountry().toUpperCase())
             .cifValue(Math.round(cif * 100.0) / 100.0)
-            .dutyRate(Math.round(rate * 10000.0) / 10000.0)
-            .dutyAmount(duty)
-            .agreement(agreement)
-            .note(agreement != null ? "Accord commercial préférentiel applicable: " + agreement : "Droit de douane standard")
+            .rateAvailable(d.rateAvailable())
+            .basisType(d.basisType());
+
+        if (!d.rateAvailable()) {
+            // Ni taux ni montant : un chiffre crédible et faux est plus dangereux qu'une absence.
+            return ResponseEntity.ok(builder.currency(CustomsDutyService.CURRENCY).note(d.notes()).build());
+        }
+
+        // "agreement" = accord effectivement appliqué, pas simplement un accord existant pour l'origine.
+        builder.dutyRate(Math.round(d.dutyRate() * 10000.0) / 10000.0)
+            .agreement(d.isPrefential() ? d.agreementName() : null);
+
+        String currency = request.getCurrency() != null ? request.getCurrency().toUpperCase() : CustomsDutyService.CURRENCY;
+        if (!CustomsDutyService.CURRENCY.equals(currency)) {
+            double fx = currencyExchangeService.getRate(CustomsDutyService.CURRENCY, currency);
+            double converted = currencyExchangeService.convert(d.dutyAmount(), CustomsDutyService.CURRENCY, currency);
+            return ResponseEntity.ok(builder
+                .dutyAmount(Math.round(converted * 100.0) / 100.0)
+                .currency(currency)
+                .fxRate(fx)
+                .note(d.notes() + " — montant converti de EUR en " + currency + " (taux: " + fx + ")")
+                .build());
+        }
+
+        return ResponseEntity.ok(builder
+            .dutyAmount(d.dutyAmount())
+            .currency(CustomsDutyService.CURRENCY)
+            .fxRate(1.0)
+            .note(d.notes())
             .build());
     }
 

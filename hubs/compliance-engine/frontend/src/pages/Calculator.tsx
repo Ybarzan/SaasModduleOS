@@ -43,7 +43,7 @@ interface TruckingOption {
   label: string;
   description: string;
   recommended?: boolean;
-  transitDays: number;
+  transitDays: number | null;
   costPerPallet: number;
   co2Kg: number;
   costEur: number;
@@ -751,7 +751,7 @@ const Calculator = () => {
                               </div>
                               <p className="text-[11px] text-ink-soft mt-0.5">{opt.description}</p>
                               <div className="flex gap-3 mt-1 text-[11px] text-ink-soft">
-                                <span>⏱ {opt.transitDays}j</span><span>💰 {opt.costPerPallet} €/pal</span><span>🌱 {opt.co2Kg} kg CO₂</span>
+                                <span>⏱ {opt.transitDays != null ? `${opt.transitDays}j` : '—'}</span><span>💰 {opt.costPerPallet} €/pal</span><span>🌱 {opt.co2Kg} kg CO₂</span>
                               </div>
                             </div>
                             <div className="text-right ml-4">

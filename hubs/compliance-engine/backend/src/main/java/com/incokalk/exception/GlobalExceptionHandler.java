@@ -10,6 +10,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
@@ -65,6 +66,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleMissingParam(MissingServletRequestParameterException ex) {
         return ResponseEntity.badRequest()
             .body(new ErrorResponse("MISSING_PARAMETER", "Paramètre requis manquant : " + ex.getParameterName(), null));
+    }
+
+    /** Paramètre de chemin/requête non convertible (ex. UUID "1") : erreur client, pas 500. */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String expected = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "valeur";
+        return ResponseEntity.badRequest()
+            .body(new ErrorResponse("INVALID_PARAMETER",
+                "Paramètre '" + ex.getName() + "' invalide : " + expected + " attendu", null));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)

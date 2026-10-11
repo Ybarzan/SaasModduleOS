@@ -602,8 +602,8 @@ class EtaPredictionServiceTest {
     // ── predict — predictedArrival branch ───────────────────────────────────
 
     @Test
-    @DisplayName("predict → predictedArrival déjà défini → non écrasé")
-    void predict_predictedArrival_alreadySet() {
+    @DisplayName("predict → predictedArrival envoyé par le client ignoré : arrivée = référence + predictedDays")
+    void predict_predictedArrival_clientValueIgnored_invariantHolds() {
         LocalDateTime existing = LocalDateTime.of(2030, 1, 1, 0, 0);
         try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class);
              MockedStatic<LocalDateTime> time = mockStatic(LocalDateTime.class, CALLS_REAL_METHODS)) {
@@ -615,7 +615,10 @@ class EtaPredictionServiceTest {
             EtaPrediction p = base().predictedArrival(existing).build();
             EtaPrediction result = service.predict(p);
 
-            assertThat(result.getPredictedArrival()).isEqualTo(existing);
+            // Avant : la date du client était conservée alors que predictedDays était recalculé.
+            assertThat(result.getPredictedArrival()).isNotEqualTo(existing);
+            assertThat(java.time.Duration.between(NEUTRAL_MARCH, result.getPredictedArrival()).toDays())
+                .isEqualTo(result.getPredictedDays().longValue());
         }
     }
 

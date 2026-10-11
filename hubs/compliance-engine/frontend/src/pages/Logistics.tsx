@@ -18,7 +18,8 @@ interface TruckOption {
   mode: string;
   label: string;
   costEur: number;
-  transitDays: number;
+  /** null si la distance n'a pas été fournie (aucun délai forfaitaire). */
+  transitDays: number | null;
   co2Kg: number;
   description: string;
   costPerPallet: number;
@@ -256,7 +257,7 @@ const LogisticsDashboard = () => {
                           </div>
                           <p className="text-xs text-ink-soft mt-1">{opt.description}</p>
                           <div className="flex gap-4 mt-2 text-xs text-ink-soft">
-                            <span>⏱ {opt.transitDays} jour{opt.transitDays > 1 ? 's' : ''}</span>
+                            <span>⏱ {opt.transitDays != null ? `${opt.transitDays} jour${opt.transitDays > 1 ? 's' : ''}` : '— (distance requise)'}</span>
                             <span>💰 {opt.costPerPallet} €/palette</span>
                             <span>🌱 {opt.co2Kg} kg CO₂</span>
                           </div>

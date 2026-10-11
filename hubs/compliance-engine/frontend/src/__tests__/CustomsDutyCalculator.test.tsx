@@ -86,4 +86,23 @@ describe("CustomsDutyCalculator page", () => {
       expect(toast.error).toHaveBeenCalledWith("Erreur lors du calcul");
     });
   });
+
+  it("shows 'non disponibles' instead of a rate when the API has no reliable tariff", async () => {
+    vi.mocked(incokalkAPI.customs.getDuty).mockResolvedValue({
+      data: {
+        rateAvailable: false,
+        dutyType: "UNAVAILABLE",
+        hsCode: "847130", origin: "FR", destination: "US",
+        isPrefential: false, savings: 0, cifValue: 12100, currency: "EUR",
+        notes: "Données tarifaires non disponibles — rapprochement transitaire requis. Aucun référentiel pour US.",
+      },
+    } as never);
+    renderPage();
+
+    fireEvent.click(screen.getByRole("button", { name: /Calculer les droits de douane/ }));
+
+    expect(await screen.findByText("Droits de douane non disponibles")).toBeInTheDocument();
+    expect(screen.getByText(/Aucun référentiel pour US/)).toBeInTheDocument();
+    expect(screen.queryByText("Droits à payer")).not.toBeInTheDocument();
+  });
 });

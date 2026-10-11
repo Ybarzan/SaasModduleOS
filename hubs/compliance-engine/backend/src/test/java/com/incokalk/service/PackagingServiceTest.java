@@ -172,4 +172,50 @@ class PackagingServiceTest {
         assertThat(result.getUnpackedItems()).isEmpty();
         assertThat(result.getBoxes().get(0).getBoxRef()).isEqualTo("CUSTOM-SMALL");
     }
+
+    // ── Audit P0-11 : plus de palette pour un petit envoi, alerte < 60 % ──────────
+
+    @Test
+    @DisplayName("Un seul portable : carton adapté, jamais la palette (avant : BOX-PALLET à < 1 %)")
+    void singleSmallItem_smallestFittingBox() {
+        PackagingRequest req = new PackagingRequest();
+        req.setItems(List.of(itemBuilder("LAPTOP", 38, 26, 3, 2.0, 1)));
+        PackagingResult res = service.calculatePackaging(req);
+        assertThat(res.getBoxes()).hasSize(1);
+        assertThat(res.getBoxes().get(0).getBoxRef()).isEqualTo("BOX-S");
+    }
+
+    @Test
+    @DisplayName("Volume restant : une boîte assez grande pour tout le lot plutôt que N petites")
+    void boxSizedForRemainingVolume() {
+        PackagingRequest req = new PackagingRequest();
+        req.setItems(List.of(itemBuilder("LAPTOP", 38, 26, 3, 2.0, 20)));
+        PackagingResult res = service.calculatePackaging(req);
+        assertThat(res.getUnpackedItems()).isEmpty();
+        assertThat(res.getBoxes()).allSatisfy(b -> assertThat(b.getBoxRef()).isNotEqualTo("BOX-PALLET"));
+        int packed = res.getBoxes().stream().flatMap(b -> b.getPackedItems().stream())
+            .mapToInt(PackagingResult.PackedItem::getQuantity).sum();
+        assertThat(packed).isEqualTo(20);
+    }
+
+    @Test
+    @DisplayName("Contenant rempli à moins de 60 % → alerte")
+    void underfilledContainer_warns() {
+        PackagingRequest req = new PackagingRequest();
+        req.setItems(List.of(itemBuilder("SMALL", 10, 10, 10, 1.0, 1)));
+        req.setAvailableBoxes(List.of(customBox("IB-TC-10", 120, 100, 80, 500)));
+        PackagingResult res = service.calculatePackaging(req);
+        assertThat(res.getWarnings()).singleElement().asString()
+            .contains("IB-TC-10").contains("< 60");
+    }
+
+    @Test
+    @DisplayName("Contenant bien rempli → pas d'alerte")
+    void wellFilledContainer_noWarning() {
+        PackagingRequest req = new PackagingRequest();
+        req.setItems(List.of(itemBuilder("BLOCK", 40, 30, 25, 5.0, 1)));
+        req.setAvailableBoxes(List.of(customBox("EXACT", 40, 30, 30, 50)));
+        PackagingResult res = service.calculatePackaging(req);
+        assertThat(res.getWarnings()).isEmpty();
+    }
 }
