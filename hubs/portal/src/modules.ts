@@ -23,6 +23,7 @@ export interface PraxioModule {
 
 const COMPLIANCE_URL = import.meta.env.VITE_COMPLIANCE_URL ?? 'http://localhost:5173';
 const FLEETHUB_URL = import.meta.env.VITE_FLEETHUB_URL ?? 'http://localhost:5199';
+const LOGISTIX_URL = import.meta.env.VITE_LOGISTIX_URL ?? 'http://localhost:5181';
 
 export const modules: PraxioModule[] = [
   {
@@ -44,10 +45,10 @@ export const modules: PraxioModule[] = [
   {
     id: 'logistix',
     name: 'Logistix',
-    tagline: 'Entrepôts, réception, inventaire — en cours d’extraction de Compliance Engine.',
-    status: 'integrated',
-    statusLabel: 'dans compliance engine',
-    href: `${COMPLIANCE_URL}/warehouses`,
+    tagline: 'Entrepôts, réception, inventaire, scan de réception.',
+    status: 'live',
+    statusLabel: 'autonome',
+    href: LOGISTIX_URL,
   },
   {
     id: 'fleethub',
