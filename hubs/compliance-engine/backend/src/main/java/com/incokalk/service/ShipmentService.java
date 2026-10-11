@@ -37,7 +37,6 @@ public class ShipmentService {
     private final UserRepository userRepo;
     private final EventPublisher eventPublisher;
     private final ShipmentItemRepository shipmentItemRepo;
-    private final InventoryService inventoryService;
     private final ClientUserRepository clientUserRepo;
 
 
@@ -118,11 +117,11 @@ public class ShipmentService {
         ShipmentOrder saved = shipmentRepo.save(shipment);
         if (dto.getItems() != null) {
             for (ShipmentOrderDTO.ShipmentOrderItemDTO itemDto : dto.getItems()) {
-                UUID itemId = null;
-                if (itemDto.getItemId() != null) {
-                    inventoryService.getItem(itemDto.getItemId());
-                    itemId = itemDto.getItemId();
-                }
+                // itemId is a soft reference (no SQL FK) into Logistix's inventory
+                // catalogue, which now lives in its own standalone backend. We no
+                // longer validate it exists locally. A future improvement could do
+                // an async/best-effort REST call to Logistix to re-introduce that check.
+                UUID itemId = itemDto.getItemId();
                 ShipmentItem si = ShipmentItem.builder()
                         .companyId(companyId)
                         .shipmentId(saved.getId())
@@ -331,11 +330,11 @@ public class ShipmentService {
     public ShipmentItem addShipmentItem(UUID shipmentId, ShipmentOrderDTO.ShipmentOrderItemDTO dto, UUID companyId) {
         shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Commande non trouvée"));
-        UUID itemId = null;
-        if (dto.getItemId() != null) {
-            inventoryService.getItem(dto.getItemId());
-            itemId = dto.getItemId();
-        }
+        // itemId is a soft reference (no SQL FK) into Logistix's inventory
+        // catalogue, which now lives in its own standalone backend. We no
+        // longer validate it exists locally. A future improvement could do
+        // an async/best-effort REST call to Logistix to re-introduce that check.
+        UUID itemId = dto.getItemId();
         ShipmentItem item = ShipmentItem.builder()
                 .companyId(companyId)
                 .shipmentId(shipmentId)

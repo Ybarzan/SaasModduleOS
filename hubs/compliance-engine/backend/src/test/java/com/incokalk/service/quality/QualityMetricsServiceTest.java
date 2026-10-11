@@ -2,13 +2,9 @@ package com.incokalk.service.quality;
 
 import com.incokalk.model.ClientInvoice;
 import com.incokalk.model.CustomsDeclaration;
-import com.incokalk.model.Discrepancy;
-import com.incokalk.model.ReceivingOrderLine;
 import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.ClientInvoiceRepository;
 import com.incokalk.repository.CustomsDeclarationRepository;
-import com.incokalk.repository.DiscrepancyRepository;
-import com.incokalk.repository.ReceivingOrderLineRepository;
 import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.tenant.TenantContext;
 import org.junit.jupiter.api.AfterEach;
@@ -16,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,8 +26,6 @@ class QualityMetricsServiceTest {
     QualityMetricsService service;
     ShipmentOrderRepository shipmentRepo;
     CustomsDeclarationRepository declarationRepo;
-    ReceivingOrderLineRepository lineRepo;
-    DiscrepancyRepository discrepancyRepo;
     ClientInvoiceRepository invoiceRepo;
     UUID companyId;
 
@@ -40,10 +33,8 @@ class QualityMetricsServiceTest {
     void setUp() {
         shipmentRepo = mock(ShipmentOrderRepository.class);
         declarationRepo = mock(CustomsDeclarationRepository.class);
-        lineRepo = mock(ReceivingOrderLineRepository.class);
-        discrepancyRepo = mock(DiscrepancyRepository.class);
         invoiceRepo = mock(ClientInvoiceRepository.class);
-        service = new QualityMetricsService(shipmentRepo, declarationRepo, lineRepo, discrepancyRepo, invoiceRepo);
+        service = new QualityMetricsService(shipmentRepo, declarationRepo, invoiceRepo);
         companyId = UUID.randomUUID();
         TenantContext.set(companyId);
 
@@ -51,8 +42,6 @@ class QualityMetricsServiceTest {
         for (CustomsDeclaration.DeclarationStatus s : CustomsDeclaration.DeclarationStatus.values()) {
             when(declarationRepo.countByCompanyIdAndStatus(any(), eq(s))).thenReturn(0L);
         }
-        when(lineRepo.findByCompanyId(any())).thenReturn(List.of());
-        when(discrepancyRepo.findByCompanyIdOrderByCreatedAtDesc(any())).thenReturn(List.of());
         when(invoiceRepo.findByCompanyIdOrderByCreatedAtDesc(any())).thenReturn(List.of());
     }
 
@@ -66,7 +55,7 @@ class QualityMetricsServiceTest {
     void getReport_allEmpty_returnsEmptyOverall() {
         QualityMetricsService.QualityReport report = service.getReport();
 
-        assertThat(report.characteristics()).hasSize(4);
+        assertThat(report.characteristics()).hasSize(3);
         assertThat(report.overall().opportunities()).isZero();
         assertThat(report.overall().sigma()).isNull();
     }
@@ -115,37 +104,6 @@ class QualityMetricsServiceTest {
     }
 
     @Test
-    @DisplayName("receivingAccuracy → exclut quantité reçue nulle, compte les lignes avec écart signalé")
-    void receivingAccuracy_excludesZeroQuantity_countsDiscrepantLines() {
-        UUID line1 = UUID.randomUUID();
-        UUID line3 = UUID.randomUUID();
-        ReceivingOrderLine l1 = new ReceivingOrderLine();
-        l1.setId(line1);
-        l1.setQuantityReceived(new BigDecimal("5"));
-        ReceivingOrderLine l2 = new ReceivingOrderLine();
-        l2.setId(UUID.randomUUID());
-        l2.setQuantityReceived(BigDecimal.ZERO);
-        ReceivingOrderLine l3 = new ReceivingOrderLine();
-        l3.setId(line3);
-        l3.setQuantityReceived(new BigDecimal("2"));
-
-        when(lineRepo.findByCompanyId(companyId)).thenReturn(List.of(l1, l2, l3));
-
-        Discrepancy d1 = new Discrepancy();
-        d1.setLineId(line1);
-        Discrepancy d2 = new Discrepancy();
-        d2.setLineId(null);
-        when(discrepancyRepo.findByCompanyIdOrderByCreatedAtDesc(companyId)).thenReturn(List.of(d1, d2));
-
-        QualityMetricsService.QualityReport report = service.getReport();
-        QualityMetricsService.Ctq receiving = report.characteristics().get(2);
-
-        assertThat(receiving.key()).isEqualTo("receiving_accuracy");
-        assertThat(receiving.result().opportunities()).isEqualTo(2);
-        assertThat(receiving.result().defects()).isEqualTo(1);
-    }
-
-    @Test
     @DisplayName("invoiceTimeliness → exclut DRAFT, exclut PAID/CANCELLED du calcul de retard, compte les échues")
     void invoiceTimeliness_excludesDraftAndPaid_countsOverdue() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
@@ -171,7 +129,7 @@ class QualityMetricsServiceTest {
                 .thenReturn(List.of(draft, overdueUnpaid, overduePaid, notYetDue));
 
         QualityMetricsService.QualityReport report = service.getReport();
-        QualityMetricsService.Ctq invoicing = report.characteristics().get(3);
+        QualityMetricsService.Ctq invoicing = report.characteristics().get(2);
 
         assertThat(invoicing.key()).isEqualTo("invoice_timeliness");
         assertThat(invoicing.result().opportunities()).isEqualTo(3);

@@ -2,25 +2,17 @@ package com.incokalk.service.quality;
 
 import com.incokalk.model.ClientInvoice;
 import com.incokalk.model.CustomsDeclaration;
-import com.incokalk.model.Discrepancy;
-import com.incokalk.model.ReceivingOrderLine;
 import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.ClientInvoiceRepository;
 import com.incokalk.repository.CustomsDeclarationRepository;
-import com.incokalk.repository.DiscrepancyRepository;
-import com.incokalk.repository.ReceivingOrderLineRepository;
 import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Calcule des indicateurs qualité Six Sigma (DPMO, rendement, niveau sigma)
@@ -28,6 +20,12 @@ import java.util.stream.Collectors;
  * valeurs simulées. Chaque caractéristique critique qualité (CTQ) rend
  * {@code null} quand le volume de données est insuffisant plutôt que
  * d'afficher un chiffre trompeur.
+ *
+ * <p>Note : la CTQ "précision de réception" (qui dépendait des entités de
+ * réception/entrepôt) a été retirée lors de l'extraction du domaine
+ * entrepôt/réception vers le hub Logistix autonome. Une réintroduction
+ * future nécessiterait un appel REST vers Logistix plutôt qu'une lecture
+ * locale.</p>
  */
 @Service
 @RequiredArgsConstructor
@@ -35,8 +33,6 @@ public class QualityMetricsService {
 
     private final ShipmentOrderRepository shipmentRepo;
     private final CustomsDeclarationRepository declarationRepo;
-    private final ReceivingOrderLineRepository lineRepo;
-    private final DiscrepancyRepository discrepancyRepo;
     private final ClientInvoiceRepository invoiceRepo;
 
     private static final List<CustomsDeclaration.DeclarationStatus> SUBMITTED_DECLARATION_STATUSES = List.of(
@@ -56,10 +52,9 @@ public class QualityMetricsService {
 
         Ctq onTime = onTimeDelivery(companyId);
         Ctq customs = customsFirstPassYield(companyId);
-        Ctq receiving = receivingAccuracy(companyId);
         Ctq invoicing = invoiceTimeliness(companyId);
 
-        List<Ctq> ctqs = List.of(onTime, customs, receiving, invoicing);
+        List<Ctq> ctqs = List.of(onTime, customs, invoicing);
 
         long totalOpportunities = ctqs.stream()
                 .mapToLong(c -> c.result().opportunities()).sum();
@@ -91,23 +86,6 @@ public class QualityMetricsService {
         long defects = declarationRepo.countByCompanyIdAndStatus(companyId, CustomsDeclaration.DeclarationStatus.REJECTED);
         return new Ctq("customs_first_pass", "Conformité déclarations douanières",
                 "Déclarations soumises acceptées du premier coup (non rejetées) par les autorités",
-                SigmaCalculator.compute(opportunities, defects));
-    }
-
-    private Ctq receivingAccuracy(UUID companyId) {
-        List<ReceivingOrderLine> lines = lineRepo.findByCompanyId(companyId).stream()
-                .filter(l -> l.getQuantityReceived() != null && l.getQuantityReceived().compareTo(BigDecimal.ZERO) > 0)
-                .toList();
-        long opportunities = lines.size();
-
-        Set<UUID> defectiveLineIds = discrepancyRepo.findByCompanyIdOrderByCreatedAtDesc(companyId).stream()
-                .map(Discrepancy::getLineId)
-                .filter(id -> id != null)
-                .collect(Collectors.toSet());
-        long defects = lines.stream().filter(l -> defectiveLineIds.contains(l.getId())).count();
-
-        return new Ctq("receiving_accuracy", "Précision de réception",
-                "Lignes de réception sans écart (manquant, surplus, dommage ou produit imprévu)",
                 SigmaCalculator.compute(opportunities, defects));
     }
 

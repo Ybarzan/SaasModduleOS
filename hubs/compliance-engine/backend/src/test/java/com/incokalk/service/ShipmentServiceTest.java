@@ -48,7 +48,6 @@ class ShipmentServiceTest {
     @Mock private UserRepository userRepo;
     @Mock private EventPublisher eventPublisher;
     @Mock private ShipmentItemRepository shipmentItemRepo;
-    @Mock private InventoryService inventoryService;
     @Mock private ClientUserRepository clientUserRepo;
 
     private ShipmentService service;
@@ -65,7 +64,7 @@ class ShipmentServiceTest {
         MockitoAnnotations.openMocks(this);
         service = new ShipmentService(shipmentRepo, trackingEventRepo, carrierRepo,
                 shippingRateRepo, companyRepo, userRepo, eventPublisher,
-                shipmentItemRepo, inventoryService, clientUserRepo);
+                shipmentItemRepo, clientUserRepo);
         TenantContext.set(companyId);
 
         company = new Company();
