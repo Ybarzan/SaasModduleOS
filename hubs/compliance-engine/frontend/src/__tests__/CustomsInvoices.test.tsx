@@ -8,7 +8,6 @@ import { incokalkAPI } from "../lib/api";
 vi.mock("../lib/api", () => ({
   incokalkAPI: {
     customsInvoices: { list: vi.fn(), get: vi.fn(), getByShipment: vi.fn(), generate: vi.fn() },
-    shipments: { getAll: vi.fn() },
   },
 }));
 
@@ -58,8 +57,6 @@ const invoice = {
   createdAt: "2026-08-24T00:00:00Z",
 };
 
-const shipment = { id: "s2", orderNumber: "CMD-002", consigneeName: "New Corp", consigneeCity: "Berlin" };
-
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
@@ -108,30 +105,27 @@ describe("CustomsInvoices page", () => {
     expect(screen.getByText(/FR123456789/)).toBeInTheDocument();
   });
 
-  it("lists shipments without an existing invoice in the generate modal", async () => {
+  it("asks for a shipment ID as a plain text field in the generate modal", async () => {
     vi.mocked(incokalkAPI.customsInvoices.list).mockResolvedValue({ data: [invoice] } as never);
-    vi.mocked(incokalkAPI.shipments.getAll).mockResolvedValue({ data: [shipment] } as never);
     renderPage();
     await waitFor(() => screen.getByText("CD-20260824-1234"));
 
     fireEvent.click(screen.getByRole("button", { name: /Générer une facture/ }));
 
-    await waitFor(() => {
-      expect(screen.getByText(/CMD-002/)).toBeInTheDocument();
-    });
+    const input = screen.getByPlaceholderText(/UUID de l'expédition/) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Générer" })).toBeDisabled();
   });
 
-  it("generates an invoice for the selected shipment", async () => {
+  it("generates an invoice for a manually entered shipment ID", async () => {
     vi.mocked(incokalkAPI.customsInvoices.list).mockResolvedValue({ data: [] } as never);
-    vi.mocked(incokalkAPI.shipments.getAll).mockResolvedValue({ data: [shipment] } as never);
     vi.mocked(incokalkAPI.customsInvoices.generate).mockResolvedValue({} as never);
     renderPage();
     await waitFor(() => screen.getByText("Aucune facture douanière"));
 
     fireEvent.click(screen.getByRole("button", { name: /Générer une facture/ }));
-    await waitFor(() => screen.getByText(/CMD-002/));
-
-    fireEvent.change(screen.getByDisplayValue("Sélectionner une expédition"), { target: { value: "s2" } });
+    const input = screen.getByPlaceholderText(/UUID de l'expédition/);
+    fireEvent.change(input, { target: { value: "s2" } });
     fireEvent.click(screen.getByRole("button", { name: "Générer" }));
 
     await waitFor(() => {
@@ -142,7 +136,6 @@ describe("CustomsInvoices page", () => {
 
   it("shows an error toast when generation fails", async () => {
     vi.mocked(incokalkAPI.customsInvoices.list).mockResolvedValue({ data: [] } as never);
-    vi.mocked(incokalkAPI.shipments.getAll).mockResolvedValue({ data: [shipment] } as never);
     vi.mocked(incokalkAPI.customsInvoices.generate).mockRejectedValue({
       response: { data: { message: "Expédition non trouvée" } },
     } as never);
@@ -150,8 +143,8 @@ describe("CustomsInvoices page", () => {
     await waitFor(() => screen.getByText("Aucune facture douanière"));
 
     fireEvent.click(screen.getByRole("button", { name: /Générer une facture/ }));
-    await waitFor(() => screen.getByText(/CMD-002/));
-    fireEvent.change(screen.getByDisplayValue("Sélectionner une expédition"), { target: { value: "s2" } });
+    const input = screen.getByPlaceholderText(/UUID de l'expédition/);
+    fireEvent.change(input, { target: { value: "s2" } });
     fireEvent.click(screen.getByRole("button", { name: "Générer" }));
 
     await waitFor(() => {

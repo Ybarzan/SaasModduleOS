@@ -7,7 +7,6 @@ import { incokalkAPI } from "../lib/api";
 vi.mock("../lib/api", () => ({
   incokalkAPI: {
     notificationRules: { getPage: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), test: vi.fn() },
-    carriers: { getAll: vi.fn() },
   },
 }));
 
@@ -27,16 +26,12 @@ const rule = {
   webhookUrl: "",
   webhookSecret: "",
   filterStatus: "",
-  filterCarrierId: "",
 };
-
-const carrier = { id: "c1", name: "DHL Express" };
 
 function mockDefaults() {
   vi.mocked(incokalkAPI.notificationRules.getPage).mockResolvedValue({
     data: { content: [rule], totalPages: 1 },
   } as never);
-  vi.mocked(incokalkAPI.carriers.getAll).mockResolvedValue({ data: [] } as never);
 }
 
 function renderPage() {
@@ -167,8 +162,7 @@ describe("NotificationRules page", () => {
     expect(screen.getByText(/budget max 500/)).toBeInTheDocument();
   });
 
-  it("reveals governance fields when an action type is selected", async () => {
-    vi.mocked(incokalkAPI.carriers.getAll).mockResolvedValue({ data: [carrier] } as never);
+  it("reveals the budget field when an action type is selected (no carrier picker)", async () => {
     renderPage();
     await waitFor(() => screen.getByText("Alerte transit"));
 
@@ -180,11 +174,10 @@ describe("NotificationRules page", () => {
     });
 
     expect(screen.getByText("Budget maximum (€, optionnel)")).toBeInTheDocument();
-    expect(screen.getByLabelText("DHL Express")).toBeInTheDocument();
+    expect(screen.queryByText(/Transporteurs autorisés/)).not.toBeInTheDocument();
   });
 
-  it("creates a rule with an action type, budget and allowed carrier", async () => {
-    vi.mocked(incokalkAPI.carriers.getAll).mockResolvedValue({ data: [carrier] } as never);
+  it("creates a rule with an action type and budget", async () => {
     vi.mocked(incokalkAPI.notificationRules.create).mockResolvedValue({} as never);
     renderPage();
     await waitFor(() => screen.getByText("Alerte transit"));
@@ -197,7 +190,6 @@ describe("NotificationRules page", () => {
       target: { value: "SUGGEST_ERP_ORDER_ADJUSTMENT" },
     });
     fireEvent.change(screen.getByPlaceholderText("Aucune limite"), { target: { value: "1000" } });
-    fireEvent.click(screen.getByLabelText("DHL Express"));
     fireEvent.click(screen.getByRole("button", { name: "Créer" }));
 
     await waitFor(() => {
@@ -206,7 +198,6 @@ describe("NotificationRules page", () => {
           name: "Ajustement auto",
           actionType: "SUGGEST_ERP_ORDER_ADJUSTMENT",
           maxBudgetAmount: 1000,
-          allowedCarrierIds: "c1",
         })
       );
     });
@@ -261,7 +252,6 @@ describe("NotificationRules page", () => {
         expect.objectContaining({
           name: "Règle composée",
           filterStatus: undefined,
-          filterCarrierId: undefined,
           filterDataSource: undefined,
         })
       );

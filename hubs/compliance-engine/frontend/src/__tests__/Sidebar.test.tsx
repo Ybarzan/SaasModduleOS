@@ -39,20 +39,20 @@ describe("Sidebar", () => {
     expect(screen.getByText("Calculateur Incoterms")).toBeInTheDocument();
   });
 
-  it("hides admin-only items from a USER role", () => {
+  it("hides manager-only items from a USER role", () => {
     renderSidebar("/dashboard", "USER");
-    // "Gestion tarifs" (adminOnly) must never render for a USER, regardless of group state.
-    expect(screen.queryByText("Gestion tarifs")).not.toBeInTheDocument();
+    // "Landed Cost" (requiredRole MANAGER) must never render for a USER, regardless of group state.
+    expect(screen.queryByText("Landed Cost")).not.toBeInTheDocument();
   });
 
-  it("auto-expands the group containing the active route and shows admin items for ADMIN", () => {
-    renderSidebar("/shipping-rates", "ADMIN");
-    expect(screen.getByText("Gestion tarifs")).toBeInTheDocument();
+  it("auto-expands the group containing the active route and shows manager items for ADMIN", () => {
+    renderSidebar("/landed-cost", "ADMIN");
+    expect(screen.getByText("Landed Cost")).toBeInTheDocument();
   });
 
   it("persists the active group's expanded state to localStorage", () => {
-    renderSidebar("/shipping-rates", "ADMIN");
+    renderSidebar("/landed-cost", "ADMIN");
     const stored = JSON.parse(localStorage.getItem("incokalk-sidebar-groups") || "{}");
-    expect(stored.transport).toBe(true);
+    expect(stored["import-export"]).toBe(true);
   });
 });

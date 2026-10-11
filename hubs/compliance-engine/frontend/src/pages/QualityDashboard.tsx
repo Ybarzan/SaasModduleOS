@@ -78,7 +78,7 @@ const QualityDashboard = () => {
             </h1>
             <p className="text-ink-soft mt-1 max-w-2xl">
               Niveau sigma, DPMO et rendement calculés en direct sur vos données opérationnelles —
-              expéditions, déclarations douanières, réceptions et facturation.
+              déclarations douanières et facturation.
             </p>
           </div>
         </PageRevealItem>
@@ -178,8 +178,8 @@ const QualityDashboard = () => {
             <p>
               Le niveau sigma est calculé selon la méthode Six Sigma long terme (décalage de 1,5σ) à
               partir du rendement observé sur chaque caractéristique. Chaque carte se met à jour au fur
-              et à mesure que vos expéditions, déclarations, réceptions et factures avancent dans leur
-              cycle de vie — aucune valeur n'est simulée.
+              et à mesure que vos déclarations et factures avancent dans leur cycle de vie — aucune
+              valeur n'est simulée.
             </p>
           </div>
         </PageRevealItem>

@@ -1,12 +1,12 @@
 import type { LucideIcon } from 'lucide-react';
 import { ROLE_HIERARCHY, hasMinimumPlan, type UserRole, type PlanId } from '../stores/auth';
 import {
-  LayoutDashboard, Truck, Search, Package, Wifi, Bell, Users, Database,
-  ScrollText, Calculator, Link2, Ship, Plane, Leaf, Shield, DollarSign, Scale, Umbrella,
-  Route, FileText, CreditCard, Globe, BookOpen, FileCheck, ShieldAlert, Tag, Receipt,
-  BarChart3, Clock, CheckSquare, TrendingDown, Calendar, ShoppingCart, Building2,
-  GraduationCap, Palette, Mail, KeyRound, Webhook, Euro, Boxes,
-  Target, Zap,
+  LayoutDashboard, Bell, Users, Database,
+  ScrollText, Calculator, Leaf, Shield, DollarSign, Scale,
+  FileText, CreditCard, Globe, BookOpen, FileCheck, ShieldAlert, Tag, Receipt,
+  BarChart3, TrendingDown, Calendar, ShoppingCart, Building2,
+  GraduationCap, Mail, KeyRound, Webhook, Euro,
+  Zap, CheckSquare,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -45,7 +45,6 @@ export interface StandaloneNavItem extends NavItem {
 export const STANDALONE_ITEMS: StandaloneNavItem[] = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
   { to: '/simulation', icon: Calculator, label: 'Calculateur Incoterms', highlight: true },
-  { to: '/eta-predictions', icon: Clock, label: 'Prédictions ETA', highlight: true, requiredRole: 'MANAGER' },
 ];
 
 /**
@@ -74,29 +73,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/dps', icon: ShieldAlert, label: 'Screening parties', requiredRole: 'MANAGER', requiredPlan: 'PRO' },
       { to: '/french-fiscal', icon: Euro, label: 'Fiscalité FR', requiredRole: 'ADMIN', requiredPlan: 'PRO' },
       { to: '/compliance', icon: Shield, label: 'Conformité', requiredRole: 'ADMIN', requiredPlan: 'PRO' },
-    ],
-  },
-  {
-    id: 'transport',
-    label: 'Transport Multimodal',
-    icon: Truck,
-    items: [
-      { to: '/quotes', icon: Search, label: 'Devis', requiredPlan: 'STARTER' },
-      { to: '/shipments', icon: Package, label: 'Expéditions', requiredPlan: 'STARTER' },
-      { to: '/logistics', icon: Package, label: 'Logistique', requiredPlan: 'STARTER' },
-      { to: '/carriers', icon: Truck, label: 'Transporteurs', requiredPlan: 'STARTER' },
-      { to: '/carrier-bookings', icon: Calendar, label: 'Réservations', requiredPlan: 'STARTER' },
-      { to: '/rate-comparison', icon: Scale, label: 'Comparateur tarifs', requiredPlan: 'STARTER' },
-      { to: '/shipping-rates', icon: DollarSign, label: 'Gestion tarifs', requiredRole: 'MANAGER', requiredPlan: 'STARTER' },
-      { to: '/groupage', icon: Boxes, label: 'Groupage & Co-loading', requiredRole: 'MANAGER', requiredPlan: 'STARTER' },
-      { to: '/optimisation-itineraire', icon: Route, label: 'Optimisation itinéraire', requiredPlan: 'STARTER' },
-      { to: '/optimization', icon: TrendingDown, label: 'Optimisation tarifaire', requiredRole: 'MANAGER' },
-      { to: '/ship-tracker', icon: Ship, label: 'Ship Tracker', requiredPlan: 'STARTER' },
-      { to: '/flight-radar', icon: Plane, label: 'Flight Radar', requiredPlan: 'STARTER' },
-      { to: '/assurance-cargo', icon: Umbrella, label: 'Assurance cargo', requiredPlan: 'STARTER' },
-      { to: '/co2', icon: Leaf, label: 'Émissions CO₂', requiredPlan: 'STARTER' },
-      { to: '/quality', icon: Target, label: 'Qualité Six Sigma', requiredRole: 'MANAGER', requiredPlan: 'STARTER' },
-      { to: '/approvals', icon: CheckSquare, label: 'Workflows approbation', requiredRole: 'MANAGER', requiredPlan: 'STARTER' },
+      { to: '/quality', icon: BarChart3, label: 'Qualité (Six Sigma)', requiredRole: 'MANAGER', requiredPlan: 'STARTER' },
+      { to: '/approvals', icon: CheckSquare, label: "Workflows d'approbation", requiredRole: 'MANAGER', requiredPlan: 'STARTER' },
     ],
   },
   {
@@ -114,7 +92,6 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Finance & Trésorerie',
     icon: DollarSign,
     items: [
-      { to: '/carrier-invoices', icon: Receipt, label: 'Facturation transporteurs', requiredRole: 'MANAGER', requiredPlan: 'ENTERPRISE' },
       { to: '/client-invoices', icon: Receipt, label: 'Facturation clients', requiredRole: 'ADMIN', requiredPlan: 'ENTERPRISE' },
       { to: '/payment-terms', icon: Calendar, label: 'Paiements', requiredRole: 'MANAGER', requiredPlan: 'ENTERPRISE' },
       { to: '/change', icon: DollarSign, label: 'Taux de change', requiredPlan: 'ENTERPRISE' },
@@ -123,16 +100,6 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/financials', icon: BarChart3, label: 'Reporting financier', requiredRole: 'ADMIN', requiredPlan: 'ENTERPRISE' },
       { to: '/carbon', icon: Leaf, label: 'Dashboard carbone', requiredRole: 'MANAGER', requiredPlan: 'ENTERPRISE' },
       { to: '/csrd', icon: FileText, label: 'Reporting CSRD', requiredRole: 'ADMIN', requiredPlan: 'ENTERPRISE' },
-    ],
-  },
-  {
-    id: 'client-portal',
-    label: 'Portail Client',
-    icon: Link2,
-    items: [
-      { to: '/clients', icon: Users, label: 'Clients', requiredRole: 'ADMIN', requiredPlan: 'STARTER' },
-      { to: '/shared-links', icon: Link2, label: 'Liens de suivi', requiredRole: 'ADMIN', requiredPlan: 'STARTER' },
-      { to: '/branding', icon: Palette, label: 'Portail White-Label', requiredRole: 'ADMIN', requiredPlan: 'STARTER' },
     ],
   },
   {
@@ -149,11 +116,10 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/api-keys', icon: KeyRound, label: 'Clés API', requiredRole: 'ADMIN' },
       { to: '/webhooks', icon: Webhook, label: 'Webhooks', requiredRole: 'ADMIN' },
       { to: '/erp', icon: Database, label: 'Intégrations ERP' },
-      { to: '/fleethub', icon: Truck, label: 'Fleet Hub', requiredRole: 'MANAGER' },
       { to: '/ecommerce', icon: ShoppingCart, label: 'E-Commerce', requiredRole: 'MANAGER' },
-      { to: '/providers', icon: Wifi, label: 'Fournisseurs' },
       { to: '/notifications', icon: Bell, label: 'Notifications' },
       { to: '/notification-rules', icon: Bell, label: 'Règles de notification', requiredRole: 'MANAGER' },
+      { to: '/co2', icon: Leaf, label: 'Calculateur CO₂' },
       { to: '/academy', icon: GraduationCap, label: 'Academy' },
     ],
   },

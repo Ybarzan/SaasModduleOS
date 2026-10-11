@@ -9,19 +9,7 @@ import { useAuthStore } from "../stores/auth";
 
 vi.mock("../lib/api", () => ({
   incokalkAPI: {
-    analytics: {
-      dashboard: vi.fn(),
-      shipmentsOverTime: vi.fn(),
-      shipmentsByStatus: vi.fn(),
-      costByCarrier: vi.fn(),
-      costByMode: vi.fn(),
-      topRoutes: vi.fn(),
-      incotermUsage: vi.fn(),
-      weightDistribution: vi.fn(),
-      volumeDistribution: vi.fn(),
-      costTrends: vi.fn(),
-      carrierPerformance: vi.fn(),
-    },
+    analytics: { dashboard: vi.fn() },
     currencies: { convert: vi.fn() },
     simulation: { getHistory: vi.fn(), delete: vi.fn() },
     billing: { getPlans: vi.fn() },
@@ -32,18 +20,9 @@ vi.mock("react-hot-toast", () => ({
   default: { success: vi.fn(), error: vi.fn() },
 }));
 
+// Depuis le retrait du domaine Transport, AnalyticsService (backend) ne renvoie
+// plus que ces deux champs (voir SimulationRepository).
 const stats = {
-  totalShipments: 42,
-  activeShipments: 5,
-  totalShippingCost: 123456,
-  averageShippingCost: 2940,
-  totalCarriers: 8,
-  activeCarriers: 6,
-  totalCo2Kg: 1000,
-  averageCo2PerShipment: 23.8,
-  totalWeightKg: 5000,
-  totalVolumeM3: 30,
-  totalGoodsValue: 900000,
   simulationsThisMonth: 12,
 };
 
@@ -62,16 +41,6 @@ const simulations = [
 
 function mockDefaults() {
   vi.mocked(incokalkAPI.analytics.dashboard).mockResolvedValue({ data: stats } as never);
-  vi.mocked(incokalkAPI.analytics.shipmentsOverTime).mockResolvedValue({ data: [] } as never);
-  vi.mocked(incokalkAPI.analytics.shipmentsByStatus).mockResolvedValue({ data: [] } as never);
-  vi.mocked(incokalkAPI.analytics.costByCarrier).mockResolvedValue({ data: [] } as never);
-  vi.mocked(incokalkAPI.analytics.costByMode).mockResolvedValue({ data: [] } as never);
-  vi.mocked(incokalkAPI.analytics.topRoutes).mockResolvedValue({ data: [] } as never);
-  vi.mocked(incokalkAPI.analytics.incotermUsage).mockResolvedValue({ data: [] } as never);
-  vi.mocked(incokalkAPI.analytics.weightDistribution).mockResolvedValue({ data: [] } as never);
-  vi.mocked(incokalkAPI.analytics.volumeDistribution).mockResolvedValue({ data: [] } as never);
-  vi.mocked(incokalkAPI.analytics.costTrends).mockResolvedValue({ data: [] } as never);
-  vi.mocked(incokalkAPI.analytics.carrierPerformance).mockResolvedValue({ data: [] } as never);
   vi.mocked(incokalkAPI.currencies.convert).mockResolvedValue({ data: { from: "EUR", to: "USD", convertedAmount: 1.08 } } as never);
   vi.mocked(incokalkAPI.simulation.getHistory).mockResolvedValue({ data: { content: simulations, totalElements: 1 } } as never);
   vi.mocked(incokalkAPI.billing.getPlans).mockResolvedValue({ data: [{ recommended: true, priceMonthly: 149, priceAnnual: 1519 }] } as never);
@@ -103,21 +72,22 @@ describe("Dashboard page", () => {
     expect(screen.getByText("Veuillez vous connecter pour voir votre tableau de bord.")).toBeInTheDocument();
   });
 
-  it("renders the KPI cards once analytics data loads", async () => {
+  it("renders the simulations-this-month KPI and the FX rates once loaded", async () => {
     useAuthStore.setState({ token: "tok", refreshToken: "r", user: { id: "u1", email: "a@b.com", firstName: "A", lastName: "B", role: "USER" } as never });
     renderDashboard();
 
     await waitFor(() => {
-      expect(screen.getByText("42")).toBeInTheDocument();
+      expect(screen.getByText("12")).toBeInTheDocument();
     });
-    expect(screen.getByText("8")).toBeInTheDocument();
-    expect(screen.getByText("123 456 €")).toBeInTheDocument();
+    expect(screen.getByText("Simulations ce mois")).toBeInTheDocument();
+    // Les 3 paires FX résolvent toutes vers le même mock, donc 3 cartes identiques.
+    expect(screen.getAllByText("1.0800")).toHaveLength(3);
   });
 
   it("refreshing invalidates analytics and shows a confirmation toast", async () => {
     useAuthStore.setState({ token: "tok", refreshToken: "r", user: { id: "u1", email: "a@b.com", firstName: "A", lastName: "B", role: "USER" } as never });
     renderDashboard();
-    await waitFor(() => expect(screen.getByText("42")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("12")).toBeInTheDocument());
 
     fireEvent.click(screen.getByRole("button", { name: /Actualiser/ }));
     expect(toast.success).toHaveBeenCalledWith("Données actualisées");
@@ -129,7 +99,7 @@ describe("Dashboard page", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
     renderDashboard();
-    await waitFor(() => expect(screen.getByText("42")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("12")).toBeInTheDocument());
 
     fireEvent.click(screen.getByText("Historique des simulations"));
     await waitFor(() => {
@@ -154,7 +124,7 @@ describe("Dashboard page", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
 
     renderDashboard();
-    await waitFor(() => expect(screen.getByText("42")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("12")).toBeInTheDocument());
     fireEvent.click(screen.getByText("Historique des simulations"));
     await waitFor(() => screen.getByText("FOB"));
 
@@ -168,7 +138,7 @@ describe("Dashboard page", () => {
   it("computes the ROI calculator's net savings from the default inputs", async () => {
     useAuthStore.setState({ token: "tok", refreshToken: "r", user: { id: "u1", email: "a@b.com", firstName: "A", lastName: "B", role: "USER" } as never });
     renderDashboard();
-    await waitFor(() => expect(screen.getByText("42")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("12")).toBeInTheDocument());
 
     // Defaults: 30 shipments, 250€ avg, 20h saved, 40€/h, 10% margin, plan pro annual 1519/12 ≈ 127€/mois
     // savingsTime = 20*40 = 800, savingsMargin = 0.10*250*30 = 750, total = 1550
