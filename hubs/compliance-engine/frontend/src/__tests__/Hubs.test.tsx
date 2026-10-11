@@ -27,8 +27,8 @@ describe("Hubs page", () => {
 
   it("shows a plan badge derived from the actual gating in navigation.ts", () => {
     renderPage();
-    // Warehouse & Finance hubs are entirely ENTERPRISE-gated in navigation.ts
-    expect(screen.getAllByText("À partir du plan Suite")).toHaveLength(2);
+    // Finance hub is entirely ENTERPRISE-gated in navigation.ts
+    expect(screen.getAllByText("À partir du plan Suite")).toHaveLength(1);
     // Platform hub items carry no requiredPlan (never sold alone)
     expect(screen.getByText("Inclus dans tous les plans")).toBeInTheDocument();
     // Import-Export and Documents & Automatisation (since /orchestration-suggestions is PRO-gated) both span STARTER through PRO

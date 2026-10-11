@@ -5,8 +5,8 @@ import {
   ScrollText, Calculator, Link2, Ship, Plane, Leaf, Shield, DollarSign, Scale, Umbrella,
   Route, FileText, CreditCard, Globe, BookOpen, FileCheck, ShieldAlert, Tag, Receipt,
   BarChart3, Clock, CheckSquare, TrendingDown, Calendar, ShoppingCart, Building2,
-  GraduationCap, Palette, Mail, KeyRound, Webhook, Euro, Warehouse, Boxes, ClipboardList,
-  ScanLine, Target, Zap,
+  GraduationCap, Palette, Mail, KeyRound, Webhook, Euro, Boxes,
+  Target, Zap,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -107,18 +107,6 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/documents', icon: FileText, label: 'Documents', requiredPlan: 'STARTER' },
       { to: '/email-intake', icon: Mail, label: 'Import Email', requiredRole: 'ADMIN', requiredPlan: 'STARTER' },
       { to: '/orchestration-suggestions', icon: Zap, label: "Suggestions d'action", requiredRole: 'MANAGER', requiredPlan: 'PRO' },
-    ],
-  },
-  {
-    id: 'warehouse',
-    label: 'Entrepôt & Stock',
-    icon: Warehouse,
-    items: [
-      { to: '/warehouses', icon: Warehouse, label: 'Entrepôts', requiredPlan: 'ENTERPRISE' },
-      { to: '/inventory-items', icon: Package, label: 'Catalogue articles', requiredPlan: 'ENTERPRISE' },
-      { to: '/inventory', icon: Boxes, label: 'Stock', requiredPlan: 'ENTERPRISE' },
-      { to: '/receivings', icon: ClipboardList, label: 'Bons de réception', requiredPlan: 'ENTERPRISE' },
-      { to: '/scan-receiving', icon: ScanLine, label: 'Scanner réception', requiredPlan: 'ENTERPRISE' },
     ],
   },
   {

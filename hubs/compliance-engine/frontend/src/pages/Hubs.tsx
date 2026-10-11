@@ -22,7 +22,6 @@ const HUB_PITCH: Record<string, string> = {
   'import-export': "Simulez et sécurisez vos opérations douanières : droits de douane, classification HS, données TARIC, certificats EUR.1, screening des parties sensibles.",
   'transport': "Réservez, comparez et suivez vos expéditions tous modes — mer, air, route : devis, transporteurs, tracking temps réel.",
   'docs': "Générez et centralisez vos documents d'expédition, importez vos factures fournisseurs automatiquement par email.",
-  'warehouse': "Pilotez vos entrepôts de bout en bout : catalogue articles, stock, bons de réception, scan.",
   'finance': "Facturation transporteurs et clients, taux de change, financement de facture, reporting carbone et CSRD.",
   'client-portal': "Donnez à vos clients un accès de suivi en marque blanche, sans exposer votre back-office.",
   'platform': "Équipe, rôles, intégrations ERP/e-commerce, clés API, webhooks — le socle technique inclus avec chaque abonnement.",
@@ -79,8 +78,8 @@ export default function Hubs() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-bg to-white pb-24 md:pb-0">
       <Seo
-        title="Les 7 Hubs métier IncoKalk"
-        description="Import-Export, Transport Multimodal, Documents, Entrepôt, Finance, Portail Client, Plateforme — 7 Hubs métier réunis dans un seul abonnement IncoKalk."
+        title="Les 6 Hubs métier IncoKalk"
+        description="Import-Export, Transport Multimodal, Documents, Finance, Portail Client, Plateforme — 6 Hubs métier réunis dans un seul abonnement IncoKalk."
         path="/hubs"
       />
       <div className="container mx-auto px-4 py-10 max-w-6xl">
@@ -88,7 +87,7 @@ export default function Hubs() {
 
         <div className="text-center my-10">
           <h1 className="text-4xl font-extrabold text-ink mb-4">
-            7 Hubs métier, <span className="text-accent">un seul abonnement</span>
+            6 Hubs métier, <span className="text-accent">un seul abonnement</span>
           </h1>
           <p className="text-lg text-ink-soft max-w-2xl mx-auto">
             IncoKalk n'est pas un calculateur isolé : c'est une plateforme organisée par métier.

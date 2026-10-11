@@ -108,12 +108,6 @@ const FrenchFiscal = lazy(() => import('./pages/FrenchFiscal'));
 const Eur1Certificates = lazy(() => import('./pages/Eur1Certificates'));
 const CustomsInvoices = lazy(() => import('./pages/CustomsInvoices'));
 const Compliance = lazy(() => import('./pages/Compliance'));
-const Warehouses = lazy(() => import('./pages/Warehouses'));
-const WarehouseDetail = lazy(() => import('./pages/WarehouseDetail'));
-const InventoryItems = lazy(() => import('./pages/InventoryItems'));
-const Inventory = lazy(() => import('./pages/Inventory'));
-const Receiving = lazy(() => import('./pages/Receiving'));
-const ScanReceiving = lazy(() => import('./pages/ScanReceiving'));
 
 // Loading fallback for Suspense
 function PageLoader() {
@@ -310,14 +304,6 @@ function AppRoutes() {
               <Route path="/eur1" element={<ProtectedRoute requiredRole="MANAGER"><Eur1Certificates /></ProtectedRoute>} />
               <Route path="/customs-invoices" element={<ProtectedRoute requiredRole="MANAGER"><CustomsInvoices /></ProtectedRoute>} />
               <Route path="/compliance" element={<ProtectedRoute requireAdmin><Compliance /></ProtectedRoute>} />
-
-              {/* Warehousing & Réception (P1) */}
-              <Route path="/warehouses" element={<ProtectedRoute requiredRole="USER"><Warehouses /></ProtectedRoute>} />
-              <Route path="/warehouses/:id" element={<ProtectedRoute requiredRole="USER"><WarehouseDetail /></ProtectedRoute>} />
-              <Route path="/inventory-items" element={<ProtectedRoute requiredRole="USER"><InventoryItems /></ProtectedRoute>} />
-              <Route path="/inventory" element={<ProtectedRoute requiredRole="USER"><Inventory /></ProtectedRoute>} />
-              <Route path="/receivings" element={<ProtectedRoute requiredRole="USER"><Receiving /></ProtectedRoute>} />
-              <Route path="/scan-receiving" element={<ProtectedRoute requiredRole="USER"><ScanReceiving /></ProtectedRoute>} />
 
               {/* Protected Routes — ADMIN only */}
               <Route path="/audit" element={<ProtectedRoute requireAdmin><AuditLog /></ProtectedRoute>} />
