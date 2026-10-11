@@ -258,9 +258,9 @@ export default function Logistics() {
                   <span className="muted">{box.totalWeightKg} kg</span>
                   <span className="muted">{box.utilizationPercent.toFixed(1)}% rempli</span>
                 </div>
-                <div className="ptg-progress-track" style={{ marginTop: 6 }}>
+                <div className="progress-track" style={{ marginTop: 6 }}>
                   <div
-                    className="ptg-progress-fill"
+                    className="progress-fill"
                     style={{ width: `${Math.min(box.utilizationPercent, 100)}%` }}
                   />
                 </div>

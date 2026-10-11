@@ -29,6 +29,35 @@ const Privacy = lazy(() => import('./pages/Privacy'))
 const Settings = lazy(() => import('./pages/Settings'))
 const PointagePortal = lazy(() => import('./pages/pointage/PointagePortal'))
 
+// Transport (expéditions, transporteurs, tarifs, suivi)
+const Shipments = lazy(() => import('./pages/Shipments'))
+const Carriers = lazy(() => import('./pages/Carriers'))
+const CarrierBookings = lazy(() => import('./pages/CarrierBookings'))
+const CarrierInvoicing = lazy(() => import('./pages/CarrierInvoicing'))
+const ShippingRates = lazy(() => import('./pages/ShippingRates'))
+const RateComparison = lazy(() => import('./pages/RateComparison'))
+const Quotes = lazy(() => import('./pages/Quotes'))
+const Providers = lazy(() => import('./pages/Providers'))
+const ProviderHealth = lazy(() => import('./pages/ProviderHealth'))
+const TrackingLookup = lazy(() => import('./pages/TrackingLookup'))
+const ShipTracker = lazy(() => import('./pages/ShipTracker'))
+const FlightRadar = lazy(() => import('./pages/FlightRadar'))
+const Logistics = lazy(() => import('./pages/Logistics'))
+const RouteOptimizer = lazy(() => import('./pages/RouteOptimizer'))
+const OptimizationDashboard = lazy(() => import('./pages/OptimizationDashboard'))
+const EtaPredictions = lazy(() => import('./pages/EtaPredictions'))
+const GroupagePage = lazy(() => import('./pages/GroupagePage'))
+const Clients = lazy(() => import('./pages/Clients'))
+const SharedLinks = lazy(() => import('./pages/SharedLinks'))
+const BrandingPortal = lazy(() => import('./pages/BrandingPortal'))
+
+// Portail client (suivi d'expédition pour les clients des expéditeurs) — hors
+// layout back-office, hors AuthContext (voir pages/client/).
+const ClientLogin = lazy(() => import('./pages/client/ClientLogin'))
+const ClientDashboard = lazy(() => import('./pages/client/ClientDashboard'))
+const ClientShipmentDetail = lazy(() => import('./pages/client/ClientShipmentDetail'))
+const SharedTracking = lazy(() => import('./pages/client/SharedTracking'))
+
 function PageFallback() {
   return (
     <div className="page-loading" role="status" aria-live="polite">
@@ -60,6 +89,18 @@ function RequireTenantAdmin({ children }) {
   return children
 }
 
+function RequireClientAuth({ children }) {
+  let hasClientSession = false
+  try {
+    hasClientSession =
+      !!localStorage.getItem('fh_client_token') && !!localStorage.getItem('fh_client_user')
+  } catch {
+    /* localStorage indisponible (navigation privée, etc.) */
+  }
+  if (!hasClientSession) return <Navigate to="/client/login" replace />
+  return children
+}
+
 const FROZEN_ALLOWED = ['/billing', '/rgpd']
 
 function RequireSubscription({ children }) {
@@ -83,6 +124,27 @@ export default function App() {
         <Route path="/legal/:key" element={<Legal />} />
         <Route path="/pointage" element={<PointagePortal />} />
         <Route path="/pointage/:accessCode" element={<PointagePortal />} />
+
+        {/* Portail client (suivi d'expédition) — public / authentification client dédiée */}
+        <Route path="/client/login" element={<ClientLogin />} />
+        <Route
+          path="/client/dashboard"
+          element={
+            <RequireClientAuth>
+              <ClientDashboard />
+            </RequireClientAuth>
+          }
+        />
+        <Route
+          path="/client/shipments/:id"
+          element={
+            <RequireClientAuth>
+              <ClientShipmentDetail />
+            </RequireClientAuth>
+          }
+        />
+        <Route path="/s/:token" element={<SharedTracking />} />
+
         <Route
           element={
             <RequireAuth>
@@ -145,6 +207,49 @@ export default function App() {
             }
           />
           <Route path="/settings" element={<Settings />} />
+
+          {/* Transport : expéditions, transporteurs, tarifs, suivi */}
+          <Route path="/shipments" element={<Shipments />} />
+          <Route path="/carriers" element={<Carriers />} />
+          <Route path="/carrier-bookings" element={<CarrierBookings />} />
+          <Route path="/carrier-invoices" element={<CarrierInvoicing />} />
+          <Route path="/shipping-rates" element={<ShippingRates />} />
+          <Route path="/rate-comparison" element={<RateComparison />} />
+          <Route path="/quotes" element={<Quotes />} />
+          <Route path="/providers" element={<Providers />} />
+          <Route path="/providers/health" element={<ProviderHealth />} />
+          <Route path="/tracking" element={<TrackingLookup />} />
+          <Route path="/ship-tracker" element={<ShipTracker />} />
+          <Route path="/flight-radar" element={<FlightRadar />} />
+          <Route path="/logistics" element={<Logistics />} />
+          <Route path="/route-optimizer" element={<RouteOptimizer />} />
+          <Route path="/optimization" element={<OptimizationDashboard />} />
+          <Route path="/eta-predictions" element={<EtaPredictions />} />
+          <Route path="/groupage" element={<GroupagePage />} />
+          <Route
+            path="/clients"
+            element={
+              <RequireTenantAdmin>
+                <Clients />
+              </RequireTenantAdmin>
+            }
+          />
+          <Route
+            path="/shared-links"
+            element={
+              <RequireTenantAdmin>
+                <SharedLinks />
+              </RequireTenantAdmin>
+            }
+          />
+          <Route
+            path="/branding"
+            element={
+              <RequireTenantAdmin>
+                <BrandingPortal />
+              </RequireTenantAdmin>
+            }
+          />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

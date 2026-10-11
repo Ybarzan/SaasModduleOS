@@ -41,7 +41,8 @@ public class CacheConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
                 .disableCachingNullValues();
 
-        Set<String> cacheNames = Set.of("kpi.couples", "kpi.detail", "kpi.truck", "kpi.northstar", "dashboard.summary");
+        Set<String> cacheNames = Set.of("kpi.couples", "kpi.detail", "kpi.truck", "kpi.northstar", "dashboard.summary",
+                "exchange-rates");
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
@@ -52,7 +53,8 @@ public class CacheConfig {
     @Bean
     @ConditionalOnMissingBean(CacheManager.class)
     public CacheManager fallbackCacheManager() {
-        return new ConcurrentMapCacheManager("kpi.couples", "kpi.detail", "kpi.truck", "kpi.northstar", "dashboard.summary");
+        return new ConcurrentMapCacheManager("kpi.couples", "kpi.detail", "kpi.truck", "kpi.northstar", "dashboard.summary",
+                "exchange-rates");
     }
 
     @Bean("tenantKeyGenerator")

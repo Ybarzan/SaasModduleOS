@@ -187,6 +187,102 @@ const icons = {
         </>
       }
     />
+  ),
+  shipments: (
+    <Icon
+      d={
+        <>
+          <path d="M3 8l9-5 9 5-9 5-9-5z" />
+          <path d="M3 8v8l9 5 9-5V8" />
+          <path d="M12 13v8" />
+        </>
+      }
+    />
+  ),
+  rates: (
+    <Icon
+      d={
+        <>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v10M9.5 9.2c0-1.2 1.1-2.2 2.5-2.2s2.5.9 2.5 2c0 2.5-5 1.5-5 4.3 0 1.1 1.1 2 2.5 2s2.5-1 2.5-2.2" />
+        </>
+      }
+    />
+  ),
+  quote: (
+    <Icon
+      d={
+        <>
+          <path d="M6 3h9l3 3v15H6z" />
+          <path d="M9 9h6M9 13h6M9 17h3" />
+        </>
+      }
+    />
+  ),
+  satellite: (
+    <Icon
+      d={
+        <>
+          <circle cx="12" cy="12" r="2.6" />
+          <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3" />
+          <path d="M6.3 6.3l1.8 1.8M15.9 15.9l1.8 1.8M6.3 17.7l1.8-1.8M15.9 8.1l1.8-1.8" />
+        </>
+      }
+    />
+  ),
+  route: (
+    <Icon
+      d={
+        <>
+          <circle cx="6" cy="6" r="2.2" />
+          <circle cx="18" cy="18" r="2.2" />
+          <path d="M6 8.2v4a4 4 0 0 0 4 4h4" strokeDasharray="2.5 2.5" />
+        </>
+      }
+    />
+  ),
+  eta: (
+    <Icon
+      d={
+        <>
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M9 12h6M12 9l3 3-3 3" />
+        </>
+      }
+    />
+  ),
+  groupage: (
+    <Icon
+      d={
+        <>
+          <rect x="3" y="7" width="7" height="7" rx="1" />
+          <rect x="14" y="7" width="7" height="7" rx="1" />
+          <rect x="8.5" y="14" width="7" height="7" rx="1" />
+        </>
+      }
+    />
+  ),
+  share: (
+    <Icon
+      d={
+        <>
+          <circle cx="6" cy="12" r="2.3" />
+          <circle cx="17.5" cy="5.5" r="2.3" />
+          <circle cx="17.5" cy="18.5" r="2.3" />
+          <path d="M8 10.8l7.6-4.4M8 13.2l7.6 4.4" />
+        </>
+      }
+    />
+  ),
+  branding: (
+    <Icon
+      d={
+        <>
+          <path d="M19 3l-8.5 8.5a3 3 0 1 1-4.2 4.2L15 7" />
+          <circle cx="5.5" cy="18.5" r="2" />
+        </>
+      }
+    />
   )
 }
 
@@ -201,6 +297,28 @@ const navItems = [
   { to: '/map', label: 'Carte temps réel', icon: 'map', end: false },
   { to: '/notifications', label: 'Alertes', icon: 'alerts', end: false },
   { to: '/billing', label: 'Abonnement', icon: 'billing', end: false },
+  { section: 'Transport' },
+  { to: '/shipments', label: 'Expéditions', icon: 'shipments', end: false },
+  { to: '/carriers', label: 'Transporteurs', icon: 'trucks', end: false },
+  { to: '/carrier-bookings', label: 'Réservations', icon: 'pointage', end: false },
+  { to: '/carrier-invoices', label: 'Factures transp.', icon: 'billing', end: false },
+  { to: '/shipping-rates', label: 'Tarifs', icon: 'rates', end: false },
+  { to: '/rate-comparison', label: 'Comparateur tarifs', icon: 'rates', end: false },
+  { to: '/quotes', label: 'Devis', icon: 'quote', end: false },
+  { to: '/providers', label: 'Fournisseurs', icon: 'integrations', end: false },
+  { to: '/providers/health', label: 'Santé fournisseurs', icon: 'integrations', end: false },
+  { to: '/tracking', label: 'Suivi colis', icon: 'satellite', end: false },
+  { to: '/ship-tracker', label: 'Ship Tracker', icon: 'satellite', end: false },
+  { to: '/flight-radar', label: 'Flight Radar', icon: 'satellite', end: false },
+  { to: '/logistics', label: 'Logistique', icon: 'import', end: false },
+  { to: '/route-optimizer', label: 'Itinéraire', icon: 'route', end: false },
+  { to: '/optimization', label: 'Optimisation tarifs', icon: 'route', end: false },
+  { to: '/eta-predictions', label: 'Prédictions ETA', icon: 'eta', end: false },
+  { to: '/groupage', label: 'Groupage', icon: 'groupage', end: false },
+  { to: '/clients', label: 'Clients', icon: 'users', end: false, adminOnly: true },
+  { to: '/shared-links', label: 'Liens de suivi', icon: 'share', end: false, adminOnly: true },
+  { to: '/branding', label: 'Portail white-label', icon: 'branding', end: false, adminOnly: true },
+  { section: 'Administration' },
   { to: '/users', label: 'Utilisateurs', icon: 'users', end: false, adminOnly: true },
   { to: '/integrations', label: 'Intégrations', icon: 'integrations', end: false, adminOnly: true },
   { to: '/marketplace', label: 'Marketplace', icon: 'marketplace', end: false, adminOnly: true },
@@ -325,17 +443,23 @@ export default function Layout() {
           </button>
         </div>
         <nav>
-          {visibleNav(user).map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              onClick={closeMenu}
-              className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
-            >
-              <span>{icons[item.icon]}</span> {item.label}
-            </NavLink>
-          ))}
+          {visibleNav(user).map((item) =>
+            item.section ? (
+              <div key={`section-${item.section}`} className="nav-section-label">
+                {item.section}
+              </div>
+            ) : (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={closeMenu}
+                className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
+              >
+                <span>{icons[item.icon]}</span> {item.label}
+              </NavLink>
+            )
+          )}
         </nav>
         <div className="sidebar-footer">
           <div className="user-chip">
