@@ -59,6 +59,12 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
         <dependency>
+            <!-- AisStreamService (flux AIS mondial temps réel, domaine Transport) a besoin
+                 du client WebSocket Spring ; spring-web(mvc) ne l'inclut pas. -->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>

@@ -14,5 +14,5 @@ public interface CarrierProviderConfigRepository extends JpaRepository<CarrierPr
 
     List<CarrierProviderConfig> findByCompanyIdOrderByPriorityAsc(Long companyId);
 
-    List<CarrierProviderConfig> findByCompanyIdAndIsActiveTrueOrderByPriorityAsc(Long companyId);
+    List<CarrierProviderConfig> findByCompanyIdAndActiveTrueOrderByPriorityAsc(Long companyId);
 }

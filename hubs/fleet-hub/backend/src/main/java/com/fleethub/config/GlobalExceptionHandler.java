@@ -39,6 +39,19 @@ public class GlobalExceptionHandler {
                 .body(Map.of("message", e.getMessage()));
     }
 
+    /**
+     * Ajouté lors de la fusion du domaine Transport : les services portés
+     * (CarrierService, CarrierInvoiceService, GroupageService, CarrierBookingService…)
+     * lèvent IllegalStateException pour un conflit métier (transition de statut
+     * invalide, suppression bloquée par des données liées…) et attendent un 409,
+     * pas le 500 générique que ce handler renvoyait jusqu'ici faute de cas dédié.
+     */
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> handleConflict(IllegalStateException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", e.getMessage()));
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)

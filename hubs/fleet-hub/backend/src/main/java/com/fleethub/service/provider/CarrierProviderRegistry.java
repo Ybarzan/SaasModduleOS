@@ -18,7 +18,7 @@ public class CarrierProviderRegistry {
     private final CarrierProviderConfigRepository providerConfigRepo;
 
     public List<CarrierProvider> getProviders(Long companyId) {
-        Set<String> activeTypes = providerConfigRepo.findByCompanyIdAndIsActiveTrueOrderByPriorityAsc(companyId)
+        Set<String> activeTypes = providerConfigRepo.findByCompanyIdAndActiveTrueOrderByPriorityAsc(companyId)
                 .stream()
                 .map(CarrierProviderConfig::getProviderType)
                 .collect(Collectors.toSet());
