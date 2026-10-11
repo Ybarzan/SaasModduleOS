@@ -46,7 +46,9 @@ export default function Carriers() {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
-    return carriers.filter((c) => `${c.name} ${c.code} ${c.country || ''}`.toLowerCase().includes(q))
+    return carriers.filter((c) =>
+      `${c.name} ${c.code} ${c.country || ''}`.toLowerCase().includes(q)
+    )
   }, [carriers, search])
 
   const openCreate = () => {
@@ -181,31 +183,68 @@ export default function Carriers() {
             <div className="data-grid">
               <div className="form-field">
                 <label>Nom *</label>
-                <input type="text" value={form.name} required onChange={set('name')} placeholder="DHL Express" />
+                <input
+                  type="text"
+                  value={form.name}
+                  required
+                  onChange={set('name')}
+                  placeholder="DHL Express"
+                />
               </div>
               <div className="form-field">
                 <label>Code *</label>
-                <input type="text" value={form.code} required onChange={set('code')} placeholder="DHL" />
+                <input
+                  type="text"
+                  value={form.code}
+                  required
+                  onChange={set('code')}
+                  placeholder="DHL"
+                />
               </div>
               <div className="form-field">
                 <label>Pays</label>
-                <input type="text" value={form.country} onChange={set('country')} placeholder="France" />
+                <input
+                  type="text"
+                  value={form.country}
+                  onChange={set('country')}
+                  placeholder="France"
+                />
               </div>
               <div className="form-field">
                 <label>Contact</label>
-                <input type="text" value={form.contactName} onChange={set('contactName')} placeholder="Nom du contact" />
+                <input
+                  type="text"
+                  value={form.contactName}
+                  onChange={set('contactName')}
+                  placeholder="Nom du contact"
+                />
               </div>
               <div className="form-field">
                 <label>Email</label>
-                <input type="email" value={form.contactEmail} onChange={set('contactEmail')} placeholder="contact@transporteur.com" />
+                <input
+                  type="email"
+                  value={form.contactEmail}
+                  onChange={set('contactEmail')}
+                  placeholder="contact@transporteur.com"
+                />
               </div>
               <div className="form-field">
                 <label>Téléphone</label>
-                <input type="tel" value={form.contactPhone} onChange={set('contactPhone')} placeholder="+33 1 23 45 67 89" />
+                <input
+                  type="tel"
+                  value={form.contactPhone}
+                  onChange={set('contactPhone')}
+                  placeholder="+33 1 23 45 67 89"
+                />
               </div>
               <div className="form-field">
                 <label>Logo URL</label>
-                <input type="url" value={form.logoUrl} onChange={set('logoUrl')} placeholder="https://…" />
+                <input
+                  type="url"
+                  value={form.logoUrl}
+                  onChange={set('logoUrl')}
+                  placeholder="https://…"
+                />
               </div>
             </div>
             <div className="form-field" style={{ marginTop: 14 }}>
@@ -351,13 +390,21 @@ export default function Carriers() {
                   <span>{c.contactEmail || c.contactName || '—'}</span>
                 </div>
                 <div className="record-card-actions">
-                  <button className="btn btn-outline btn-sm" disabled={busyId === c.id} onClick={() => toggleActive(c)}>
+                  <button
+                    className="btn btn-outline btn-sm"
+                    disabled={busyId === c.id}
+                    onClick={() => toggleActive(c)}
+                  >
                     {c.active ? 'Désactiver' : 'Activer'}
                   </button>
                   <button className="btn btn-outline btn-sm" onClick={() => openEdit(c)}>
                     Modifier
                   </button>
-                  <button className="btn btn-danger btn-sm" disabled={busyId === c.id} onClick={() => remove(c)}>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    disabled={busyId === c.id}
+                    onClick={() => remove(c)}
+                  >
                     Supprimer
                   </button>
                 </div>

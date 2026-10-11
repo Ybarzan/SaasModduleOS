@@ -44,7 +44,9 @@ const EMPTY_FORM = {
 }
 
 const fmtMoney = (amount, currency) =>
-  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currency || 'EUR' }).format(amount || 0)
+  new Intl.NumberFormat('fr-FR', { style: 'currency', currency: currency || 'EUR' }).format(
+    amount || 0
+  )
 
 const fmtDate = (s) => (s ? new Date(s).toLocaleDateString('fr-FR') : '—')
 
@@ -132,7 +134,10 @@ export default function CarrierInvoicing() {
   const sendDispute = async () => {
     setBusyId(disputeTarget)
     try {
-      await api.put(`/carrier-invoices/${disputeTarget}/status`, { status: 'DISPUTED', reason: disputeReason })
+      await api.put(`/carrier-invoices/${disputeTarget}/status`, {
+        status: 'DISPUTED',
+        reason: disputeReason
+      })
       setNotice('Litige signalé')
       setDisputeTarget(null)
       setDisputeReason('')
@@ -182,15 +187,30 @@ export default function CarrierInvoicing() {
             <div className="data-grid">
               <div className="form-field">
                 <label>N° facture *</label>
-                <input type="text" value={form.invoiceNumber} required onChange={set('invoiceNumber')} />
+                <input
+                  type="text"
+                  value={form.invoiceNumber}
+                  required
+                  onChange={set('invoiceNumber')}
+                />
               </div>
               <div className="form-field">
                 <label>Nom transporteur *</label>
-                <input type="text" value={form.carrierName} required onChange={set('carrierName')} />
+                <input
+                  type="text"
+                  value={form.carrierName}
+                  required
+                  onChange={set('carrierName')}
+                />
               </div>
               <div className="form-field">
                 <label>Date facture *</label>
-                <input type="date" value={form.invoiceDate} required onChange={set('invoiceDate')} />
+                <input
+                  type="date"
+                  value={form.invoiceDate}
+                  required
+                  onChange={set('invoiceDate')}
+                />
               </div>
               <div className="form-field">
                 <label>Échéance</label>
@@ -198,11 +218,19 @@ export default function CarrierInvoicing() {
               </div>
               <div className="form-field">
                 <label>Référence transporteur</label>
-                <input type="text" value={form.carrierReference} onChange={set('carrierReference')} />
+                <input
+                  type="text"
+                  value={form.carrierReference}
+                  onChange={set('carrierReference')}
+                />
               </div>
               <div className="form-field">
                 <label>Référence expédition</label>
-                <input type="text" value={form.shipmentReference} onChange={set('shipmentReference')} />
+                <input
+                  type="text"
+                  value={form.shipmentReference}
+                  onChange={set('shipmentReference')}
+                />
               </div>
             </div>
 
@@ -210,7 +238,13 @@ export default function CarrierInvoicing() {
             <div className="data-grid">
               <div className="form-field">
                 <label>Montant total *</label>
-                <input type="number" step="0.01" value={form.totalAmount || ''} required onChange={setNum('totalAmount')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.totalAmount || ''}
+                  required
+                  onChange={setNum('totalAmount')}
+                />
               </div>
               <div className="form-field">
                 <label>Devise</label>
@@ -223,7 +257,12 @@ export default function CarrierInvoicing() {
               </div>
               <div className="form-field">
                 <label>Montant EUR</label>
-                <input type="number" step="0.01" value={form.totalAmountEur || ''} onChange={setNum('totalAmountEur')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.totalAmountEur || ''}
+                  onChange={setNum('totalAmountEur')}
+                />
               </div>
             </div>
 
@@ -231,33 +270,67 @@ export default function CarrierInvoicing() {
             <div className="data-grid">
               <div className="form-field">
                 <label>Fret</label>
-                <input type="number" step="0.01" value={form.freightAmount || ''} onChange={setNum('freightAmount')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.freightAmount || ''}
+                  onChange={setNum('freightAmount')}
+                />
               </div>
               <div className="form-field">
                 <label>Surcharge carburant</label>
-                <input type="number" step="0.01" value={form.fuelSurcharge || ''} onChange={setNum('fuelSurcharge')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.fuelSurcharge || ''}
+                  onChange={setNum('fuelSurcharge')}
+                />
               </div>
               <div className="form-field">
                 <label>Frais sécurité</label>
-                <input type="number" step="0.01" value={form.securityFee || ''} onChange={setNum('securityFee')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.securityFee || ''}
+                  onChange={setNum('securityFee')}
+                />
               </div>
               <div className="form-field">
                 <label>Frais manutention</label>
-                <input type="number" step="0.01" value={form.handlingFee || ''} onChange={setNum('handlingFee')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.handlingFee || ''}
+                  onChange={setNum('handlingFee')}
+                />
               </div>
               <div className="form-field">
                 <label>Frais douane</label>
-                <input type="number" step="0.01" value={form.customsFee || ''} onChange={setNum('customsFee')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.customsFee || ''}
+                  onChange={setNum('customsFee')}
+                />
               </div>
               <div className="form-field">
                 <label>Autres frais</label>
-                <input type="number" step="0.01" value={form.otherCharges || ''} onChange={setNum('otherCharges')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.otherCharges || ''}
+                  onChange={setNum('otherCharges')}
+                />
               </div>
             </div>
             {form.otherCharges > 0 && (
               <div className="form-field" style={{ marginTop: 10 }}>
                 <label>Description autres frais</label>
-                <input type="text" value={form.otherChargesDescription} onChange={set('otherChargesDescription')} />
+                <input
+                  type="text"
+                  value={form.otherChargesDescription}
+                  onChange={set('otherChargesDescription')}
+                />
               </div>
             )}
 
@@ -265,11 +338,20 @@ export default function CarrierInvoicing() {
             <div className="data-grid">
               <div className="form-field">
                 <label>Taux négocié</label>
-                <input type="number" step="0.01" value={form.negotiatedRate || ''} onChange={setNum('negotiatedRate')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  value={form.negotiatedRate || ''}
+                  onChange={setNum('negotiatedRate')}
+                />
               </div>
               <div className="form-field">
                 <label>Notes</label>
-                <input type="text" value={form.reconciliationNotes} onChange={set('reconciliationNotes')} />
+                <input
+                  type="text"
+                  value={form.reconciliationNotes}
+                  onChange={set('reconciliationNotes')}
+                />
               </div>
             </div>
 
@@ -300,7 +382,11 @@ export default function CarrierInvoicing() {
             />
           </div>
           <div className="form-actions">
-            <button className="btn btn-primary" disabled={busyId === disputeTarget} onClick={sendDispute}>
+            <button
+              className="btn btn-primary"
+              disabled={busyId === disputeTarget}
+              onClick={sendDispute}
+            >
               Signaler le litige
             </button>
             <button
@@ -379,7 +465,10 @@ export default function CarrierInvoicing() {
           </div>
           {selected.otherCharges > 0 && (
             <div className="record-card-row">
-              <span>Autres frais{selected.otherChargesDescription ? ` (${selected.otherChargesDescription})` : ''}</span>
+              <span>
+                Autres frais
+                {selected.otherChargesDescription ? ` (${selected.otherChargesDescription})` : ''}
+              </span>
               <span>{fmtMoney(selected.otherCharges, selected.currency)}</span>
             </div>
           )}
@@ -392,7 +481,11 @@ export default function CarrierInvoicing() {
           <div className="kpi-grid">
             <div className="kpi-item">
               <span>Taux négocié</span>
-              <b>{selected.negotiatedRate ? fmtMoney(selected.negotiatedRate, selected.currency) : '—'}</b>
+              <b>
+                {selected.negotiatedRate
+                  ? fmtMoney(selected.negotiatedRate, selected.currency)
+                  : '—'}
+              </b>
             </div>
             <div className="kpi-item">
               <span>Montant facturé</span>
@@ -456,7 +549,11 @@ export default function CarrierInvoicing() {
                       {STATUS_LABELS[inv.status] || inv.status}
                     </span>
                   </td>
-                  <td>{inv.variance != null ? `${inv.variancePercent > 0 ? '+' : ''}${inv.variancePercent.toFixed(1)}%` : '—'}</td>
+                  <td>
+                    {inv.variance != null
+                      ? `${inv.variancePercent > 0 ? '+' : ''}${inv.variancePercent.toFixed(1)}%`
+                      : '—'}
+                  </td>
                   <td onClick={(e) => e.stopPropagation()}>
                     <div className="row-actions">
                       {(inv.status === 'DRAFT' || inv.status === 'RECEIVED') && (
@@ -495,23 +592,38 @@ export default function CarrierInvoicing() {
                           Marquer payé
                         </button>
                       )}
-                      {inv.status !== 'DRAFT' && inv.status !== 'PAID' && inv.status !== 'REJECTED' && (
-                        <button className="btn btn-outline btn-sm" onClick={() => setDisputeTarget(inv.id)}>
-                          Litige
-                        </button>
-                      )}
+                      {inv.status !== 'DRAFT' &&
+                        inv.status !== 'PAID' &&
+                        inv.status !== 'REJECTED' && (
+                          <button
+                            className="btn btn-outline btn-sm"
+                            onClick={() => setDisputeTarget(inv.id)}
+                          >
+                            Litige
+                          </button>
+                        )}
                       {(inv.status === 'DRAFT' || inv.status === 'RECEIVED') &&
                         (deleteConfirm === inv.id ? (
                           <>
-                            <button className="btn btn-danger btn-sm" disabled={busyId === inv.id} onClick={() => remove(inv.id)}>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              disabled={busyId === inv.id}
+                              onClick={() => remove(inv.id)}
+                            >
                               Oui
                             </button>
-                            <button className="btn btn-outline btn-sm" onClick={() => setDeleteConfirm(null)}>
+                            <button
+                              className="btn btn-outline btn-sm"
+                              onClick={() => setDeleteConfirm(null)}
+                            >
                               Non
                             </button>
                           </>
                         ) : (
-                          <button className="btn btn-outline btn-sm" onClick={() => setDeleteConfirm(inv.id)}>
+                          <button
+                            className="btn btn-outline btn-sm"
+                            onClick={() => setDeleteConfirm(inv.id)}
+                          >
                             Supprimer
                           </button>
                         ))}

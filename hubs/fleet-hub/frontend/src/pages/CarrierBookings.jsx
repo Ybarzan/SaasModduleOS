@@ -170,12 +170,20 @@ export default function CarrierBookings() {
               </div>
               <div className="form-field">
                 <label>Date d'enlèvement souhaitée</label>
-                <input type="date" value={form.requestedPickupDate} onChange={set('requestedPickupDate')} />
+                <input
+                  type="date"
+                  value={form.requestedPickupDate}
+                  onChange={set('requestedPickupDate')}
+                />
               </div>
             </div>
             <div className="form-field" style={{ marginTop: 14 }}>
               <label>Instructions spéciales</label>
-              <textarea rows={3} value={form.specialInstructions} onChange={set('specialInstructions')} />
+              <textarea
+                rows={3}
+                value={form.specialInstructions}
+                onChange={set('specialInstructions')}
+              />
             </div>
             <div className="form-actions">
               <button type="submit" className="btn btn-primary" disabled={submitting}>
@@ -222,7 +230,10 @@ export default function CarrierBookings() {
             </thead>
             <tbody>
               {bookings.map((b) => {
-                const cfg = STATUS_CONFIG[b.carrierBookingStatus] || { label: b.carrierBookingStatus, color: 'gray' }
+                const cfg = STATUS_CONFIG[b.carrierBookingStatus] || {
+                  label: b.carrierBookingStatus,
+                  color: 'gray'
+                }
                 return (
                   <tr key={b.id}>
                     <td>
@@ -243,7 +254,9 @@ export default function CarrierBookings() {
                       )}
                     </td>
                     <td>
-                      {b.quotedCost != null ? `${b.quotedCost.toFixed(2)} ${b.quotedCostCurrency || 'EUR'}` : '—'}
+                      {b.quotedCost != null
+                        ? `${b.quotedCost.toFixed(2)} ${b.quotedCostCurrency || 'EUR'}`
+                        : '—'}
                     </td>
                     <td>
                       <div className="row-actions">
@@ -256,7 +269,8 @@ export default function CarrierBookings() {
                             Soumettre
                           </button>
                         )}
-                        {(b.carrierBookingStatus === 'PENDING' || b.carrierBookingStatus === 'SUBMITTED') && (
+                        {(b.carrierBookingStatus === 'PENDING' ||
+                          b.carrierBookingStatus === 'SUBMITTED') && (
                           <button
                             className="btn btn-danger btn-sm"
                             disabled={busyId === b.id}
@@ -267,7 +281,8 @@ export default function CarrierBookings() {
                         )}
                         {b.carrierBookingStatus === 'CONFIRMED' && b.estimatedDeliveryDate && (
                           <span className="muted">
-                            Livraison {new Date(b.estimatedDeliveryDate).toLocaleDateString('fr-FR')}
+                            Livraison{' '}
+                            {new Date(b.estimatedDeliveryDate).toLocaleDateString('fr-FR')}
                           </span>
                         )}
                         {b.carrierBookingStatus === 'FAILED' && b.errorMessage && (
@@ -298,7 +313,10 @@ export default function CarrierBookings() {
             <p className="muted table-empty">Aucune réservation</p>
           ) : (
             bookings.map((b) => {
-              const cfg = STATUS_CONFIG[b.carrierBookingStatus] || { label: b.carrierBookingStatus, color: 'gray' }
+              const cfg = STATUS_CONFIG[b.carrierBookingStatus] || {
+                label: b.carrierBookingStatus,
+                color: 'gray'
+              }
               return (
                 <div key={b.id} className="record-card">
                   <div className="record-card-title">
@@ -315,16 +333,29 @@ export default function CarrierBookings() {
                   </div>
                   <div className="record-card-row">
                     <span>Coût</span>
-                    <span>{b.quotedCost != null ? `${b.quotedCost.toFixed(2)} ${b.quotedCostCurrency || 'EUR'}` : '—'}</span>
+                    <span>
+                      {b.quotedCost != null
+                        ? `${b.quotedCost.toFixed(2)} ${b.quotedCostCurrency || 'EUR'}`
+                        : '—'}
+                    </span>
                   </div>
                   <div className="record-card-actions">
                     {b.carrierBookingStatus === 'PENDING' && (
-                      <button className="btn btn-outline btn-sm" disabled={busyId === b.id} onClick={() => submit(b.id)}>
+                      <button
+                        className="btn btn-outline btn-sm"
+                        disabled={busyId === b.id}
+                        onClick={() => submit(b.id)}
+                      >
                         Soumettre
                       </button>
                     )}
-                    {(b.carrierBookingStatus === 'PENDING' || b.carrierBookingStatus === 'SUBMITTED') && (
-                      <button className="btn btn-danger btn-sm" disabled={busyId === b.id} onClick={() => cancel(b.id)}>
+                    {(b.carrierBookingStatus === 'PENDING' ||
+                      b.carrierBookingStatus === 'SUBMITTED') && (
+                      <button
+                        className="btn btn-danger btn-sm"
+                        disabled={busyId === b.id}
+                        onClick={() => cancel(b.id)}
+                      >
                         Annuler
                       </button>
                     )}

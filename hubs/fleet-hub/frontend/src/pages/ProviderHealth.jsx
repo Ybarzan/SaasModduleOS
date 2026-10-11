@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react'
 import api from '../services/api'
 import StatCard from '../components/StatCard'
 
-const HEALTH_LABELS = { HEALTHY: 'Sain', DEGRADED: 'Dégradé', DOWN: 'Hors ligne', UNKNOWN: 'Inconnu' }
+const HEALTH_LABELS = {
+  HEALTHY: 'Sain',
+  DEGRADED: 'Dégradé',
+  DOWN: 'Hors ligne',
+  UNKNOWN: 'Inconnu'
+}
 const HEALTH_COLORS = { HEALTHY: 'green', DEGRADED: 'orange', DOWN: 'red', UNKNOWN: 'gray' }
 
 export default function ProviderHealth() {
@@ -64,12 +69,17 @@ export default function ProviderHealth() {
                   <span className="muted block">{h.providerType}</span>
                 </span>
                 <span>
-                  <span className={`badge badge-${HEALTH_COLORS[h.healthStatus]}`}>{HEALTH_LABELS[h.healthStatus]}</span>
+                  <span className={`badge badge-${HEALTH_COLORS[h.healthStatus]}`}>
+                    {HEALTH_LABELS[h.healthStatus]}
+                  </span>
                   <span className="muted block" style={{ textAlign: 'right', marginTop: 4 }}>
                     {h.lastHealthCheck ? new Date(h.lastHealthCheck).toLocaleString('fr-FR') : '—'}
                   </span>
                   {h.consecutiveFailures > 0 && (
-                    <span className="text-danger block" style={{ textAlign: 'right', fontSize: 11 }}>
+                    <span
+                      className="text-danger block"
+                      style={{ textAlign: 'right', fontSize: 11 }}
+                    >
                       {h.consecutiveFailures} échec(s)
                     </span>
                   )}

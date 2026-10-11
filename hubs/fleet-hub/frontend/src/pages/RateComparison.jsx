@@ -96,7 +96,10 @@ export default function RateComparison() {
       <div className="page-header">
         <div>
           <h2>Comparateur de tarifs multi-transporteurs</h2>
-          <p>Comparez les tarifs de vos transporteurs pour un trajet donné et trouvez la meilleure option</p>
+          <p>
+            Comparez les tarifs de vos transporteurs pour un trajet donné et trouvez la meilleure
+            option
+          </p>
         </div>
       </div>
 
@@ -107,11 +110,23 @@ export default function RateComparison() {
           <div className="data-grid">
             <div className="form-field">
               <label>Pays d'origine *</label>
-              <input type="text" value={form.originCountry} required onChange={set('originCountry')} placeholder="France" />
+              <input
+                type="text"
+                value={form.originCountry}
+                required
+                onChange={set('originCountry')}
+                placeholder="France"
+              />
             </div>
             <div className="form-field">
               <label>Pays de destination *</label>
-              <input type="text" value={form.destinationCountry} required onChange={set('destinationCountry')} placeholder="Allemagne" />
+              <input
+                type="text"
+                value={form.destinationCountry}
+                required
+                onChange={set('destinationCountry')}
+                placeholder="Allemagne"
+              />
             </div>
             <div className="form-field">
               <label>Mode de transport *</label>
@@ -139,11 +154,25 @@ export default function RateComparison() {
             <div className="data-grid" style={{ marginTop: 12 }}>
               <div className="form-field">
                 <label>Poids (kg)</label>
-                <input type="number" step="0.1" min="0" value={form.weightKg} onChange={set('weightKg')} placeholder="100" />
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={form.weightKg}
+                  onChange={set('weightKg')}
+                  placeholder="100"
+                />
               </div>
               <div className="form-field">
                 <label>Volume (m³)</label>
-                <input type="number" step="0.01" min="0" value={form.volumeM3} onChange={set('volumeM3')} placeholder="2.5" />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.volumeM3}
+                  onChange={set('volumeM3')}
+                  placeholder="2.5"
+                />
               </div>
             </div>
           )}
@@ -164,7 +193,8 @@ export default function RateComparison() {
           <div className="page-header" style={{ marginTop: 10 }}>
             <div>
               <h3>
-                {results.length} tarif{results.length > 1 ? 's' : ''} trouvé{results.length > 1 ? 's' : ''}
+                {results.length} tarif{results.length > 1 ? 's' : ''} trouvé
+                {results.length > 1 ? 's' : ''}
               </h3>
               <p className="muted">
                 {form.originCountry} → {form.destinationCountry} ·{' '}
@@ -188,7 +218,11 @@ export default function RateComparison() {
                     <div>
                       <strong>
                         {result.carrierName}
-                        {isBest && <span className="badge badge-orange" style={{ marginLeft: 8 }}>Meilleur prix</span>}
+                        {isBest && (
+                          <span className="badge badge-orange" style={{ marginLeft: 8 }}>
+                            Meilleur prix
+                          </span>
+                        )}
                       </strong>
                       <span className="muted block">{result.carrierCode}</span>
                     </div>
@@ -232,7 +266,8 @@ export default function RateComparison() {
                       <div className="couple-stat">
                         <span>Délai min/max</span>
                         <b>
-                          {result.rate.transitDaysMin || '—'} - {result.rate.transitDaysMax || '—'} jours
+                          {result.rate.transitDaysMin || '—'} - {result.rate.transitDaysMax || '—'}{' '}
+                          jours
                         </b>
                       </div>
                       <div className="couple-stat">
@@ -254,7 +289,10 @@ export default function RateComparison() {
         <div className="card" style={{ textAlign: 'center', padding: 40 }}>
           <h3>Aucun tarif trouvé</h3>
           <p className="muted">Aucun tarif ne correspond à vos critères pour ce trajet.</p>
-          <p className="muted">Vérifiez que vos transporteurs ont configuré des tarifs pour cette route et ce mode de transport.</p>
+          <p className="muted">
+            Vérifiez que vos transporteurs ont configuré des tarifs pour cette route et ce mode de
+            transport.
+          </p>
         </div>
       )}
     </div>

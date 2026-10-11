@@ -66,12 +66,14 @@ export default function ShippingRates() {
           .toLowerCase()
           .includes(q)
       const matchMode = !filterMode || r.transportMode === filterMode
-      const matchActive = filterActive === 'all' || (filterActive === 'active' ? r.active : !r.active)
+      const matchActive =
+        filterActive === 'all' || (filterActive === 'active' ? r.active : !r.active)
       return matchSearch && matchMode && matchActive
     })
   }, [rates, search, filterMode, filterActive])
 
-  const carrierDisplay = (r) => r.carrierName || carriers.find((c) => c.id === r.carrierId)?.name || '—'
+  const carrierDisplay = (r) =>
+    r.carrierName || carriers.find((c) => c.id === r.carrierId)?.name || '—'
 
   const openCreate = () => {
     setEditing(null)
@@ -107,7 +109,8 @@ export default function ShippingRates() {
   }
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value })
-  const setNum = (field) => (e) => setForm({ ...form, [field]: e.target.value === '' ? '' : parseFloat(e.target.value) })
+  const setNum = (field) => (e) =>
+    setForm({ ...form, [field]: e.target.value === '' ? '' : parseFloat(e.target.value) })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -226,15 +229,33 @@ export default function ShippingRates() {
               </div>
               <div className="form-field">
                 <label>Nom du tarif *</label>
-                <input type="text" value={form.name} required onChange={set('name')} placeholder="TARIF STANDARD FR→DE" />
+                <input
+                  type="text"
+                  value={form.name}
+                  required
+                  onChange={set('name')}
+                  placeholder="TARIF STANDARD FR→DE"
+                />
               </div>
               <div className="form-field">
                 <label>Origine *</label>
-                <input type="text" value={form.originCountry} required onChange={set('originCountry')} placeholder="France" />
+                <input
+                  type="text"
+                  value={form.originCountry}
+                  required
+                  onChange={set('originCountry')}
+                  placeholder="France"
+                />
               </div>
               <div className="form-field">
                 <label>Destination *</label>
-                <input type="text" value={form.destinationCountry} required onChange={set('destinationCountry')} placeholder="Allemagne" />
+                <input
+                  type="text"
+                  value={form.destinationCountry}
+                  required
+                  onChange={set('destinationCountry')}
+                  placeholder="Allemagne"
+                />
               </div>
               <div className="form-field">
                 <label>Mode *</label>
@@ -248,7 +269,14 @@ export default function ShippingRates() {
               </div>
               <div className="form-field">
                 <label>Tarif de base *</label>
-                <input type="number" step="0.01" min="0.01" value={form.baseRate} required onChange={setNum('baseRate')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={form.baseRate}
+                  required
+                  onChange={setNum('baseRate')}
+                />
               </div>
               <div className="form-field">
                 <label>Devise</label>
@@ -262,31 +290,71 @@ export default function ShippingRates() {
               </div>
               <div className="form-field">
                 <label>€/kg</label>
-                <input type="number" step="0.01" min="0" value={form.ratePerKg ?? ''} onChange={setNum('ratePerKg')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.ratePerKg ?? ''}
+                  onChange={setNum('ratePerKg')}
+                />
               </div>
               <div className="form-field">
                 <label>€/m³</label>
-                <input type="number" step="0.01" min="0" value={form.ratePerCbm ?? ''} onChange={setNum('ratePerCbm')} />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={form.ratePerCbm ?? ''}
+                  onChange={setNum('ratePerCbm')}
+                />
               </div>
               <div className="form-field">
                 <label>Poids min (kg)</label>
-                <input type="number" step="0.1" min="0" value={form.minWeightKg} onChange={setNum('minWeightKg')} />
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={form.minWeightKg}
+                  onChange={setNum('minWeightKg')}
+                />
               </div>
               <div className="form-field">
                 <label>Poids max (kg)</label>
-                <input type="number" step="0.1" min="0" value={form.maxWeightKg} onChange={setNum('maxWeightKg')} />
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={form.maxWeightKg}
+                  onChange={setNum('maxWeightKg')}
+                />
               </div>
               <div className="form-field">
                 <label>Transit min (jours)</label>
-                <input type="number" min="1" value={form.transitDaysMin} onChange={setNum('transitDaysMin')} />
+                <input
+                  type="number"
+                  min="1"
+                  value={form.transitDaysMin}
+                  onChange={setNum('transitDaysMin')}
+                />
               </div>
               <div className="form-field">
                 <label>Transit max (jours)</label>
-                <input type="number" min="1" value={form.transitDaysMax} onChange={setNum('transitDaysMax')} />
+                <input
+                  type="number"
+                  min="1"
+                  value={form.transitDaysMax}
+                  onChange={setNum('transitDaysMax')}
+                />
               </div>
               <div className="form-field">
                 <label>CO₂ estimé (kg)</label>
-                <input type="number" step="0.1" min="0" value={form.co2EstimateKg} onChange={setNum('co2EstimateKg')} />
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={form.co2EstimateKg}
+                  onChange={setNum('co2EstimateKg')}
+                />
               </div>
             </div>
             <div className="form-actions">
@@ -326,7 +394,10 @@ export default function ShippingRates() {
             <tbody>
               {filtered.map((r) => (
                 <Fragment key={r.id}>
-                  <tr className="row-clickable" onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}>
+                  <tr
+                    className="row-clickable"
+                    onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}
+                  >
                     <td className="cell-strong">
                       <strong>{r.name}</strong>
                       <span className="muted block">{r.currency}</span>
@@ -339,23 +410,40 @@ export default function ShippingRates() {
                       {r.originCountry} <span className="muted">→</span> {r.destinationCountry}
                     </td>
                     <td>
-                      <span className="badge badge-blue">{TRANSPORT_MODES.find((m) => m.value === r.transportMode)?.label || r.transportMode}</span>
+                      <span className="badge badge-blue">
+                        {TRANSPORT_MODES.find((m) => m.value === r.transportMode)?.label ||
+                          r.transportMode}
+                      </span>
                     </td>
                     <td>{r.baseRate.toFixed(2)} €</td>
                     <td>{r.ratePerKg > 0 ? `${r.ratePerKg.toFixed(2)} €` : '—'}</td>
-                    <td>{r.transitDaysMin && r.transitDaysMax ? `${r.transitDaysMin}-${r.transitDaysMax}j` : '—'}</td>
                     <td>
-                      <span className={`badge ${r.active ? 'badge-green' : 'badge-gray'}`}>{r.active ? 'Actif' : 'Inactif'}</span>
+                      {r.transitDaysMin && r.transitDaysMax
+                        ? `${r.transitDaysMin}-${r.transitDaysMax}j`
+                        : '—'}
+                    </td>
+                    <td>
+                      <span className={`badge ${r.active ? 'badge-green' : 'badge-gray'}`}>
+                        {r.active ? 'Actif' : 'Inactif'}
+                      </span>
                     </td>
                     <td onClick={(e) => e.stopPropagation()}>
                       <div className="row-actions">
-                        <button className="btn btn-outline btn-sm" disabled={busyId === r.id} onClick={() => toggleActive(r)}>
+                        <button
+                          className="btn btn-outline btn-sm"
+                          disabled={busyId === r.id}
+                          onClick={() => toggleActive(r)}
+                        >
                           {r.active ? 'Désactiver' : 'Activer'}
                         </button>
                         <button className="btn btn-outline btn-sm" onClick={() => openEdit(r)}>
                           Modifier
                         </button>
-                        <button className="btn btn-danger btn-sm" disabled={busyId === r.id} onClick={() => remove(r)}>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          disabled={busyId === r.id}
+                          onClick={() => remove(r)}
+                        >
                           Supprimer
                         </button>
                       </div>
@@ -367,7 +455,9 @@ export default function ShippingRates() {
                         <div className="truck-card-grid">
                           <div className="couple-stat">
                             <span>Poids</span>
-                            <b>{r.minWeightKg || '—'} — {r.maxWeightKg || '—'} kg</b>
+                            <b>
+                              {r.minWeightKg || '—'} — {r.maxWeightKg || '—'} kg
+                            </b>
                           </div>
                           <div className="couple-stat">
                             <span>Prix au m³</span>
@@ -380,8 +470,13 @@ export default function ShippingRates() {
                           <div className="couple-stat">
                             <span>Validité</span>
                             <b>
-                              {r.validFrom ? new Date(r.validFrom).toLocaleDateString('fr-FR') : '—'} →{' '}
-                              {r.validUntil ? new Date(r.validUntil).toLocaleDateString('fr-FR') : '—'}
+                              {r.validFrom
+                                ? new Date(r.validFrom).toLocaleDateString('fr-FR')
+                                : '—'}{' '}
+                              →{' '}
+                              {r.validUntil
+                                ? new Date(r.validUntil).toLocaleDateString('fr-FR')
+                                : '—'}
                             </b>
                           </div>
                         </div>
@@ -408,7 +503,9 @@ export default function ShippingRates() {
             <div key={r.id} className="record-card">
               <div className="record-card-title">
                 <strong>{r.name}</strong>
-                <span className={`badge ${r.active ? 'badge-green' : 'badge-gray'}`}>{r.active ? 'Actif' : 'Inactif'}</span>
+                <span className={`badge ${r.active ? 'badge-green' : 'badge-gray'}`}>
+                  {r.active ? 'Actif' : 'Inactif'}
+                </span>
               </div>
               <div className="record-card-row">
                 <span>Route</span>

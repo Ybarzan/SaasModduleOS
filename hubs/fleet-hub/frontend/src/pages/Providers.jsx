@@ -29,7 +29,12 @@ const PROVIDER_DEFS = [
   }
 ]
 
-const HEALTH_LABELS = { HEALTHY: 'Sain', DEGRADED: 'Dégradé', DOWN: 'Hors ligne', UNKNOWN: 'Inconnu' }
+const HEALTH_LABELS = {
+  HEALTHY: 'Sain',
+  DEGRADED: 'Dégradé',
+  DOWN: 'Hors ligne',
+  UNKNOWN: 'Inconnu'
+}
 const HEALTH_COLORS = { HEALTHY: 'green', DEGRADED: 'orange', DOWN: 'red', UNKNOWN: 'gray' }
 
 export default function Providers() {
@@ -126,7 +131,12 @@ export default function Providers() {
   }
 
   const disconnect = async (id) => {
-    if (!window.confirm('Déconnecter ce fournisseur ? Les devis de cette source ne seront plus disponibles.')) return
+    if (
+      !window.confirm(
+        'Déconnecter ce fournisseur ? Les devis de cette source ne seront plus disponibles.'
+      )
+    )
+      return
     setBusyId(id)
     try {
       await api.delete(`/providers/${id}`)
@@ -189,7 +199,9 @@ export default function Providers() {
                 </div>
               </div>
               <div className="chip-row" style={{ marginBottom: 10 }}>
-                <span className={`badge badge-${HEALTH_COLORS[statusKey]}`}>{HEALTH_LABELS[statusKey]}</span>
+                <span className={`badge badge-${HEALTH_COLORS[statusKey]}`}>
+                  {HEALTH_LABELS[statusKey]}
+                </span>
                 {isInternal && <span className="badge badge-green">Toujours actif</span>}
                 {isConnected && !isInternal && config?.consecutiveFailures > 0 && (
                   <span className="badge badge-red">{config.consecutiveFailures} échec(s)</span>
@@ -204,18 +216,32 @@ export default function Providers() {
                 <div className="row-actions" style={{ justifyContent: 'flex-start' }}>
                   {isConnected ? (
                     <>
-                      <button className="btn btn-outline btn-sm" onClick={() => openConnect(def.type, config)}>
+                      <button
+                        className="btn btn-outline btn-sm"
+                        onClick={() => openConnect(def.type, config)}
+                      >
                         Reconnecter
                       </button>
-                      <button className="btn btn-outline btn-sm" disabled={busyId === config.id} onClick={() => test(config.id)}>
+                      <button
+                        className="btn btn-outline btn-sm"
+                        disabled={busyId === config.id}
+                        onClick={() => test(config.id)}
+                      >
                         Tester
                       </button>
-                      <button className="btn btn-danger btn-sm" disabled={busyId === config.id} onClick={() => disconnect(config.id)}>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        disabled={busyId === config.id}
+                        onClick={() => disconnect(config.id)}
+                      >
                         Déconnecter
                       </button>
                     </>
                   ) : (
-                    <button className="btn btn-primary btn-sm" onClick={() => openConnect(def.type, null)}>
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={() => openConnect(def.type, null)}
+                    >
                       Connecter
                     </button>
                   )}
@@ -235,17 +261,34 @@ export default function Providers() {
             <div className="data-grid">
               <div className="form-field">
                 <label>Clé API *</label>
-                <input type="password" value={apiKey} required onChange={(e) => setApiKey(e.target.value)} placeholder="Entrez votre clé API" />
+                <input
+                  type="password"
+                  value={apiKey}
+                  required
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Entrez votre clé API"
+                />
               </div>
               {PROVIDER_DEFS.find((d) => d.type === connecting)?.needsSecret && (
                 <div className="form-field">
                   <label>Clé secrète</label>
-                  <input type="password" value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} placeholder="Clé secrète" />
+                  <input
+                    type="password"
+                    value={apiSecret}
+                    onChange={(e) => setApiSecret(e.target.value)}
+                    placeholder="Clé secrète"
+                  />
                 </div>
               )}
               <div className="form-field">
                 <label>Priorité : {priority}</label>
-                <input type="range" min="1" max="10" value={priority} onChange={(e) => setPriority(parseInt(e.target.value))} />
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={priority}
+                  onChange={(e) => setPriority(parseInt(e.target.value))}
+                />
               </div>
             </div>
             <div className="form-actions">
@@ -263,7 +306,11 @@ export default function Providers() {
       <div className="card desktop-table">
         <div className="card-title">
           <h3>État de santé</h3>
-          <button className="btn btn-outline btn-sm" disabled={busyId === 'health'} onClick={runHealthCheck}>
+          <button
+            className="btn btn-outline btn-sm"
+            disabled={busyId === 'health'}
+            onClick={runHealthCheck}
+          >
             🔄 Vérifier la santé
           </button>
         </div>
@@ -289,18 +336,33 @@ export default function Providers() {
                         <span className="muted block">{h.providerType}</span>
                       </td>
                       <td>
-                        <span className={`badge badge-${HEALTH_COLORS[h.healthStatus]}`}>{HEALTH_LABELS[h.healthStatus]}</span>
+                        <span className={`badge badge-${HEALTH_COLORS[h.healthStatus]}`}>
+                          {HEALTH_LABELS[h.healthStatus]}
+                        </span>
                       </td>
-                      <td className="muted">{h.lastHealthCheck ? new Date(h.lastHealthCheck).toLocaleString('fr-FR') : '—'}</td>
-                      <td className={h.consecutiveFailures > 0 ? 'text-danger' : 'muted'}>{h.consecutiveFailures}</td>
+                      <td className="muted">
+                        {h.lastHealthCheck
+                          ? new Date(h.lastHealthCheck).toLocaleString('fr-FR')
+                          : '—'}
+                      </td>
+                      <td className={h.consecutiveFailures > 0 ? 'text-danger' : 'muted'}>
+                        {h.consecutiveFailures}
+                      </td>
                       <td>
                         {config && (
                           <div className="row-actions">
-                            <button className="btn btn-outline btn-sm" disabled={busyId === config.id} onClick={() => test(config.id)}>
+                            <button
+                              className="btn btn-outline btn-sm"
+                              disabled={busyId === config.id}
+                              onClick={() => test(config.id)}
+                            >
                               Tester
                             </button>
                             {!h.active && (
-                              <button className="btn btn-danger btn-sm" onClick={() => disconnect(config.id)}>
+                              <button
+                                className="btn btn-danger btn-sm"
+                                onClick={() => disconnect(config.id)}
+                              >
                                 Supprimer
                               </button>
                             )}

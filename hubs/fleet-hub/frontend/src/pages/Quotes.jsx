@@ -12,7 +12,8 @@ const DISPLAY_CURRENCIES = ['EUR', 'USD', 'GBP', 'MAD', 'CHF', 'CAD', 'CNY', 'JP
 
 const modeLabels = { SEA: 'Maritime', AIR: 'Aérien', ROAD: 'Routier' }
 
-const providerLabel = (type) => (type === 'SHIPPO' ? 'API Shippo' : type === 'DHL' ? 'API DHL' : 'Interne')
+const providerLabel = (type) =>
+  type === 'SHIPPO' ? 'API Shippo' : type === 'DHL' ? 'API DHL' : 'Interne'
 
 const EMPTY_FORM = {
   originCountry: '',
@@ -43,7 +44,12 @@ export default function Quotes() {
       setError("Veuillez sélectionner les pays d'origine et de destination")
       return
     }
-    if (!form.weightKg || !form.volumeM3 || parseFloat(form.weightKg) <= 0 || parseFloat(form.volumeM3) <= 0) {
+    if (
+      !form.weightKg ||
+      !form.volumeM3 ||
+      parseFloat(form.weightKg) <= 0 ||
+      parseFloat(form.volumeM3) <= 0
+    ) {
       setError('Le poids et le volume doivent être supérieurs à 0')
       return
     }
@@ -58,7 +64,11 @@ export default function Quotes() {
       const res = await api.post('/quotes', payload)
       const quotes = res.data || []
       setResults(quotes)
-      setNotice(quotes.length === 0 ? 'Aucun tarif trouvé pour cette recherche' : `${quotes.length} tarif(s) trouvé(s)`)
+      setNotice(
+        quotes.length === 0
+          ? 'Aucun tarif trouvé pour cette recherche'
+          : `${quotes.length} tarif(s) trouvé(s)`
+      )
     } catch {
       setError('Erreur lors de la demande de devis')
     } finally {
@@ -66,14 +76,23 @@ export default function Quotes() {
     }
   }
 
-  const cheapest = results.length > 0 ? results.reduce((min, r) => (r.totalCost < min.totalCost ? r : min), results[0]) : null
+  const cheapest =
+    results.length > 0
+      ? results.reduce((min, r) => (r.totalCost < min.totalCost ? r : min), results[0])
+      : null
   const fastest =
     results.length > 0
-      ? results.reduce((min, r) => ((r.transitDaysMin ?? 999) < (min.transitDaysMin ?? 999) ? r : min), results[0])
+      ? results.reduce(
+          (min, r) => ((r.transitDaysMin ?? 999) < (min.transitDaysMin ?? 999) ? r : min),
+          results[0]
+        )
       : null
   const greenest =
     results.length > 0
-      ? results.reduce((min, r) => ((r.co2EstimateKg ?? 999999) < (min.co2EstimateKg ?? 999999) ? r : min), results[0])
+      ? results.reduce(
+          (min, r) => ((r.co2EstimateKg ?? 999999) < (min.co2EstimateKg ?? 999999) ? r : min),
+          results[0]
+        )
       : null
 
   const exportPdf = async () => {
@@ -99,7 +118,9 @@ export default function Quotes() {
     }
   }
 
-  const internalCount = results.filter((q) => !q.providerType || q.providerType === 'INTERNAL').length
+  const internalCount = results.filter(
+    (q) => !q.providerType || q.providerType === 'INTERNAL'
+  ).length
   const shippoCount = results.filter((q) => q.providerType === 'SHIPPO').length
   const dhlCount = results.filter((q) => q.providerType === 'DHL').length
   const sourceParts = []
@@ -124,11 +145,23 @@ export default function Quotes() {
           <div className="data-grid">
             <div className="form-field">
               <label>Pays d'origine *</label>
-              <input type="text" value={form.originCountry} required onChange={set('originCountry')} placeholder="France" />
+              <input
+                type="text"
+                value={form.originCountry}
+                required
+                onChange={set('originCountry')}
+                placeholder="France"
+              />
             </div>
             <div className="form-field">
               <label>Pays de destination *</label>
-              <input type="text" value={form.destinationCountry} required onChange={set('destinationCountry')} placeholder="Allemagne" />
+              <input
+                type="text"
+                value={form.destinationCountry}
+                required
+                onChange={set('destinationCountry')}
+                placeholder="Allemagne"
+              />
             </div>
             <div className="form-field">
               <label>Mode de transport</label>
@@ -142,19 +175,47 @@ export default function Quotes() {
             </div>
             <div className="form-field">
               <label>Poids (kg) *</label>
-              <input type="number" step="0.1" min="0" value={form.weightKg} required onChange={set('weightKg')} placeholder="0" />
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                value={form.weightKg}
+                required
+                onChange={set('weightKg')}
+                placeholder="0"
+              />
             </div>
             <div className="form-field">
               <label>Volume (m³) *</label>
-              <input type="number" step="0.01" min="0" value={form.volumeM3} required onChange={set('volumeM3')} placeholder="0" />
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.volumeM3}
+                required
+                onChange={set('volumeM3')}
+                placeholder="0"
+              />
             </div>
             <div className="form-field">
               <label>Valeur des marchandises (€)</label>
-              <input type="number" step="0.01" min="0" value={form.goodsValue} onChange={set('goodsValue')} placeholder="0.00" />
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={form.goodsValue}
+                onChange={set('goodsValue')}
+                placeholder="0.00"
+              />
             </div>
             <div className="form-field">
               <label>Code SH (optionnel)</label>
-              <input type="text" value={form.hsCode} onChange={set('hsCode')} placeholder="Ex : 8471.30" />
+              <input
+                type="text"
+                value={form.hsCode}
+                onChange={set('hsCode')}
+                placeholder="Ex : 8471.30"
+              />
             </div>
             <div className="form-field">
               <label>Devise d'affichage</label>
@@ -243,7 +304,9 @@ export default function Quotes() {
                         <strong>{quote.carrierName}</strong>
                         <span className="muted block">{quote.rateName}</span>
                       </div>
-                      <span className="badge badge-blue">{modeLabels[quote.transportMode] || quote.transportMode}</span>
+                      <span className="badge badge-blue">
+                        {modeLabels[quote.transportMode] || quote.transportMode}
+                      </span>
                     </div>
                     <div className="chip-row" style={{ marginBottom: 10 }}>
                       <span className="badge badge-gray">{providerLabel(quote.providerType)}</span>
@@ -297,7 +360,9 @@ export default function Quotes() {
       {!loading && results.length === 0 && !notice && (
         <div className="card" style={{ textAlign: 'center', padding: 40 }}>
           <h3>Recherchez des devis de transport</h3>
-          <p className="muted">Remplissez le formulaire ci-dessus pour comparer les tarifs entre transporteurs</p>
+          <p className="muted">
+            Remplissez le formulaire ci-dessus pour comparer les tarifs entre transporteurs
+          </p>
         </div>
       )}
     </div>
