@@ -19,63 +19,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// 401 handling with a single refresh-and-retry, modeled on fleet-hub's
-// services/api.js interceptor shape (refresh call + `_retry` guard + queueing
-// concurrent requests while the refresh is in flight), adapted to this app's
-// bearer-token-in-header style instead of fleet-hub's cookie-only session:
-// the refresh endpoint is expected to rely on an httpOnly refresh cookie set
-// at login time and to hand back a fresh { token, user } pair, so no
-// refreshToken needs to live in the Zustand store.
-let isRefreshing = false;
-let failedQueue: Array<{ resolve: (value: unknown) => void; reject: (reason?: unknown) => void }> = [];
-
-const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) prom.reject(error);
-    else prom.resolve(token);
-  });
-  failedQueue = [];
-};
-
+// The Logistix backend issues a single long-lived JWT at login and exposes
+// no /v1/auth/refresh endpoint — unlike fleet-hub, there is nothing to retry
+// a 401 against. On a 401 outside the auth endpoints themselves, just drop
+// the stale session and send the user back to /login.
 api.interceptors.response.use(
   (r) => r,
-  async (err) => {
+  (err) => {
     const originalRequest = err.config;
     const url = originalRequest?.url || "";
-    const isAuthEndpoint = url.startsWith("/v1/auth/login") || url.startsWith("/v1/auth/refresh");
+    const isAuthEndpoint = url.startsWith("/v1/auth/login") || url.startsWith("/v1/auth/register");
 
-    if (err.response?.status === 401 && !originalRequest?._retry && !isAuthEndpoint) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then((token) => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return api(originalRequest);
-        });
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      try {
-        const { data } = await axios.post<{ token: string; user: User }>(
-          `${api.defaults.baseURL}/v1/auth/refresh`,
-          {},
-          { withCredentials: true },
-        );
-        useAuthStore.getState().login(data.token, data.user);
-        processQueue(null, data.token);
-        originalRequest.headers.Authorization = `Bearer ${data.token}`;
-        return api(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError, null);
-        useAuthStore.getState().logout();
-        if (!window.location.pathname.startsWith("/login")) {
-          window.location.href = "/login";
-        }
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
+    if (err.response?.status === 401 && !isAuthEndpoint) {
+      useAuthStore.getState().logout();
+      if (!window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login";
       }
     }
 

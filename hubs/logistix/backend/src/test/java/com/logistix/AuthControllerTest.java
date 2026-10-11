@@ -31,7 +31,7 @@ class AuthControllerTest {
 
     @Test
     void login_success_returnsTokenAndRole() throws Exception {
-        mvc.perform(post("/api/auth/login")
+        mvc.perform(post("/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"admin@logistix.fr\",\"password\":\"admin\"}"))
                 .andExpect(status().isOk())
@@ -42,7 +42,7 @@ class AuthControllerTest {
 
     @Test
     void login_wrongPassword_returns401() throws Exception {
-        mvc.perform(post("/api/auth/login")
+        mvc.perform(post("/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"admin@logistix.fr\",\"password\":\"wrong\"}"))
                 .andExpect(status().isUnauthorized());
@@ -86,15 +86,15 @@ class AuthControllerTest {
     void register_duplicateEmail_returns409() throws Exception {
         String body = "{\"companyName\":\"Dup Co\",\"displayName\":\"A B\","
                 + "\"email\":\"dup-check@test.fr\",\"password\":\"initialpass1\"}";
-        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(post("/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isCreated());
-        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
+        mvc.perform(post("/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.message").value("Un compte existe déjà avec cet email"));
     }
 
     private String loginToken(String email, String password) throws Exception {
-        String body = mvc.perform(post("/api/auth/login")
+        String body = mvc.perform(post("/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
                 .andExpect(status().isOk())
