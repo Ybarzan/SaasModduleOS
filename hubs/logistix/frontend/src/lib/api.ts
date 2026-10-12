@@ -98,4 +98,11 @@ export const logistixAPI = {
     resolveDiscrepancy: (id: string, notes?: string) =>
       api.post(`/v1/receivings/discrepancies/${id}/resolve`, { notes }),
   },
+
+  // Paramètres société (intégration fleet-hub)
+  company: {
+    fleetHubKeyStatus: () => api.get("/v1/company/fleethub-key"),
+    setFleetHubKey: (apiKey: string) => api.put("/v1/company/fleethub-key", { apiKey }),
+    clearFleetHubKey: () => api.delete("/v1/company/fleethub-key"),
+  },
 };

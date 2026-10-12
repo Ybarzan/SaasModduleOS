@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Warehouse, Package, Boxes, ClipboardList, ScanLine, LogOut } from 'lucide-react';
+import { Warehouse, Package, Boxes, ClipboardList, ScanLine, Settings as SettingsIcon, LogOut } from 'lucide-react';
 import { useAuthStore } from '../stores/auth';
 
 const NAV_ITEMS = [
@@ -10,13 +10,17 @@ const NAV_ITEMS = [
   { to: '/scan-receiving', label: 'Scanner', icon: ScanLine },
 ];
 
+const ADMIN_NAV_ITEMS = [{ to: '/settings', label: 'Paramètres', icon: SettingsIcon }];
+
 // Chrome minimal volontaire : une barre de navigation à plat, pas la sidebar
 // pliable / command palette / cloche de notifications de compliance-engine.
 // Logistix n'a que 5 sections, ça ne justifie pas cette complexité.
 const AppLayout = () => {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const isAdmin = useAuthStore((s) => s.isAdmin());
   const logout = useAuthStore((s) => s.logout);
+  const navItems = isAdmin ? [...NAV_ITEMS, ...ADMIN_NAV_ITEMS] : NAV_ITEMS;
 
   const handleLogout = () => {
     logout();
@@ -33,7 +37,7 @@ const AppLayout = () => {
               Logistix
             </span>
             <nav className="flex items-center gap-1">
-              {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+              {navItems.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={to}

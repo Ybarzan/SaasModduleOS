@@ -83,6 +83,21 @@ public class Company {
     @Column(length = 64)
     private String marketplaceApiKey;
 
+    // ---- Intégration entrante compliance-engine / Logistix (opt-in) ----
+    /** Autorise la lecture d'expéditions (GET /api/internal/shipments/**) par
+     *  compliance-engine ou Logistix pour cette société, via une clé propre à
+     *  elle (jamais un accès direct à sa base). Désactivé par défaut. */
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean internalIntegrationEnabled = false;
+
+    /** Clé d'authentification machine-à-machine pour cette intégration
+     *  (présentée via l'en-tête X-Internal-Integration-Key), générée à
+     *  l'activation. fleet-hub résout la société depuis cette clé -- jamais
+     *  depuis un identifiant fourni par l'appelant. */
+    @Column(length = 64)
+    private String internalIntegrationApiKey;
+
     public enum SubscriptionPlan {
         TRIAL(10, 5),
         STARTER(25, 10),
@@ -140,6 +155,16 @@ public class Company {
 
     /** Génère une clé API machine-à-machine pour FleetMarket (32 caractères hexadécimaux). */
     public static String generateMarketplaceApiKey() {
+        return generateHexApiKey();
+    }
+
+    /** Génère une clé API machine-à-machine pour l'intégration entrante
+     *  compliance-engine / Logistix (32 caractères hexadécimaux). */
+    public static String generateInternalIntegrationApiKey() {
+        return generateHexApiKey();
+    }
+
+    private static String generateHexApiKey() {
         byte[] bytes = new byte[16];
         ACCESS_CODE_RANDOM.nextBytes(bytes);
         StringBuilder sb = new StringBuilder(32);

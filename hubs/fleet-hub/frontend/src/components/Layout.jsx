@@ -148,6 +148,16 @@ const icons = {
       }
     />
   ),
+  hubIntegration: (
+    <Icon
+      d={
+        <>
+          <path d="M10 13a5 5 0 0 0 7.07 0l2.5-2.5a5 5 0 0 0-7.07-7.07L11 4" />
+          <path d="M14 11a5 5 0 0 0-7.07 0l-2.5 2.5a5 5 0 0 0 7.07 7.07L13 19" />
+        </>
+      }
+    />
+  ),
   import: (
     <Icon
       d={
@@ -322,6 +332,13 @@ const navItems = [
   { to: '/users', label: 'Utilisateurs', icon: 'users', end: false, adminOnly: true },
   { to: '/integrations', label: 'Intégrations', icon: 'integrations', end: false, adminOnly: true },
   { to: '/marketplace', label: 'Marketplace', icon: 'marketplace', end: false, adminOnly: true },
+  {
+    to: '/hub-integration',
+    label: 'Logistix & Compliance',
+    icon: 'hubIntegration',
+    end: false,
+    adminOnly: true
+  },
   { to: '/rgpd', label: 'Mes données', icon: 'rgpd', end: false, adminOnly: true },
   { to: '/admin', label: 'Administration', icon: 'admin', end: false, saasOnly: true },
   { to: '/settings', label: 'Paramètres', icon: 'settings', end: false }

@@ -5,6 +5,8 @@ import com.incokalk.dto.shipment.PackagingResult;
 import com.incokalk.dto.shipment.SimulationRequest.TransportModeInput;
 import com.incokalk.dto.shipment.TruckingRateRequest;
 import com.incokalk.dto.shipment.TruckingRateResult;
+import com.incokalk.model.Company;
+import com.incokalk.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,12 +37,16 @@ import java.util.UUID;
  *       {@code CustomsInvoiceGeneratorService}.</li>
  * </ul>
  *
- * <p><b>Limite connue (suivi documenté) :</b> fleet-hub résout son tenant courant
- * à partir d'un JWT (voir son {@code TenantFilter}) ; aucun pont d'authentification
- * service-à-service inter-hub n'existe encore dans ce monorepo. En attendant,
- * {@code companyId} est transmis tel quel (en-tête {@code X-Internal-Company-Id})
- * à titre indicatif -- la sécurisation réelle de cet appel inter-hub est un
- * suivi séparé, hors scope du retrait du domaine Transport.</p>
+ * <p><b>Authentification inter-hub :</b> fleet-hub résout son tenant courant à
+ * partir d'un JWT émis par lui-même (voir son {@code TenantFilter}) ; compliance-engine
+ * n'en a pas. {@link #getShipmentSummary} s'authentifie donc via une clé propre
+ * à chaque société (en-tête {@code X-Internal-Integration-Key}), générée côté
+ * fleet-hub quand celle-ci active le partage ("Logistix & Compliance Engine"
+ * dans ses paramètres) puis collée ici (voir {@code Company.fleetHubApiKey} /
+ * paramètres entreprise). fleet-hub résout la société depuis cette clé, jamais
+ * depuis un identifiant fourni par l'appel -- une société dont la clé n'est pas
+ * configurée reçoit une erreur explicite plutôt qu'un appel anonyme qui
+ * échouerait en 401 côté fleet-hub.</p>
  */
 @Slf4j
 @Component
@@ -52,6 +58,7 @@ public class FleetHubIntegrationClient {
     private static final Set<String> NEARSHORE = Set.of("MA", "TN", "DZ", "TR", "PL", "RO", "HU", "BG");
 
     private final RestTemplate restTemplate;
+    private final CompanyRepository companyRepository;
 
     @Value("${incokalk.integration.fleethub.base-url:http://localhost:8090}")
     private String baseUrl;
@@ -139,17 +146,17 @@ public class FleetHubIntegrationClient {
     /**
      * Remplace la lecture directe de ShipmentOrderRepository/ShipmentItemRepository
      * dans CustomsInvoiceGeneratorService.generateInvoice() : appelle
-     * {@code GET /api/shipments/{id}} (en-tête) puis {@code GET /api/shipments/{id}/items}
-     * (lignes) sur fleet-hub et reconstitue un {@link ShipmentSummary} local avec
-     * exactement les champs dont la génération de facture douanière a besoin.
+     * {@code GET /api/internal/shipments/{id}} (en-tête) puis
+     * {@code GET /api/internal/shipments/{id}/items} (lignes) sur fleet-hub,
+     * authentifié par la clé d'intégration de cette société, et reconstitue
+     * un {@link ShipmentSummary} local avec exactement les champs dont la
+     * génération de facture douanière a besoin.
      */
     public ShipmentSummary getShipmentSummary(UUID shipmentId, UUID companyId) {
         HttpHeaders headers = jsonHeaders();
-        if (companyId != null) {
-            headers.set("X-Internal-Company-Id", companyId.toString());
-        }
+        headers.set("X-Internal-Integration-Key", resolveApiKey(companyId));
 
-        String shipmentUrl = trimTrailingSlash(baseUrl) + "/api/shipments/" + shipmentId;
+        String shipmentUrl = trimTrailingSlash(baseUrl) + "/api/internal/shipments/" + shipmentId;
         ShipmentSummary summary;
         try {
             ResponseEntity<ShipmentSummary> response = restTemplate.exchange(
@@ -163,7 +170,7 @@ public class FleetHubIntegrationClient {
             throw e;
         } catch (Exception e) {
             throw new FleetHubIntegrationException(
-                    "Erreur d'appel à fleet-hub (/api/shipments/" + shipmentId + ") : " + e.getMessage(), e);
+                    "Erreur d'appel à fleet-hub (/api/internal/shipments/" + shipmentId + ") : " + e.getMessage(), e);
         }
 
         String itemsUrl = shipmentUrl + "/items";
@@ -178,6 +185,20 @@ public class FleetHubIntegrationClient {
         }
 
         return summary;
+    }
+
+    /** Résout la clé d'intégration fleet-hub de cette société -- jamais un
+     * identifiant de société transmis tel quel : fleet-hub ne fait confiance
+     * qu'à la clé elle-même pour déterminer qui appelle. */
+    private String resolveApiKey(UUID companyId) {
+        String apiKey = companyId != null
+                ? companyRepository.findById(companyId).map(Company::getFleetHubApiKey).orElse(null)
+                : null;
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new FleetHubIntegrationException(
+                    "Intégration fleet-hub non configurée pour cette entreprise (voir Paramètres > Intégrations)");
+        }
+        return apiKey;
     }
 
     private HttpHeaders jsonHeaders() {

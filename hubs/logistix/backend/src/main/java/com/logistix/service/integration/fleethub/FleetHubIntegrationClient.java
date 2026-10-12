@@ -1,5 +1,7 @@
 package com.logistix.service.integration.fleethub;
 
+import com.logistix.model.Company;
+import com.logistix.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,19 +28,16 @@ import java.util.UUID;
  * ShipmentOrder/ShipmentItem, éliminée par cette extraction (voir le TODO
  * historique de {@code ReceivingService.createOrder}).</p>
  *
- * <p><b>Limite connue (suivi documenté, identique côté compliance-engine) :</b>
- * fleet-hub résout son tenant courant à partir d'un JWT émis par fleet-hub
- * lui-même (voir son {@code TenantFilter}) ; aucun pont d'authentification
- * service-à-service inter-hub n'existe encore dans ce monorepo.
- * {@code companyId} est transmis tel quel (en-tête
- * {@code X-Internal-Company-Id}) à titre indicatif, mais cet appel échouera
- * en pratique (401, aucun JWT fleet-hub) jusqu'à ce qu'un tel pont existe --
- * {@link #getShipmentItems} propage l'échec comme
- * {@link FleetHubIntegrationException} plutôt que de le masquer, précisément
- * pour que l'appelant puisse retomber explicitement sur la saisie manuelle
- * des lignes (voir ReceivingService.createOrder) au lieu de silencieusement
- * ne rien faire. La sécurisation réelle de cet appel inter-hub est un suivi
- * séparé, hors scope de cette tâche.</p>
+ * <p><b>Authentification inter-hub :</b> fleet-hub résout son tenant courant à
+ * partir d'un JWT émis par lui-même (voir son {@code TenantFilter}) ; Logistix
+ * n'en a pas. {@link #getShipmentItems} s'authentifie donc via une clé propre
+ * à chaque société (en-tête {@code X-Internal-Integration-Key}), générée côté
+ * fleet-hub quand celle-ci active le partage ("Logistix & Compliance Engine"
+ * dans ses paramètres) puis collée ici (voir {@code Company.fleetHubApiKey} /
+ * paramètres entreprise). fleet-hub résout la société depuis cette clé, jamais
+ * depuis un identifiant fourni par l'appel -- une société dont la clé n'est
+ * pas configurée reçoit une erreur explicite plutôt qu'un appel anonyme qui
+ * échouerait en 401 côté fleet-hub.</p>
  */
 @Slf4j
 @Component
@@ -46,18 +45,18 @@ import java.util.UUID;
 public class FleetHubIntegrationClient {
 
     private final RestTemplate restTemplate;
+    private final CompanyRepository companyRepository;
 
     @Value("${app.integration.fleethub.base-url:http://localhost:8090}")
     private String baseUrl;
 
-    /** Appelle {@code GET /api/shipments/{id}/items} sur fleet-hub. */
+    /** Appelle {@code GET /api/internal/shipments/{id}/items} sur fleet-hub,
+     * authentifié par la clé d'intégration de cette société. */
     public List<ShipmentItemSummary> getShipmentItems(UUID shipmentId, UUID companyId) {
         HttpHeaders headers = jsonHeaders();
-        if (companyId != null) {
-            headers.set("X-Internal-Company-Id", companyId.toString());
-        }
+        headers.set("X-Internal-Integration-Key", resolveApiKey(companyId));
 
-        String url = trimTrailingSlash(baseUrl) + "/api/shipments/" + shipmentId + "/items";
+        String url = trimTrailingSlash(baseUrl) + "/api/internal/shipments/" + shipmentId + "/items";
         try {
             ResponseEntity<ShipmentItemSummary[]> response = restTemplate.exchange(
                     url, HttpMethod.GET, new HttpEntity<>(headers), ShipmentItemSummary[].class);
@@ -71,8 +70,22 @@ public class FleetHubIntegrationClient {
             throw e;
         } catch (Exception e) {
             throw new FleetHubIntegrationException(
-                    "Erreur d'appel à fleet-hub (/api/shipments/" + shipmentId + "/items) : " + e.getMessage(), e);
+                    "Erreur d'appel à fleet-hub (/api/internal/shipments/" + shipmentId + "/items) : " + e.getMessage(), e);
         }
+    }
+
+    /** Résout la clé d'intégration fleet-hub de cette société -- jamais un
+     * identifiant de société transmis tel quel : fleet-hub ne fait confiance
+     * qu'à la clé elle-même pour déterminer qui appelle. */
+    private String resolveApiKey(UUID companyId) {
+        String apiKey = companyId != null
+                ? companyRepository.findById(companyId).map(Company::getFleetHubApiKey).orElse(null)
+                : null;
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new FleetHubIntegrationException(
+                    "Intégration fleet-hub non configurée pour cette société (voir Paramètres)");
+        }
+        return apiKey;
     }
 
     private HttpHeaders jsonHeaders() {

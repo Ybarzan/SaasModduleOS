@@ -8,6 +8,12 @@ import { incokalkAPI } from "../lib/api";
 vi.mock("../lib/api", () => ({
   incokalkAPI: {
     branding: { get: vi.fn(), update: vi.fn(), uploadLogo: vi.fn() },
+    companies: {
+      me: vi.fn(),
+      fleetHubKeyStatus: vi.fn(),
+      setFleetHubKey: vi.fn(),
+      clearFleetHubKey: vi.fn(),
+    },
   },
 }));
 
@@ -42,6 +48,10 @@ describe("CompanySettings page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(incokalkAPI.branding.get).mockResolvedValue({ data: company } as never);
+    vi.mocked(incokalkAPI.companies.me).mockResolvedValue({ data: { id: "company-1" } } as never);
+    vi.mocked(incokalkAPI.companies.fleetHubKeyStatus).mockResolvedValue({
+      data: { configured: false },
+    } as never);
   });
 
   it("loads and displays existing company settings", async () => {
@@ -89,6 +99,48 @@ describe("CompanySettings page", () => {
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("SIRET invalide");
+    });
+  });
+
+  describe("Fleet Hub integration card", () => {
+    it("shows an input to save the key when none is configured", async () => {
+      renderPage();
+      await waitFor(() =>
+        expect(screen.getByPlaceholderText(/Clé d'intégration fleet-hub/)).toBeInTheDocument()
+      );
+    });
+
+    it("saves the key and shows the configured state", async () => {
+      vi.mocked(incokalkAPI.companies.setFleetHubKey).mockResolvedValue({
+        data: { configured: true },
+      } as never);
+      renderPage();
+      const input = await screen.findByPlaceholderText(/Clé d'intégration fleet-hub/);
+      fireEvent.change(input, { target: { value: "abc123def456" } });
+      fireEvent.click(await screen.findByRole("button", { name: "Enregistrer" }));
+
+      await waitFor(() => {
+        expect(incokalkAPI.companies.setFleetHubKey).toHaveBeenCalledWith("company-1", "abc123def456");
+      });
+      expect(toast.success).toHaveBeenCalledWith("Clé fleet-hub enregistrée");
+    });
+
+    it("shows the configured state and lets the admin clear the key", async () => {
+      vi.mocked(incokalkAPI.companies.fleetHubKeyStatus).mockResolvedValue({
+        data: { configured: true },
+      } as never);
+      vi.mocked(incokalkAPI.companies.clearFleetHubKey).mockResolvedValue({
+        data: { configured: false },
+      } as never);
+      renderPage();
+
+      expect(await screen.findByText("Clé configurée")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Effacer la clé" }));
+
+      await waitFor(() => {
+        expect(incokalkAPI.companies.clearFleetHubKey).toHaveBeenCalledWith("company-1");
+      });
+      expect(toast.success).toHaveBeenCalledWith("Clé fleet-hub effacée");
     });
   });
 });

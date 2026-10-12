@@ -97,6 +97,36 @@ public class CompanyController {
         return ResponseEntity.ok("Utilisateur ajouté avec le rôle " + role.getRole());
     }
 
+    @GetMapping("/{id}/fleethub-key")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
+    @Operation(summary = "Statut de l'intégration fleet-hub", description = "Indique si une clé est enregistrée, jamais la clé elle-même")
+    public ResponseEntity<FleetHubKeyStatusRes> getFleetHubKeyStatus(@PathVariable UUID id) {
+        UUID companyId = TenantContext.get();
+        if (!id.equals(companyId)) return ResponseEntity.status(403).build();
+        return ResponseEntity.ok(new FleetHubKeyStatusRes(companyService.hasFleetHubApiKey(companyId)));
+    }
+
+    @PutMapping("/{id}/fleethub-key")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
+    @Operation(summary = "Enregistrer la clé d'intégration fleet-hub", description = "Clé générée côté fleet-hub (paramètres > Logistix & Compliance Engine)")
+    public ResponseEntity<FleetHubKeyStatusRes> setFleetHubKey(
+            @PathVariable UUID id, @Valid @RequestBody FleetHubKeyReq req) {
+        UUID companyId = TenantContext.get();
+        if (!id.equals(companyId)) return ResponseEntity.status(403).build();
+        companyService.setFleetHubApiKey(companyId, req.apiKey());
+        return ResponseEntity.ok(new FleetHubKeyStatusRes(companyService.hasFleetHubApiKey(companyId)));
+    }
+
+    @DeleteMapping("/{id}/fleethub-key")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
+    @Operation(summary = "Effacer la clé d'intégration fleet-hub")
+    public ResponseEntity<FleetHubKeyStatusRes> clearFleetHubKey(@PathVariable UUID id) {
+        UUID companyId = TenantContext.get();
+        if (!id.equals(companyId)) return ResponseEntity.status(403).build();
+        companyService.setFleetHubApiKey(companyId, null);
+        return ResponseEntity.ok(new FleetHubKeyStatusRes(false));
+    }
+
     private UUID extractUserId(HttpServletRequest req) {
         Object id = req.getAttribute("userId");
         if (id == null) throw new RuntimeException("Non authentifié");
@@ -121,4 +151,6 @@ public class CompanyController {
 
     public record CompanyUpdateReq(String name, String slug, String logoUrl) {}
     public record InviteReq(@Email @NotBlank String email, CompanyRole.Role role) {}
+    public record FleetHubKeyReq(@NotBlank String apiKey) {}
+    public record FleetHubKeyStatusRes(boolean configured) {}
 }

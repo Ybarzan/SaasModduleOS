@@ -65,6 +65,11 @@ public class SecurityConfig {
                 // (pas un JWT) dans MarketplaceService, pas ici.
                 .requestMatchers(HttpMethod.GET, "/api/marketplace/availability", "/api/marketplace/vehicle-position").permitAll()
                 .requestMatchers("/api/marketplace/**").hasRole("ADMIN")
+                // Appel machine-à-machine de compliance-engine / Logistix, authentifié par
+                // X-Internal-Integration-Key (pas un JWT) dans InternalIntegrationService,
+                // pas ici -- ces hubs n'ont pas de JWT fleet-hub.
+                .requestMatchers("/api/internal/**").permitAll()
+                .requestMatchers("/api/internal-integrations/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("SAAS_ADMIN")
                 .requestMatchers("/api/users/**", "/api/integrations/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/kpis/**", "/api/drivers/**", "/api/trucks/**", "/api/dashboard/**", "/api/map/**").hasAnyRole("ADMIN", "GESTIONNAIRE")

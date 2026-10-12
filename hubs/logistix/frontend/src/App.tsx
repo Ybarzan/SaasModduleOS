@@ -13,6 +13,7 @@ const InventoryItems = lazy(() => import('./pages/InventoryItems'));
 const Inventory = lazy(() => import('./pages/Inventory'));
 const Receiving = lazy(() => import('./pages/Receiving'));
 const ScanReceiving = lazy(() => import('./pages/ScanReceiving'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 function PageLoader() {
   return (
@@ -67,6 +68,7 @@ function AppRoutes() {
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/receivings" element={<Receiving />} />
           <Route path="/scan-receiving" element={<ScanReceiving />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/warehouses" replace />} />

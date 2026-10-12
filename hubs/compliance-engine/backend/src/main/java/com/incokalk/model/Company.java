@@ -54,6 +54,13 @@ public class Company {
     @Builder.Default
     private boolean isActive = true;
 
+    /** Clé d'intégration fleet-hub (en-tête X-Internal-Integration-Key) --
+     *  générée côté fleet-hub quand cette société y active le partage
+     *  d'expéditions, puis collée ici par un admin. Voir
+     *  service/integration/fleethub/FleetHubIntegrationClient. */
+    @Column(name = "fleethub_api_key", length = 64)
+    private String fleetHubApiKey;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
