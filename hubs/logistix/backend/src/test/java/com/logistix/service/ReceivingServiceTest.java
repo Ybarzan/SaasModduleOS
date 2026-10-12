@@ -3,6 +3,8 @@ package com.logistix.service;
 import com.logistix.model.*;
 import com.logistix.repository.*;
 import com.logistix.security.TenantContext;
+import com.logistix.service.integration.fleethub.FleetHubIntegrationClient;
+import com.logistix.service.integration.fleethub.ShipmentItemSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,11 +22,12 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 /**
- * Note : les scénarios de dérivation automatique des lignes depuis une
- * expédition (interrogation directe de shipment_orders/shipment_items, un
- * autre hub) n'existent plus ici — voir le commentaire TODO sur
- * {@link ReceivingService#createOrder}. shipmentId n'est plus qu'une
- * métadonnée optionnelle.
+ * Note : shipmentId est une métadonnée optionnelle (référence logique, sans
+ * FK) sur ReceivingOrder. Quand il est fourni sans lignes explicites,
+ * createOrder tente de les dériver via FleetHubIntegrationClient (appel HTTP
+ * vers fleet-hub) plutôt que par l'ancienne lecture JPA cross-domain directe
+ * de shipment_orders/shipment_items — voir le Javadoc de
+ * {@link ReceivingService#createOrder}.
  */
 @DisplayName("ReceivingService — Tests unitaires")
 class ReceivingServiceTest {
@@ -36,6 +39,7 @@ class ReceivingServiceTest {
     @Mock StockBalanceRepository balanceRepo;
     @Mock StockMovementRepository movementRepo;
     @Mock InventoryService inventoryService;
+    @Mock FleetHubIntegrationClient fleetHubClient;
 
     @InjectMocks ReceivingService service;
 
@@ -83,8 +87,8 @@ class ReceivingServiceTest {
     }
 
     @Test
-    @DisplayName("createOrder → shipmentId est une métadonnée optionnelle, sans dérivation de lignes")
-    void createOrderWithShipmentIdIsJustMetadata() {
+    @DisplayName("createOrder → shipmentId fourni, lignes dérivées depuis fleet-hub")
+    void createOrderWithShipmentIdDerivesLinesFromFleetHub() {
         try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
             ctx.when(TenantContext::get).thenReturn(companyId);
             UUID shipmentId = UUID.randomUUID();
@@ -93,13 +97,60 @@ class ReceivingServiceTest {
                 o.setId(orderId);
                 return o;
             });
+            ShipmentItemSummary summary = ShipmentItemSummary.builder()
+                    .sku("SKU-1").name("Widget").hsCode("8471.30").originCountry("CN")
+                    .quantity(BigDecimal.TEN).unit("PCS").build();
+            when(fleetHubClient.getShipmentItems(shipmentId, companyId)).thenReturn(List.of(summary));
+            when(inventoryService.resolveOrCreateBySku("SKU-1", "Widget", "8471.30", "CN", "PCS"))
+                    .thenReturn(item);
+            when(lineRepo.save(any(ReceivingOrderLine.class))).thenAnswer(a -> a.getArgument(0));
 
             ReceivingOrder created = service.createOrder(warehouseId, shipmentId, "REF", null, null, UUID.randomUUID());
 
             assertThat(created.getShipmentId()).isEqualTo(shipmentId);
-            // Pas de lignes fournies → aucune ligne créée (pas de dérivation automatique).
+            verify(lineRepo, times(1)).save(argThat(line ->
+                    line.getItemId().equals(itemId) && line.getQuantityExpected().compareTo(BigDecimal.TEN) == 0));
+        }
+    }
+
+    @Test
+    @DisplayName("createOrder → shipmentId fourni mais fleet-hub inaccessible → bon créé sans lignes")
+    void createOrderWithShipmentIdFleetHubUnavailable_createsWithoutLines() {
+        try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
+            ctx.when(TenantContext::get).thenReturn(companyId);
+            UUID shipmentId = UUID.randomUUID();
+            when(orderRepo.save(any(ReceivingOrder.class))).thenAnswer(a -> {
+                ReceivingOrder o = a.getArgument(0);
+                o.setId(orderId);
+                return o;
+            });
+            when(fleetHubClient.getShipmentItems(shipmentId, companyId))
+                    .thenThrow(new FleetHubIntegrationClient.FleetHubIntegrationException("401 non autorisé"));
+
+            ReceivingOrder created = service.createOrder(warehouseId, shipmentId, "REF", null, null, UUID.randomUUID());
+
+            assertThat(created.getShipmentId()).isEqualTo(shipmentId);
             verify(lineRepo, never()).save(any(ReceivingOrderLine.class));
             verify(inventoryService, never()).getItem(any());
+        }
+    }
+
+    @Test
+    @DisplayName("createOrder → sans shipmentId ni lignes → aucune dérivation tentée")
+    void createOrderWithoutShipmentIdOrLines_noDerivationAttempted() {
+        try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
+            ctx.when(TenantContext::get).thenReturn(companyId);
+            when(orderRepo.save(any(ReceivingOrder.class))).thenAnswer(a -> {
+                ReceivingOrder o = a.getArgument(0);
+                o.setId(orderId);
+                return o;
+            });
+
+            ReceivingOrder created = service.createOrder(warehouseId, null, "REF", null, null, UUID.randomUUID());
+
+            assertThat(created.getShipmentId()).isNull();
+            verify(lineRepo, never()).save(any(ReceivingOrderLine.class));
+            verifyNoInteractions(fleetHubClient);
         }
     }
 

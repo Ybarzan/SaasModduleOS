@@ -8,7 +8,6 @@ describe('App', () => {
 
     expect(screen.getByText('io')).toBeInTheDocument();
     expect(screen.getByText('Compliance Engine')).toBeInTheDocument();
-    expect(screen.getByText('Transport')).toBeInTheDocument();
     expect(screen.getByText('Logistix')).toBeInTheDocument();
     expect(screen.getByText('Fleet Hub')).toBeInTheDocument();
     expect(screen.getByText('Fleet Market')).toBeInTheDocument();
@@ -17,6 +16,6 @@ describe('App', () => {
   it('affiche un lien "ouvrir" par module', () => {
     render(<App />);
 
-    expect(screen.getAllByText('> ouvrir')).toHaveLength(5);
+    expect(screen.getAllByText('> ouvrir')).toHaveLength(4);
   });
 });

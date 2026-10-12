@@ -34,6 +34,10 @@ app:
     admin-password: "${ADMIN_PASSWORD:admin}"
   seed:
     enabled: "${APP_SEED_ENABLED:true}"
+  # fleet-hub -- voir service/integration/fleethub/FleetHubIntegrationClient.
+  integration:
+    fleethub:
+      base-url: "${FLEETHUB_URL:http://localhost:8090}"
 
 springdoc:
   swagger-ui:

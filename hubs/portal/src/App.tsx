@@ -59,8 +59,8 @@ export default function App() {
 
       <footer className="max-w-5xl mx-auto px-6 py-10 border-t border-line">
         <p className="text-xs text-ink-soft leading-relaxed max-w-xl">
-          Transport et Logistix sont aujourd&apos;hui des sections de Compliance Engine — leur
-          extraction en modules autonomes, connectés par API comme Fleet Hub, est en cours.
+          Transport a été fusionné dans Fleet Hub et Logistix est désormais un module autonome,
+          tous deux connectés aux autres modules par API plutôt que par base partagée.
         </p>
       </footer>
     </div>

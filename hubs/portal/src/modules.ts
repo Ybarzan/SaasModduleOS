@@ -3,7 +3,12 @@
  * une app déployée indépendamment ("live"), soit vers une section qui vit
  * encore dans un autre module en attendant son extraction ("integrated") —
  * voir docs/07-integration-fleet-hub.md pour le principe ("cohabiter, pas
- * fusionner") qui s'applique aussi à Transport et Logistix.
+ * fusionner") qui s'applique aussi à Logistix.
+ *
+ * Transport (transporteurs, booking multimodal, tracking) n'a plus sa propre
+ * tuile : le domaine a été fusionné dans Fleet Hub (voir plan de migration),
+ * pas juste "intégré" temporairement comme Logistix l'était avant son
+ * extraction — la tuile Fleet Hub absorbe son contenu.
  *
  * Étendre ce fichier (pas le composant) quand un module change de statut ou
  * qu'un nouveau module arrive — App.tsx ne fait que l'afficher.
@@ -35,14 +40,6 @@ export const modules: PraxioModule[] = [
     href: COMPLIANCE_URL,
   },
   {
-    id: 'transport',
-    name: 'Transport',
-    tagline: 'Transporteurs, booking multimodal, tracking — en cours d’extraction de Compliance Engine.',
-    status: 'integrated',
-    statusLabel: 'dans compliance engine',
-    href: `${COMPLIANCE_URL}/carriers`,
-  },
-  {
     id: 'logistix',
     name: 'Logistix',
     tagline: 'Entrepôts, réception, inventaire, scan de réception.',
@@ -53,7 +50,7 @@ export const modules: PraxioModule[] = [
   {
     id: 'fleethub',
     name: 'Fleet Hub',
-    tagline: 'Flotte poids lourds, chauffeurs, tachygraphe, carte temps réel.',
+    tagline: 'Flotte poids lourds, chauffeurs, tachygraphe, carte temps réel, transport multimodal (transporteurs, booking, tracking).',
     status: 'live',
     statusLabel: 'autonome',
     href: FLEETHUB_URL,

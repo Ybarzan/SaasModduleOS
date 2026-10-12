@@ -143,6 +143,30 @@ public class InventoryService {
         return itemRepo.findFirstByCompanyIdAndSku(companyId, value);
     }
 
+    /**
+     * Résout un article par SKU, ou le crée s'il n'existe pas encore -- utilisé
+     * quand une source externe (ex: lignes d'expédition fleet-hub) fournit un
+     * SKU sans garantie qu'un InventoryItem local existe déjà pour lui.
+     */
+    @Transactional
+    public InventoryItem resolveOrCreateBySku(String sku, String name, String hsCode,
+                                              String originCountry, String unit) {
+        UUID companyId = TenantContext.get();
+        if (sku != null && !sku.isBlank()) {
+            Optional<InventoryItem> existing = itemRepo.findFirstByCompanyIdAndSku(companyId, sku.trim());
+            if (existing.isPresent()) {
+                return existing.get();
+            }
+        }
+        return createItem(InventoryItem.builder()
+                .sku(sku)
+                .name(name != null && !name.isBlank() ? name : (sku != null && !sku.isBlank() ? sku : "Article sans nom"))
+                .hsCode(hsCode)
+                .originCountry(originCountry)
+                .unit(unit)
+                .build());
+    }
+
     // ── Stock ──────────────────────────────────────────────────────────
 
     public List<StockBalance> getBalances(UUID warehouseId) {

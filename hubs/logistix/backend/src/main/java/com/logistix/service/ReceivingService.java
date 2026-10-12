@@ -4,6 +4,8 @@ import com.logistix.exception.ResourceNotFoundException;
 import com.logistix.model.*;
 import com.logistix.repository.*;
 import com.logistix.security.TenantContext;
+import com.logistix.service.integration.fleethub.FleetHubIntegrationClient;
+import com.logistix.service.integration.fleethub.ShipmentItemSummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,22 +32,26 @@ public class ReceivingService {
     private final StockBalanceRepository balanceRepo;
     private final StockMovementRepository movementRepo;
     private final InventoryService inventoryService;
+    private final FleetHubIntegrationClient fleetHubClient;
 
     // ── Création / listing ─────────────────────────────────────────────
 
     /**
      * Crée un bon de réception. {@code shipmentId} n'est qu'une métadonnée
-     * optionnelle (référence logique, sans FK) : l'appelant doit toujours
-     * fournir les lignes attendues explicitement.
+     * optionnelle (référence logique, sans FK). Si des lignes sont fournies
+     * explicitement, elles sont utilisées telles quelles ; sinon, si
+     * {@code shipmentId} est renseigné, les lignes sont dérivées depuis les
+     * articles de l'expédition via l'API REST de fleet-hub (voir
+     * {@link #deriveLinesFromShipment}) -- sur le même principe que l'ancien
+     * accès direct à shipment_orders/shipment_items quand entrepôt/réception
+     * vivaient encore dans compliance-engine, mais par appel HTTP plutôt que
+     * par lecture JPA cross-domain.
      *
-     * TODO (Transport hub) : dans compliance-engine d'origine, lorsque
-     * shipmentId était fourni et qu'aucune ligne n'était donnée, les lignes
-     * étaient dérivées automatiquement en interrogeant directement les
-     * tables shipment_orders/shipment_items (JPA cross-domain). Cet accès
-     * direct à la base d'un autre hub est précisément ce que cette
-     * extraction élimine : il n'existe plus ici. Le lien vers une expédition
-     * vivante devra passer par l'API REST du futur hub "Transport" une fois
-     * celui-ci construit — c'est un suivi, pas fait dans cette tâche.
+     * <p>Cette dérivation est best-effort : si fleet-hub est indisponible ou
+     * inaccessible (voir la limite documentée sur
+     * {@link FleetHubIntegrationClient}), le bon est tout de même créé, sans
+     * lignes -- l'appelant peut toujours les ajouter manuellement ensuite via
+     * {@link #addLine}.</p>
      */
     @Transactional
     public ReceivingOrder createOrder(UUID warehouseId, UUID shipmentId, String reference,
@@ -75,8 +81,43 @@ public class ReceivingService {
                         .unit(line.unit() != null ? line.unit() : "PCS")
                         .build());
             }
+        } else if (shipmentId != null) {
+            deriveLinesFromShipment(order, shipmentId, companyId);
         }
         return order;
+    }
+
+    /**
+     * Dérive les lignes attendues d'un bon de réception depuis les articles
+     * d'une expédition fleet-hub, en résolvant (ou créant) l'InventoryItem
+     * correspondant à chaque SKU. N'échoue jamais : une expédition
+     * introuvable ou un fleet-hub inaccessible laisse simplement le bon sans
+     * lignes (voir la limite documentée sur {@link FleetHubIntegrationClient}).
+     */
+    private void deriveLinesFromShipment(ReceivingOrder order, UUID shipmentId, UUID companyId) {
+        List<ShipmentItemSummary> items;
+        try {
+            items = fleetHubClient.getShipmentItems(shipmentId, companyId);
+        } catch (FleetHubIntegrationClient.FleetHubIntegrationException e) {
+            log.warn("[Receiving] Dérivation des lignes depuis fleet-hub indisponible pour l'expédition {} : {}. "
+                    + "Bon de réception créé sans lignes, à compléter manuellement.", shipmentId, e.getMessage());
+            return;
+        }
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+        for (ShipmentItemSummary summary : items) {
+            InventoryItem item = inventoryService.resolveOrCreateBySku(
+                    summary.getSku(), summary.getName(), summary.getHsCode(),
+                    summary.getOriginCountry(), summary.getUnit());
+            lineRepo.save(ReceivingOrderLine.builder()
+                    .companyId(companyId)
+                    .receivingOrderId(order.getId())
+                    .itemId(item.getId())
+                    .quantityExpected(summary.getQuantity() != null ? summary.getQuantity() : BigDecimal.ZERO)
+                    .unit(summary.getUnit() != null ? summary.getUnit() : "PCS")
+                    .build());
+        }
     }
 
     public List<ReceivingOrder> listOrders(ReceivingOrder.Status status, UUID warehouseId, UUID shipmentId) {
