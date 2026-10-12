@@ -2,6 +2,7 @@ package com.incokalk.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.incokalk.dto.notification.NotificationRuleDTO;
+import com.incokalk.dto.notification.SendNotificationDTO;
 import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.*;
 import com.incokalk.repository.*;
@@ -391,89 +392,54 @@ class NotificationServiceTest {
         assertThat(json).contains("https://client.example.com/hook");
     }
 
-    // ── onShipmentCreated ─────────────────────────────────────────────
+    // ── processEvent générique (remplace les anciens wrappers Transport) ──
+    //
+    // onShipmentCreated/onShipmentStatusChange (wrappers triviaux autour de
+    // processEvent) ont été retirées avec le domaine Transport (voir
+    // NotificationService). Le moteur générique sous-jacent (processEvent,
+    // matchesFilters, matchesStructuredCondition, createSuggestion) ne leur
+    // est pas spécifique : les tests ci-dessous l'exercent directement via
+    // un SendNotificationDTO construit à la main plutôt que via le wrapper
+    // disparu.
 
-    @Test
-    @DisplayName("Événement expédition créée — aucune règle → pas de notif")
-    void onShipmentCreated_noRules_noOp() {
-        UUID shipmentId = UUID.randomUUID();
-        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_CREATED")).thenReturn(Collections.emptyList());
-
-        service.onShipmentCreated(shipmentId, "SHP-001", companyId);
-
-        verify(notificationRepo, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Événement expédition créée — règle active avec in-app")
-    void onShipmentCreated_withRule_createsNotification() {
-        UUID shipmentId = UUID.randomUUID();
-        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_CREATED")).thenReturn(List.of(rule));
-        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
-        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        service.onShipmentCreated(shipmentId, "SHP-001", companyId);
-
-        verify(notificationRepo).save(argThat(n ->
-                "SHIPMENT_CREATED".equals(n.getEventType()) &&
-                n.getTitle().contains("Nouvelle expédition")
-        ));
-    }
-
-    // ── onShipmentStatusChange / provenance LIVE-MANUAL ────────────────
-
-    @Test
-    @DisplayName("Changement de statut MANUAL — le message signale la saisie manuelle")
-    void onShipmentStatusChange_manual_appendsNoteToMessage() {
-        UUID shipmentId = UUID.randomUUID();
-        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
-        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
-        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        service.onShipmentStatusChange(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.MANUAL);
-
-        verify(notificationRepo).save(argThat(n -> n.getMessage().contains("saisie manuelle")));
-    }
-
-    @Test
-    @DisplayName("Changement de statut LIVE — pas de mention de saisie manuelle dans le message")
-    void onShipmentStatusChange_live_noManualNote() {
-        UUID shipmentId = UUID.randomUUID();
-        when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
-        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
-        when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        service.onShipmentStatusChange(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.LIVE);
-
-        verify(notificationRepo).save(argThat(n -> !n.getMessage().contains("saisie manuelle")));
+    /** Reconstitue le DTO qu'envoyait l'ancien wrapper onShipmentStatusChange,
+     * pour continuer à exercer matchesFilters/matchesStructuredCondition avec
+     * les mêmes clés de templateData ("newStatus", "dataSource"). */
+    private SendNotificationDTO statusChangeDto(UUID shipmentId, String orderNumber,
+            String oldStatus, String newStatus, UUID companyId, String dataSource) {
+        return SendNotificationDTO.builder()
+                .eventType("SHIPMENT_STATUS_CHANGE")
+                .companyId(companyId)
+                .entityType("SHIPMENT")
+                .entityId(shipmentId)
+                .title("Changement de statut — " + orderNumber)
+                .message("Le statut de l'expédition " + orderNumber + " est passé de " + oldStatus + " à " + newStatus + ".")
+                .templateData(Map.of("newStatus", newStatus, "dataSource", dataSource))
+                .build();
     }
 
     @Test
     @DisplayName("filterDataSource=LIVE — laisse passer un événement LIVE")
-    void onShipmentStatusChange_filterDataSourceLive_matchesLiveEvent() {
+    void processEvent_filterDataSourceLive_matchesLiveEvent() {
         UUID shipmentId = UUID.randomUUID();
         rule.setFilterDataSource("LIVE");
         when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
         when(companyRepo.getReferenceById(companyId)).thenReturn(company);
         when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        service.onShipmentStatusChange(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.LIVE);
+        service.processEvent(statusChangeDto(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId, "LIVE"));
 
         verify(notificationRepo).save(any());
     }
 
     @Test
     @DisplayName("filterDataSource=LIVE — bloque un événement MANUAL (règle « pas d'alerte sur saisie manuelle »)")
-    void onShipmentStatusChange_filterDataSourceLive_skipsManualEvent() {
+    void processEvent_filterDataSourceLive_skipsManualEvent() {
         UUID shipmentId = UUID.randomUUID();
         rule.setFilterDataSource("LIVE");
         when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
 
-        service.onShipmentStatusChange(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.MANUAL);
+        service.processEvent(statusChangeDto(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId, "MANUAL"));
 
         verify(notificationRepo, never()).save(any());
     }
@@ -515,7 +481,7 @@ class NotificationServiceTest {
 
     @Test
     @DisplayName("condition structurée AND — les deux branches matchent -> notifie")
-    void onShipmentStatusChange_structuredAnd_bothMatch_notifies() {
+    void processEvent_structuredAnd_bothMatch_notifies() {
         rule.setConditionJson("""
                 {"type":"AND","children":[
                   {"type":"LEAF","field":"newStatus","operator":"EQ","value":"IN_TRANSIT"},
@@ -525,15 +491,14 @@ class NotificationServiceTest {
         when(companyRepo.getReferenceById(companyId)).thenReturn(company);
         when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.LIVE);
+        service.processEvent(statusChangeDto(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId, "LIVE"));
 
         verify(notificationRepo).save(any());
     }
 
     @Test
     @DisplayName("condition structurée AND — une seule branche matche -> ne notifie pas")
-    void onShipmentStatusChange_structuredAnd_partialMatch_skips() {
+    void processEvent_structuredAnd_partialMatch_skips() {
         rule.setConditionJson("""
                 {"type":"AND","children":[
                   {"type":"LEAF","field":"newStatus","operator":"EQ","value":"IN_TRANSIT"},
@@ -541,15 +506,14 @@ class NotificationServiceTest {
                 ]}""");
         when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
 
-        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.MANUAL);
+        service.processEvent(statusChangeDto(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId, "MANUAL"));
 
         verify(notificationRepo, never()).save(any());
     }
 
     @Test
     @DisplayName("condition structurée OR — une branche matche -> notifie")
-    void onShipmentStatusChange_structuredOr_oneMatches_notifies() {
+    void processEvent_structuredOr_oneMatches_notifies() {
         rule.setConditionJson("""
                 {"type":"OR","children":[
                   {"type":"LEAF","field":"newStatus","operator":"EQ","value":"DELIVERED"},
@@ -559,15 +523,14 @@ class NotificationServiceTest {
         when(companyRepo.getReferenceById(companyId)).thenReturn(company);
         when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.LIVE);
+        service.processEvent(statusChangeDto(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId, "LIVE"));
 
         verify(notificationRepo).save(any());
     }
 
     @Test
     @DisplayName("condition structurée présente -> ignore filterStatus/filterDataSource (pas de cumul des deux systèmes)")
-    void onShipmentStatusChange_structuredConditionOverridesLegacyFilters() {
+    void processEvent_structuredConditionOverridesLegacyFilters() {
         // filterStatus exigerait DELIVERED (ne matcherait pas IN_TRANSIT), mais la
         // condition structuree accepte explicitement IN_TRANSIT -- elle doit gagner.
         rule.setFilterStatus("DELIVERED");
@@ -577,8 +540,7 @@ class NotificationServiceTest {
         when(companyRepo.getReferenceById(companyId)).thenReturn(company);
         when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.LIVE);
+        service.processEvent(statusChangeDto(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId, "LIVE"));
 
         verify(notificationRepo).save(any());
     }
@@ -646,7 +608,7 @@ class NotificationServiceTest {
 
     @Test
     @DisplayName("règle avec actionType -> crée une suggestion PENDING_APPROVAL, jamais exécutée")
-    void onShipmentStatusChange_ruleWithActionType_createsSuggestion() {
+    void processEvent_ruleWithActionType_createsSuggestion() {
         rule.setActionType("SUGGEST_ERP_ORDER_ADJUSTMENT");
         UUID shipmentId = UUID.randomUUID();
         when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
@@ -654,8 +616,7 @@ class NotificationServiceTest {
         when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
         when(suggestionRepo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        service.onShipmentStatusChange(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.LIVE);
+        service.processEvent(statusChangeDto(shipmentId, "SHP-001", "BOOKED", "IN_TRANSIT", companyId, "LIVE"));
 
         org.mockito.ArgumentCaptor<OrchestrationSuggestion> captor =
                 org.mockito.ArgumentCaptor.forClass(OrchestrationSuggestion.class);
@@ -672,28 +633,26 @@ class NotificationServiceTest {
 
     @Test
     @DisplayName("règle sans actionType -> aucune suggestion créée (comportement historique inchangé)")
-    void onShipmentStatusChange_ruleWithoutActionType_noSuggestion() {
+    void processEvent_ruleWithoutActionType_noSuggestion() {
         when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
         when(companyRepo.getReferenceById(companyId)).thenReturn(company);
         when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
 
-        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.LIVE);
+        service.processEvent(statusChangeDto(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId, "LIVE"));
 
         verify(suggestionRepo, never()).save(any());
     }
 
     @Test
     @DisplayName("échec de création de la suggestion -> n'empêche pas la notification normale")
-    void onShipmentStatusChange_suggestionCreationFails_stillNotifies() {
+    void processEvent_suggestionCreationFails_stillNotifies() {
         rule.setActionType("SUGGEST_ERP_ORDER_ADJUSTMENT");
         when(ruleRepo.findByCompanyIdAndEventType(companyId, "SHIPMENT_STATUS_CHANGE")).thenReturn(List.of(rule));
         when(companyRepo.getReferenceById(companyId)).thenReturn(company);
         when(notificationRepo.save(any())).thenAnswer(i -> i.getArgument(0));
         when(suggestionRepo.save(any())).thenThrow(new RuntimeException("DB down"));
 
-        service.onShipmentStatusChange(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId,
-                TrackingEvent.DataSource.LIVE);
+        service.processEvent(statusChangeDto(UUID.randomUUID(), "SHP-001", "BOOKED", "IN_TRANSIT", companyId, "LIVE"));
 
         verify(notificationRepo).save(any());
     }

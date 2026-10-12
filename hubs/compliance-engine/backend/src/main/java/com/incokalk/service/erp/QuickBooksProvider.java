@@ -1,7 +1,6 @@
 package com.incokalk.service.erp;
 
 import com.incokalk.model.ErpConfig;
-import com.incokalk.model.ShipmentOrder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -120,101 +119,8 @@ public class QuickBooksProvider implements ErpProvider {
         }
     }
 
-    @Override
-    public ErpSyncResult exportShipments(ErpConfig config, List<ShipmentOrder> shipments) {
-        log.info("[QuickBooks] Export de {} expéditions comme factures", shipments.size());
-        try {
-            String companyId = getCompanyId(config);
-            String url = QBO_BASE_URL + "/" + companyId + "/invoice";
-            int synced = 0;
-            int failed = 0;
-
-            for (ShipmentOrder shipment : shipments) {
-                try {
-                    Map<String, Object> invoice = new LinkedHashMap<>();
-                    invoice.put("CustomerRef", Map.of("name", shipment.getConsigneeName() != null ? shipment.getConsigneeName() : ""));
-                    invoice.put("DocNumber", shipment.getOrderNumber() != null ? shipment.getOrderNumber() : "");
-                    invoice.put("TxnDate", shipment.getShippedAt() != null ? shipment.getShippedAt().toLocalDate().toString() : null);
-
-                    HttpHeaders headers = buildAuthHeaders(config);
-                    headers.setContentType(MediaType.APPLICATION_JSON);
-                    HttpEntity<Map<String, Object>> entity = new HttpEntity<>(invoice, headers);
-                    ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
-                    if (response.getStatusCode().is2xxSuccessful() || response.getStatusCode().value() == 201) {
-                        synced++;
-                    } else {
-                        failed++;
-                    }
-                } catch (Exception e) {
-                    log.warn("[QuickBooks] Échec export shipment {}: {}", shipment.getOrderNumber(), e.getMessage());
-                    failed++;
-                }
-            }
-
-            log.info("[QuickBooks] {} expéditions exportées, {} échouées", synced, failed);
-            return ErpSyncResult.builder()
-                    .success(failed == 0)
-                    .recordsTotal(shipments.size())
-                    .recordsSynced(synced)
-                    .recordsFailed(failed)
-                    .build();
-        } catch (Exception e) {
-            log.error("[QuickBooks] Erreur export expéditions: {}", e.getMessage());
-            return ErpSyncResult.builder()
-                    .success(false)
-                    .errorMessage(e.getMessage())
-                    .build();
-        }
-    }
-
-    @Override
-    public ErpSyncResult exportOrders(ErpConfig config, List<ShipmentOrder> orders) {
-        log.info("[QuickBooks] Export de {} commandes vers SalesOrder", orders.size());
-        try {
-            String companyId = getCompanyId(config);
-            String url = QBO_BASE_URL + "/" + companyId + "/salesorder";
-            int synced = 0;
-            int failed = 0;
-
-            for (ShipmentOrder order : orders) {
-                try {
-                    Map<String, Object> salesOrder = new LinkedHashMap<>();
-                    salesOrder.put("CustomerRef", Map.of("name", order.getConsigneeName() != null ? order.getConsigneeName() : ""));
-                    salesOrder.put("DocNumber", order.getOrderNumber() != null ? order.getOrderNumber() : "");
-                    salesOrder.put("TxnDate", order.getBookedAt() != null ? order.getBookedAt().toLocalDate().toString() : null);
-
-                    HttpHeaders headers = buildAuthHeaders(config);
-                    headers.setContentType(MediaType.APPLICATION_JSON);
-                    HttpEntity<Map<String, Object>> entity = new HttpEntity<>(salesOrder, headers);
-                    ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
-                    if (response.getStatusCode().is2xxSuccessful() || response.getStatusCode().value() == 201) {
-                        synced++;
-                    } else {
-                        failed++;
-                    }
-                } catch (Exception e) {
-                    log.warn("[QuickBooks] Échec export commande {}: {}", order.getOrderNumber(), e.getMessage());
-                    failed++;
-                }
-            }
-
-            log.info("[QuickBooks] {} commandes exportées, {} échouées", synced, failed);
-            return ErpSyncResult.builder()
-                    .success(failed == 0)
-                    .recordsTotal(orders.size())
-                    .recordsSynced(synced)
-                    .recordsFailed(failed)
-                    .build();
-        } catch (Exception e) {
-            log.error("[QuickBooks] Erreur export commandes: {}", e.getMessage());
-            return ErpSyncResult.builder()
-                    .success(false)
-                    .errorMessage(e.getMessage())
-                    .build();
-        }
-    }
+    // exportShipments/exportOrders ont ete retirees avec le domaine Transport
+    // (List<ShipmentOrder>). Voir ErpProvider / ErpSyncService.
 
     @Override
     public List<Map<String, Object>> getProducts(ErpConfig config) {

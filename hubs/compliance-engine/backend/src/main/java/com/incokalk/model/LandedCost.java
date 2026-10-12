@@ -28,10 +28,11 @@ public class LandedCost {
     @JsonIgnore
     private Company company;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shipment_id")
-    @JsonIgnore
-    private ShipmentOrder shipment;
+    /** UUID brut (plus de relation JPA) depuis le retrait du domaine Transport.
+     * createFromShipment() a ete retiree de LandedCostService ; une reconstruction
+     * REST contre fleet-hub est un suivi documente, pas fait dans cette passe. */
+    @Column(name = "shipment_id")
+    private UUID shipmentId;
 
     @Column(name = "calculation_name")
     private String calculationName;

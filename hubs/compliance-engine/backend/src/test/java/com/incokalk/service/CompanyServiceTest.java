@@ -168,4 +168,39 @@ class CompanyServiceTest {
 
         verify(companyRepo, never()).save(any());
     }
+
+    @Test
+    @DisplayName("hasFleetHubApiKey → false si aucune clé enregistrée")
+    void hasFleetHubApiKey_falseWhenAbsent() {
+        UUID companyId = UUID.randomUUID();
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(Company.builder().id(companyId).build()));
+
+        assertThat(service.hasFleetHubApiKey(companyId)).isFalse();
+    }
+
+    @Test
+    @DisplayName("setFleetHubApiKey puis hasFleetHubApiKey → true")
+    void setFleetHubApiKey_thenHasKey_true() {
+        UUID companyId = UUID.randomUUID();
+        Company company = Company.builder().id(companyId).build();
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+        service.setFleetHubApiKey(companyId, "  abc123  ");
+
+        assertThat(company.getFleetHubApiKey()).isEqualTo("abc123");
+        verify(companyRepo).save(company);
+        assertThat(service.hasFleetHubApiKey(companyId)).isTrue();
+    }
+
+    @Test
+    @DisplayName("setFleetHubApiKey avec valeur vide → efface la clé")
+    void setFleetHubApiKey_blank_clearsKey() {
+        UUID companyId = UUID.randomUUID();
+        Company company = Company.builder().id(companyId).fleetHubApiKey("old-key").build();
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+        service.setFleetHubApiKey(companyId, "   ");
+
+        assertThat(company.getFleetHubApiKey()).isNull();
+    }
 }

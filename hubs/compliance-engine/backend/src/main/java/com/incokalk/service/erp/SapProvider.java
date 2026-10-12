@@ -1,7 +1,6 @@
 package com.incokalk.service.erp;
 
 import com.incokalk.model.ErpConfig;
-import com.incokalk.model.ShipmentOrder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -119,101 +118,8 @@ public class SapProvider implements ErpProvider {
         }
     }
 
-    @Override
-    public ErpSyncResult exportShipments(ErpConfig config, List<ShipmentOrder> shipments) {
-        log.info("[SAP] Export de {} expéditions vers DeliveryNotes", shipments.size());
-        try {
-            String baseUrl = normalizeEndpoint(config.getApiEndpoint());
-            String url = baseUrl + "/b1s/v1/DeliveryNotes";
-            int synced = 0;
-            int failed = 0;
-
-            for (ShipmentOrder shipment : shipments) {
-                try {
-                    Map<String, Object> deliveryNote = new LinkedHashMap<>();
-                    deliveryNote.put("CardCode", shipment.getConsigneeName() != null ? shipment.getConsigneeName() : "");
-                    deliveryNote.put("DocDate", shipment.getShippedAt() != null ? shipment.getShippedAt().toLocalDate().toString() : null);
-                    deliveryNote.put("NumAtCard", shipment.getOrderNumber() != null ? shipment.getOrderNumber() : "");
-
-                    HttpHeaders headers = buildAuthHeaders(config);
-                    headers.setContentType(MediaType.APPLICATION_JSON);
-                    HttpEntity<Map<String, Object>> entity = new HttpEntity<>(deliveryNote, headers);
-                    ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
-                    if (response.getStatusCode().is2xxSuccessful() || response.getStatusCode().value() == 201) {
-                        synced++;
-                    } else {
-                        failed++;
-                    }
-                } catch (Exception e) {
-                    log.warn("[SAP] Échec export shipment {}: {}", shipment.getOrderNumber(), e.getMessage());
-                    failed++;
-                }
-            }
-
-            log.info("[SAP] {} expéditions exportées, {} échouées", synced, failed);
-            return ErpSyncResult.builder()
-                    .success(failed == 0)
-                    .recordsTotal(shipments.size())
-                    .recordsSynced(synced)
-                    .recordsFailed(failed)
-                    .build();
-        } catch (Exception e) {
-            log.error("[SAP] Erreur export expéditions: {}", e.getMessage());
-            return ErpSyncResult.builder()
-                    .success(false)
-                    .errorMessage(e.getMessage())
-                    .build();
-        }
-    }
-
-    @Override
-    public ErpSyncResult exportOrders(ErpConfig config, List<ShipmentOrder> orders) {
-        log.info("[SAP] Export de {} commandes vers SalesOrders", orders.size());
-        try {
-            String baseUrl = normalizeEndpoint(config.getApiEndpoint());
-            String url = baseUrl + "/b1s/v1/Orders";
-            int synced = 0;
-            int failed = 0;
-
-            for (ShipmentOrder order : orders) {
-                try {
-                    Map<String, Object> sapOrder = new LinkedHashMap<>();
-                    sapOrder.put("CardCode", order.getConsigneeName() != null ? order.getConsigneeName() : "");
-                    sapOrder.put("DocDate", order.getBookedAt() != null ? order.getBookedAt().toLocalDate().toString() : null);
-                    sapOrder.put("NumAtCard", order.getOrderNumber() != null ? order.getOrderNumber() : "");
-
-                    HttpHeaders headers = buildAuthHeaders(config);
-                    headers.setContentType(MediaType.APPLICATION_JSON);
-                    HttpEntity<Map<String, Object>> entity = new HttpEntity<>(sapOrder, headers);
-                    ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
-
-                    if (response.getStatusCode().is2xxSuccessful() || response.getStatusCode().value() == 201) {
-                        synced++;
-                    } else {
-                        failed++;
-                    }
-                } catch (Exception e) {
-                    log.warn("[SAP] Échec export commande {}: {}", order.getOrderNumber(), e.getMessage());
-                    failed++;
-                }
-            }
-
-            log.info("[SAP] {} commandes exportées, {} échouées", synced, failed);
-            return ErpSyncResult.builder()
-                    .success(failed == 0)
-                    .recordsTotal(orders.size())
-                    .recordsSynced(synced)
-                    .recordsFailed(failed)
-                    .build();
-        } catch (Exception e) {
-            log.error("[SAP] Erreur export commandes: {}", e.getMessage());
-            return ErpSyncResult.builder()
-                    .success(false)
-                    .errorMessage(e.getMessage())
-                    .build();
-        }
-    }
+    // exportShipments/exportOrders ont ete retirees avec le domaine Transport
+    // (List<ShipmentOrder>). Voir ErpProvider / ErpSyncService.
 
     @Override
     public List<Map<String, Object>> getProducts(ErpConfig config) {

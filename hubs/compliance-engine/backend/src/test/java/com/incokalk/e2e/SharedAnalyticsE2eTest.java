@@ -10,18 +10,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class SharedAnalyticsE2eTest extends E2eTestBase {
 
     @Test
-    @DisplayName("POST /v1/shared")
-    void createSharedLink() {
-        registerAndSetToken();
-        var body = new LinkedHashMap<String, Object>();
-        body.put("resourceType", "SHIPMENT");
-        body.put("resourceId", "00000000-0000-0000-0000-000000000001");
-        body.put("permissions", "VIEW");
-        var resp = post("/v1/shared", body);
-        assertTrue(resp.getStatusCode().is2xxSuccessful() || resp.getStatusCode().is4xxClientError());
-    }
-
-    @Test
     @DisplayName("GET /v1/audit")
     void listAuditLogs() {
         registerAndSetToken();

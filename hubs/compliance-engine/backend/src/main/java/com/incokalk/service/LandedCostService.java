@@ -2,10 +2,8 @@ package com.incokalk.service;
 
 import com.incokalk.model.Company;
 import com.incokalk.model.LandedCost;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.LandedCostRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +28,6 @@ public class LandedCostService {
 
     private final LandedCostRepository landedCostRepo;
     private final CompanyRepository companyRepo;
-    private final ShipmentOrderRepository shipmentRepo;
     private final CustomsDutyService customsDutyService;
     private final VatService vatService;
 
@@ -146,29 +143,11 @@ public class LandedCostService {
         log.info("LandedCost {} supprimée pour company {}", id, companyId);
     }
 
-    @Transactional
-    public LandedCost createFromShipment(UUID shipmentId) {
-        UUID companyId = TenantContext.get();
-        Company company = companyRepo.findById(companyId)
-            .orElseThrow(() -> new IllegalArgumentException("Entreprise introuvable"));
-
-        ShipmentOrder shipment = shipmentRepo.findById(shipmentId)
-            .orElseThrow(() -> new IllegalArgumentException("Ordre de shipment introuvable"));
-
-        LandedCost cost = LandedCost.builder()
-            .company(company)
-            .shipment(shipment)
-            .calculationName("Depuis " + shipment.getOrderNumber())
-            .originCountry(shipment.getShipperCountry())
-            .destinationCountry(shipment.getConsigneeCountry())
-            .incoterm(shipment.getIncotermCode() != null ? shipment.getIncotermCode() : "FOB")
-            .productValue(shipment.getGoodsValue() != null ? BigDecimal.valueOf(shipment.getGoodsValue()) : BigDecimal.ZERO)
-            .currency(shipment.getCurrency() != null ? shipment.getCurrency() : "EUR")
-            .unitCount(shipment.getPackagesCount() != null ? shipment.getPackagesCount() : 1)
-            .build();
-
-        return calculate(cost);
-    }
+    // createFromShipment(UUID shipmentId) a ete retiree avec le domaine Transport :
+    // elle lisait ShipmentOrderRepository directement. Reconstruction en suivi :
+    // appeler le futur endpoint de resume d'expedition de fleet-hub (voir
+    // integration.fleethub.FleetHubIntegrationClient) et construire le LandedCost
+    // a partir de la reponse, pas fait dans cette passe.
 
     public LandedCost whatIf(LandedCost scenario) {
         computeCosts(scenario);

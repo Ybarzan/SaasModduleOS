@@ -123,6 +123,23 @@ public class CompanyService {
         return userRepo.findByEmail(email);
     }
 
+    /** true si une clé d'intégration fleet-hub est enregistrée pour cette société
+     * -- jamais la clé elle-même (voir FleetHubIntegrationClient). */
+    public boolean hasFleetHubApiKey(UUID companyId) {
+        return companyRepo.findById(companyId)
+            .map(Company::getFleetHubApiKey)
+            .filter(k -> !k.isBlank())
+            .isPresent();
+    }
+
+    @Transactional
+    public void setFleetHubApiKey(UUID companyId, String apiKey) {
+        Company company = companyRepo.findById(companyId)
+            .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        company.setFleetHubApiKey(apiKey != null && !apiKey.isBlank() ? apiKey.trim() : null);
+        companyRepo.save(company);
+    }
+
     public boolean existsById(UUID id) {
         return companyRepo.existsById(id);
     }

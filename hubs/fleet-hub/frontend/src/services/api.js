@@ -27,6 +27,14 @@ api.interceptors.request.use((config) => {
     config.url.includes('/auth/accept-invitation')
   if (isPublic) return config
 
+  // Client portal (shippers' customers tracking a shipment) authenticates with its own
+  // bearer token, issued in the login response body — never the staff session cookie.
+  if (config.url.startsWith('/client/')) {
+    const clientToken = localStorage.getItem('fh_client_token')
+    if (clientToken) config.headers.Authorization = `Bearer ${clientToken}`
+    return config
+  }
+
   // Web: cookie is sent automatically by the browser (credentials: 'include').
   // Native (Capacitor): read token from localStorage and set Authorization header.
   if (Capacitor.isNativePlatform()) {
@@ -42,6 +50,20 @@ api.interceptors.response.use(
   async (err) => {
     const originalRequest = err.config
     const url = originalRequest?.url || ''
+
+    if (
+      err.response &&
+      (err.response.status === 401 || err.response.status === 403) &&
+      url.startsWith('/client/')
+    ) {
+      localStorage.removeItem('fh_client_token')
+      localStorage.removeItem('fh_client_user')
+      if (!window.location.pathname.startsWith('/client/login')) {
+        window.location.href = '/client/login'
+      }
+      return Promise.reject(err)
+    }
+
     const isAuthEndpoint =
       url.includes('/auth/login') ||
       url.includes('/auth/register') ||

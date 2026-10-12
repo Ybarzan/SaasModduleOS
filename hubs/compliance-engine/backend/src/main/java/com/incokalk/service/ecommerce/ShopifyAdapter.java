@@ -1,21 +1,15 @@
 package com.incokalk.service.ecommerce;
 
-import com.incokalk.model.Company;
 import com.incokalk.model.ECommerceIntegration;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.CompanyRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -23,7 +17,6 @@ import java.util.stream.Collectors;
 public class ShopifyAdapter implements ECommerceAdapter {
 
     private final RestTemplate restTemplate;
-    private final ShipmentOrderRepository shipmentOrderRepository;
     private final CompanyRepository companyRepository;
 
     @Override
@@ -97,56 +90,6 @@ public class ShopifyAdapter implements ECommerceAdapter {
         return Collections.emptyMap();
     }
 
-    @Override
-    public ShipmentOrder mapOrderToShipment(Map<String, Object> order, ECommerceIntegration integration) {
-        Company company = integration.getCompany();
-
-        String orderNumber = "SHOP-" + order.get("order_number");
-        if (shipmentOrderRepository.findByOrderNumber(orderNumber).isPresent()) {
-            return null;
-        }
-
-        List<Map<String, Object>> lineItems = (List<Map<String, Object>>) order.getOrDefault("line_items", List.of());
-        String goodsDesc = lineItems.stream()
-            .map(item -> (String) item.getOrDefault("title", ""))
-            .filter(s -> !s.isEmpty())
-            .collect(Collectors.joining(", "));
-
-        Map<String, Object> shippingAddress = (Map<String, Object>) order.get("shipping_address");
-        String consigneeName = shippingAddress != null ? (String) shippingAddress.get("name") : null;
-        String consigneeAddress = shippingAddress != null ? (String) shippingAddress.get("address1") : null;
-        String consigneeCity = shippingAddress != null ? (String) shippingAddress.get("city") : null;
-        String consigneeCountry = shippingAddress != null ? (String) shippingAddress.get("country_code") : null;
-        String consigneePostalCode = shippingAddress != null ? (String) shippingAddress.get("zip") : null;
-
-        double totalWeight = lineItems.stream()
-            .mapToDouble(item -> {
-                Object weight = item.get("grams");
-                if (weight instanceof Number) {
-                    return ((Number) weight).doubleValue() / 1000.0;
-                }
-                return 0;
-            }).sum();
-
-        String currency = (String) order.getOrDefault("currency", "EUR");
-        Number totalPrice = (Number) order.getOrDefault("total_price", 0);
-
-        ShipmentOrder shipment = ShipmentOrder.builder()
-            .company(company)
-            .orderNumber(orderNumber)
-            .status(ShipmentOrder.Status.DRAFT)
-            .goodsDescription(goodsDesc)
-            .weightKg(totalWeight > 0 ? totalWeight : null)
-            .packagesCount(lineItems.size())
-            .currency(currency)
-            .goodsValue(totalPrice != null ? totalPrice.doubleValue() : 0)
-            .consigneeName(consigneeName)
-            .consigneeAddress(consigneeAddress)
-            .consigneeCity(consigneeCity)
-            .consigneeCountry(consigneeCountry)
-            .consigneePostalCode(consigneePostalCode)
-            .build();
-
-        return shipmentOrderRepository.save(shipment);
-    }
+    // mapOrderToShipment a ete retiree avec le domaine Transport
+    // (ShipmentOrderRepository). Voir ECommerceAdapter / ECommerceSyncService.
 }

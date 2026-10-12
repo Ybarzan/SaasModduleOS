@@ -28,6 +28,7 @@ public class NotificationRuleDTO {
     private String webhookUrl;
     private String webhookSecret;
     private String filterStatus;
+    /** Vestige depuis le retrait du domaine Transport : voir NotificationRule.filterCarrierId. */
     private UUID filterCarrierId;
     /** LIVE, MANUAL, ou null (pas de filtre) -- voir TrackingEvent.DataSource. */
     private String filterDataSource;
@@ -38,5 +39,6 @@ public class NotificationRuleDTO {
     private String actionType;
     private Boolean requiresApproval;
     private java.math.BigDecimal maxBudgetAmount;
+    /** Vestige depuis le retrait du domaine Transport : voir NotificationRule.allowedCarrierIds. */
     private String allowedCarrierIds;
 }

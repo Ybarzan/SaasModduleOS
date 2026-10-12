@@ -360,6 +360,22 @@ h3 {
   box-shadow: 0 0 8px rgba(var(--primary-rgb), 0.5);
 }
 
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  padding: 14px 12px 4px;
+  margin-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.nav-section-label:first-child {
+  margin-top: 0;
+  border-top: none;
+}
+
 .sidebar-footer {
   border-top: 1px solid var(--border);
   padding-top: 14px;
@@ -2843,4 +2859,141 @@ button.kpi-widget-clickable:active {
 
 .drop-zone .muted {
   font-size: 12px;
+}
+
+/* ====================================================================
+   Transport (expéditions, transporteurs, tarifs, suivi) — pages/*
+   Carriers, CarrierBookings, CarrierInvoicing, ShippingRates,
+   RateComparison, Quotes, Providers, Shipments, tracking & co.
+   ==================================================================== */
+
+.text-success {
+  color: var(--green);
+}
+
+/* Puces de sélection multiple (modes de transport, filtres) — alternative
+   compacte à .tab quand il ne s'agit pas d'une navigation par onglets. */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid var(--border-strong);
+  background: var(--card-2);
+  color: var(--muted);
+  padding: 7px 13px;
+  font-size: 12.5px;
+  font-weight: 650;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition:
+    border-color 0.15s,
+    color 0.15s,
+    background 0.15s;
+}
+
+.chip:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.chip.active {
+  background: linear-gradient(135deg, var(--primary-3), var(--primary));
+  color: #0b1220;
+  border-color: var(--primary);
+  font-weight: 800;
+}
+
+/* Carte de résultat mise en avant (meilleur tarif, meilleure option). */
+.best-rate {
+  border-color: var(--orange) !important;
+  box-shadow: 0 0 0 1px rgba(201, 139, 90, 0.35);
+}
+
+/* Timeline d'événements de suivi (tracking) — TrackingLookup, LiveTrackingPanel,
+   Shipments, portail client. */
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.timeline-item:last-child {
+  border-bottom: none;
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border-strong);
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.timeline-dot.done {
+  background: var(--primary);
+}
+
+.timeline-body {
+  font-size: 13px;
+  min-width: 0;
+}
+
+.timeline-body p {
+  margin: 4px 0 0;
+}
+
+.timeline-time {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Barre de progression générique (colisage, remplissage groupage) — variante
+   non liée au portail de pointage (.ptg-progress-*, scopée à cette route). */
+.progress-track {
+  height: 7px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  margin-top: 6px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
+.progress-fill.warn {
+  background: var(--orange);
+}
+
+.progress-fill.crit {
+  background: var(--red);
+}
+
+/* Cartes plein écran pour les suivis maritime/aérien (ShipTracker, FlightRadar). */
+.tracker-fullscreen {
+  height: 60vh;
+  min-height: 420px;
+}
+
+@media (max-width: 760px) {
+  .tracker-fullscreen {
+    height: 50vh;
+    min-height: 320px;
+  }
 }

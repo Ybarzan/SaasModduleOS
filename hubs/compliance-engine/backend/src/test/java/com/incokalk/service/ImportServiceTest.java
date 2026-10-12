@@ -1,15 +1,9 @@
 package com.incokalk.service;
 
-import com.incokalk.model.Carrier;
-import com.incokalk.model.Company;
-import com.incokalk.repository.CarrierRepository;
-import com.incokalk.repository.CompanyRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,29 +11,20 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.Map;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @DisplayName("ImportService — Tests unitaires")
 class ImportServiceTest {
 
-    @Mock CarrierRepository carrierRepo;
-    @Mock ShipmentOrderRepository shipmentRepo;
-    @Mock CompanyRepository companyRepo;
-
     @InjectMocks ImportService service;
-
-    private UUID companyId;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        companyId = UUID.randomUUID();
     }
 
     private MultipartFile mockMultipartFile(String content) throws IOException {
@@ -49,65 +34,7 @@ class ImportServiceTest {
         return file;
     }
 
-    // ── importCarriersCsv ────────────────────────────────────────────────
-
-    @Test
-    @DisplayName("Import carriers CSV valide → imported = nombre de lignes")
-    void importCarriersCsv_success() throws Exception {
-        String csv = """
-                Nom,Code,Modes,Contact,Email,Phone,Pays
-                DHL Express,DHL,AIR,Jean Dupont,jd@dhl.com,+33123456,FRA
-                Maersk,MSK,SEA,Pierre Martin,pm@maersk.com,+45123456,DNK
-                """;
-
-        MultipartFile file = mockMultipartFile(csv);
-        when(carrierRepo.existsByCompanyIdAndCodeIgnoreCase(any(), any())).thenReturn(false);
-        Company company = Company.builder().id(companyId).name("TestCo").slug("testco").build();
-        when(companyRepo.getReferenceById(companyId)).thenReturn(company);
-
-        Map<String, Object> result = service.importCarriersCsv(file, companyId);
-
-        assertThat(result.get("imported")).isEqualTo(2);
-        assertThat(result.get("skipped")).isEqualTo(0);
-        verify(carrierRepo, times(2)).save(any());
-    }
-
-    @Test
-    @DisplayName("Import carriers CSV avec doublons → doublons ignorés")
-    void importCarriersCsv_duplicateCode_skipped() throws Exception {
-        String csv = """
-                Nom,Code,Modes
-                DHL Express,DHL,AIR
-                """;
-
-        MultipartFile file = mockMultipartFile(csv);
-
-        when(carrierRepo.existsByCompanyIdAndCodeIgnoreCase(companyId, "DHL")).thenReturn(true);
-
-        Map<String, Object> result = service.importCarriersCsv(file, companyId);
-
-        assertThat(result.get("imported")).isEqualTo(0);
-        assertThat(result.get("skipped")).isEqualTo(1);
-        verify(carrierRepo, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Import carriers CSV avec ligne vide → ligne ignorée avec erreur")
-    void importCarriersCsv_blankFields_skipped() throws Exception {
-        String csv = """
-                Nom,Code,Modes
-                ,DHL,AIR
-                """;
-
-        MultipartFile file = mockMultipartFile(csv);
-        when(carrierRepo.existsByCompanyIdAndCodeIgnoreCase(any(), any())).thenReturn(false);
-
-        Map<String, Object> result = service.importCarriersCsv(file, companyId);
-
-        assertThat(result.get("imported")).isEqualTo(0);
-        assertThat(result.get("skipped")).isEqualTo(1);
-        assertThat((java.util.List<?>) result.get("errors")).hasSize(1);
-    }
+    // importCarriersCsv a ete retiree avec le domaine Transport (CarrierRepository).
 
     // ── previewCsv ───────────────────────────────────────────────────────
 

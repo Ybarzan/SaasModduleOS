@@ -1,7 +1,6 @@
 package com.incokalk.service.erp;
 
 import com.incokalk.model.ErpConfig;
-import com.incokalk.model.ShipmentOrder;
 
 import java.util.List;
 import java.util.Map;
@@ -21,9 +20,10 @@ public interface ErpProvider {
 
     ErpSyncResult importContacts(ErpConfig config);
 
-    ErpSyncResult exportShipments(ErpConfig config, List<ShipmentOrder> shipments);
-
-    ErpSyncResult exportOrders(ErpConfig config, List<ShipmentOrder> orders);
+    // exportShipments/exportOrders (List<ShipmentOrder>) ont ete retirees avec le
+    // domaine Transport. ErpSyncService.executeSync() traite desormais les
+    // directions EXPORT des types ORDERS/SHIPMENTS/INVOICES comme un no-op en
+    // attendant une reconstruction via fleet-hub (voir ErpSyncService).
 
     List<Map<String, Object>> getProducts(ErpConfig config);
 

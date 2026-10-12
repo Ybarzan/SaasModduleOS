@@ -1,7 +1,6 @@
 package com.incokalk.service.erp;
 
 import com.incokalk.model.ErpConfig;
-import com.incokalk.model.ShipmentOrder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -136,101 +135,8 @@ public class OdooProvider implements ErpProvider {
         }
     }
 
-    @Override
-    public ErpSyncResult exportShipments(ErpConfig config, List<ShipmentOrder> shipments) {
-        log.info("[Odoo] Export de {} expéditions vers stock.picking", shipments.size());
-        try {
-            int uid = authenticate(config);
-            String url = buildXmlRpcUrl(config, "object");
-            int synced = 0;
-            int failed = 0;
-
-            for (ShipmentOrder shipment : shipments) {
-                try {
-                    Map<String, Object> pickingVals = Map.of(
-                            "origin", shipment.getOrderNumber() != null ? shipment.getOrderNumber() : "",
-                            "partner_id", shipment.getConsigneeName() != null ? shipment.getConsigneeName() : "",
-                            "move_ids", List.of()
-                    );
-                    String xml = buildXmlRpcCall("execute_kw",
-                            List.of(config.getDatabaseName(), uid, config.getApiKey(),
-                                    "stock.picking", "create",
-                                    List.of(pickingVals)));
-                    ResponseEntity<String> response = postXmlRpc(url, xml);
-                    if (response.getStatusCode().is2xxSuccessful()) {
-                        synced++;
-                    } else {
-                        failed++;
-                    }
-                } catch (Exception e) {
-                    log.warn("[Odoo] Échec export shipment {}: {}", shipment.getOrderNumber(), e.getMessage());
-                    failed++;
-                }
-            }
-
-            log.info("[Odoo] {} expéditions exportées, {} échouées", synced, failed);
-            return ErpSyncResult.builder()
-                    .success(failed == 0)
-                    .recordsTotal(shipments.size())
-                    .recordsSynced(synced)
-                    .recordsFailed(failed)
-                    .build();
-        } catch (Exception e) {
-            log.error("[Odoo] Erreur export expéditions: {}", e.getMessage());
-            return ErpSyncResult.builder()
-                    .success(false)
-                    .errorMessage(e.getMessage())
-                    .build();
-        }
-    }
-
-    @Override
-    public ErpSyncResult exportOrders(ErpConfig config, List<ShipmentOrder> orders) {
-        log.info("[Odoo] Export de {} commandes vers sale.order", orders.size());
-        try {
-            int uid = authenticate(config);
-            String url = buildXmlRpcUrl(config, "object");
-            int synced = 0;
-            int failed = 0;
-
-            for (ShipmentOrder order : orders) {
-                try {
-                    Map<String, Object> orderVals = Map.of(
-                            "origin", order.getOrderNumber() != null ? order.getOrderNumber() : "",
-                            "partner_id", order.getConsigneeName() != null ? order.getConsigneeName() : "",
-                            "order_line", List.of()
-                    );
-                    String xml = buildXmlRpcCall("execute_kw",
-                            List.of(config.getDatabaseName(), uid, config.getApiKey(),
-                                    "sale.order", "create",
-                                    List.of(orderVals)));
-                    ResponseEntity<String> response = postXmlRpc(url, xml);
-                    if (response.getStatusCode().is2xxSuccessful()) {
-                        synced++;
-                    } else {
-                        failed++;
-                    }
-                } catch (Exception e) {
-                    log.warn("[Odoo] Échec export commande {}: {}", order.getOrderNumber(), e.getMessage());
-                    failed++;
-                }
-            }
-
-            log.info("[Odoo] {} commandes exportées, {} échouées", synced, failed);
-            return ErpSyncResult.builder()
-                    .success(failed == 0)
-                    .recordsTotal(orders.size())
-                    .recordsSynced(synced)
-                    .recordsFailed(failed)
-                    .build();
-        } catch (Exception e) {
-            log.error("[Odoo] Erreur export commandes: {}", e.getMessage());
-            return ErpSyncResult.builder()
-                    .success(false)
-                    .errorMessage(e.getMessage())
-                    .build();
-        }
-    }
+    // exportShipments/exportOrders ont ete retirees avec le domaine Transport
+    // (List<ShipmentOrder>). Voir ErpProvider / ErpSyncService.
 
     @Override
     public List<Map<String, Object>> getProducts(ErpConfig config) {

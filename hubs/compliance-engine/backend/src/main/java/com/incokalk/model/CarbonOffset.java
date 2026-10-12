@@ -28,10 +28,9 @@ public class CarbonOffset {
     @JsonIgnore
     private Company company;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shipment_id")
-    @JsonIgnore
-    private ShipmentOrder shipment;
+    /** UUID brut (plus de relation JPA) depuis le retrait du domaine Transport. */
+    @Column(name = "shipment_id")
+    private UUID shipmentId;
 
     @Column(name = "co2_emissions_kg", nullable = false, precision = 15, scale = 2)
     private BigDecimal co2EmissionsKg;

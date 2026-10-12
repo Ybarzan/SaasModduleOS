@@ -39,17 +39,16 @@ public class CsrdReportingService {
         byScope.put("scope3", total.multiply(BigDecimal.valueOf(0.50)).setScale(2, RoundingMode.HALF_UP));
         report.put("emissionsByScope", byScope);
 
+        // Le regroupement par "lane" (origine -> destination) lisait la ville du
+        // shipper/consignee via la relation JPA CarbonOffset.shipment -- retir\u00e9e avec
+        // le domaine Transport (CarbonOffset.shipmentId est maintenant un UUID brut).
+        // Toutes les \u00e9missions sont donc regroup\u00e9es sous "Unknown" en attendant un
+        // appel REST vers fleet-hub (r\u00e9sum\u00e9 d'exp\u00e9dition) pour r\u00e9soudre les villes
+        // par ligne -- suivi document\u00e9, pas fait dans cette passe.
         List<CarbonOffset> allOffsets = carbonOffsetRepo.findByCompanyIdOrderByCreatedAtDesc(companyId);
         Map<String, BigDecimal> laneEmissionsKg = new LinkedHashMap<>();
         for (CarbonOffset offset : allOffsets) {
             String lane = "Unknown";
-            if (offset.getShipment() != null) {
-                String origin = offset.getShipment().getShipperCity();
-                String dest = offset.getShipment().getConsigneeCity();
-                if (origin != null && dest != null) {
-                    lane = origin + " \u2192 " + dest;
-                }
-            }
             BigDecimal co2Kg = offset.getCo2EmissionsKg();
             if (co2Kg != null) {
                 laneEmissionsKg.merge(lane, co2Kg, BigDecimal::add);

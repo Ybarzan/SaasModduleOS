@@ -54,7 +54,7 @@ services:
     restart: unless-stopped
 
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:latest
     container_name: incokalk-minio-dev
     ports:
       - "${MINIO_API_PORT:-9000}:9000"
@@ -74,7 +74,8 @@ services:
 
   # Crée les buckets une seule fois au démarrage
   minio-init:
-    image: minio/mc:latest
+    build:
+      context: ./minio-init
     container_name: incokalk-minio-init
     depends_on:
       minio:

@@ -8,11 +8,9 @@ import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.Company;
 import com.incokalk.model.ErpConfig;
 import com.incokalk.model.ErpSyncLog;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.ErpConfigRepository;
 import com.incokalk.repository.ErpSyncLogRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,7 +27,6 @@ class ErpSyncServiceTest {
     private ErpConfigRepository erpConfigRepo;
     private ErpSyncLogRepository erpSyncLogRepo;
     private CompanyRepository companyRepo;
-    private ShipmentOrderRepository shipmentOrderRepo;
     private ErpProviderRegistry providerRegistry;
     private ErpSyncService service;
 
@@ -38,9 +35,8 @@ class ErpSyncServiceTest {
         erpConfigRepo = mock(ErpConfigRepository.class);
         erpSyncLogRepo = mock(ErpSyncLogRepository.class);
         companyRepo = mock(CompanyRepository.class);
-        shipmentOrderRepo = mock(ShipmentOrderRepository.class);
         providerRegistry = mock(ErpProviderRegistry.class);
-        service = new ErpSyncService(erpConfigRepo, erpSyncLogRepo, companyRepo, shipmentOrderRepo, providerRegistry);
+        service = new ErpSyncService(erpConfigRepo, erpSyncLogRepo, companyRepo, providerRegistry);
     }
 
     private ErpConfig config(UUID companyId, String erpType) {
@@ -478,7 +474,7 @@ class ErpSyncServiceTest {
     }
 
     @Test
-    @DisplayName("sync → ORDERS EXPORT calls exportOrders")
+    @DisplayName("sync → ORDERS EXPORT is a no-op pending l'intégration fleet-hub")
     void sync_ordersExport() {
         UUID companyId = UUID.randomUUID();
         UUID configId = UUID.randomUUID();
@@ -487,12 +483,8 @@ class ErpSyncServiceTest {
         when(erpConfigRepo.findById(configId)).thenReturn(Optional.of(config));
         when(erpSyncLogRepo.save(any())).thenAnswer(i -> i.getArgument(0));
         when(erpConfigRepo.save(any())).thenAnswer(i -> i.getArgument(0));
-        when(shipmentOrderRepo.findByCompanyIdOrderByCreatedAtDesc(companyId))
-                .thenReturn(List.of(ShipmentOrder.builder().build()));
 
         ErpProvider provider = mock(ErpProvider.class);
-        ErpSyncResult syncResult = ErpSyncResult.builder().success(true).build();
-        when(provider.exportOrders(any(), anyList())).thenReturn(syncResult);
         when(providerRegistry.getProvider("ODOO")).thenReturn(Optional.of(provider));
 
         SyncRequestDTO dto = SyncRequestDTO.builder()
@@ -502,7 +494,8 @@ class ErpSyncServiceTest {
 
         ErpSyncLog result = service.sync(configId, dto, companyId);
         assertThat(result.getStatus()).isEqualTo("SUCCESS");
-        verify(provider).exportOrders(eq(config), anyList());
+        assertThat(result.getRecordsTotal()).isEqualTo(0);
+        verifyNoInteractions(provider);
     }
 
     @Test
@@ -532,7 +525,7 @@ class ErpSyncServiceTest {
     }
 
     @Test
-    @DisplayName("sync → INVOICES EXPORT calls exportShipments")
+    @DisplayName("sync → INVOICES EXPORT is a no-op pending l'intégration fleet-hub")
     void sync_invoicesExport() {
         UUID companyId = UUID.randomUUID();
         UUID configId = UUID.randomUUID();
@@ -541,12 +534,8 @@ class ErpSyncServiceTest {
         when(erpConfigRepo.findById(configId)).thenReturn(Optional.of(config));
         when(erpSyncLogRepo.save(any())).thenAnswer(i -> i.getArgument(0));
         when(erpConfigRepo.save(any())).thenAnswer(i -> i.getArgument(0));
-        when(shipmentOrderRepo.findByCompanyIdOrderByCreatedAtDesc(companyId))
-                .thenReturn(List.of(ShipmentOrder.builder().build()));
 
         ErpProvider provider = mock(ErpProvider.class);
-        ErpSyncResult syncResult = ErpSyncResult.builder().success(true).build();
-        when(provider.exportShipments(any(), anyList())).thenReturn(syncResult);
         when(providerRegistry.getProvider("ODOO")).thenReturn(Optional.of(provider));
 
         SyncRequestDTO dto = SyncRequestDTO.builder()
@@ -556,7 +545,8 @@ class ErpSyncServiceTest {
 
         ErpSyncLog result = service.sync(configId, dto, companyId);
         assertThat(result.getStatus()).isEqualTo("SUCCESS");
-        verify(provider).exportShipments(eq(config), anyList());
+        assertThat(result.getRecordsTotal()).isEqualTo(0);
+        verifyNoInteractions(provider);
     }
 
     @Test
@@ -584,7 +574,7 @@ class ErpSyncServiceTest {
     }
 
     @Test
-    @DisplayName("sync → SHIPMENTS EXPORT calls exportShipments")
+    @DisplayName("sync → SHIPMENTS EXPORT is a no-op pending l'intégration fleet-hub")
     void sync_shipmentsExport() {
         UUID companyId = UUID.randomUUID();
         UUID configId = UUID.randomUUID();
@@ -593,12 +583,8 @@ class ErpSyncServiceTest {
         when(erpConfigRepo.findById(configId)).thenReturn(Optional.of(config));
         when(erpSyncLogRepo.save(any())).thenAnswer(i -> i.getArgument(0));
         when(erpConfigRepo.save(any())).thenAnswer(i -> i.getArgument(0));
-        when(shipmentOrderRepo.findByCompanyIdOrderByCreatedAtDesc(companyId))
-                .thenReturn(List.of(ShipmentOrder.builder().build()));
 
         ErpProvider provider = mock(ErpProvider.class);
-        ErpSyncResult syncResult = ErpSyncResult.builder().success(true).build();
-        when(provider.exportShipments(any(), anyList())).thenReturn(syncResult);
         when(providerRegistry.getProvider("ODOO")).thenReturn(Optional.of(provider));
 
         SyncRequestDTO dto = SyncRequestDTO.builder()
@@ -608,6 +594,8 @@ class ErpSyncServiceTest {
 
         ErpSyncLog result = service.sync(configId, dto, companyId);
         assertThat(result.getStatus()).isEqualTo("SUCCESS");
+        assertThat(result.getRecordsTotal()).isEqualTo(0);
+        verifyNoInteractions(provider);
     }
 
     @Test

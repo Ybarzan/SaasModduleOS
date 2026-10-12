@@ -5,46 +5,24 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Réduit aux seuls champs survivant au retrait du domaine Transport :
+ * totalShipments/activeShipments/deliveredShipments/draftShipments/cancelledShipments,
+ * les champs de coûts/poids/volume/CO₂ et totalCarriers/activeCarriers lisaient
+ * ShipmentOrderRepository/CarrierRepository directement et ont été retirés.
+ * Une réintroduction future nécessiterait un appel REST vers fleet-hub plutôt
+ * qu'une lecture locale.
+ */
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class DashboardStatsDTO {
 
-    // Shipments
-    private long totalShipments;
-    private long activeShipments;
-    private long deliveredShipments;
-    private long draftShipments;
-    private long cancelledShipments;
-
-    // Costs
-    private double totalShippingCost;
-    private double averageShippingCost;
-    private double maxShippingCost;
-    private double minShippingCost;
-
-    // Weight & Volume
-    private double totalWeightKg;
-    private double totalVolumeM3;
-    private double averageWeightKg;
-    private double averageVolumeM3;
-
-    // Goods value
-    private double totalGoodsValue;
-
-    // Simulations
+    // Simulations (SimulationRepository, indépendant du domaine Transport)
     private long totalSimulations;
     private long simulationsThisMonth;
 
-    // Carriers
-    private long totalCarriers;
-    private long activeCarriers;
-
-    // CO2
-    private double totalCo2Kg;
-    private double averageCo2PerShipment;
-
-    // Time period
+    // Time period (conservé pour compatibilité d'API ; n'influence plus le résultat)
     private String period;
 }

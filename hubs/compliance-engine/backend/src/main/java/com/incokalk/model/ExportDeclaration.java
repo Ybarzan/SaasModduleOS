@@ -28,10 +28,10 @@ public class ExportDeclaration {
     @JsonIgnore
     private Company company;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shipment_id")
-    @JsonIgnore
-    private ShipmentOrder shipment;
+    /** UUID brut (plus de relation JPA) depuis le retrait du domaine Transport ;
+     * jamais lu ni ecrit par la logique metier (voir ExportDeclarationService). */
+    @Column(name = "shipment_id")
+    private UUID shipmentId;
 
     @Column(name = "declaration_number")
     private String declarationNumber;

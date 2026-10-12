@@ -6,7 +6,7 @@ import {
   Bell, Plus, Pencil, Trash2, Mail, Webhook, Wifi, Package, Truck,
   Search, Filter, ToggleLeft, ToggleRight, Loader2, Send, X, Zap, ShieldAlert,
 } from 'lucide-react';
-import type { NotificationRule, NotificationRuleFormData, Carrier } from '../types';
+import type { NotificationRule, NotificationRuleFormData } from '../types';
 import Pagination from '../components/Pagination';
 import Modal from '../components/Modal';
 import EmptyState from '../components/EmptyState';
@@ -77,11 +77,9 @@ const EMPTY_FORM: NotificationRuleFormData = {
   webhookUrl: '',
   webhookSecret: '',
   filterStatus: '',
-  filterCarrierId: '',
   filterDataSource: '',
   actionType: '',
   maxBudgetAmount: undefined,
-  allowedCarrierIds: '',
 };
 
 // Un seul type d'action existe côté moteur de règles pour l'instant (voir
@@ -142,17 +140,8 @@ const NotificationRules = () => {
     },
   });
 
-  const { data: carriersData } = useQuery({
-    queryKey: ['carriers'],
-    queryFn: async () => {
-      const res = await incokalkAPI.carriers.getAll();
-      return (res.data as Carrier[]) || [];
-    },
-  });
-
   const rules: NotificationRule[] = Array.isArray(rulesData) ? rulesData : (rulesData?.content ?? []);
   const totalPages: number = Array.isArray(rulesData) ? 1 : (rulesData?.totalPages ?? 1);
-  const carriers: Carrier[] = carriersData ?? [];
 
   const createMutation = useMutation({
     mutationFn: (d: NotificationRuleFormData) => incokalkAPI.notificationRules.create(d),
@@ -222,11 +211,9 @@ const NotificationRules = () => {
       webhookUrl: rule.webhookUrl || '',
       webhookSecret: rule.webhookSecret || '',
       filterStatus: rule.filterStatus || '',
-      filterCarrierId: rule.filterCarrierId || '',
       filterDataSource: rule.filterDataSource || '',
       actionType: rule.actionType || '',
       maxBudgetAmount: rule.maxBudgetAmount,
-      allowedCarrierIds: rule.allowedCarrierIds || '',
     });
     const fields = EVENT_CONDITION_FIELDS[rule.eventType] || [];
     if (rule.conditionJson) {
@@ -278,7 +265,7 @@ const NotificationRules = () => {
     }
 
     const payload: NotificationRuleFormData = conditionMode === 'advanced'
-      ? { ...form, conditionJson: JSON.stringify(conditionTree), filterStatus: undefined, filterCarrierId: undefined, filterDataSource: undefined }
+      ? { ...form, conditionJson: JSON.stringify(conditionTree), filterStatus: undefined, filterDataSource: undefined }
       : { ...form, conditionJson: undefined };
 
     if (editing) {
@@ -290,15 +277,6 @@ const NotificationRules = () => {
 
   const handleTest = (rule: NotificationRule) => {
     testMutation.mutate({ ruleId: rule.id, eventType: rule.eventType });
-  };
-
-  const selectedCarrierIds = form.allowedCarrierIds ? form.allowedCarrierIds.split(',').filter(Boolean) : [];
-
-  const toggleAllowedCarrier = (carrierId: string) => {
-    const next = selectedCarrierIds.includes(carrierId)
-      ? selectedCarrierIds.filter((id) => id !== carrierId)
-      : [...selectedCarrierIds, carrierId];
-    setForm({ ...form, allowedCarrierIds: next.join(',') });
   };
 
   const getActionTypeLabel = (actionType?: string) =>
@@ -414,16 +392,11 @@ const NotificationRules = () => {
                         </span>
                       </div>
                     ) : (
-                      (rule.filterStatus || rule.filterCarrierId || rule.filterDataSource) && (
+                      (rule.filterStatus || rule.filterDataSource) && (
                         <div className="flex items-center gap-2 text-sm text-ink-soft mb-2">
                           <Filter size={14} />
                           {rule.filterStatus && (
                             <span>Statut: {rule.filterStatus}</span>
-                          )}
-                          {rule.filterCarrierId && (
-                            <span>
-                              Transporteur: {carriers.find((c) => c.id === rule.filterCarrierId)?.name || rule.filterCarrierId}
-                            </span>
                           )}
                           {rule.filterDataSource && (
                             <span>
@@ -440,15 +413,6 @@ const NotificationRules = () => {
                           <span className="font-medium text-ink">{getActionTypeLabel(rule.actionType)}</span>
                           {' — génère une suggestion à valider'}
                           {rule.maxBudgetAmount != null && ` · budget max ${rule.maxBudgetAmount} €`}
-                          {rule.allowedCarrierIds && (
-                            <>
-                              {' · transporteurs autorisés : '}
-                              {rule.allowedCarrierIds
-                                .split(',')
-                                .map((id) => carriers.find((c) => c.id === id)?.name || id)
-                                .join(', ')}
-                            </>
-                          )}
                         </div>
                       </div>
                     )}
@@ -687,19 +651,6 @@ const NotificationRules = () => {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-xs text-ink-soft mb-1">Filtrer par transporteur</label>
-                          <select
-                            value={form.filterCarrierId || ''}
-                            onChange={(e) => setForm({ ...form, filterCarrierId: e.target.value || undefined })}
-                            className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
-                          >
-                            <option value="">Tous les transporteurs</option>
-                            {carriers.map((c) => (
-                              <option key={c.id} value={c.id}>{c.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
                           <label className="block text-xs text-ink-soft mb-1">Filtrer par provenance</label>
                           <select
                             value={form.filterDataSource || ''}
@@ -763,28 +714,6 @@ const NotificationRules = () => {
                             className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                             placeholder="Aucune limite"
                           />
-                        </div>
-                        <div>
-                          <label className="block text-xs text-ink-soft mb-1">
-                            Transporteurs autorisés (optionnel — laisser vide = tous autorisés)
-                          </label>
-                          <div className="max-h-32 overflow-y-auto border border-line rounded-none divide-y divide-line">
-                            {carriers.length === 0 ? (
-                              <p className="text-xs text-ink-soft p-2">Aucun transporteur configuré</p>
-                            ) : (
-                              carriers.map((c) => (
-                                <label key={c.id} className="flex items-center gap-2 px-3 py-1.5 text-sm cursor-pointer hover:bg-surface-2">
-                                  <input
-                                    type="checkbox"
-                                    checked={selectedCarrierIds.includes(c.id)}
-                                    onChange={() => toggleAllowedCarrier(c.id)}
-                                    className="w-4 h-4 text-accent rounded focus:ring-accent"
-                                  />
-                                  {c.name}
-                                </label>
-                              ))
-                            )}
-                          </div>
                         </div>
                       </div>
                     )}

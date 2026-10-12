@@ -22,7 +22,6 @@ public class MultiBranchService {
     private final CompanyBranchRepository branchRepo;
     private final InterBranchTransferRepository transferRepo;
     private final CompanyRepository companyRepo;
-    private final ShipmentOrderRepository shipmentRepo;
     private final ShipmentFinancialsRepository financialsRepo;
     private final CarbonOffsetRepository carbonRepo;
 
@@ -75,27 +74,10 @@ public class MultiBranchService {
         return new ArrayList<>(ids);
     }
 
-    public Map<String, Object> consolidateShipments() {
-        List<UUID> companyIds = getConsolidationCompanyIds();
-        long totalShipments = 0;
-        double totalCost = 0;
-        Map<String, Long> byStatus = new HashMap<>();
-        for (UUID cid : companyIds) {
-            totalShipments += shipmentRepo.countByCompanyId(cid);
-            List<ShipmentOrder> shipments = shipmentRepo.findByCompanyIdOrderByCreatedAtDesc(cid);
-            for (ShipmentOrder s : shipments) {
-                totalCost += s.getFinalCost() != null ? s.getFinalCost()
-                        : (s.getQuotedCost() != null ? s.getQuotedCost() : 0);
-                byStatus.merge(s.getStatus().name(), 1L, Long::sum);
-            }
-        }
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("totalShipments", totalShipments);
-        result.put("totalCost", totalCost);
-        result.put("byStatus", byStatus);
-        result.put("companiesCount", companyIds.size());
-        return result;
-    }
+    // consolidateShipments() a ete retiree avec le domaine Transport : elle
+    // bouclait sur les filiales via ShipmentOrderRepository.countByCompanyId /
+    // findByCompanyIdOrderByCreatedAtDesc. Une agregation inter-societes future
+    // necessiterait un appel REST batch vers fleet-hub, hors scope de cette passe.
 
     public Map<String, Object> consolidateFinancials() {
         List<UUID> companyIds = getConsolidationCompanyIds();
@@ -150,12 +132,6 @@ public class MultiBranchService {
             });
         }
         report.put("companies", companies);
-
-        long totalShipments = 0;
-        for (UUID cid : companyIds) {
-            totalShipments += shipmentRepo.countByCompanyId(cid);
-        }
-        report.put("totalShipments", totalShipments);
 
         BigDecimal totalRevenue = BigDecimal.ZERO;
         BigDecimal totalCost = BigDecimal.ZERO;

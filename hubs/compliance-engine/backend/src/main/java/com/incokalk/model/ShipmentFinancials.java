@@ -28,10 +28,9 @@ public class ShipmentFinancials {
     @JsonIgnore
     private Company company;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shipment_id", nullable = false, unique = true)
-    @JsonIgnore
-    private ShipmentOrder shipment;
+    /** UUID brut (plus de relation JPA) depuis le retrait du domaine Transport. */
+    @Column(name = "shipment_id", nullable = false, unique = true)
+    private UUID shipmentId;
 
     @Column(name = "client_name")
     private String clientName;

@@ -1,13 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Calculator, Truck, Package, Search, Home } from 'lucide-react';
+import { Calculator, Home } from 'lucide-react';
 import { useIsMobile } from '../hooks/useMediaQuery';
 
 const NAV_ITEMS = [
   { to: '/dashboard', label: 'Accueil', icon: Home },
   { to: '/simulation', label: 'Simuler', icon: Calculator },
-  { to: '/shipments', label: 'Expéditions', icon: Package },
-  { to: '/carriers', label: 'Transport', icon: Truck },
-  { to: '/quotes', label: 'Devis', icon: Search },
 ];
 
 const MobileBottomNav = () => {

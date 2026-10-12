@@ -1,6 +1,7 @@
 package com.fleethub.config;
 
 import com.fleethub.security.AdminIpFilter;
+import com.fleethub.security.ClientAuthFilter;
 import com.fleethub.security.JwtAuthFilter;
 import com.fleethub.security.LoginRateLimitFilter;
 import com.fleethub.security.SubscriptionGuardFilter;
@@ -31,6 +32,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final ClientAuthFilter clientAuthFilter;
     private final LoginRateLimitFilter loginRateLimitFilter;
     private final TenantFilter tenantFilter;
     private final SubscriptionGuardFilter subscriptionGuardFilter;
@@ -63,9 +65,32 @@ public class SecurityConfig {
                 // (pas un JWT) dans MarketplaceService, pas ici.
                 .requestMatchers(HttpMethod.GET, "/api/marketplace/availability", "/api/marketplace/vehicle-position").permitAll()
                 .requestMatchers("/api/marketplace/**").hasRole("ADMIN")
+                // Appel machine-à-machine de compliance-engine / Logistix, authentifié par
+                // X-Internal-Integration-Key (pas un JWT) dans InternalIntegrationService,
+                // pas ici -- ces hubs n'ont pas de JWT fleet-hub.
+                .requestMatchers("/api/internal/**").permitAll()
+                .requestMatchers("/api/internal-integrations/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("SAAS_ADMIN")
                 .requestMatchers("/api/users/**", "/api/integrations/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/kpis/**", "/api/drivers/**", "/api/trucks/**", "/api/dashboard/**", "/api/map/**").hasAnyRole("ADMIN", "GESTIONNAIRE")
+                // ---- Domaine Transport (carrier/shipment/tracking), fusionné depuis
+                // compliance-engine : portail client public par token (jamais un compte
+                // staff), le reste reste derrière l'auth staff normale. Voir ClientAuthFilter.
+                .requestMatchers("/api/client/auth/login").permitAll()
+                .requestMatchers("/api/shared/access/**").permitAll()
+                .requestMatchers("/api/client/**").hasRole("CLIENT")
+                // Mutations réservées à ADMIN (l'original compliance-engine les réservait à
+                // OWNER/ADMIN, sans équivalent GESTIONNAIRE) :
+                .requestMatchers(HttpMethod.DELETE, "/api/carriers/**", "/api/shipping-rates/**", "/api/shipments/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/carrier-invoices/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/carrier-invoices/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/carrier-invoices/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/clients/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/clients/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/clients/**").hasRole("ADMIN")
+                .requestMatchers("/api/shared/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/eta-ml/train").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/eta-ml/external-health").hasRole("ADMIN")
                 .anyRequest().hasAnyRole("ADMIN", "GESTIONNAIRE")
             )
             .headers(headers -> headers
@@ -91,6 +116,9 @@ public class SecurityConfig {
             .addFilterBefore(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(adminIpFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            // Authentification séparée du portail client (jamais un AppUser staff) —
+            // n'alimente jamais TenantContext, voir ClientAuthFilter.
+            .addFilterBefore(clientAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterAfter(subscriptionGuardFilter, TenantFilter.class);
         return http.build();

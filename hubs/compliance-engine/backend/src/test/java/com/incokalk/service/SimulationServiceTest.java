@@ -6,6 +6,7 @@ import com.incokalk.model.Incoterm;
 import com.incokalk.model.Simulation;
 import com.incokalk.repository.SimulationRepository;
 import com.incokalk.repository.UserRepository;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -23,7 +24,7 @@ import static org.mockito.Mockito.*;
 @DisplayName("SimulationService — Tests unitaires")
 class SimulationServiceTest {
 
-    @Mock FreightRateService freightSvc;
+    @Mock FleetHubIntegrationClient fleetHubClient;
     @Mock CustomsDutyService dutySvc;
     @Mock CurrencyService currencySvc;
     @Mock SimulationRepository simRepo;
@@ -39,7 +40,7 @@ class SimulationServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         when(currencySvc.toEur(anyDouble(), anyString())).thenAnswer(i -> i.getArgument(0));
-        when(freightSvc.estimate(any(),any(),any(),any(),any(),anyDouble())).thenReturn(new com.incokalk.service.FreightRateService.FreightEstimate(2800.0, 35));
+        when(fleetHubClient.estimateFreight(any(),any(),any(),any(),any(),anyDouble())).thenReturn(new FleetHubIntegrationClient.FreightEstimate(2800.0, 35));
         when(dutySvc.calculate(any(),any(),any(),anyDouble(),anyDouble(),anyDouble(),anyDouble(),any())).thenReturn(1500.0);
         when(vatService.getStandardRate(anyString())).thenReturn(20.0);
         when(vatService.calculate(anyString(), anyString(), anyDouble(), anyDouble(), anyDouble(), anyString(), anyBoolean()))

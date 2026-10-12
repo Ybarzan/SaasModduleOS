@@ -4,7 +4,6 @@ import com.incokalk.model.Company;
 import com.incokalk.model.LandedCost;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.LandedCostRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.tenant.TenantContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,7 +28,6 @@ class LandedCostServiceTest {
 
     @Mock LandedCostRepository landedCostRepo;
     @Mock CompanyRepository companyRepo;
-    @Mock ShipmentOrderRepository shipmentRepo;
     @Mock CustomsDutyService customsDutyService;
     @Mock VatService vatService;
     @InjectMocks LandedCostService service;

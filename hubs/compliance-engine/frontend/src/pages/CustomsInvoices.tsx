@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { incokalkAPI } from '../lib/api';
-import type { CustomsInvoice, ShipmentOrder } from '../types';
+import type { CustomsInvoice } from '../types';
 
 function formatMoney(amount: number | undefined, currency: string | undefined) {
   if (amount == null) return '—';
@@ -39,19 +39,6 @@ const CustomsInvoices = () => {
   });
 
   const invoices = data ?? [];
-
-  const { data: shipmentsData } = useQuery({
-    queryKey: ['shipments-for-customs-invoice'],
-    queryFn: async () => {
-      const res = await incokalkAPI.shipments.getAll();
-      return (res.data as ShipmentOrder[]) || [];
-    },
-    enabled: showModal,
-  });
-
-  const shipments = shipmentsData ?? [];
-  const invoicedShipmentIds = new Set(invoices.map((i) => i.shipmentId).filter(Boolean));
-  const availableShipments = shipments.filter((s) => !invoicedShipmentIds.has(s.id));
 
   const generateMutation = useMutation({
     mutationFn: (shipmentId: string) => incokalkAPI.customsInvoices.generate(shipmentId),
@@ -249,24 +236,19 @@ const CustomsInvoices = () => {
                 <X size={18} />
               </button>
             </div>
-            <label className="block text-sm font-medium text-ink mb-1">Expédition</label>
-            <select
+            <label className="block text-sm font-medium text-ink mb-1">ID d'expédition</label>
+            <input
+              type="text"
               value={selectedShipmentId}
               onChange={(e) => setSelectedShipmentId(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm mb-4"
-            >
-              <option value="">Sélectionner une expédition</option>
-              {availableShipments.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.orderNumber} — {s.consigneeCity || s.consigneeName || 'destinataire inconnu'}
-                </option>
-              ))}
-            </select>
-            {availableShipments.length === 0 && (
-              <p className="text-xs text-ink-soft mb-4">
-                Toutes les expéditions ont déjà une facture douanière, ou aucune expédition n'existe encore.
-              </p>
-            )}
+              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono mb-1"
+              placeholder="UUID de l'expédition (saisie manuelle)"
+            />
+            {/* TODO(fleet-hub): remplacer par une recherche en direct des expéditions une fois
+                le lookup de résumé d'expédition exposé côté fleet-hub — voir le backlog. */}
+            <p className="text-xs text-ink-soft mb-4">
+              Saisie manuelle pour le moment : les expéditions sont gérées par fleet-hub, pas de recherche locale.
+            </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowModal(false)}

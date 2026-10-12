@@ -1,0 +1,96 @@
+server:
+  port: ${SERVER_PORT:8091}
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: logistix-backend
+  datasource:
+    # ${random.uuid} : une base H2 nommée en dur serait partagée par toutes les
+    # ApplicationContext de test (chaque combinaison de @MockBean en crée une
+    # distincte) ; le cache de contexte de Spring en évince une de temps en
+    # temps (ddl-auto=create-drop -> DROP TABLE au shutdown), ce qui fait
+    # échouer d'autres classes utilisant encore la même base physique
+    # partagée par le nom ("table not found"), de façon non déterministe.
+    url: jdbc:h2:mem:logistix-${random.uuid};DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  flyway:
+    enabled: false
+
+app:
+  jwt:
+    secret: "${JWT_SECRET:dev-only-change-me-in-prod-2026!secret-key-32chars!!}"
+    expiration-ms: 86400000
+  base-url: "${APP_BASE_URL:http://localhost:5299}"
+  cors:
+    allowed-origins: "${APP_CORS_ALLOWED_ORIGINS:*}"
+  security:
+    admin-password: "${ADMIN_PASSWORD:admin}"
+  seed:
+    enabled: "${APP_SEED_ENABLED:true}"
+  # fleet-hub -- voir service/integration/fleethub/FleetHubIntegrationClient.
+  integration:
+    fleethub:
+      base-url: "${FLEETHUB_URL:http://localhost:8090}"
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.logistix: "${APP_LOG_LEVEL:INFO}"
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:logistix}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:logistix}
+    password: "${DB_PASSWORD}"
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
+  h2:
+    console:
+      enabled: false
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+app:
+  jwt:
+    secret: "${JWT_SECRET}"
+  base-url: "${APP_BASE_URL:https://localhost}"
+  cors:
+    allowed-origins: "${APP_CORS_ALLOWED_ORIGINS}"
+  security:
+    admin-password: "${ADMIN_PASSWORD}"
+  seed:
+    enabled: "${APP_SEED_ENABLED:false}"

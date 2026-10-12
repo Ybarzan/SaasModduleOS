@@ -2,9 +2,7 @@ package com.incokalk.service.ecommerce;
 
 import com.incokalk.model.Company;
 import com.incokalk.model.ECommerceIntegration;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.CompanyRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,16 +19,14 @@ import static org.mockito.Mockito.*;
 class ShopifyAdapterTest {
 
     private RestTemplate restTemplate;
-    private ShipmentOrderRepository shipmentOrderRepository;
     private CompanyRepository companyRepository;
     private ShopifyAdapter adapter;
 
     @BeforeEach
     void setUp() {
         restTemplate = mock(RestTemplate.class);
-        shipmentOrderRepository = mock(ShipmentOrderRepository.class);
         companyRepository = mock(CompanyRepository.class);
-        adapter = new ShopifyAdapter(restTemplate, shipmentOrderRepository, companyRepository);
+        adapter = new ShopifyAdapter(restTemplate, companyRepository);
     }
 
     private ECommerceIntegration integration(String storeUrl, String apiSecret) {
@@ -165,140 +161,8 @@ class ShopifyAdapterTest {
         assertThat(result).isEmpty();
     }
 
-    @Test
-    @DisplayName("mapOrderToShipment → creates ShipmentOrder from Shopify order")
-    void mapOrderToShipment_success() {
-        var integration = integration("https://my-store.myshopify.com/", "token123");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> address = Map.of(
-                "name", "John Doe",
-                "address1", "123 Main St",
-                "city", "New York",
-                "country_code", "US",
-                "zip", "10001");
-
-        Map<String, Object> lineItem = Map.of(
-                "title", "Widget A",
-                "grams", 500);
-
-        Map<String, Object> order = Map.of(
-                "order_number", "1001",
-                "currency", "USD",
-                "total_price", 99.99,
-                "shipping_address", address,
-                "line_items", List.of(lineItem));
-
-        when(shipmentOrderRepository.findByOrderNumber("SHOP-1001")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result).isNotNull();
-        assertThat(result.getOrderNumber()).isEqualTo("SHOP-1001");
-        assertThat(result.getGoodsDescription()).isEqualTo("Widget A");
-        assertThat(result.getWeightKg()).isEqualTo(0.5);
-        assertThat(result.getPackagesCount()).isEqualTo(1);
-        assertThat(result.getCurrency()).isEqualTo("USD");
-        assertThat(result.getGoodsValue()).isEqualTo(99.99);
-        assertThat(result.getConsigneeName()).isEqualTo("John Doe");
-        assertThat(result.getConsigneeAddress()).isEqualTo("123 Main St");
-        assertThat(result.getConsigneeCity()).isEqualTo("New York");
-        assertThat(result.getConsigneeCountry()).isEqualTo("US");
-        assertThat(result.getConsigneePostalCode()).isEqualTo("10001");
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → returns null when order already exists")
-    void mapOrderToShipment_alreadyExists() {
-        var integration = integration("https://my-store.myshopify.com/", "token123");
-        Map<String, Object> order = Map.of("order_number", "1001");
-
-        when(shipmentOrderRepository.findByOrderNumber("SHOP-1001"))
-                .thenReturn(Optional.of(ShipmentOrder.builder().build()));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result).isNull();
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → handles missing shipping address")
-    void mapOrderToShipment_noAddress() {
-        var integration = integration("https://my-store.myshopify.com/", "token123");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> lineItem = Map.of("title", "Widget", "grams", 200);
-        Map<String, Object> order = Map.of(
-                "order_number", "500",
-                "currency", "EUR",
-                "total_price", 50.00,
-                "line_items", List.of(lineItem));
-
-        when(shipmentOrderRepository.findByOrderNumber("SHOP-500")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result).isNotNull();
-        assertThat(result.getConsigneeName()).isNull();
-        assertThat(result.getConsigneeAddress()).isNull();
-        assertThat(result.getWeightKg()).isEqualTo(0.2);
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → handles multiple line items with weights")
-    void mapOrderToShipment_multipleLineItems() {
-        var integration = integration("https://my-store.myshopify.com/", "token123");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> item1 = Map.of("title", "Widget A", "grams", 500);
-        Map<String, Object> item2 = Map.of("title", "Widget B", "grams", 300);
-        Map<String, Object> item3 = new HashMap<>();
-        item3.put("title", "Widget C");
-        item3.put("grams", null);
-
-        Map<String, Object> order = Map.of(
-                "order_number", "200",
-                "currency", "USD",
-                "total_price", 200.00,
-                "line_items", List.of(item1, item2, item3));
-
-        when(shipmentOrderRepository.findByOrderNumber("SHOP-200")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result.getGoodsDescription()).isEqualTo("Widget A, Widget B, Widget C");
-        assertThat(result.getWeightKg()).isEqualTo(0.8);
-        assertThat(result.getPackagesCount()).isEqualTo(3);
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → handles missing total_price")
-    void mapOrderToShipment_noTotalPrice() {
-        var integration = integration("https://my-store.myshopify.com/", "token123");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> order = Map.of("order_number", "300", "currency", "USD");
-
-        when(shipmentOrderRepository.findByOrderNumber("SHOP-300")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result.getGoodsValue()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → handles missing currency")
-    void mapOrderToShipment_noCurrency() {
-        var integration = integration("https://my-store.myshopify.com/", "token123");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> order = Map.of("order_number", "400");
-
-        when(shipmentOrderRepository.findByOrderNumber("SHOP-400")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result.getCurrency()).isEqualTo("EUR");
-    }
+    // mapOrderToShipment a été retirée avec le domaine Transport
+    // (voir ECommerceAdapter / ECommerceSyncService) — ses tests partaient avec elle.
 
     @Test
     @DisplayName("syncOrders → strips trailing slash from store URL")

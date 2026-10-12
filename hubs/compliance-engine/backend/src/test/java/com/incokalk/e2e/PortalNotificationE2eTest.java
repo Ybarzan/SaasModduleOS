@@ -18,22 +18,6 @@ public class PortalNotificationE2eTest extends E2eTestBase {
     }
 
     @Test
-    @DisplayName("GET /v1/mobile/recent-shipments")
-    void recentShipments() {
-        registerAndSetToken();
-        var resp = getList("/v1/mobile/recent-shipments");
-        assertEquals(200, resp.getStatusCode().value());
-    }
-
-    @Test
-    @DisplayName("GET /v1/client/shipments")
-    void clientShipments() {
-        registerAndSetToken();
-        var resp = getList("/v1/client/shipments");
-        assertEquals(200, resp.getStatusCode().value());
-    }
-
-    @Test
     @DisplayName("GET /v1/notifications")
     void notifications() {
         registerAndSetToken();
@@ -57,11 +41,4 @@ public class PortalNotificationE2eTest extends E2eTestBase {
         assertEquals(401, resp.getStatusCode().value());
     }
 
-    @Test
-    @DisplayName("GET /v1/client/shipments without auth - returns 401")
-    void clientShipmentsUnauthenticated() {
-        var resp = restTemplate.exchange(baseUrl + "/v1/client/shipments",
-                HttpMethod.GET, new HttpEntity<>(new HttpHeaders()), String.class);
-        assertEquals(401, resp.getStatusCode().value());
-    }
 }
