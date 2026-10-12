@@ -105,4 +105,11 @@ export const logistixAPI = {
     setFleetHubKey: (apiKey: string) => api.put("/v1/company/fleethub-key", { apiKey }),
     clearFleetHubKey: () => api.delete("/v1/company/fleethub-key"),
   },
+
+  // Partage opt-in d'un résumé d'activité vers le tableau de bord cross-hub de Praxio
+  praxioIntegration: {
+    settings: () => api.get("/v1/praxio-integration/settings"),
+    enable: () => api.post("/v1/praxio-integration/enable"),
+    disable: () => api.post("/v1/praxio-integration/disable"),
+  },
 };

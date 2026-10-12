@@ -87,6 +87,8 @@ export default function HubIntegration() {
           (réception d'entrepôt) peuvent lire — via une clé propre à votre société, jamais un accès
           direct à vos données — le détail et les articles d'une expédition précise qu'ils vous
           désignent par son identifiant. Aucune liste ni recherche n'est possible avec cette clé.
+          Elle donne aussi accès à un résumé d'activité agrégé (expéditions actives, camions
+          disponibles, réservations en cours) pour le tableau de bord cross-hub de Praxio.
         </p>
       </div>
 

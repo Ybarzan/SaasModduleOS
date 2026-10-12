@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -33,4 +34,32 @@ public class Company {
      *  service/integration/fleethub/FleetHubIntegrationClient. */
     @Column(name = "fleethub_api_key", length = 64)
     private String fleetHubApiKey;
+
+    // ---- Intégration entrante Praxio (opt-in) ----
+    /** Autorise la lecture d'un résumé d'activité (GET /v1/internal/dashboard-summary)
+     *  par le tableau de bord cross-hub de Praxio pour cette société, via une
+     *  clé qui lui est propre. Désactivé par défaut. */
+    @Column(name = "praxio_integration_enabled", nullable = false)
+    @Builder.Default
+    private boolean praxioIntegrationEnabled = false;
+
+    /** Clé d'authentification machine-à-machine pour cette intégration
+     *  (présentée via l'en-tête X-Internal-Integration-Key), générée à
+     *  l'activation. Logistix résout la société depuis cette clé -- jamais
+     *  depuis un identifiant fourni par l'appelant. */
+    @Column(name = "praxio_integration_api_key", length = 64)
+    private String praxioIntegrationApiKey;
+
+    private static final SecureRandom API_KEY_RANDOM = new SecureRandom();
+
+    /** Génère une clé API machine-à-machine pour l'intégration entrante
+     *  Praxio (32 caractères hexadécimaux), sur le même format que la clé
+     *  d'intégration interne de fleet-hub. */
+    public static String generatePraxioIntegrationApiKey() {
+        byte[] bytes = new byte[16];
+        API_KEY_RANDOM.nextBytes(bytes);
+        StringBuilder sb = new StringBuilder(32);
+        for (byte b : bytes) sb.append(String.format("%02x", b));
+        return sb.toString();
+    }
 }

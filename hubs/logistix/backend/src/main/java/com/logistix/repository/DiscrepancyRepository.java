@@ -15,4 +15,6 @@ public interface DiscrepancyRepository extends JpaRepository<Discrepancy, UUID> 
     List<Discrepancy> findByReceivingOrderIdOrderByCreatedAtDesc(UUID receivingOrderId);
 
     List<Discrepancy> findByCompanyIdAndResolutionStatus(UUID companyId, Discrepancy.ResolutionStatus status);
+
+    long countByCompanyIdAndResolutionStatus(UUID companyId, Discrepancy.ResolutionStatus status);
 }

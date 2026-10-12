@@ -1,6 +1,7 @@
 package com.incokalk.controller.analytics;
 
 import com.incokalk.dto.analytics.DashboardStatsDTO;
+import com.incokalk.dto.analytics.DashboardSummaryDTO;
 import com.incokalk.service.AnalyticsService;
 import com.incokalk.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,5 +33,12 @@ public class AnalyticsController {
             @RequestParam(defaultValue = "30d") String period) {
         UUID companyId = TenantContext.get();
         return ResponseEntity.ok(analyticsService.getDashboardStats(companyId, period));
+    }
+
+    @GetMapping("/dashboard-summary")
+    @Operation(summary = "Résumé compact pour le tableau de bord cross-hub de Praxio (clé API)")
+    public ResponseEntity<DashboardSummaryDTO> getDashboardSummary() {
+        UUID companyId = TenantContext.get();
+        return ResponseEntity.ok(analyticsService.getDashboardSummary(companyId));
     }
 }

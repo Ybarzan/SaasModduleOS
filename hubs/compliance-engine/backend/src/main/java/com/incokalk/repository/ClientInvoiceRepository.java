@@ -31,5 +31,10 @@ public interface ClientInvoiceRepository extends JpaRepository<ClientInvoice, UU
 
     List<ClientInvoice> findByCompanyIdAndDueDateBeforeAndStatusNotIn(UUID companyId, LocalDate date, List<ClientInvoice.InvoiceStatus> statuses);
 
+    long countByCompanyIdAndDueDateBeforeAndStatusNotIn(UUID companyId, LocalDate date, List<ClientInvoice.InvoiceStatus> statuses);
+
+    @Query("SELECT COALESCE(SUM(ci.totalAmount), 0) FROM ClientInvoice ci WHERE ci.company.id = :companyId AND ci.dueDate < :date AND ci.status NOT IN :statuses")
+    BigDecimal sumTotalAmountByCompanyIdAndDueDateBeforeAndStatusNotIn(@Param("companyId") UUID companyId, @Param("date") LocalDate date, @Param("statuses") List<ClientInvoice.InvoiceStatus> statuses);
+
     long countByCompanyId(UUID companyId);
 }

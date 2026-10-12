@@ -16,6 +16,8 @@ public interface TruckRepository extends JpaRepository<Truck, Long> {
 
     long countByCompanyId(Long companyId);
 
+    long countByCompanyIdAndActiveTrue(Long companyId);
+
     /** Non scopé — réservé à la couche d'intégration externe (voir INTEGRATION.md). */
     Optional<Truck> findByRegistration(String registration);
 

@@ -40,6 +40,8 @@ public interface ShipmentOrderRepository extends JpaRepository<ShipmentOrder, UU
 
     long countByCompanyId(Long companyId);
 
+    long countByCompanyIdAndStatusIn(Long companyId, List<ShipmentOrder.Status> statuses);
+
     java.util.Optional<ShipmentOrder> findByOrderNumber(String orderNumber);
 
     @Query("SELECT s.status, COUNT(s) FROM ShipmentOrder s WHERE s.company.id = :companyId GROUP BY s.status")

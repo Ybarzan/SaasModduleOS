@@ -45,6 +45,9 @@ public class SecurityConfig {
                 .requestMatchers("/v1/auth/**").permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**").permitAll()
+                // Lecture machine-à-machine (Praxio) authentifiée par clé dans le
+                // contrôleur lui-même, pas par JWT -- voir InternalDashboardController.
+                .requestMatchers("/v1/internal/**").permitAll()
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers

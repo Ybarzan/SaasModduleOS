@@ -1,4 +1,6 @@
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { modules, type PraxioModule } from './modules';
+import Dashboard from './pages/Dashboard';
 
 function StatusTag({ module }: { module: PraxioModule }) {
   const cls =
@@ -32,12 +34,17 @@ function ModuleCard({ module }: { module: PraxioModule }) {
   );
 }
 
-export default function App() {
+function Home() {
   return (
     <div className="min-h-screen bg-bg text-ink">
       <header className="border-b border-line">
         <div className="max-w-5xl mx-auto px-6 py-16">
-          <div className="eyebrow">portail — v0.1</div>
+          <div className="flex items-center justify-between gap-4">
+            <div className="eyebrow">portail — v0.1</div>
+            <Link to="/dashboard" className="eyebrow hover:text-accent-strong transition-colors">
+              tableau de bord &rarr;
+            </Link>
+          </div>
           <h1 className="text-5xl sm:text-6xl font-extralight tracking-tight mt-2 mb-4">
             prax<b className="font-bold">io</b>
             <span className="cursor" aria-hidden="true" />
@@ -64,5 +71,16 @@ export default function App() {
         </p>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
