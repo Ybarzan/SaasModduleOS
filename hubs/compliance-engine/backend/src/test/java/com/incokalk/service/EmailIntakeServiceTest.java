@@ -4,13 +4,10 @@ import com.incokalk.model.ClientUser;
 import com.incokalk.model.Company;
 import com.incokalk.model.EmailIntake;
 import com.incokalk.model.EmailMailbox;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.ClientUserRepository;
-import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.EmailIntakeLogRepository;
 import com.incokalk.repository.EmailIntakeRepository;
 import com.incokalk.repository.EmailMailboxRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.scheduling.DistributedJobLock;
 import jakarta.mail.Message;
 import jakarta.mail.internet.InternetAddress;
@@ -27,22 +24,25 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * autoCreateDraftShipment ne crée plus de ShipmentOrder (domaine Transport
+ * retiré vers fleet-hub, voir EmailIntakeService) : elle se contente de
+ * journaliser et de dégrader gracieusement, sans lever d'exception ni modifier
+ * l'intake. Les tests qui vérifiaient la création du brouillon ont été adaptés
+ * en conséquence ; companyRepo/shipmentRepo ont disparu du constructeur.
+ */
 @DisplayName("EmailIntakeService — Tests unitaires")
 class EmailIntakeServiceTest {
 
     EmailIntakeService service;
     EmailIntakeRepository intakeRepo;
-    CompanyRepository companyRepo;
-    ShipmentOrderRepository shipmentRepo;
     ClientUserRepository clientUserRepo;
 
     @BeforeEach
     void setUp() {
         intakeRepo = mock(EmailIntakeRepository.class);
-        companyRepo = mock(CompanyRepository.class);
-        shipmentRepo = mock(ShipmentOrderRepository.class);
         clientUserRepo = mock(ClientUserRepository.class);
-        service = new EmailIntakeService(intakeRepo, companyRepo, shipmentRepo, clientUserRepo,
+        service = new EmailIntakeService(intakeRepo, clientUserRepo,
             mock(EmailMailboxRepository.class), mock(EmailIntakeLogRepository.class),
             mock(CredentialEncryptionService.class), new DistributedJobLock(Optional.empty()));
     }
@@ -110,7 +110,7 @@ class EmailIntakeServiceTest {
     }
 
     @Test
-    @DisplayName("confirmIntake → confirme et crée un brouillon")
+    @DisplayName("confirmIntake → confirme (création de brouillon désactivée, domaine Transport retiré)")
     void confirmIntake() {
         UUID intakeId = UUID.randomUUID();
         UUID companyId = UUID.randomUUID();
@@ -123,7 +123,6 @@ class EmailIntakeServiceTest {
                 .build();
         when(intakeRepo.findById(intakeId)).thenReturn(Optional.of(intake));
         when(intakeRepo.save(any())).thenAnswer(i -> i.getArgument(0));
-        when(companyRepo.findById(companyId)).thenReturn(Optional.empty());
 
         EmailIntake result = service.confirmIntake(intakeId, companyId);
 
@@ -196,13 +195,12 @@ class EmailIntakeServiceTest {
     }
 
     @Test
-    @DisplayName("processMessage → client connu, origine+destination trouvés → parse + brouillon auto-créé")
-    void processMessage_knownClient_withOriginAndDestination_createsDraft() throws Exception {
+    @DisplayName("processMessage → client connu, origine+destination trouvés → parse, pas de brouillon (domaine Transport retiré)")
+    void processMessage_knownClient_withOriginAndDestination_doesNotCreateDraft() throws Exception {
         Company company = Company.builder().id(UUID.randomUUID()).build();
         EmailMailbox mb = mailbox(company);
         ClientUser client = ClientUser.builder().id(UUID.randomUUID()).email("client@test.com").company(company).build();
         when(clientUserRepo.findByEmail("client@test.com")).thenReturn(Optional.of(client));
-        when(companyRepo.findById(company.getId())).thenReturn(Optional.of(company));
         when(intakeRepo.save(any())).thenAnswer(i -> i.getArgument(0));
 
         String body = "Bonjour,\nOrigine: Paris\nDestination: Lyon\nPoids: 12,5 kg\nVolume: 2,3 m3\nMarchandise: Textile\n";
@@ -217,8 +215,9 @@ class EmailIntakeServiceTest {
         assertThat(result.getDestination()).isEqualTo("Lyon");
         assertThat(result.getEstimatedWeight()).isEqualByComparingTo(new BigDecimal("12.5"));
         assertThat(result.getEstimatedVolume()).isEqualByComparingTo(new BigDecimal("2.3"));
-        assertThat(result.getStatus()).isEqualTo(EmailIntake.IntakeStatus.SHIPMENT_CREATED);
-        verify(shipmentRepo).save(any(ShipmentOrder.class));
+        // La création automatique de brouillon d'expédition a été retirée avec le domaine
+        // Transport : le statut reste PARSED, pas SHIPMENT_CREATED.
+        assertThat(result.getStatus()).isEqualTo(EmailIntake.IntakeStatus.PARSED);
     }
 
     @Test
@@ -274,7 +273,6 @@ class EmailIntakeServiceTest {
         assertThat(result.getMatchedClientId()).isNull();
         assertThat(result.getMatchedCompanyId()).isEqualTo(company.getId());
         assertThat(result.getStatus()).isEqualTo(EmailIntake.IntakeStatus.PARSED);
-        verify(shipmentRepo, never()).save(any());
     }
 
     @Test
@@ -304,42 +302,25 @@ class EmailIntakeServiceTest {
 
         service.autoCreateDraftShipment(intake);
 
-        verify(shipmentRepo, never()).save(any());
         verify(intakeRepo, never()).save(any());
     }
 
     @Test
-    @DisplayName("autoCreateDraftShipment → company introuvable → ne fait rien")
-    void autoCreateDraftShipment_companyNotFound_noop() {
+    @DisplayName("autoCreateDraftShipment → dégrade gracieusement, ne modifie pas l'intake (domaine Transport retiré)")
+    void autoCreateDraftShipment_degradesGracefully() {
         UUID companyId = UUID.randomUUID();
-        EmailIntake intake = EmailIntake.builder().id(UUID.randomUUID()).matchedCompanyId(companyId).build();
-        when(companyRepo.findById(companyId)).thenReturn(Optional.empty());
-
-        service.autoCreateDraftShipment(intake);
-
-        verify(shipmentRepo, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("autoCreateDraftShipment → succès sans poids ni volume estimés")
-    void autoCreateDraftShipment_success_withoutWeightOrVolume() {
-        UUID companyId = UUID.randomUUID();
-        Company company = Company.builder().id(companyId).build();
         EmailIntake intake = EmailIntake.builder()
                 .id(UUID.randomUUID())
                 .matchedCompanyId(companyId)
                 .origin("Paris")
                 .destination("Lyon")
-                .estimatedWeight(null)
-                .estimatedVolume(null)
+                .status(EmailIntake.IntakeStatus.PARSED)
                 .build();
-        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
-        when(intakeRepo.save(any())).thenAnswer(i -> i.getArgument(0));
 
         service.autoCreateDraftShipment(intake);
 
-        verify(shipmentRepo).save(argThat((ShipmentOrder s) ->
-                s.getWeightKg() == null && s.getVolumeM3() == null && s.getStatus() == ShipmentOrder.Status.DRAFT));
-        assertThat(intake.getStatus()).isEqualTo(EmailIntake.IntakeStatus.SHIPMENT_CREATED);
+        assertThat(intake.getStatus()).isEqualTo(EmailIntake.IntakeStatus.PARSED);
+        assertThat(intake.getCreatedShipmentId()).isNull();
+        verify(intakeRepo, never()).save(any());
     }
 }

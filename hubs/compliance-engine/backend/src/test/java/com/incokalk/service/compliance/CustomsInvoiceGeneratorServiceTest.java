@@ -3,15 +3,13 @@ package com.incokalk.service.compliance;
 import com.incokalk.model.Company;
 import com.incokalk.model.CustomsInvoice;
 import com.incokalk.model.EoriNumber;
-import com.incokalk.model.ShipmentItem;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.model.TaricRate;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.CustomsInvoiceRepository;
 import com.incokalk.repository.EoriNumberRepository;
-import com.incokalk.repository.ShipmentItemRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.repository.TaricRateRepository;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
+import com.incokalk.service.integration.fleethub.ShipmentSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -32,8 +30,7 @@ import static org.mockito.Mockito.*;
 @DisplayName("CustomsInvoiceGeneratorService — Génération de facture douanière")
 class CustomsInvoiceGeneratorServiceTest {
 
-    @Mock ShipmentOrderRepository shipmentRepo;
-    @Mock ShipmentItemRepository shipmentItemRepo;
+    @Mock FleetHubIntegrationClient fleetHubClient;
     @Mock TaricRateRepository taricRepo;
     @Mock CompanyRepository companyRepo;
     @Mock EoriNumberRepository eoriRepo;
@@ -54,9 +51,8 @@ class CustomsInvoiceGeneratorServiceTest {
         when(customsInvoiceRepo.save(any(CustomsInvoice.class))).thenAnswer(inv -> inv.getArgument(0));
     }
 
-    private ShipmentOrder.ShipmentOrderBuilder baseShipment() {
-        return ShipmentOrder.builder()
-                .id(shipmentId)
+    private ShipmentSummary.ShipmentSummaryBuilder baseShipment() {
+        return ShipmentSummary.builder()
                 .shipperName("Shipper SARL")
                 .shipperAddress("1 rue de Paris")
                 .shipperCity("Paris")
@@ -71,16 +67,10 @@ class CustomsInvoiceGeneratorServiceTest {
                 .incotermCode("FOB");
     }
 
-    private ShipmentItem.ShipmentItemBuilder baseItem() {
-        return ShipmentItem.builder()
-                .id(UUID.randomUUID())
-                .companyId(companyId)
-                .shipmentId(shipmentId)
+    private ShipmentSummary.Item.ItemBuilder baseItem() {
+        return ShipmentSummary.Item.builder()
                 .sku("SKU-1")
-                .name("T-shirt")
-                .description("Cotton t-shirt")
                 .hsCode("6109100000")
-                .originCountry("CN")
                 .quantity(BigDecimal.TEN)
                 .unit("PCS")
                 .unitPrice(BigDecimal.valueOf(5));
@@ -102,29 +92,30 @@ class CustomsInvoiceGeneratorServiceTest {
     // ---------------------------------------------------------------
 
     @Test
-    @DisplayName("Expédition non trouvée → RuntimeException")
+    @DisplayName("Expédition introuvable sur fleet-hub → l'exception se propage")
     void generateInvoice_shipmentNotFound_throws() {
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.empty());
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId))
+                .thenThrow(new FleetHubIntegrationClient.FleetHubIntegrationException(
+                        "Expédition introuvable sur fleet-hub (statut 404 NOT_FOUND)"));
 
         assertThatThrownBy(() -> service.generateInvoice(shipmentId, companyId))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Expédition non trouvée");
+                .isInstanceOf(FleetHubIntegrationClient.FleetHubIntegrationException.class);
 
-        verifyNoInteractions(companyRepo, eoriRepo, shipmentItemRepo, taricRepo);
+        verifyNoInteractions(companyRepo, eoriRepo, taricRepo);
     }
 
     @Test
     @DisplayName("Entreprise non trouvée → RuntimeException")
     void generateInvoice_companyNotFound_throws() {
-        ShipmentOrder shipment = baseShipment().build();
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        ShipmentSummary shipment = baseShipment().build();
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.generateInvoice(shipmentId, companyId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("Entreprise non trouvée");
 
-        verifyNoInteractions(eoriRepo, shipmentItemRepo, taricRepo);
+        verifyNoInteractions(eoriRepo, taricRepo);
     }
 
     // ---------------------------------------------------------------
@@ -134,21 +125,20 @@ class CustomsInvoiceGeneratorServiceTest {
     @Test
     @DisplayName("Génération complète : EORI présent, devise/poids/colis renseignés, taux TARIC préférentiel")
     void generateInvoice_fullData_preferentialRate() {
-        ShipmentOrder shipment = baseShipment()
+        ShipmentSummary shipment = baseShipment()
                 .currency("USD")
                 .goodsValue(500.0)
                 .weightKg(25.0)
                 .packagesCount(3)
+                .items(List.of(baseItem().build()))
                 .build();
         EoriNumber eori = EoriNumber.builder().eori("FR123456789").build();
-        ShipmentItem item = baseItem().build();
         TaricRate rate = baseRate(true);
 
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.of(eori));
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "CN", "GB"))
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "GB"))
                 .thenReturn(List.of(rate));
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
@@ -190,17 +180,16 @@ class CustomsInvoiceGeneratorServiceTest {
     @Test
     @DisplayName("EORI absent, devise/poids/valeur/colis nuls → valeurs par défaut")
     void generateInvoice_missingOptionalFields_usesDefaults() {
-        ShipmentOrder shipment = baseShipment()
+        ShipmentSummary shipment = baseShipment()
                 .currency(null)
                 .goodsValue(null)
                 .weightKg(null)
                 .packagesCount(null)
                 .build();
 
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(Collections.emptyList());
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
 
@@ -224,13 +213,13 @@ class CustomsInvoiceGeneratorServiceTest {
     @Test
     @DisplayName("Article sans code HS (null) → pas de recherche TARIC, taux zéro")
     void generateInvoice_itemWithNullHsCode_skipsTaricLookup() {
-        ShipmentOrder shipment = baseShipment().build();
-        ShipmentItem item = baseItem().hsCode(null).build();
+        ShipmentSummary shipment = baseShipment()
+                .items(List.of(baseItem().hsCode(null).build()))
+                .build();
 
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
 
@@ -247,13 +236,13 @@ class CustomsInvoiceGeneratorServiceTest {
     @Test
     @DisplayName("Article avec code HS vide (blank) → pas de recherche TARIC")
     void generateInvoice_itemWithBlankHsCode_skipsTaricLookup() {
-        ShipmentOrder shipment = baseShipment().build();
-        ShipmentItem item = baseItem().hsCode("   ").build();
+        ShipmentSummary shipment = baseShipment()
+                .items(List.of(baseItem().hsCode("   ").build()))
+                .build();
 
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
 
@@ -267,14 +256,14 @@ class CustomsInvoiceGeneratorServiceTest {
     @Test
     @DisplayName("Code HS renseigné mais aucun taux TARIC trouvé → taux zéro, non préférentiel")
     void generateInvoice_hsCodePresent_noRateFound() {
-        ShipmentOrder shipment = baseShipment().build();
-        ShipmentItem item = baseItem().build();
+        ShipmentSummary shipment = baseShipment()
+                .items(List.of(baseItem().build()))
+                .build();
 
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "CN", "GB"))
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "GB"))
                 .thenReturn(Collections.emptyList());
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
@@ -289,8 +278,9 @@ class CustomsInvoiceGeneratorServiceTest {
     @Test
     @DisplayName("Taux TARIC non préférentiel trouvé → duty type et taux propagés")
     void generateInvoice_hsCodePresent_nonPreferentialRateFound() {
-        ShipmentOrder shipment = baseShipment().build();
-        ShipmentItem item = baseItem().build();
+        ShipmentSummary shipment = baseShipment()
+                .items(List.of(baseItem().build()))
+                .build();
         TaricRate rate = TaricRate.builder()
                 .hsCode("6109100000")
                 .originCountry("FR")
@@ -300,11 +290,10 @@ class CustomsInvoiceGeneratorServiceTest {
                 .isPrefential(false)
                 .build();
 
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "CN", "GB"))
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "GB"))
                 .thenReturn(List.of(rate));
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
@@ -316,13 +305,12 @@ class CustomsInvoiceGeneratorServiceTest {
     }
 
     @Test
-    @DisplayName("Recherche TARIC utilise le vrai couple origine marchandise / destination expédition, pas FR/FR codé en dur")
+    @DisplayName("Recherche TARIC utilise le vrai couple expéditeur / destinataire de l'expédition, pas FR/FR codé en dur")
     void generateInvoice_taricLookup_usesRealOriginAndDestination_notHardcodedFrFr() {
-        ShipmentOrder shipment = baseShipment()
+        ShipmentSummary shipment = baseShipment()
+                .shipperCountry("VN")
                 .consigneeCountry("DE")
-                .build();
-        ShipmentItem item = baseItem()
-                .originCountry("VN")
+                .items(List.of(baseItem().build()))
                 .build();
         TaricRate rate = TaricRate.builder()
                 .hsCode("6109100000")
@@ -333,10 +321,9 @@ class CustomsInvoiceGeneratorServiceTest {
                 .isPrefential(false)
                 .build();
 
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
         when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "VN", "DE"))
                 .thenReturn(List.of(rate));
 
@@ -357,18 +344,18 @@ class CustomsInvoiceGeneratorServiceTest {
     @Test
     @DisplayName("Prix unitaire, quantité et unité nuls → valeurs par défaut (0, 1, PCS)")
     void generateInvoice_itemWithNullPriceQuantityUnit_usesDefaults() {
-        ShipmentOrder shipment = baseShipment().build();
-        ShipmentItem item = baseItem()
-                .unitPrice(null)
-                .quantity(null)
-                .unit(null)
-                .hsCode(null)
+        ShipmentSummary shipment = baseShipment()
+                .items(List.of(baseItem()
+                        .unitPrice(null)
+                        .quantity(null)
+                        .unit(null)
+                        .hsCode(null)
+                        .build()))
                 .build();
 
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
 
@@ -386,16 +373,17 @@ class CustomsInvoiceGeneratorServiceTest {
     @Test
     @DisplayName("Plusieurs articles → cumul des totaux de droits et TVA, numérotation des lignes")
     void generateInvoice_multipleItems_accumulatesTotals() {
-        ShipmentOrder shipment = baseShipment().build();
-        ShipmentItem item1 = baseItem().build();
-        ShipmentItem item2 = baseItem().hsCode(null).unitPrice(BigDecimal.valueOf(2)).quantity(BigDecimal.valueOf(3)).build();
+        ShipmentSummary shipment = baseShipment()
+                .items(List.of(
+                        baseItem().build(),
+                        baseItem().hsCode(null).unitPrice(BigDecimal.valueOf(2)).quantity(BigDecimal.valueOf(3)).build()))
+                .build();
         TaricRate rate = baseRate(true);
 
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item1, item2));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "CN", "GB"))
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "GB"))
                 .thenReturn(List.of(rate));
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
@@ -411,14 +399,14 @@ class CustomsInvoiceGeneratorServiceTest {
     @Test
     @DisplayName("La facture générée est persistée, avec le lien vers ses lignes correctement établi")
     void generateInvoice_isPersisted_withItemsLinkedToInvoice() {
-        ShipmentOrder shipment = baseShipment().build();
-        ShipmentItem item = baseItem().build();
+        ShipmentSummary shipment = baseShipment()
+                .items(List.of(baseItem().build()))
+                .build();
 
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(List.of(item));
-        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "CN", "GB"))
+        when(taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry("6109100000", "FR", "GB"))
                 .thenReturn(Collections.emptyList());
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
@@ -431,11 +419,10 @@ class CustomsInvoiceGeneratorServiceTest {
     @Test
     @DisplayName("Numéro de facture au format CD-yyyyMMdd-xxxx")
     void generateInvoice_invoiceNumberFormat() {
-        ShipmentOrder shipment = baseShipment().build();
-        when(shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)).thenReturn(Optional.of(shipment));
+        ShipmentSummary shipment = baseShipment().build();
+        when(fleetHubClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment);
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
         when(eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId)).thenReturn(Optional.empty());
-        when(shipmentItemRepo.findByShipmentId(shipmentId)).thenReturn(Collections.emptyList());
 
         CustomsInvoice invoice = service.generateInvoice(shipmentId, companyId);
 

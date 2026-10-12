@@ -6,11 +6,12 @@ import com.incokalk.dto.financial.CargoInsuranceRequest;
 import com.incokalk.dto.financial.CargoInsuranceResult;
 import com.incokalk.dto.shipment.PackagingRequest;
 import com.incokalk.dto.shipment.PackagingResult;
-import com.incokalk.dto.shipment.RouteOptimizationRequest;
-import com.incokalk.dto.shipment.RouteOptimizationResult;
 import com.incokalk.dto.shipment.TruckingRateRequest;
 import com.incokalk.dto.shipment.TruckingRateResult;
-import com.incokalk.service.*;
+import com.incokalk.service.CargoInsuranceService;
+import com.incokalk.service.CurrencyExchangeService;
+import com.incokalk.service.CustomsDutyService;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,26 +25,31 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Logistics", description = "Packaging, cubage, tarification et services logistiques")
 public class LogisticsController {
 
-    private final PackagingService packagingService;
-    private final TruckingService truckingService;
+    private final FleetHubIntegrationClient fleetHubClient;
     private final CustomsDutyService customsDutyService;
     private final CargoInsuranceService cargoInsuranceService;
-    private final RouteOptimizationService routeOptimizationService;
     private final CurrencyExchangeService currencyExchangeService;
 
     @PostMapping("/packaging")
-    @Operation(summary = "Calculer le packaging optimal (first-fit decreasing)")
+    @Operation(summary = "Calculer le packaging optimal (first-fit decreasing) — via fleet-hub")
     public ResponseEntity<PackagingResult> calculatePackaging(
         @Valid @RequestBody PackagingRequest request) {
-        return ResponseEntity.ok(packagingService.calculatePackaging(request));
+        return ResponseEntity.ok(fleetHubClient.calculatePackaging(request));
     }
 
     @PostMapping("/trucking")
-    @Operation(summary = "Obtenir les tarifs LTL/FTL/Express pour une expédition")
+    @Operation(summary = "Obtenir les tarifs LTL/FTL/Express pour une expédition — via fleet-hub")
     public ResponseEntity<TruckingRateResult> calculateTruckingRates(
         @Valid @RequestBody TruckingRateRequest request) {
-        return ResponseEntity.ok(truckingService.calculateRates(request));
+        return ResponseEntity.ok(fleetHubClient.calculateTruckingRates(request));
     }
+
+    // /v1/logistics/route-optimization a ete retiree avec le domaine Transport :
+    // RouteOptimizationService (calcul pur, sans persistance) a ete retire, et le
+    // nouveau client fleet-hub ne couvre volontairement que les deux capacites
+    // listees ci-dessus (packaging, tarification routiere) -- pas l'optimisation
+    // d'itineraire. La page frontend correspondante (RouteOptimizer.tsx) est
+    // retiree dans une tache parallele.
 
     @PostMapping("/customs-duty")
     @Operation(summary = "Calculer les droits de douane import/export")
@@ -89,12 +95,5 @@ public class LogisticsController {
     public ResponseEntity<CargoInsuranceResult> calculateInsurance(
         @Valid @RequestBody CargoInsuranceRequest request) {
         return ResponseEntity.ok(cargoInsuranceService.calculate(request));
-    }
-
-    @PostMapping("/route-optimization")
-    @Operation(summary = "Optimiser un itinéraire routier multi-stops")
-    public ResponseEntity<RouteOptimizationResult> optimizeRoute(
-        @Valid @RequestBody RouteOptimizationRequest request) {
-        return ResponseEntity.ok(routeOptimizationService.optimize(request));
     }
 }

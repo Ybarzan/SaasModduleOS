@@ -1,7 +1,6 @@
 package com.incokalk.service.erp;
 
 import com.incokalk.model.ErpConfig;
-import com.incokalk.model.ShipmentOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -277,109 +276,8 @@ class OdooProviderTest {
         assertThat(result.getErrorMessage()).contains("network down");
     }
 
-    // ── exportShipments ─────────────────────────────────────────────────────
-
-    @Test
-    @DisplayName("exportShipments → mixed success, failure and exception outcomes")
-    void exportShipments_mixedOutcomes() {
-        stubAuthOk();
-        when(restTemplate.exchange(contains("2/object"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(ok("<ok/>"))
-                .thenReturn(ok("<ok/>"))
-                .thenThrow(new RuntimeException("timeout"))
-                .thenReturn(new ResponseEntity<>("<err/>", HttpStatus.INTERNAL_SERVER_ERROR));
-
-        List<ShipmentOrder> shipments = List.of(
-                ShipmentOrder.builder().orderNumber("SO-1").consigneeName("Acme").build(),
-                ShipmentOrder.builder().orderNumber(null).consigneeName(null).build(),
-                ShipmentOrder.builder().orderNumber("SO-3").consigneeName("Beta").build(),
-                ShipmentOrder.builder().orderNumber("SO-4").consigneeName("Gamma").build()
-        );
-
-        ErpSyncResult result = provider.exportShipments(config(), shipments);
-
-        assertThat(result.getRecordsTotal()).isEqualTo(4);
-        assertThat(result.getRecordsSynced()).isEqualTo(2);
-        assertThat(result.getRecordsFailed()).isEqualTo(2);
-        assertThat(result.isSuccess()).isFalse();
-    }
-
-    @Test
-    @DisplayName("exportShipments → success when list is empty")
-    void exportShipments_emptyList() {
-        stubAuthOk();
-
-        ErpSyncResult result = provider.exportShipments(config(), List.of());
-
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getRecordsTotal()).isZero();
-        assertThat(result.getRecordsSynced()).isZero();
-        assertThat(result.getRecordsFailed()).isZero();
-    }
-
-    @Test
-    @DisplayName("exportShipments → failure when authentication fails")
-    void exportShipments_authFailure() {
-        when(restTemplate.exchange(contains("2/common"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(ok(AUTH_INVALID));
-
-        ErpSyncResult result = provider.exportShipments(config(),
-                List.of(ShipmentOrder.builder().orderNumber("SO-1").build()));
-
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getErrorMessage()).contains("identifiants invalides");
-    }
-
-    // ── exportOrders ────────────────────────────────────────────────────────
-
-    @Test
-    @DisplayName("exportOrders → mixed success and failure outcomes")
-    void exportOrders_mixedOutcomes() {
-        stubAuthOk();
-        when(restTemplate.exchange(contains("2/object"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(ok("<ok/>"))
-                .thenReturn(new ResponseEntity<>("<err/>", HttpStatus.BAD_REQUEST));
-
-        List<ShipmentOrder> orders = List.of(
-                ShipmentOrder.builder().orderNumber("SO-1").consigneeName("Acme").build(),
-                ShipmentOrder.builder().orderNumber(null).consigneeName(null).build()
-        );
-
-        ErpSyncResult result = provider.exportOrders(config(), orders);
-
-        assertThat(result.getRecordsTotal()).isEqualTo(2);
-        assertThat(result.getRecordsSynced()).isEqualTo(1);
-        assertThat(result.getRecordsFailed()).isEqualTo(1);
-        assertThat(result.isSuccess()).isFalse();
-    }
-
-    @Test
-    @DisplayName("exportOrders → success when all exports succeed")
-    void exportOrders_allSuccess() {
-        stubAuthOk();
-        when(restTemplate.exchange(contains("2/object"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(ok("<ok/>"));
-
-        List<ShipmentOrder> orders = List.of(ShipmentOrder.builder().orderNumber("SO-1").consigneeName("Acme").build());
-
-        ErpSyncResult result = provider.exportOrders(config(), orders);
-
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getRecordsFailed()).isZero();
-    }
-
-    @Test
-    @DisplayName("exportOrders → failure when authentication throws")
-    void exportOrders_authException() {
-        when(restTemplate.exchange(contains("2/common"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenThrow(new RuntimeException("dns error"));
-
-        ErpSyncResult result = provider.exportOrders(config(),
-                List.of(ShipmentOrder.builder().orderNumber("SO-1").build()));
-
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getErrorMessage()).contains("dns error");
-    }
+    // exportShipments/exportOrders ont été retirées avec le domaine Transport
+    // (voir ErpProvider) — leurs tests partaient avec elles.
 
     // ── getProducts / getOrders / getContacts ───────────────────────────────
 

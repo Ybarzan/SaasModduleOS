@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -209,30 +210,22 @@ class LandedCostControllerTest extends ControllerTestBase {
     }
 
     // ── POST /from-shipment/{shipmentId} ────────────────────────────────
+    // createFromShipment a été retirée de LandedCostService avec le domaine
+    // Transport (elle lisait ShipmentOrderRepository directement) ; l'endpoint
+    // reste exposé mais répond désormais 501 en attendant une reconstruction
+    // via fleet-hub (voir LandedCostController).
 
     @Test
-    @DisplayName("POST /v1/landed-costs/from-shipment/{shipmentId} → 201")
-    void createFromShipment_success() throws Exception {
+    @DisplayName("POST /v1/landed-costs/from-shipment/{shipmentId} → 501 temporairement indisponible")
+    void createFromShipment_notImplemented() throws Exception {
         UUID shipmentId = UUID.randomUUID();
-        when(landedCostService.createFromShipment(shipmentId)).thenReturn(sample());
 
         mockMvc.perform(post("/v1/landed-costs/from-shipment/" + shipmentId)
                 .header("Authorization", authHeader()))
-            .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.originCountry").value("CN"));
-    }
+            .andExpect(status().isNotImplemented())
+            .andExpect(jsonPath("$.message").value("Création depuis une expédition temporairement indisponible"));
 
-    @Test
-    @DisplayName("POST /v1/landed-costs/from-shipment/{shipmentId} → 400 si introuvable")
-    void createFromShipment_notFound() throws Exception {
-        UUID shipmentId = UUID.randomUUID();
-        when(landedCostService.createFromShipment(shipmentId))
-            .thenThrow(new IllegalArgumentException("Ordre de shipment introuvable"));
-
-        mockMvc.perform(post("/v1/landed-costs/from-shipment/" + shipmentId)
-                .header("Authorization", authHeader()))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.message").value("Ordre de shipment introuvable"));
+        verifyNoInteractions(landedCostService);
     }
 
     // ── POST /what-if ────────────────────────────────────────────────────

@@ -2,7 +2,6 @@ package com.incokalk.service.ecommerce;
 
 import com.incokalk.model.ECommerceIntegration;
 import com.incokalk.repository.CompanyRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
@@ -27,7 +26,7 @@ class ShopifyAdapterContractTest {
     @BeforeEach
     void setUp() {
         server = new MockWebServer();
-        adapter = new ShopifyAdapter(new RestTemplate(), mock(ShipmentOrderRepository.class), mock(CompanyRepository.class));
+        adapter = new ShopifyAdapter(new RestTemplate(), mock(CompanyRepository.class));
     }
 
     @AfterEach

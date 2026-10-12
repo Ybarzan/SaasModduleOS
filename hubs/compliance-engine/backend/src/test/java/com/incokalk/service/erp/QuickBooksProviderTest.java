@@ -1,7 +1,6 @@
 package com.incokalk.service.erp;
 
 import com.incokalk.model.ErpConfig;
-import com.incokalk.model.ShipmentOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -271,159 +270,9 @@ class QuickBooksProviderTest {
     }
 
     // ---------------------------------------------------------------
-    // exportShipments
+    // exportShipments/exportOrders ont été retirées avec le domaine Transport
+    // (voir ErpProvider) — leurs tests partaient avec elles.
     // ---------------------------------------------------------------
-
-    private ShipmentOrder shipment(String orderNumber, String consignee, LocalDateTime shippedAt) {
-        return ShipmentOrder.builder()
-                .orderNumber(orderNumber)
-                .consigneeName(consignee)
-                .shippedAt(shippedAt)
-                .build();
-    }
-
-    @Test
-    @DisplayName("exportShipments → tous synchronisés avec succès (201)")
-    void exportShipments_allSuccess() {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(new ResponseEntity<>("{}", HttpStatus.CREATED));
-
-        List<ShipmentOrder> shipments = List.of(
-                shipment("SHP-1", "Acme", LocalDateTime.now()),
-                shipment("SHP-2", null, null));
-
-        ErpSyncResult result = provider.exportShipments(configWithCompanyId(), shipments);
-
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getRecordsTotal()).isEqualTo(2);
-        assertThat(result.getRecordsSynced()).isEqualTo(2);
-        assertThat(result.getRecordsFailed()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("exportShipments → échecs partiels sur statut non-2xx")
-    void exportShipments_partialFailureNonSuccessStatus() {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(new ResponseEntity<>("error", HttpStatus.BAD_REQUEST));
-
-        List<ShipmentOrder> shipments = List.of(shipment("SHP-1", "Acme", LocalDateTime.now()));
-
-        ErpSyncResult result = provider.exportShipments(configWithCompanyId(), shipments);
-
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getRecordsSynced()).isEqualTo(0);
-        assertThat(result.getRecordsFailed()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("exportShipments → échec par-item sur exception réseau, continue avec les suivants")
-    void exportShipments_perItemNetworkException() {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenThrow(new RestClientException("conn refused"))
-                .thenReturn(new ResponseEntity<>("{}", HttpStatus.OK));
-
-        List<ShipmentOrder> shipments = List.of(
-                shipment("SHP-1", "Acme", LocalDateTime.now()),
-                shipment("SHP-2", "Beta", LocalDateTime.now()));
-
-        ErpSyncResult result = provider.exportShipments(configWithCompanyId(), shipments);
-
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getRecordsTotal()).isEqualTo(2);
-        assertThat(result.getRecordsSynced()).isEqualTo(1);
-        assertThat(result.getRecordsFailed()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("exportShipments → échec global quand companyId manquant")
-    void exportShipments_missingCompanyId() {
-        List<ShipmentOrder> shipments = List.of(shipment("SHP-1", "Acme", LocalDateTime.now()));
-
-        ErpSyncResult result = provider.exportShipments(configWithoutCompanyId(), shipments);
-
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getErrorMessage()).isNotNull();
-    }
-
-    @Test
-    @DisplayName("exportShipments → liste vide")
-    void exportShipments_emptyList() {
-        ErpSyncResult result = provider.exportShipments(configWithCompanyId(), List.of());
-
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getRecordsTotal()).isEqualTo(0);
-        assertThat(result.getRecordsSynced()).isEqualTo(0);
-        assertThat(result.getRecordsFailed()).isEqualTo(0);
-    }
-
-    // ---------------------------------------------------------------
-    // exportOrders
-    // ---------------------------------------------------------------
-
-    private ShipmentOrder order(String orderNumber, String consignee, LocalDateTime bookedAt) {
-        return ShipmentOrder.builder()
-                .orderNumber(orderNumber)
-                .consigneeName(consignee)
-                .bookedAt(bookedAt)
-                .build();
-    }
-
-    @Test
-    @DisplayName("exportOrders → tous synchronisés avec succès")
-    void exportOrders_allSuccess() {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(new ResponseEntity<>("{}", HttpStatus.OK));
-
-        List<ShipmentOrder> orders = List.of(
-                order("ORD-1", "Acme", LocalDateTime.now()),
-                order("ORD-2", null, null));
-
-        ErpSyncResult result = provider.exportOrders(configWithCompanyId(), orders);
-
-        assertThat(result.isSuccess()).isTrue();
-        assertThat(result.getRecordsSynced()).isEqualTo(2);
-        assertThat(result.getRecordsFailed()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("exportOrders → échecs partiels sur statut non-2xx")
-    void exportOrders_partialFailure() {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(new ResponseEntity<>("error", HttpStatus.INTERNAL_SERVER_ERROR));
-
-        List<ShipmentOrder> orders = List.of(order("ORD-1", "Acme", LocalDateTime.now()));
-
-        ErpSyncResult result = provider.exportOrders(configWithCompanyId(), orders);
-
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getRecordsFailed()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("exportOrders → échec par-item sur exception réseau")
-    void exportOrders_perItemNetworkException() {
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-                .thenThrow(new RestClientException("timeout"));
-
-        List<ShipmentOrder> orders = List.of(order("ORD-1", "Acme", LocalDateTime.now()));
-
-        ErpSyncResult result = provider.exportOrders(configWithCompanyId(), orders);
-
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getRecordsFailed()).isEqualTo(1);
-        assertThat(result.getRecordsSynced()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("exportOrders → échec global quand companyId manquant")
-    void exportOrders_missingCompanyId() {
-        List<ShipmentOrder> orders = List.of(order("ORD-1", "Acme", LocalDateTime.now()));
-
-        ErpSyncResult result = provider.exportOrders(configWithoutCompanyId(), orders);
-
-        assertThat(result.isSuccess()).isFalse();
-        assertThat(result.getErrorMessage()).isNotNull();
-    }
 
     // ---------------------------------------------------------------
     // getProducts / getOrders / getContacts

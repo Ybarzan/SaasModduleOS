@@ -1,10 +1,7 @@
 package com.incokalk.service.ecommerce;
 
-import com.incokalk.model.Company;
 import com.incokalk.model.ECommerceIntegration;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.CompanyRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -15,7 +12,6 @@ import java.io.StringReader;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.*;
@@ -27,7 +23,6 @@ import org.xml.sax.InputSource;
 public class PrestaShopAdapter implements ECommerceAdapter {
 
     private final RestTemplate restTemplate;
-    private final ShipmentOrderRepository shipmentOrderRepository;
 
     @Override
     public boolean supports(ECommerceIntegration.Platform platform) {
@@ -98,50 +93,8 @@ public class PrestaShopAdapter implements ECommerceAdapter {
         return Collections.emptyMap();
     }
 
-    @Override
-    public ShipmentOrder mapOrderToShipment(Map<String, Object> order, ECommerceIntegration integration) {
-        Company company = integration.getCompany();
-
-        String orderRef = "PS-" + order.get("id");
-        if (shipmentOrderRepository.findByOrderNumber(orderRef).isPresent()) {
-            return null;
-        }
-
-        String goodsDesc = (String) order.getOrDefault("products", "");
-        String consigneeName = (String) order.get("delivery_firstname");
-        String consigneeLastName = (String) order.get("delivery_lastname");
-        if (consigneeLastName != null && consigneeName != null) {
-            consigneeName = consigneeName + " " + consigneeLastName;
-        }
-
-        String consigneeAddress = (String) order.get("delivery_address1");
-        String consigneeCity = (String) order.get("delivery_city");
-        String consigneeCountry = (String) order.get("delivery_country");
-        String consigneePostalCode = (String) order.get("delivery_postcode");
-
-        Number totalWeightVal = (Number) order.get("total_weight");
-        double totalWeight = totalWeightVal != null ? totalWeightVal.doubleValue() : 0;
-
-        String currency = (String) order.getOrDefault("currency", "EUR");
-        Number totalPaid = (Number) order.get("total_paid");
-
-        ShipmentOrder shipment = ShipmentOrder.builder()
-            .company(company)
-            .orderNumber(orderRef)
-            .status(ShipmentOrder.Status.DRAFT)
-            .goodsDescription(goodsDesc)
-            .weightKg(totalWeight > 0 ? totalWeight : null)
-            .currency(currency)
-            .goodsValue(totalPaid != null ? totalPaid.doubleValue() : 0)
-            .consigneeName(consigneeName)
-            .consigneeAddress(consigneeAddress)
-            .consigneeCity(consigneeCity)
-            .consigneeCountry(consigneeCountry)
-            .consigneePostalCode(consigneePostalCode)
-            .build();
-
-        return shipmentOrderRepository.save(shipment);
-    }
+    // mapOrderToShipment a ete retiree avec le domaine Transport
+    // (ShipmentOrderRepository). Voir ECommerceAdapter / ECommerceSyncService.
 
     private HttpHeaders createAuthHeaders(String apiKey) {
         String encoded = Base64.getEncoder().encodeToString((apiKey + ":").getBytes(java.nio.charset.StandardCharsets.UTF_8));

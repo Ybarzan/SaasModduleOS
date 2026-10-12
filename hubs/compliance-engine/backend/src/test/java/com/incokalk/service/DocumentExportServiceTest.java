@@ -1,24 +1,28 @@
 package com.incokalk.service;
 
-import com.incokalk.model.*;
+import com.incokalk.model.CustomsDeclaration;
+import com.incokalk.model.DebDeclaration;
+import com.incokalk.model.ExportDeclaration;
+import com.incokalk.model.Ics2Declaration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
+/**
+ * generateQuotePdf/generateShippingLabelPdf/generateCmrPdf/generateDgdPdf/
+ * generateCertificateOfOriginPdf ont été retirées avec le domaine Transport
+ * (voir DocumentExportService). Seuls les exports de déclarations douanières
+ * (DAU/DEB/ICS2/Export), sans rapport avec ce domaine, sont encore testés ici.
+ */
 @DisplayName("DocumentExportService — Tests PDF generation")
 class DocumentExportServiceTest {
 
-    @Mock FileStorageService fileStorage;
-    @Mock BrandingService brandingService;
     @InjectMocks DocumentExportService service;
 
     @BeforeEach
@@ -179,147 +183,18 @@ class DocumentExportServiceTest {
         assertThat(pdf.length).isGreaterThan(100);
     }
 
-    private ShipmentOrder sampleShipment(Company company) {
-        return ShipmentOrder.builder()
-                .orderNumber("SHP-2026-0042")
-                .company(company)
-                .status(ShipmentOrder.Status.IN_TRANSIT)
-                .shipperName("Atlas Import Export")
-                .shipperAddress("12 Quai des Docks")
-                .shipperCity("Le Havre")
-                .shipperPostalCode("76600")
-                .shipperCountry("FR")
-                .consigneeName("Vinh Logistics Co.")
-                .consigneeAddress("45 Nguyen Hue")
-                .consigneeCity("Ho Chi Minh City")
-                .consigneePostalCode("70000")
-                .consigneeCountry("VN")
-                .goodsDescription("Pièces détachées automobiles")
-                .goodsValue(15000.0)
-                .currency("EUR")
-                .weightKg(1200.0)
-                .volumeM3(4.5)
-                .packagesCount(30)
-                .hsCode("870899")
-                .incotermCode("FOB")
-                .createdAt(java.time.LocalDateTime.now())
-                .build();
-    }
-
     @Test
-    @DisplayName("Générer étiquette d'expédition → bytes non vides, header PDF, sans branding configuré")
-    void generateShippingLabelPdf_withoutBranding_returnsValidPdf() {
-        Company company = Company.builder().id(UUID.randomUUID()).name("Atlas Import Export").build();
-        ShipmentOrder shipment = sampleShipment(company);
-
-        byte[] pdf = service.generateShippingLabelPdf(shipment);
-
-        assertThat(pdf).isNotNull();
-        assertThat(pdf.length).isGreaterThan(100);
-        assertThat(new String(pdf, 0, 5)).isEqualTo("%PDF-");
-    }
-
-    @Test
-    @DisplayName("Générer étiquette d'expédition avec branding configuré → applique le branding sans exception")
-    void generateShippingLabelPdf_withBranding_returnsValidPdf() {
-        Company company = Company.builder().id(UUID.randomUUID()).name("Atlas Import Export").build();
-        ShipmentOrder shipment = sampleShipment(company);
-
-        CompanyBranding branding = CompanyBranding.builder()
-                .company(company)
-                .primaryColor("#1B6B4F")
-                .portalTitle("Atlas Import Export")
-                .footerText("Atlas Import Export — Transitaire agréé")
-                .build();
-        when(brandingService.getBranding(company.getId())).thenReturn(branding);
-
-        byte[] pdf = service.generateShippingLabelPdf(shipment);
-
-        assertThat(pdf).isNotNull();
-        assertThat(pdf.length).isGreaterThan(100);
-        assertThat(new String(pdf, 0, 5)).isEqualTo("%PDF-");
-    }
-
-    @Test
-    @DisplayName("Générer CMR → bytes non vides et header PDF")
-    void generateCmrPdf_returnsValidPdf() {
-        Company company = Company.builder().id(UUID.randomUUID()).name("Atlas Import Export").build();
-        byte[] pdf = service.generateCmrPdf(sampleShipment(company));
-
-        assertThat(pdf).isNotNull();
-        assertThat(pdf.length).isGreaterThan(100);
-        assertThat(new String(pdf, 0, 5)).isEqualTo("%PDF-");
-    }
-
-    @Test
-    @DisplayName("Générer DGD pour expédition non dangereuse → PDF d'avertissement valide")
-    void generateDgdPdf_notDangerous_returnsValidPdf() {
-        Company company = Company.builder().id(UUID.randomUUID()).name("Atlas Import Export").build();
-        ShipmentOrder shipment = sampleShipment(company);
-        shipment.setDangerous(false);
-
-        byte[] pdf = service.generateDgdPdf(shipment);
-
-        assertThat(pdf).isNotNull();
-        assertThat(pdf.length).isGreaterThan(100);
-        assertThat(new String(pdf, 0, 5)).isEqualTo("%PDF-");
-    }
-
-    @Test
-    @DisplayName("Générer DGD pour expédition dangereuse → PDF valide")
-    void generateDgdPdf_dangerous_returnsValidPdf() {
-        Company company = Company.builder().id(UUID.randomUUID()).name("Atlas Import Export").build();
-        ShipmentOrder shipment = sampleShipment(company);
-        shipment.setDangerous(true);
-
-        byte[] pdf = service.generateDgdPdf(shipment);
-
-        assertThat(pdf).isNotNull();
-        assertThat(pdf.length).isGreaterThan(100);
-        assertThat(new String(pdf, 0, 5)).isEqualTo("%PDF-");
-    }
-
-    @Test
-    @DisplayName("Générer certificat d'origine → bytes non vides et header PDF")
-    void generateCertificateOfOriginPdf_returnsValidPdf() {
-        Company company = Company.builder().id(UUID.randomUUID()).name("Atlas Import Export").build();
-        byte[] pdf = service.generateCertificateOfOriginPdf(sampleShipment(company));
-
-        assertThat(pdf).isNotNull();
-        assertThat(pdf.length).isGreaterThan(100);
-        assertThat(new String(pdf, 0, 5)).isEqualTo("%PDF-");
-    }
-
-    @Test
-    @DisplayName("Générer devis → bytes non vides et header PDF")
-    void generateQuotePdf_returnsValidPdf() {
-        com.incokalk.dto.shipment.QuoteRequestDTO request = com.incokalk.dto.shipment.QuoteRequestDTO.builder()
-                .originCountry("FR")
-                .destinationCountry("VN")
-                .transportMode("SEA")
-                .weightKg(1200.0)
-                .volumeM3(4.5)
-                .goodsValue(15000.0)
-                .currency("EUR")
-                .hsCode("870899")
+    @DisplayName("Générer XML DAU → contient les champs clés")
+    void generateDauXml_containsKeyFields() {
+        CustomsDeclaration d = CustomsDeclaration.builder()
+                .declarationNumber("DAU-2026-0003")
+                .originCountry("VN")
+                .destinationCountry("FR")
                 .build();
 
-        com.incokalk.dto.shipment.QuoteResponseDTO quote = com.incokalk.dto.shipment.QuoteResponseDTO.builder()
-                .carrierName("CMA CGM")
-                .transportMode("SEA")
-                .baseRate(1800.0)
-                .totalCost(2100.0)
-                .currency("EUR")
-                .transitDaysMin(28)
-                .transitDaysMax(35)
-                .co2EstimateKg(950.0)
-                .providerName("CMA CGM Direct")
-                .build();
+        byte[] xml = service.generateDauXml(d);
+        String xmlStr = new String(xml, java.nio.charset.StandardCharsets.UTF_8);
 
-        byte[] pdf = service.generateQuotePdf(java.util.List.of(quote), request);
-
-        assertThat(pdf).isNotNull();
-        assertThat(pdf.length).isGreaterThan(100);
-        assertThat(new String(pdf, 0, 5)).isEqualTo("%PDF-");
+        assertThat(xmlStr).contains("DAU-2026-0003").contains("VN").contains("FR");
     }
 }

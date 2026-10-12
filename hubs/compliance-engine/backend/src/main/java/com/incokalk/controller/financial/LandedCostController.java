@@ -128,14 +128,13 @@ public class LandedCostController {
     @PostMapping("/from-shipment/{shipmentId}")
     @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
     @RequiresPlan(Company.Plan.STARTER)
-    @Operation(summary = "Créer un coût débarqué depuis un shipment")
+    @Operation(summary = "Créer un coût débarqué depuis un shipment (temporairement indisponible)")
     public ResponseEntity<?> createFromShipment(@PathVariable UUID shipmentId) {
-        try {
-            LandedCost saved = landedCostService.createFromShipment(shipmentId);
-            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
-        }
+        // LandedCostService.createFromShipment a ete retiree avec le domaine Transport
+        // (elle lisait ShipmentOrderRepository directement) -- reconstruction en suivi
+        // contre le resume d'expedition de fleet-hub, pas faite dans cette passe.
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
+                .body(Map.of("message", "Création depuis une expédition temporairement indisponible"));
     }
 
     @PostMapping("/what-if")

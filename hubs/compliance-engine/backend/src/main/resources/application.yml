@@ -218,6 +218,12 @@ incokalk:
       enabled: ${ML_EMBEDDINGS_ENABLED:true}
       timeout-ms: ${ML_EMBEDDINGS_TIMEOUT:10000}
 
+  # fleet-hub (ex-domaine Transport, porté dans hubs/fleet-hub) -- voir
+  # service/integration/fleethub/FleetHubIntegrationClient.
+  integration:
+    fleethub:
+      base-url: ${FLEETHUB_URL:http://localhost:8090}
+
 # ===========================================
 # Configuration Swagger / OpenAPI
 # ===========================================

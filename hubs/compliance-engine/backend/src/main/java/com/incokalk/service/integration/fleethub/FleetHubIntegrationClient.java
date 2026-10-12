@@ -1,0 +1,203 @@
+package com.incokalk.service.integration.fleethub;
+
+import com.incokalk.dto.shipment.PackagingRequest;
+import com.incokalk.dto.shipment.PackagingResult;
+import com.incokalk.dto.shipment.SimulationRequest.TransportModeInput;
+import com.incokalk.dto.shipment.TruckingRateRequest;
+import com.incokalk.dto.shipment.TruckingRateResult;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Client REST pour fleet-hub (service indépendant, sa propre base -- même
+ * principe que l'ancien service/fleethub/FleetHubClient, retiré avec le reste
+ * du domaine Transport). Ne se connecte jamais directement à la base de
+ * fleet-hub, toujours via son API HTTP.
+ *
+ * <p>Remplace, côté compliance-engine, les deux capacités que le domaine
+ * Transport fournissait localement avant son retrait :</p>
+ * <ul>
+ *   <li>l'estimation fret/packaging (ex-{@code FreightRateService}/{@code PackagingService}),
+ *       utilisée par {@code SimulationService} et {@code LogisticsController} ;</li>
+ *   <li>le résumé d'expédition par ID (ex-lecture directe de
+ *       {@code ShipmentOrderRepository}/{@code ShipmentItemRepository}), utilisé par
+ *       {@code CustomsInvoiceGeneratorService}.</li>
+ * </ul>
+ *
+ * <p><b>Limite connue (suivi documenté) :</b> fleet-hub résout son tenant courant
+ * à partir d'un JWT (voir son {@code TenantFilter}) ; aucun pont d'authentification
+ * service-à-service inter-hub n'existe encore dans ce monorepo. En attendant,
+ * {@code companyId} est transmis tel quel (en-tête {@code X-Internal-Company-Id})
+ * à titre indicatif -- la sécurisation réelle de cet appel inter-hub est un
+ * suivi séparé, hors scope du retrait du domaine Transport.</p>
+ */
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class FleetHubIntegrationClient {
+
+    /** Pays "nearshore" pour lesquels le mode routier est privilégié quand le mode
+     * n'est pas précisé -- identique à l'ancien FreightRateService.guess(). */
+    private static final Set<String> NEARSHORE = Set.of("MA", "TN", "DZ", "TR", "PL", "RO", "HU", "BG");
+
+    private final RestTemplate restTemplate;
+
+    @Value("${incokalk.integration.fleethub.base-url:http://localhost:8090}")
+    private String baseUrl;
+
+    public record FreightEstimate(double cost, int days) {}
+
+    /**
+     * Remplace FreightRateService.estimate(...) : devine le mode de transport
+     * côté compliance-engine quand il n'est pas fourni (même logique qu'avant le
+     * retrait du domaine Transport), puis appelle l'endpoint de tarification
+     * routière de fleet-hub pour obtenir coût/délai.
+     */
+    public FreightEstimate estimateFreight(String originCountry, String destinationCountry,
+            TransportModeInput mode, Double weightKg, Double volumeM3, double goodsValueEur) {
+        TransportModeInput resolvedMode = mode != null ? mode : guessMode(originCountry, goodsValueEur);
+
+        TruckingRateRequest request = new TruckingRateRequest();
+        request.setOriginCountry(originCountry);
+        request.setDestinationCountry(destinationCountry);
+        request.setWeightKg(weightKg);
+        request.setVolumeM3(volumeM3);
+        request.setGoodsValue(goodsValueEur);
+        request.setCurrency("EUR");
+
+        TruckingRateResult result = calculateTruckingRates(request);
+        TruckingRateResult.TruckOption recommended = result.getRecommended();
+        if (recommended == null) {
+            throw new FleetHubIntegrationException(
+                    "Réponse de fleet-hub sans option de transport recommandée pour " + resolvedMode);
+        }
+        return new FreightEstimate(recommended.getCostEur(), recommended.getTransitDays());
+    }
+
+    /** Devine le mode de transport quand il n'est pas fourni -- identique à
+     * l'ancien FreightRateService.guess() : nearshore -> ROAD, > 50000€ -> AIR,
+     * sinon SEA. */
+    public TransportModeInput guessMode(String originCountry, double goodsValueEur) {
+        String upper = originCountry != null ? originCountry.toUpperCase() : "";
+        if (NEARSHORE.contains(upper)) return TransportModeInput.ROAD;
+        if (goodsValueEur > 50000) return TransportModeInput.AIR;
+        return TransportModeInput.SEA;
+    }
+
+    /** Appelle {@code POST /api/logistics/trucking} sur fleet-hub. */
+    public TruckingRateResult calculateTruckingRates(TruckingRateRequest request) {
+        String url = trimTrailingSlash(baseUrl) + "/api/logistics/trucking";
+        HttpHeaders headers = jsonHeaders();
+        try {
+            ResponseEntity<TruckingRateResult> response = restTemplate.exchange(
+                    url, HttpMethod.POST, new HttpEntity<>(request, headers), TruckingRateResult.class);
+            TruckingRateResult body = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful() || body == null) {
+                throw new FleetHubIntegrationException(
+                        "Échec de l'appel tarification routière fleet-hub (statut " + response.getStatusCode() + ")");
+            }
+            return body;
+        } catch (FleetHubIntegrationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new FleetHubIntegrationException("Erreur d'appel à fleet-hub (/api/logistics/trucking) : " + e.getMessage(), e);
+        }
+    }
+
+    /** Remplace PackagingService.calculatePackaging(...) : appelle
+     * {@code POST /api/logistics/packaging} sur fleet-hub. */
+    public PackagingResult calculatePackaging(PackagingRequest request) {
+        String url = trimTrailingSlash(baseUrl) + "/api/logistics/packaging";
+        HttpHeaders headers = jsonHeaders();
+        try {
+            ResponseEntity<PackagingResult> response = restTemplate.exchange(
+                    url, HttpMethod.POST, new HttpEntity<>(request, headers), PackagingResult.class);
+            PackagingResult body = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful() || body == null) {
+                throw new FleetHubIntegrationException(
+                        "Échec de l'appel packaging fleet-hub (statut " + response.getStatusCode() + ")");
+            }
+            return body;
+        } catch (FleetHubIntegrationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new FleetHubIntegrationException("Erreur d'appel à fleet-hub (/api/logistics/packaging) : " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Remplace la lecture directe de ShipmentOrderRepository/ShipmentItemRepository
+     * dans CustomsInvoiceGeneratorService.generateInvoice() : appelle
+     * {@code GET /api/shipments/{id}} (en-tête) puis {@code GET /api/shipments/{id}/items}
+     * (lignes) sur fleet-hub et reconstitue un {@link ShipmentSummary} local avec
+     * exactement les champs dont la génération de facture douanière a besoin.
+     */
+    public ShipmentSummary getShipmentSummary(UUID shipmentId, UUID companyId) {
+        HttpHeaders headers = jsonHeaders();
+        if (companyId != null) {
+            headers.set("X-Internal-Company-Id", companyId.toString());
+        }
+
+        String shipmentUrl = trimTrailingSlash(baseUrl) + "/api/shipments/" + shipmentId;
+        ShipmentSummary summary;
+        try {
+            ResponseEntity<ShipmentSummary> response = restTemplate.exchange(
+                    shipmentUrl, HttpMethod.GET, new HttpEntity<>(headers), ShipmentSummary.class);
+            summary = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful() || summary == null) {
+                throw new FleetHubIntegrationException(
+                        "Expédition introuvable sur fleet-hub (statut " + response.getStatusCode() + ")");
+            }
+        } catch (FleetHubIntegrationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new FleetHubIntegrationException(
+                    "Erreur d'appel à fleet-hub (/api/shipments/" + shipmentId + ") : " + e.getMessage(), e);
+        }
+
+        String itemsUrl = shipmentUrl + "/items";
+        try {
+            ResponseEntity<ShipmentSummary.Item[]> response = restTemplate.exchange(
+                    itemsUrl, HttpMethod.GET, new HttpEntity<>(headers), ShipmentSummary.Item[].class);
+            ShipmentSummary.Item[] items = response.getBody();
+            summary.setItems(items != null ? java.util.List.of(items) : java.util.List.of());
+        } catch (Exception e) {
+            log.warn("[FleetHub] Impossible de récupérer les lignes de l'expédition {} : {}", shipmentId, e.getMessage());
+            summary.setItems(java.util.List.of());
+        }
+
+        return summary;
+    }
+
+    private HttpHeaders jsonHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
+        return headers;
+    }
+
+    private String trimTrailingSlash(String url) {
+        return url != null && url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
+
+    public static class FleetHubIntegrationException extends RuntimeException {
+        public FleetHubIntegrationException(String message) {
+            super(message);
+        }
+
+        public FleetHubIntegrationException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+}

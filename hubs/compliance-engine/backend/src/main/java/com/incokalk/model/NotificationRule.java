@@ -61,6 +61,9 @@ public class NotificationRule {
     @Column(name = "filter_status")
     private String filterStatus;
 
+    /** Vestige depuis le retrait du domaine Transport : plus aucun code ne peuple
+     * ni ne verifie ce champ (filtre carrier sur un evenement de shipment). Champ
+     * plain (pas de FK) -- pas de changement de schema necessaire. */
     @Column(name = "filter_carrier_id")
     private UUID filterCarrierId;
 
@@ -100,8 +103,11 @@ public class NotificationRule {
     private java.math.BigDecimal maxBudgetAmount;
 
     /** UUID de transporteurs autorises, separes par des virgules, ou null (tous
-     * autorises) -- perimetre de gouvernance de l'action, reellement verifie par
-     * OrchestrationExecutor.checkGovernance() avant tout appel externe (V66). */
+     * autorises). Vestige depuis le retrait du domaine Transport : OrchestrationExecutor
+     * ne verifie plus ce champ, son seul type d'action (SUGGEST_ERP_ORDER_ADJUSTMENT,
+     * dont checkGovernance() etait le garde-fou, V66) ayant ete retire avec le
+     * domaine Transport. Champ plain (pas de FK) -- pas de changement de schema
+     * necessaire. */
     @Column(name = "allowed_carrier_ids", columnDefinition = "TEXT")
     private String allowedCarrierIds;
 

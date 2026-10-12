@@ -29,10 +29,10 @@ public class CustomsDeclaration {
     @JsonIgnore
     private Company company;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shipment_id")
-    @JsonIgnore
-    private ShipmentOrder shipment;
+    /** UUID brut (plus de relation JPA) depuis le retrait du domaine Transport ;
+     * jamais lu ni ecrit par la logique metier (voir CustomsDeclarationService). */
+    @Column(name = "shipment_id")
+    private UUID shipmentId;
 
     @Column(name = "declaration_number", nullable = false, unique = true, length = 50)
     private String declarationNumber;

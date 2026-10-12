@@ -11,7 +11,6 @@ import com.incokalk.model.CompanyRole;
 import com.incokalk.model.Notification;
 import com.incokalk.model.NotificationRule;
 import com.incokalk.model.OrchestrationSuggestion;
-import com.incokalk.model.TrackingEvent;
 import com.incokalk.model.User;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.NotificationRepository;
@@ -121,92 +120,14 @@ public class NotificationService {
 
     // ==================== Convenience event methods ====================
 
-    @Transactional
-    public void onShipmentStatusChange(UUID shipmentId, String orderNumber,
-                                        String oldStatus, String newStatus, UUID companyId,
-                                        TrackingEvent.DataSource dataSource) {
-        String title = "Statut expédition mis à jour";
-        String message = String.format("La commande %s est passée de %s à %s.",
-                orderNumber, oldStatus, newStatus);
-        if (dataSource == TrackingEvent.DataSource.MANUAL) {
-            message += " (saisie manuelle, non confirmée par un transporteur)";
-        }
-
-        processEvent(SendNotificationDTO.builder()
-                .eventType("SHIPMENT_STATUS_CHANGE")
-                .companyId(companyId)
-                .entityType("SHIPMENT")
-                .entityId(shipmentId)
-                .title(title)
-                .message(message)
-                .templateData(Map.of(
-                        "orderNumber", orderNumber,
-                        "oldStatus", oldStatus,
-                        "newStatus", newStatus,
-                        "dataSource", dataSource != null ? dataSource.name() : ""))
-                .build());
-    }
-
-    @Transactional
-    public void onShipmentCreated(UUID shipmentId, String orderNumber, UUID companyId) {
-        String title = "Nouvelle expédition créée";
-        String message = String.format("La commande %s a été créée avec succès.", orderNumber);
-
-        processEvent(SendNotificationDTO.builder()
-                .eventType("SHIPMENT_CREATED")
-                .companyId(companyId)
-                .entityType("SHIPMENT")
-                .entityId(shipmentId)
-                .title(title)
-                .message(message)
-                .templateData(Map.of("orderNumber", orderNumber))
-                .build());
-    }
-
-    @Transactional
-    public void onQuoteReceived(int quoteCount, UUID companyId) {
-        String title = "Nouveau devis reçu";
-        String message = String.format("%d devis ont été reçus.", quoteCount);
-
-        processEvent(SendNotificationDTO.builder()
-                .eventType("QUOTE_RECEIVED")
-                .companyId(companyId)
-                .entityType("QUOTE")
-                .title(title)
-                .message(message)
-                .templateData(Map.of("quoteCount", String.valueOf(quoteCount)))
-                .build());
-    }
-
-    @Transactional
-    public void onProviderDown(String providerType, UUID companyId) {
-        String title = "Fournisseur indisponible";
-        String message = String.format("Le fournisseur %s est actuellement indisponible.", providerType);
-
-        processEvent(SendNotificationDTO.builder()
-                .eventType("PROVIDER_DOWN")
-                .companyId(companyId)
-                .entityType("PROVIDER")
-                .title(title)
-                .message(message)
-                .templateData(Map.of("providerType", providerType))
-                .build());
-    }
-
-    @Transactional
-    public void onProviderRecovered(String providerType, UUID companyId) {
-        String title = "Fournisseur rétabli";
-        String message = String.format("Le fournisseur %s est de nouveau opérationnel.", providerType);
-
-        processEvent(SendNotificationDTO.builder()
-                .eventType("PROVIDER_RECOVERED")
-                .companyId(companyId)
-                .entityType("PROVIDER")
-                .title(title)
-                .message(message)
-                .templateData(Map.of("providerType", providerType))
-                .build());
-    }
+    // onShipmentStatusChange/onShipmentCreated (wrappers triviaux autour de
+    // processEvent) ont ete retirees avec le domaine Transport : leurs seuls
+    // appelants (ShipmentService.updateStatus/processWebhookEvent/createShipment)
+    // ont ete retires en meme temps.
+    //
+    // onQuoteReceived/onProviderDown/onProviderRecovered ont egalement ete retirees :
+    // leurs seuls appelants (QuoteService, CarrierProviderRegistry / la machinerie
+    // de sante des providers) sont eux aussi retires avec le domaine Transport.
 
     @Transactional
     public void onDpsAlert(UUID checkId, String checkedName, String riskLevel,

@@ -4,7 +4,6 @@ import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.Company;
 import com.incokalk.model.ECommerceIntegration;
 import com.incokalk.model.ECommerceSyncLog;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.ECommerceIntegrationRepository;
 import com.incokalk.repository.ECommerceSyncLogRepository;
@@ -80,40 +79,19 @@ public class ECommerceSyncService {
         }
 
         try {
-            List<Map<String, Object>> orders = adapter.syncOrders(integration);
-            int processed = 0;
-            int created = 0;
-            int failed = 0;
-
-            for (Map<String, Object> order : orders) {
-                processed++;
-                try {
-                    ShipmentOrder shipment = adapter.mapOrderToShipment(order, integration);
-                    if (shipment != null) {
-                        created++;
-                    }
-                } catch (Exception e) {
-                    failed++;
-                    log.warn("[ECommerceSync] Failed to map order for integration {}: {}",
-                        integration.getId(), e.getMessage());
-                }
-            }
-
-            syncLog.setOrdersProcessed(processed);
-            syncLog.setOrdersCreated(created);
-            syncLog.setOrdersFailed(failed);
-
-            if (failed > 0 && created == 0) {
-                syncLog.setStatus(ECommerceSyncLog.SyncStatus.FAILED);
-            } else if (failed > 0) {
-                syncLog.setStatus(ECommerceSyncLog.SyncStatus.PARTIAL);
-            }
+            // La boucle commande -> expedition (adapter.mapOrderToShipment) a ete
+            // retiree avec le domaine Transport : elle creait un ShipmentOrder
+            // directement. En attendant un appel REST vers fleet-hub pour creer ces
+            // expeditions (suivi documente, pas fait dans cette passe), la synchronisation
+            // est un no-op journalise plutot que d'appeler l'adaptateur pour rien.
+            log.info("[ECommerceSync] Synchronisation des commandes en attente de l'intégration fleet-hub " +
+                "pour l'intégration {}", integration.getId());
+            syncLog.setOrdersProcessed(0);
+            syncLog.setOrdersCreated(0);
+            syncLog.setOrdersFailed(0);
 
             integration.setLastSyncAt(LocalDateTime.now());
             integrationRepository.save(integration);
-
-            log.info("[ECommerceSync] Integration {}: processed={}, created={}, failed={}",
-                integration.getId(), processed, created, failed);
         } catch (Exception e) {
             syncLog.setStatus(ECommerceSyncLog.SyncStatus.FAILED);
             syncLog.setErrorMessage(e.getMessage());

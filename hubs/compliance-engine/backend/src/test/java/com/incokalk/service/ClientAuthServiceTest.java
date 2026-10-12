@@ -2,11 +2,8 @@ package com.incokalk.service;
 
 import com.incokalk.model.ClientUser;
 import com.incokalk.model.Company;
-import com.incokalk.model.ShipmentOrder;
-import com.incokalk.model.TrackingEvent;
 import com.incokalk.repository.ClientUserRepository;
 import com.incokalk.repository.CompanyRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -28,7 +25,6 @@ class ClientAuthServiceTest {
 
     @Mock ClientUserRepository clientUserRepo;
     @Mock CompanyRepository companyRepo;
-    @Mock ShipmentOrderRepository shipmentRepo;
     @Mock JwtService jwtService;
     @Mock BCryptPasswordEncoder passwordEncoder;
 
@@ -298,33 +294,8 @@ class ClientAuthServiceTest {
         assertThat(result).extracting(ClientUser::getEmail).containsExactly("client@test.com", "c2@test.com");
     }
 
-    // ── getMyShipments / getShipmentDetail (cloisonnement par client) ─────
-
-    @Test
-    @DisplayName("getMyShipments → scopé par companyId ET clientId, pas seulement l'entreprise")
-    void getMyShipments_scopedByClient() {
-        ShipmentOrder mine = ShipmentOrder.builder().id(UUID.randomUUID()).build();
-        when(shipmentRepo.findByCompanyIdAndClientIdOrderByCreatedAtDesc(companyId, clientId))
-                .thenReturn(List.of(mine));
-
-        var result = service.getMyShipments(companyId, clientId);
-
-        assertThat(result).containsExactly(mine);
-        verify(shipmentRepo, never()).findByCompanyIdOrderByCreatedAtDesc(any());
-    }
-
-    @Test
-    @DisplayName("getShipmentDetail → introuvable pour un autre client de la même entreprise")
-    void getShipmentDetail_deniesOtherClientSameCompany() {
-        UUID shipmentId = UUID.randomUUID();
-        UUID otherClientId = UUID.randomUUID();
-        when(shipmentRepo.findByIdAndCompanyIdAndClientId(shipmentId, companyId, otherClientId))
-                .thenReturn(Optional.empty());
-
-        var result = service.getShipmentDetail(companyId, otherClientId, shipmentId);
-
-        assertThat(result).isEmpty();
-    }
+    // getMyShipments/getShipmentDetail ont ete retirees avec le domaine Transport
+    // (ShipmentOrderRepository) -- voir ClientAuthService.
 
     // ── clientStats ──────────────────────────────────────────────────────
 

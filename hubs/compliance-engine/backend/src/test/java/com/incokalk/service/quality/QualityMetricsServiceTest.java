@@ -2,10 +2,8 @@ package com.incokalk.service.quality;
 
 import com.incokalk.model.ClientInvoice;
 import com.incokalk.model.CustomsDeclaration;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.ClientInvoiceRepository;
 import com.incokalk.repository.CustomsDeclarationRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.tenant.TenantContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,7 +11,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,21 +21,18 @@ import static org.mockito.Mockito.*;
 class QualityMetricsServiceTest {
 
     QualityMetricsService service;
-    ShipmentOrderRepository shipmentRepo;
     CustomsDeclarationRepository declarationRepo;
     ClientInvoiceRepository invoiceRepo;
     UUID companyId;
 
     @BeforeEach
     void setUp() {
-        shipmentRepo = mock(ShipmentOrderRepository.class);
         declarationRepo = mock(CustomsDeclarationRepository.class);
         invoiceRepo = mock(ClientInvoiceRepository.class);
-        service = new QualityMetricsService(shipmentRepo, declarationRepo, invoiceRepo);
+        service = new QualityMetricsService(declarationRepo, invoiceRepo);
         companyId = UUID.randomUUID();
         TenantContext.set(companyId);
 
-        when(shipmentRepo.findByCompanyIdAndStatus(any(), any())).thenReturn(List.of());
         for (CustomsDeclaration.DeclarationStatus s : CustomsDeclaration.DeclarationStatus.values()) {
             when(declarationRepo.countByCompanyIdAndStatus(any(), eq(s))).thenReturn(0L);
         }
@@ -55,35 +49,9 @@ class QualityMetricsServiceTest {
     void getReport_allEmpty_returnsEmptyOverall() {
         QualityMetricsService.QualityReport report = service.getReport();
 
-        assertThat(report.characteristics()).hasSize(3);
+        assertThat(report.characteristics()).hasSize(2);
         assertThat(report.overall().opportunities()).isZero();
         assertThat(report.overall().sigma()).isNull();
-    }
-
-    @Test
-    @DisplayName("onTimeDelivery → exclut les expéditions sans les deux dates, compte les retards")
-    void onTimeDelivery_filtersUnmeasurable_countsLateAsDefect() {
-        ShipmentOrder onTime = new ShipmentOrder();
-        onTime.setEstimatedDeliveryDate(LocalDateTime.of(2026, 8, 10, 0, 0));
-        onTime.setActualDeliveryDate(LocalDateTime.of(2026, 8, 9, 0, 0));
-
-        ShipmentOrder late = new ShipmentOrder();
-        late.setEstimatedDeliveryDate(LocalDateTime.of(2026, 8, 10, 0, 0));
-        late.setActualDeliveryDate(LocalDateTime.of(2026, 8, 12, 0, 0));
-
-        ShipmentOrder unmeasurable = new ShipmentOrder();
-        unmeasurable.setEstimatedDeliveryDate(null);
-        unmeasurable.setActualDeliveryDate(LocalDateTime.of(2026, 8, 9, 0, 0));
-
-        when(shipmentRepo.findByCompanyIdAndStatus(companyId, ShipmentOrder.Status.DELIVERED))
-                .thenReturn(List.of(onTime, late, unmeasurable));
-
-        QualityMetricsService.QualityReport report = service.getReport();
-        QualityMetricsService.Ctq onTimeCtq = report.characteristics().get(0);
-
-        assertThat(onTimeCtq.key()).isEqualTo("on_time_delivery");
-        assertThat(onTimeCtq.result().opportunities()).isEqualTo(2);
-        assertThat(onTimeCtq.result().defects()).isEqualTo(1);
     }
 
     @Test
@@ -96,7 +64,7 @@ class QualityMetricsServiceTest {
         when(declarationRepo.countByCompanyIdAndStatus(companyId, CustomsDeclaration.DeclarationStatus.REJECTED)).thenReturn(1L);
 
         QualityMetricsService.QualityReport report = service.getReport();
-        QualityMetricsService.Ctq customs = report.characteristics().get(1);
+        QualityMetricsService.Ctq customs = report.characteristics().get(0);
 
         assertThat(customs.key()).isEqualTo("customs_first_pass");
         assertThat(customs.result().opportunities()).isEqualTo(7);
@@ -129,7 +97,7 @@ class QualityMetricsServiceTest {
                 .thenReturn(List.of(draft, overdueUnpaid, overduePaid, notYetDue));
 
         QualityMetricsService.QualityReport report = service.getReport();
-        QualityMetricsService.Ctq invoicing = report.characteristics().get(2);
+        QualityMetricsService.Ctq invoicing = report.characteristics().get(1);
 
         assertThat(invoicing.key()).isEqualTo("invoice_timeliness");
         assertThat(invoicing.result().opportunities()).isEqualTo(3);

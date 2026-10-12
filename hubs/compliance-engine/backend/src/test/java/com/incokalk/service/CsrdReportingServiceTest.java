@@ -1,7 +1,6 @@
 package com.incokalk.service;
 
 import com.incokalk.model.CarbonOffset;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.CarbonOffsetRepository;
 import com.incokalk.tenant.TenantContext;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,17 +79,13 @@ class CsrdReportingServiceTest {
     }
 
     @Test
-    @DisplayName("getCsrdReport → émissions avec données de transport")
+    @DisplayName("getCsrdReport → émissions regroupées sous 'Unknown' (relation shipment retirée avec le domaine Transport)")
     void getCsrdReport_withLaneData() {
         UUID companyId = TenantContext.get();
 
-        ShipmentOrder shipment = new ShipmentOrder();
-        shipment.setShipperCity("Paris");
-        shipment.setConsigneeCity("Lyon");
-
         CarbonOffset offset = CarbonOffset.builder()
                 .co2EmissionsKg(new BigDecimal("1000"))
-                .shipment(shipment)
+                .shipmentId(UUID.randomUUID())
                 .build();
 
         when(carbonOffsetRepo.sumCo2EmissionsKgByCompanyId(companyId))
@@ -107,7 +102,7 @@ class CsrdReportingServiceTest {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> lanes = (List<Map<String, Object>>) report.get("emissionsByLane");
         assertThat(lanes).hasSize(1);
-        assertThat(lanes.get(0).get("lane")).isEqualTo("Paris → Lyon");
+        assertThat(lanes.get(0).get("lane")).isEqualTo("Unknown");
         assertThat(lanes.get(0).get("co2Tonnes")).isEqualTo(new BigDecimal("1.00"));
     }
 

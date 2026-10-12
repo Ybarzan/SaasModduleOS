@@ -68,12 +68,4 @@ public class ConfigE2eTest extends E2eTestBase {
         var resp = getList("/v1/branches");
         assertEquals(200, resp.getStatusCode().value());
     }
-
-    @Test
-    @DisplayName("GET /v1/providers")
-    void providers() {
-        registerAndSetToken();
-        var resp = getList("/v1/providers");
-        assertEquals(200, resp.getStatusCode().value());
-    }
 }

@@ -1,8 +1,5 @@
 package com.incokalk.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.incokalk.dto.shared.ShipmentCreatedPayload;
-import com.incokalk.dto.shared.ShipmentStatusChangedPayload;
 import com.incokalk.model.EventOutbox;
 import com.incokalk.repository.EventOutboxRepository;
 import com.incokalk.scheduling.DistributedJobLock;
@@ -35,8 +32,6 @@ public class EventOutboxProcessor {
     private static final int BATCH_SIZE = 50;
 
     private final EventOutboxRepository eventOutboxRepo;
-    private final NotificationService notificationService;
-    private final ObjectMapper objectMapper;
     private final DistributedJobLock jobLock;
 
     @Scheduled(fixedDelay = 30000)
@@ -75,24 +70,16 @@ public class EventOutboxProcessor {
         eventOutboxRepo.save(event);
     }
 
+    /**
+     * Les deux seuls types d'evenement outbox existants (SHIPMENT_STATUS_CHANGE,
+     * SHIPMENT_CREATED) etaient ecrits par EventPublisher, appele depuis
+     * ShipmentService -- les deux retires avec le domaine Transport. Aucun type
+     * d'evenement n'est donc actuellement produit ; cette methode rejette tout ce
+     * qu'elle recoit, en attendant qu'un futur type d'evenement (hors Transport)
+     * soit branche.
+     */
     private void dispatch(EventOutbox event) throws Exception {
-        switch (event.getEventType()) {
-            case "SHIPMENT_STATUS_CHANGE" -> {
-                ShipmentStatusChangedPayload payload = objectMapper.readValue(
-                        event.getPayload(), ShipmentStatusChangedPayload.class);
-                notificationService.onShipmentStatusChange(
-                        payload.getShipmentId(), payload.getOrderNumber(),
-                        payload.getOldStatus(), payload.getNewStatus(),
-                        payload.getCompanyId(), payload.getDataSource());
-            }
-            case "SHIPMENT_CREATED" -> {
-                ShipmentCreatedPayload payload = objectMapper.readValue(
-                        event.getPayload(), ShipmentCreatedPayload.class);
-                notificationService.onShipmentCreated(
-                        payload.getShipmentId(), payload.getOrderNumber(), payload.getCompanyId());
-            }
-            default -> throw new IllegalArgumentException("Type d'evenement outbox inconnu: " + event.getEventType());
-        }
+        throw new IllegalArgumentException("Type d'evenement outbox inconnu: " + event.getEventType());
     }
 
     private String truncate(String s, int max) {

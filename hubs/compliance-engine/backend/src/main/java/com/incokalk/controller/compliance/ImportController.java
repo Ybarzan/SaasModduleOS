@@ -1,9 +1,6 @@
 package com.incokalk.controller.compliance;
 
-import com.incokalk.model.CompanyRole;
-import com.incokalk.security.RolesAllowed;
 import com.incokalk.service.ImportService;
-import com.incokalk.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/v1/import")
@@ -22,14 +18,8 @@ public class ImportController {
 
     private final ImportService importService;
 
-    @PostMapping("/carriers")
-    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
-    @Operation(summary = "Importer des transporteurs depuis un CSV")
-    public ResponseEntity<Map<String, Object>> importCarriers(
-            @RequestParam("file") MultipartFile file) throws Exception {
-        UUID companyId = TenantContext.get();
-        return ResponseEntity.ok(importService.importCarriersCsv(file, companyId));
-    }
+    // /v1/import/carriers a ete retiree avec le domaine Transport
+    // (ImportService.importCarriersCsv lisait CarrierRepository directement).
 
     @PostMapping("/preview")
     @Operation(summary = "Prévisualiser les premières lignes d'un CSV")

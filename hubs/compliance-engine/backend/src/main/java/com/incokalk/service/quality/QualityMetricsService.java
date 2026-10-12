@@ -2,10 +2,8 @@ package com.incokalk.service.quality;
 
 import com.incokalk.model.ClientInvoice;
 import com.incokalk.model.CustomsDeclaration;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.ClientInvoiceRepository;
 import com.incokalk.repository.CustomsDeclarationRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,12 +24,16 @@ import java.util.UUID;
  * entrepôt/réception vers le hub Logistix autonome. Une réintroduction
  * future nécessiterait un appel REST vers Logistix plutôt qu'une lecture
  * locale.</p>
+ *
+ * <p>Note : la CTQ "livraison à l'heure" (qui dépendait de ShipmentOrderRepository)
+ * a été retirée lors du retrait du domaine Transport vers fleet-hub. Une
+ * réintroduction future nécessiterait un appel REST vers fleet-hub plutôt
+ * qu'une lecture locale.</p>
  */
 @Service
 @RequiredArgsConstructor
 public class QualityMetricsService {
 
-    private final ShipmentOrderRepository shipmentRepo;
     private final CustomsDeclarationRepository declarationRepo;
     private final ClientInvoiceRepository invoiceRepo;
 
@@ -50,11 +52,10 @@ public class QualityMetricsService {
     public QualityReport getReport() {
         UUID companyId = TenantContext.get();
 
-        Ctq onTime = onTimeDelivery(companyId);
         Ctq customs = customsFirstPassYield(companyId);
         Ctq invoicing = invoiceTimeliness(companyId);
 
-        List<Ctq> ctqs = List.of(onTime, customs, invoicing);
+        List<Ctq> ctqs = List.of(customs, invoicing);
 
         long totalOpportunities = ctqs.stream()
                 .mapToLong(c -> c.result().opportunities()).sum();
@@ -63,20 +64,6 @@ public class QualityMetricsService {
 
         SigmaCalculator.Result overall = SigmaCalculator.compute(totalOpportunities, totalDefects);
         return new QualityReport(ctqs, overall);
-    }
-
-    private Ctq onTimeDelivery(UUID companyId) {
-        List<ShipmentOrder> delivered = shipmentRepo.findByCompanyIdAndStatus(companyId, ShipmentOrder.Status.DELIVERED);
-        List<ShipmentOrder> measurable = delivered.stream()
-                .filter(s -> s.getEstimatedDeliveryDate() != null && s.getActualDeliveryDate() != null)
-                .toList();
-        long opportunities = measurable.size();
-        long defects = measurable.stream()
-                .filter(s -> s.getActualDeliveryDate().isAfter(s.getEstimatedDeliveryDate()))
-                .count();
-        return new Ctq("on_time_delivery", "Livraison à l'heure",
-                "Expéditions livrées à la date estimée ou avant, sur celles où les deux dates sont renseignées",
-                SigmaCalculator.compute(opportunities, defects));
     }
 
     private Ctq customsFirstPassYield(UUID companyId) {

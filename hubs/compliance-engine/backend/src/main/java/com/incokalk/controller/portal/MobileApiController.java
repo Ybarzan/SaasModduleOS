@@ -6,7 +6,6 @@ import com.incokalk.model.MobileNotification;
 import com.incokalk.security.RolesAllowed;
 import com.incokalk.service.MobileDashboardService;
 import com.incokalk.service.PushNotificationService;
-import com.incokalk.service.ShipmentService;
 import com.incokalk.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,7 +30,6 @@ public class MobileApiController {
 
     private final MobileDashboardService dashboardService;
     private final PushNotificationService pushNotificationService;
-    private final ShipmentService shipmentService;
 
     @GetMapping("/dashboard")
     @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER, CompanyRole.Role.USER})
@@ -164,13 +162,9 @@ public class MobileApiController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/recent-shipments")
-    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER, CompanyRole.Role.USER})
-    @Operation(summary = "20 dernières expéditions avec champs simplifiés")
-    public ResponseEntity<List<Map<String, Object>>> recentShipments(HttpServletRequest req) {
-        UUID companyId = TenantContext.get();
-        return ResponseEntity.ok(dashboardService.getRecentShipments(companyId, 20));
-    }
+    // /v1/mobile/recent-shipments a ete retiree avec le domaine Transport :
+    // MobileDashboardService.getRecentShipments lisait ShipmentOrderRepository
+    // directement (voir MobileDashboardService).
 
     // ─── DTOs ─────────────────────────────────────────────────────────────────
 

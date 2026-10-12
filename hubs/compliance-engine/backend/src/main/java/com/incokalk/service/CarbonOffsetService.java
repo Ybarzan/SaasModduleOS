@@ -61,7 +61,7 @@ public class CarbonOffsetService {
         existing.setRetiredAt(offset.getRetiredAt());
         existing.setStatus(offset.getStatus());
         existing.setNotes(offset.getNotes());
-        existing.setShipment(offset.getShipment());
+        existing.setShipmentId(offset.getShipmentId());
 
         return carbonOffsetRepo.save(existing);
     }

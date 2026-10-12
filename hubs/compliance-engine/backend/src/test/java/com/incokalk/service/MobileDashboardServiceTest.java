@@ -1,35 +1,40 @@
 package com.incokalk.service;
 
-import com.incokalk.model.ShipmentOrder;
-import com.incokalk.repository.*;
-import jakarta.persistence.EntityManager;
+import com.incokalk.model.Company;
+import com.incokalk.model.User;
+import com.incokalk.repository.ApprovalRequestRepository;
+import com.incokalk.repository.CarbonOffsetRepository;
+import com.incokalk.repository.CompanyRepository;
+import com.incokalk.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+/**
+ * getRecentShipments/getRecentActivity et les stats d'expédition de getDashboard
+ * ont été retirées avec le domaine Transport (ShipmentOrderRepository) — voir
+ * MobileDashboardService. Seuls pending_approvals/carbon_offset_month survivent
+ * dans getDashboard ; getUserProfile/getCompanyProfile sont inchangées.
+ */
 @DisplayName("MobileDashboardService — Tests unitaires")
 class MobileDashboardServiceTest {
 
-    @Mock ShipmentOrderRepository shipmentRepo;
     @Mock ApprovalRequestRepository approvalRequestRepo;
     @Mock CarbonOffsetRepository carbonOffsetRepo;
     @Mock UserRepository userRepo;
     @Mock CompanyRepository companyRepo;
-    @Mock EntityManager entityManager;
 
     @InjectMocks MobileDashboardService service;
 
@@ -42,39 +47,48 @@ class MobileDashboardServiceTest {
     }
 
     @Test
-    @DisplayName("getRecentShipments : origine/destination partiellement renseignees → pas de NPE (Map.of rejette les valeurs nulles)")
-    void getRecentShipments_partialAddress_doesNotThrow() {
-        ShipmentOrder shipment = ShipmentOrder.builder()
-                .id(UUID.randomUUID())
-                .orderNumber("SHP-TEST-0001")
-                .status(ShipmentOrder.Status.DRAFT)
-                .shipperCountry("FR")
-                .shipperCity(null)
-                .consigneeCountry(null)
-                .consigneeCity(null)
-                .build();
-        Page<ShipmentOrder> page = new PageImpl<>(List.of(shipment));
-        when(shipmentRepo.findByCompanyIdOrderByCreatedAtDesc(any(UUID.class), any(Pageable.class))).thenReturn(page);
+    @DisplayName("getDashboard : renvoie pending_approvals et carbon_offset_month")
+    void getDashboard_returnsSurvivingFields() {
+        when(approvalRequestRepo.countByCompanyIdAndStatus(any(), any())).thenReturn(4L);
+        when(carbonOffsetRepo.sumCo2EmissionsKgByCompanyId(companyId)).thenReturn(new BigDecimal("123.45"));
 
-        List<Map<String, Object>> result = service.getRecentShipments(companyId, 20);
+        Map<String, Object> result = service.getDashboard(companyId);
 
-        assertThat(result).hasSize(1);
-        @SuppressWarnings("unchecked")
-        Map<String, Object> origin = (Map<String, Object>) result.get(0).get("origin");
-        @SuppressWarnings("unchecked")
-        Map<String, Object> destination = (Map<String, Object>) result.get(0).get("destination");
-        assertThat(origin).containsEntry("country", "FR").containsEntry("city", null);
-        assertThat(destination).containsEntry("country", null).containsEntry("city", null);
+        assertThat(result.get("pending_approvals")).isEqualTo(4L);
+        assertThat(result.get("carbon_offset_month")).isEqualTo(123.45);
+        assertThat(result).doesNotContainKey("total_shipments");
+        assertThat(result).doesNotContainKey("active_shipments");
+        assertThat(result).doesNotContainKey("total_cost_month");
+        assertThat(result).doesNotContainKey("recent_activity");
     }
 
     @Test
-    @DisplayName("getRecentShipments : aucune expedition → liste vide")
-    void getRecentShipments_noShipments_returnsEmptyList() {
-        when(shipmentRepo.findByCompanyIdOrderByCreatedAtDesc(any(UUID.class), any(Pageable.class)))
-                .thenReturn(new PageImpl<>(List.of()));
+    @DisplayName("getDashboard : carbon_offset_month null → 0.0")
+    void getDashboard_nullCarbonOffset_returnsZero() {
+        when(approvalRequestRepo.countByCompanyIdAndStatus(any(), any())).thenReturn(0L);
+        when(carbonOffsetRepo.sumCo2EmissionsKgByCompanyId(companyId)).thenReturn(null);
 
-        List<Map<String, Object>> result = service.getRecentShipments(companyId, 20);
+        Map<String, Object> result = service.getDashboard(companyId);
 
-        assertThat(result).isEmpty();
+        assertThat(result.get("carbon_offset_month")).isEqualTo(0.0);
+    }
+
+    @Test
+    @DisplayName("getUserProfile : trouvé")
+    void getUserProfile_found() {
+        UUID userId = UUID.randomUUID();
+        User user = User.builder().id(userId).email("u@test.com").build();
+        when(userRepo.findById(userId)).thenReturn(Optional.of(user));
+
+        assertThat(service.getUserProfile(userId)).isEqualTo(user);
+    }
+
+    @Test
+    @DisplayName("getCompanyProfile : trouvé")
+    void getCompanyProfile_found() {
+        Company company = Company.builder().id(companyId).name("TestCo").build();
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
+
+        assertThat(service.getCompanyProfile(companyId)).isEqualTo(company);
     }
 }

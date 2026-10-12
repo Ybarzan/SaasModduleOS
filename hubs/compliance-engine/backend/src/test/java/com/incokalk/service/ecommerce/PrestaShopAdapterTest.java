@@ -2,8 +2,6 @@ package com.incokalk.service.ecommerce;
 
 import com.incokalk.model.Company;
 import com.incokalk.model.ECommerceIntegration;
-import com.incokalk.model.ShipmentOrder;
-import com.incokalk.repository.ShipmentOrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,14 +19,12 @@ import static org.mockito.Mockito.*;
 class PrestaShopAdapterTest {
 
     private RestTemplate restTemplate;
-    private ShipmentOrderRepository shipmentOrderRepository;
     private PrestaShopAdapter adapter;
 
     @BeforeEach
     void setUp() {
         restTemplate = mock(RestTemplate.class);
-        shipmentOrderRepository = mock(ShipmentOrderRepository.class);
-        adapter = new PrestaShopAdapter(restTemplate, shipmentOrderRepository);
+        adapter = new PrestaShopAdapter(restTemplate);
     }
 
     private ECommerceIntegration integration(String storeUrl, String apiKey) {
@@ -219,136 +215,8 @@ class PrestaShopAdapterTest {
         assertThat(result).isEmpty();
     }
 
-    @Test
-    @DisplayName("mapOrderToShipment → creates ShipmentOrder from PrestaShop order")
-    void mapOrderToShipment_success() {
-        var integration = integration("https://shop.example.com/", "api-key");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> order = new LinkedHashMap<>();
-        order.put("id", "1");
-        order.put("total_weight", 1.5);
-        order.put("total_paid", 99.99);
-        order.put("currency", "USD");
-        order.put("delivery_firstname", "John");
-        order.put("delivery_lastname", "Doe");
-        order.put("delivery_address1", "123 Main St");
-        order.put("delivery_city", "New York");
-        order.put("delivery_country", "US");
-        order.put("delivery_postcode", "10001");
-        order.put("products", "Widget A, Widget B");
-
-        when(shipmentOrderRepository.findByOrderNumber("PS-1")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result).isNotNull();
-        assertThat(result.getOrderNumber()).isEqualTo("PS-1");
-        assertThat(result.getGoodsDescription()).isEqualTo("Widget A, Widget B");
-        assertThat(result.getWeightKg()).isEqualTo(1.5);
-        assertThat(result.getCurrency()).isEqualTo("USD");
-        assertThat(result.getGoodsValue()).isEqualTo(99.99);
-        assertThat(result.getConsigneeName()).isEqualTo("John Doe");
-        assertThat(result.getConsigneeAddress()).isEqualTo("123 Main St");
-        assertThat(result.getConsigneeCity()).isEqualTo("New York");
-        assertThat(result.getConsigneeCountry()).isEqualTo("US");
-        assertThat(result.getConsigneePostalCode()).isEqualTo("10001");
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → returns null when order already exists")
-    void mapOrderToShipment_alreadyExists() {
-        var integration = integration("https://shop.example.com/", "api-key");
-        Map<String, Object> order = Map.of("id", "1");
-
-        when(shipmentOrderRepository.findByOrderNumber("PS-1"))
-                .thenReturn(Optional.of(ShipmentOrder.builder().build()));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result).isNull();
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → handles missing total_weight")
-    void mapOrderToShipment_noWeight() {
-        var integration = integration("https://shop.example.com/", "api-key");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> order = Map.of("id", "5", "total_paid", 50.0, "currency", "EUR");
-
-        when(shipmentOrderRepository.findByOrderNumber("PS-5")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result.getWeightKg()).isNull();
-        assertThat(result.getGoodsValue()).isEqualTo(50.0);
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → handles missing total_paid")
-    void mapOrderToShipment_noTotalPaid() {
-        var integration = integration("https://shop.example.com/", "api-key");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> order = Map.of("id", "10", "total_weight", 2.0, "currency", "USD");
-
-        when(shipmentOrderRepository.findByOrderNumber("PS-10")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result.getGoodsValue()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → handles missing currency")
-    void mapOrderToShipment_noCurrency() {
-        var integration = integration("https://shop.example.com/", "api-key");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> order = Map.of("id", "15", "total_weight", 1.0, "total_paid", 25.0);
-
-        when(shipmentOrderRepository.findByOrderNumber("PS-15")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result.getCurrency()).isEqualTo("EUR");
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → handles missing delivery name")
-    void mapOrderToShipment_noDeliveryName() {
-        var integration = integration("https://shop.example.com/", "api-key");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> order = Map.of("id", "20", "total_weight", 1.0, "total_paid", 25.0, "currency", "EUR");
-
-        when(shipmentOrderRepository.findByOrderNumber("PS-20")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result.getConsigneeName()).isNull();
-    }
-
-    @Test
-    @DisplayName("mapOrderToShipment → handles only firstname without lastname")
-    void mapOrderToShipment_onlyFirstname() {
-        var integration = integration("https://shop.example.com/", "api-key");
-        integration.setCompany(Company.builder().id(UUID.randomUUID()).build());
-
-        Map<String, Object> order = new LinkedHashMap<>();
-        order.put("id", "30");
-        order.put("total_weight", 1.0);
-        order.put("total_paid", 25.0);
-        order.put("currency", "EUR");
-        order.put("delivery_firstname", "John");
-        order.put("delivery_lastname", null);
-
-        when(shipmentOrderRepository.findByOrderNumber("PS-30")).thenReturn(Optional.empty());
-        when(shipmentOrderRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ShipmentOrder result = adapter.mapOrderToShipment(order, integration);
-        assertThat(result.getConsigneeName()).isEqualTo("John");
-    }
+    // mapOrderToShipment a été retirée avec le domaine Transport
+    // (voir ECommerceAdapter / ECommerceSyncService) — ses tests partaient avec elle.
 
     @Test
     @DisplayName("syncOrders → handles invalid XML gracefully")

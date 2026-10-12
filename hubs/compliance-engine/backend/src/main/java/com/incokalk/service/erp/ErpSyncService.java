@@ -8,11 +8,9 @@ import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.Company;
 import com.incokalk.model.ErpConfig;
 import com.incokalk.model.ErpSyncLog;
-import com.incokalk.model.ShipmentOrder;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.ErpConfigRepository;
 import com.incokalk.repository.ErpSyncLogRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +31,6 @@ public class ErpSyncService {
     private final ErpConfigRepository erpConfigRepo;
     private final ErpSyncLogRepository erpSyncLogRepo;
     private final CompanyRepository companyRepo;
-    private final ShipmentOrderRepository shipmentOrderRepo;
     private final ErpProviderRegistry providerRegistry;
 
     public List<ErpConfig> listConfigs(UUID companyId) {
@@ -160,6 +157,16 @@ public class ErpSyncService {
         return erpSyncLogRepo.save(syncLog);
     }
 
+    /**
+     * ORDERS/INVOICES/SHIPMENTS en direction EXPORT appelaient respectivement
+     * ErpProvider.exportOrders/exportShipments avec les ShipmentOrder de l'entreprise
+     * -- les deux methodes et ShipmentOrderRepository ont ete retires avec le domaine
+     * Transport. Ces trois cas deviennent donc un no-op journalise ("en attente de
+     * l'intégration fleet-hub") plutot que de lever une exception ; leurs directions
+     * IMPORT (provider.importOrders, qui ne depend pas de ShipmentOrder) restent
+     * inchangees. PRODUCTS/CONTACTS n'ont jamais route par ces methodes et restent
+     * inchanges.
+     */
     private ErpSyncResult executeSync(ErpProvider provider, ErpConfig config, String syncType, String direction) {
         return switch (syncType) {
             case "PRODUCTS" -> {
@@ -171,15 +178,13 @@ public class ErpSyncService {
             }
             case "ORDERS" -> {
                 if ("EXPORT".equals(direction)) {
-                    List<ShipmentOrder> orders = shipmentOrderRepo.findByCompanyIdOrderByCreatedAtDesc(config.getCompany().getId());
-                    yield provider.exportOrders(config, orders);
+                    yield pendingFleetHubExport("commandes");
                 }
                 yield provider.importOrders(config);
             }
             case "INVOICES" -> {
                 if ("EXPORT".equals(direction)) {
-                    List<ShipmentOrder> shipments = shipmentOrderRepo.findByCompanyIdOrderByCreatedAtDesc(config.getCompany().getId());
-                    yield provider.exportShipments(config, shipments);
+                    yield pendingFleetHubExport("factures (expéditions)");
                 }
                 yield provider.importOrders(config);
             }
@@ -194,14 +199,19 @@ public class ErpSyncService {
                 if ("IMPORT".equals(direction)) {
                     yield provider.importOrders(config);
                 }
-                List<ShipmentOrder> shipments = shipmentOrderRepo.findByCompanyIdOrderByCreatedAtDesc(config.getCompany().getId());
-                yield provider.exportShipments(config, shipments);
+                yield pendingFleetHubExport("expéditions");
             }
             default -> ErpSyncResult.builder()
                     .success(false)
                     .errorMessage("Type de synchronisation inconnu: " + syncType)
                     .build();
         };
+    }
+
+    private ErpSyncResult pendingFleetHubExport(String what) {
+        log.info("[ERP] Export de {} en attente de l'intégration fleet-hub (domaine Transport retiré)", what);
+        return ErpSyncResult.builder().success(true).recordsTotal(0).recordsSynced(0).recordsFailed(0)
+                .warnings(List.of("Export de " + what + " en attente de l'intégration fleet-hub")).build();
     }
 
     public List<ErpSyncLogDTO> getSyncLogs(UUID companyId) {

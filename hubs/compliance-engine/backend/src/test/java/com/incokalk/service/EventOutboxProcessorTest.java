@@ -1,10 +1,6 @@
 package com.incokalk.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.incokalk.dto.shared.ShipmentCreatedPayload;
-import com.incokalk.dto.shared.ShipmentStatusChangedPayload;
 import com.incokalk.model.EventOutbox;
-import com.incokalk.model.TrackingEvent;
 import com.incokalk.repository.EventOutboxRepository;
 import com.incokalk.scheduling.DistributedJobLock;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,99 +19,45 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+/**
+ * SHIPMENT_STATUS_CHANGE/SHIPMENT_CREATED étaient les deux seuls types
+ * d'événement outbox existants, écrits par EventPublisher (retiré avec le
+ * domaine Transport). dispatch() rejette donc désormais systématiquement tout
+ * événement reçu (voir EventOutboxProcessor) ; le constructeur ne prend plus
+ * NotificationService ni ObjectMapper.
+ */
 @DisplayName("EventOutboxProcessor — Tests unitaires")
 class EventOutboxProcessorTest {
 
     @Mock EventOutboxRepository eventOutboxRepo;
-    @Mock NotificationService notificationService;
 
-    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
     private EventOutboxProcessor processor;
 
-    private UUID companyId, shipmentId;
+    private UUID companyId;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         // Pas de Redis en test -> DistributedJobLock.runExclusively execute directement le job.
-        processor = new EventOutboxProcessor(eventOutboxRepo, notificationService, objectMapper,
-                new DistributedJobLock(Optional.empty()));
+        processor = new EventOutboxProcessor(eventOutboxRepo, new DistributedJobLock(Optional.empty()));
         companyId = UUID.randomUUID();
-        shipmentId = UUID.randomUUID();
     }
 
-    private EventOutbox shipmentStatusChangeEvent() throws Exception {
-        ShipmentStatusChangedPayload payload = ShipmentStatusChangedPayload.builder()
-                .shipmentId(shipmentId)
-                .orderNumber("CMD-001")
-                .oldStatus("BOOKED")
-                .newStatus("IN_TRANSIT")
-                .companyId(companyId)
-                .dataSource(TrackingEvent.DataSource.LIVE)
-                .build();
+    private EventOutbox pendingEvent(String eventType, int attempts) {
         return EventOutbox.builder()
                 .id(UUID.randomUUID())
-                .eventType("SHIPMENT_STATUS_CHANGE")
+                .eventType(eventType)
                 .companyId(companyId)
-                .payload(objectMapper.writeValueAsString(payload))
+                .payload("{}")
                 .status(EventOutbox.Status.PENDING)
-                .attempts(0)
-                .build();
-    }
-
-    private EventOutbox shipmentCreatedEvent() throws Exception {
-        ShipmentCreatedPayload payload = ShipmentCreatedPayload.builder()
-                .shipmentId(shipmentId)
-                .orderNumber("CMD-002")
-                .companyId(companyId)
-                .build();
-        return EventOutbox.builder()
-                .id(UUID.randomUUID())
-                .eventType("SHIPMENT_CREATED")
-                .companyId(companyId)
-                .payload(objectMapper.writeValueAsString(payload))
-                .status(EventOutbox.Status.PENDING)
-                .attempts(0)
+                .attempts(attempts)
                 .build();
     }
 
     @Test
-    @DisplayName("processOne : SHIPMENT_CREATED -> déserialise le payload, notifie, marque PROCESSED")
-    void processOne_shipmentCreated_marksProcessed() throws Exception {
-        EventOutbox event = shipmentCreatedEvent();
-
-        processor.processOne(event);
-
-        verify(notificationService).onShipmentCreated(shipmentId, "CMD-002", companyId);
-
-        ArgumentCaptor<EventOutbox> captor = ArgumentCaptor.forClass(EventOutbox.class);
-        verify(eventOutboxRepo).save(captor.capture());
-        assertThat(captor.getValue().getStatus()).isEqualTo(EventOutbox.Status.PROCESSED);
-    }
-
-    @Test
-    @DisplayName("processOne : succès -> déserialise le payload, notifie, marque PROCESSED")
-    void processOne_success_marksProcessed() throws Exception {
-        EventOutbox event = shipmentStatusChangeEvent();
-
-        processor.processOne(event);
-
-        verify(notificationService).onShipmentStatusChange(
-                shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId, TrackingEvent.DataSource.LIVE);
-
-        ArgumentCaptor<EventOutbox> captor = ArgumentCaptor.forClass(EventOutbox.class);
-        verify(eventOutboxRepo).save(captor.capture());
-        assertThat(captor.getValue().getStatus()).isEqualTo(EventOutbox.Status.PROCESSED);
-        assertThat(captor.getValue().getProcessedAt()).isNotNull();
-        assertThat(captor.getValue().getLastError()).isNull();
-    }
-
-    @Test
-    @DisplayName("processOne : échec sous le seuil -> reste PENDING, incrémente attempts, garde l'erreur")
-    void processOne_failureBelowThreshold_staysPendingAndIncrements() throws Exception {
-        EventOutbox event = shipmentStatusChangeEvent();
-        doThrow(new RuntimeException("SMTP down")).when(notificationService)
-                .onShipmentStatusChange(any(), any(), any(), any(), any(), any());
+    @DisplayName("processOne : tout type d'événement -> échoue (aucun type n'est implémenté), reste PENDING sous le seuil")
+    void processOne_anyEventType_failsBelowThreshold() {
+        EventOutbox event = pendingEvent("SHIPMENT_STATUS_CHANGE", 0);
 
         processor.processOne(event);
 
@@ -123,16 +65,13 @@ class EventOutboxProcessorTest {
         verify(eventOutboxRepo).save(captor.capture());
         assertThat(captor.getValue().getStatus()).isEqualTo(EventOutbox.Status.PENDING);
         assertThat(captor.getValue().getAttempts()).isEqualTo(1);
-        assertThat(captor.getValue().getLastError()).contains("SMTP down");
+        assertThat(captor.getValue().getLastError()).contains("inconnu");
     }
 
     @Test
     @DisplayName("processOne : échec au 5e essai -> abandonne, marque FAILED")
-    void processOne_failureAtMaxAttempts_marksFailed() throws Exception {
-        EventOutbox event = shipmentStatusChangeEvent();
-        event.setAttempts(4);
-        doThrow(new RuntimeException("SMTP down")).when(notificationService)
-                .onShipmentStatusChange(any(), any(), any(), any(), any(), any());
+    void processOne_failureAtMaxAttempts_marksFailed() {
+        EventOutbox event = pendingEvent("SHIPMENT_CREATED", 4);
 
         processor.processOne(event);
 
@@ -145,14 +84,7 @@ class EventOutboxProcessorTest {
     @Test
     @DisplayName("processOne : type d'événement inconnu -> échoue proprement (comptabilisé comme une tentative)")
     void processOne_unknownEventType_failsGracefully() {
-        EventOutbox event = EventOutbox.builder()
-                .id(UUID.randomUUID())
-                .eventType("SOMETHING_UNKNOWN")
-                .companyId(companyId)
-                .payload("{}")
-                .status(EventOutbox.Status.PENDING)
-                .attempts(0)
-                .build();
+        EventOutbox event = pendingEvent("SOMETHING_UNKNOWN", 0);
 
         processor.processOne(event);
 
@@ -160,7 +92,6 @@ class EventOutboxProcessorTest {
         verify(eventOutboxRepo).save(captor.capture());
         assertThat(captor.getValue().getAttempts()).isEqualTo(1);
         assertThat(captor.getValue().getStatus()).isEqualTo(EventOutbox.Status.PENDING);
-        verifyNoInteractions(notificationService);
     }
 
     @Test
@@ -175,15 +106,13 @@ class EventOutboxProcessorTest {
 
     @Test
     @DisplayName("processPendingEvents : traite chaque événement en attente")
-    void processPendingEvents_processesEach() throws Exception {
-        EventOutbox event = shipmentStatusChangeEvent();
+    void processPendingEvents_processesEach() {
+        EventOutbox event = pendingEvent("SHIPMENT_STATUS_CHANGE", 0);
         when(eventOutboxRepo.findByStatusOrderByCreatedAtAsc(eq(EventOutbox.Status.PENDING), any()))
                 .thenReturn(List.of(event));
 
         processor.processPendingEvents();
 
-        verify(notificationService).onShipmentStatusChange(
-                shipmentId, "CMD-001", "BOOKED", "IN_TRANSIT", companyId, TrackingEvent.DataSource.LIVE);
         verify(eventOutboxRepo).save(any());
     }
 }

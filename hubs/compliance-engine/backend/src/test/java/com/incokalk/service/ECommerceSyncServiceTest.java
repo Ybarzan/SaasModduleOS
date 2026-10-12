@@ -42,7 +42,7 @@ class ECommerceSyncServiceTest {
     }
 
     @Test
-    @DisplayName("syncSingleIntegration → succès avec commandes")
+    @DisplayName("syncSingleIntegration → adaptateur trouvé → no-op en attente de l'intégration fleet-hub")
     void syncSingleIntegration_success() {
         ECommerceIntegration integration = ECommerceIntegration.builder()
                 .id(UUID.randomUUID())
@@ -51,67 +51,16 @@ class ECommerceSyncServiceTest {
                 .build();
 
         when(adapter.supports(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(true);
-        when(adapter.syncOrders(integration)).thenReturn(List.of(
-                Map.of("id", "1"),
-                Map.of("id", "2")
-        ));
-        when(adapter.mapOrderToShipment(any(), eq(integration))).thenReturn(null);
         when(syncLogRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         ECommerceSyncLog syncLog = service.syncSingleIntegration(integration);
 
         assertThat(syncLog.getStatus()).isEqualTo(ECommerceSyncLog.SyncStatus.SUCCESS);
-        assertThat(syncLog.getOrdersProcessed()).isEqualTo(2);
+        assertThat(syncLog.getOrdersProcessed()).isEqualTo(0);
         assertThat(syncLog.getOrdersCreated()).isEqualTo(0);
         assertThat(syncLog.getOrdersFailed()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("syncSingleIntegration → échec mapping → PARTIAL")
-    void syncSingleIntegration_partial() {
-        ECommerceIntegration integration = ECommerceIntegration.builder()
-                .id(UUID.randomUUID())
-                .platform(ECommerceIntegration.Platform.SHOPIFY)
-                .build();
-
-        when(adapter.supports(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(true);
-        when(adapter.syncOrders(integration)).thenReturn(List.of(
-                Map.of("id", "1"),
-                Map.of("id", "2")
-        ));
-        when(adapter.mapOrderToShipment(any(), eq(integration)))
-                .thenReturn(null)
-                .thenThrow(new RuntimeException("Mapping error"));
-        when(syncLogRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ECommerceSyncLog syncLog = service.syncSingleIntegration(integration);
-
-        assertThat(syncLog.getStatus()).isEqualTo(ECommerceSyncLog.SyncStatus.FAILED);
-        assertThat(syncLog.getOrdersProcessed()).isEqualTo(2);
-        assertThat(syncLog.getOrdersCreated()).isEqualTo(0);
-        assertThat(syncLog.getOrdersFailed()).isEqualTo(1);
-    }
-
-    @Test
-    @DisplayName("syncSingleIntegration → tout échoue → FAILED")
-    void syncSingleIntegration_allFailed() {
-        ECommerceIntegration integration = ECommerceIntegration.builder()
-                .id(UUID.randomUUID())
-                .platform(ECommerceIntegration.Platform.SHOPIFY)
-                .build();
-
-        when(adapter.supports(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(true);
-        when(adapter.syncOrders(integration)).thenReturn(List.of(
-                Map.of("id", "1")
-        ));
-        when(adapter.mapOrderToShipment(any(), eq(integration)))
-                .thenThrow(new RuntimeException("Error"));
-        when(syncLogRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ECommerceSyncLog syncLog = service.syncSingleIntegration(integration);
-
-        assertThat(syncLog.getStatus()).isEqualTo(ECommerceSyncLog.SyncStatus.FAILED);
-        assertThat(syncLog.getOrdersFailed()).isEqualTo(1);
+        assertThat(integration.getLastSyncAt()).isNotNull();
+        verify(adapter, never()).syncOrders(any());
     }
 
     @Test
@@ -132,7 +81,7 @@ class ECommerceSyncServiceTest {
     }
 
     @Test
-    @DisplayName("syncSingleIntegration → exception lors du sync → FAILED")
+    @DisplayName("syncSingleIntegration → exception lors de la sauvegarde de l'intégration → FAILED")
     void syncSingleIntegration_exception() {
         ECommerceIntegration integration = ECommerceIntegration.builder()
                 .id(UUID.randomUUID())
@@ -140,7 +89,7 @@ class ECommerceSyncServiceTest {
                 .build();
 
         when(adapter.supports(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(true);
-        when(adapter.syncOrders(integration)).thenThrow(new RuntimeException("Connection refused"));
+        when(integrationRepository.save(any())).thenThrow(new RuntimeException("Connection refused"));
         when(syncLogRepository.save(any())).thenAnswer(i -> i.getArgument(0));
 
         ECommerceSyncLog syncLog = service.syncSingleIntegration(integration);
@@ -183,33 +132,6 @@ class ECommerceSyncServiceTest {
                 .id(integrationId)
                 .platform(ECommerceIntegration.Platform.SHOPIFY)
                 .build());
-    }
-
-    @Test
-    @DisplayName("syncSingleIntegration → avec création de commandes")
-    void syncSingleIntegration_withShipments() {
-        ECommerceIntegration integration = ECommerceIntegration.builder()
-                .id(UUID.randomUUID())
-                .platform(ECommerceIntegration.Platform.SHOPIFY)
-                .build();
-        var shipment = new com.incokalk.model.ShipmentOrder();
-        shipment.setOrderNumber("SHIP-001");
-
-        when(adapter.supports(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(true);
-        when(adapter.syncOrders(integration)).thenReturn(List.of(
-                Map.of("id", "1"),
-                Map.of("id", "2"),
-                Map.of("id", "3")
-        ));
-        when(adapter.mapOrderToShipment(any(), eq(integration))).thenReturn(shipment);
-        when(syncLogRepository.save(any())).thenAnswer(i -> i.getArgument(0));
-
-        ECommerceSyncLog syncLog = service.syncSingleIntegration(integration);
-
-        assertThat(syncLog.getOrdersProcessed()).isEqualTo(3);
-        assertThat(syncLog.getOrdersCreated()).isEqualTo(3);
-        assertThat(syncLog.getOrdersFailed()).isZero();
-        assertThat(syncLog.getStatus()).isEqualTo(ECommerceSyncLog.SyncStatus.SUCCESS);
     }
 
     @Test

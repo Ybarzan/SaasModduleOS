@@ -25,8 +25,6 @@ import java.util.regex.Pattern;
 public class EmailIntakeService {
 
     private final EmailIntakeRepository intakeRepo;
-    private final CompanyRepository companyRepo;
-    private final ShipmentOrderRepository shipmentRepo;
     private final ClientUserRepository clientUserRepo;
     private final EmailMailboxRepository mailboxRepo;
     private final EmailIntakeLogRepository logRepo;
@@ -239,31 +237,19 @@ public class EmailIntakeService {
         return result;
     }
 
+    /**
+     * Creait auparavant un ShipmentOrder brouillon directement (domaine Transport,
+     * retire). En attendant un appel REST vers fleet-hub pour creer ce brouillon
+     * d'expedition (suivi documente, pas fait dans cette passe), cette methode se
+     * contente de journaliser et ne touche plus a l'intake : elle degrade
+     * gracieusement plutot que de lever une exception vers ses appelants
+     * (processMessage/confirmIntake).
+     */
     @Transactional
     public void autoCreateDraftShipment(EmailIntake intake) {
         if (intake.getMatchedCompanyId() == null) return;
-
-        Company company = companyRepo.findById(intake.getMatchedCompanyId()).orElse(null);
-        if (company == null) return;
-
-        ShipmentOrder draft = new ShipmentOrder();
-        draft.setCompany(company);
-        draft.setShipperCountry(intake.getOrigin());
-        draft.setConsigneeCountry(intake.getDestination());
-        draft.setGoodsDescription(intake.getGoodsDescription());
-        draft.setWeightKg(intake.getEstimatedWeight() != null ? intake.getEstimatedWeight().doubleValue() : null);
-        draft.setVolumeM3(intake.getEstimatedVolume() != null ? intake.getEstimatedVolume().doubleValue() : null);
-        draft.setStatus(ShipmentOrder.Status.DRAFT);
-        draft.setOrderNumber("DRAFT-" + System.currentTimeMillis() % 1000000);
-        draft.setCurrency("EUR");
-
-        shipmentRepo.save(draft);
-
-        intake.setStatus(EmailIntake.IntakeStatus.SHIPMENT_CREATED);
-        intake.setCreatedShipmentId(draft.getId());
-        intakeRepo.save(intake);
-
-        log.info("[EmailIntake] Brouillon expediteur cree: {} (intake={})", draft.getOrderNumber(), intake.getId());
+        log.info("[EmailIntake] Création automatique de brouillon d'expédition temporairement indisponible " +
+                "(domaine Transport retiré vers fleet-hub) -- intake={}", intake.getId());
     }
 
     @Transactional(readOnly = true)

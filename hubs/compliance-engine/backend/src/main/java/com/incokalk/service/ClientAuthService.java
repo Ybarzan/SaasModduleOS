@@ -2,11 +2,8 @@ package com.incokalk.service;
 
 import com.incokalk.model.ClientUser;
 import com.incokalk.model.Company;
-import com.incokalk.model.ShipmentOrder;
-import com.incokalk.model.TrackingEvent;
 import com.incokalk.repository.ClientUserRepository;
 import com.incokalk.repository.CompanyRepository;
-import com.incokalk.repository.ShipmentOrderRepository;
 import com.incokalk.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +21,6 @@ public class ClientAuthService {
 
     private final ClientUserRepository clientUserRepo;
     private final CompanyRepository companyRepo;
-    private final ShipmentOrderRepository shipmentRepo;
     private final JwtService jwtService;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -61,23 +57,10 @@ public class ClientAuthService {
         return profile;
     }
 
-    public List<ShipmentOrder> getMyShipments(UUID companyId, UUID clientId) {
-        // Scopé par client : un client du portail ne voit QUE ses propres expéditions,
-        // jamais celles des autres clients de la même entreprise.
-        return shipmentRepo.findByCompanyIdAndClientIdOrderByCreatedAtDesc(companyId, clientId);
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<ShipmentOrder> getShipmentDetail(UUID companyId, UUID clientId, UUID shipmentId) {
-        return shipmentRepo.findByIdAndCompanyIdAndClientId(shipmentId, companyId, clientId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<TrackingEvent> getShipmentTracking(UUID companyId, UUID clientId, UUID shipmentId) {
-        return getShipmentDetail(companyId, clientId, shipmentId)
-            .map(ShipmentOrder::getTrackingEvents)
-            .orElse(List.of());
-    }
+    // getMyShipments/getShipmentDetail/getShipmentTracking ont ete retirees avec
+    // le domaine Transport (ShipmentOrderRepository). ClientPortalController, leur
+    // seul appelant, a ete retire en meme temps ; fleet-hub a son propre
+    // ClientPortalController pour cet usage desormais.
 
     // ── Admin management ──────────────────────────────────────────────────
 

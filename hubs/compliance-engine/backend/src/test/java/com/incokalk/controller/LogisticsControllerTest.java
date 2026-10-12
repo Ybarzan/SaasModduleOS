@@ -2,14 +2,11 @@ package com.incokalk.controller;
 
 import com.incokalk.dto.financial.CargoInsuranceResult;
 import com.incokalk.dto.shipment.PackagingResult;
-import com.incokalk.dto.shipment.RouteOptimizationResult;
 import com.incokalk.dto.shipment.TruckingRateResult;
 import com.incokalk.service.CargoInsuranceService;
 import com.incokalk.service.CurrencyExchangeService;
 import com.incokalk.service.CustomsDutyService;
-import com.incokalk.service.PackagingService;
-import com.incokalk.service.RouteOptimizationService;
-import com.incokalk.service.TruckingService;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -31,22 +28,18 @@ class LogisticsControllerTest extends ControllerTestBase {
     private MockMvc mockMvc;
 
     @MockBean
-    private PackagingService packagingService;
-    @MockBean
-    private TruckingService truckingService;
+    private FleetHubIntegrationClient fleetHubClient;
     @MockBean
     private CustomsDutyService customsDutyService;
     @MockBean
     private CargoInsuranceService cargoInsuranceService;
     @MockBean
-    private RouteOptimizationService routeOptimizationService;
-    @MockBean
     private CurrencyExchangeService currencyExchangeService;
 
     @Test
-    @DisplayName("POST /v1/logistics/packaging → 200")
+    @DisplayName("POST /v1/logistics/packaging → 200 (proxy vers fleet-hub)")
     void calculatePackaging_success() throws Exception {
-        when(packagingService.calculatePackaging(any())).thenReturn(
+        when(fleetHubClient.calculatePackaging(any())).thenReturn(
             PackagingResult.builder()
                 .totalBoxes(1)
                 .totalVolumeM3(0.5)
@@ -74,9 +67,9 @@ class LogisticsControllerTest extends ControllerTestBase {
     }
 
     @Test
-    @DisplayName("POST /v1/logistics/trucking → 200")
+    @DisplayName("POST /v1/logistics/trucking → 200 (proxy vers fleet-hub)")
     void calculateTruckingRates_success() throws Exception {
-        when(truckingService.calculateRates(any())).thenReturn(
+        when(fleetHubClient.calculateTruckingRates(any())).thenReturn(
             TruckingRateResult.builder()
                 .originCountry("FR")
                 .destinationCountry("DE")
@@ -178,27 +171,6 @@ class LogisticsControllerTest extends ControllerTestBase {
             .andExpect(jsonPath("$.premiumAmount").value(100));
     }
 
-    @Test
-    @DisplayName("POST /v1/logistics/route-optimization → 200")
-    void optimizeRoute_success() throws Exception {
-        when(routeOptimizationService.optimize(any())).thenReturn(
-            RouteOptimizationResult.builder()
-                .totalDistanceKm(1200)
-                .totalStops(2)
-                .estimatedHours(14)
-                .estimatedFuelLiters(300)
-                .estimatedFuelCost(450)
-                .estimatedTollCost(80)
-                .recommendation("Itinéraire optimisé")
-                .build());
-
-        mockMvc.perform(post("/v1/logistics/route-optimization")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {"originCountry":"FR","destinationCountry":"DE",
-                     "stops":[{"city":"Paris","country":"FR"},{"city":"Berlin","country":"DE"}]}
-                    """))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalStops").value(2));
-    }
+    // POST /v1/logistics/route-optimization a ete retiree avec le domaine Transport
+    // (RouteOptimizationService) -- voir LogisticsController.
 }

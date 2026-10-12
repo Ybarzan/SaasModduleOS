@@ -22,7 +22,6 @@ class MultiBranchServiceTest {
     CompanyBranchRepository branchRepo;
     InterBranchTransferRepository transferRepo;
     CompanyRepository companyRepo;
-    ShipmentOrderRepository shipmentRepo;
     ShipmentFinancialsRepository financialsRepo;
     CarbonOffsetRepository carbonRepo;
 
@@ -31,10 +30,9 @@ class MultiBranchServiceTest {
         branchRepo = mock(CompanyBranchRepository.class);
         transferRepo = mock(InterBranchTransferRepository.class);
         companyRepo = mock(CompanyRepository.class);
-        shipmentRepo = mock(ShipmentOrderRepository.class);
         financialsRepo = mock(ShipmentFinancialsRepository.class);
         carbonRepo = mock(CarbonOffsetRepository.class);
-        service = new MultiBranchService(branchRepo, transferRepo, companyRepo, shipmentRepo, financialsRepo, carbonRepo);
+        service = new MultiBranchService(branchRepo, transferRepo, companyRepo, financialsRepo, carbonRepo);
         TenantContext.set(UUID.randomUUID());
     }
 
@@ -117,21 +115,8 @@ class MultiBranchServiceTest {
         assertThat(result.get(0).getBranchName()).isEqualTo("Filiale 1");
     }
 
-    @Test
-    @DisplayName("consolidateShipments → retourne les stats agrégées")
-    void consolidateShipments() {
-        UUID companyId = TenantContext.get();
-        when(branchRepo.findByBranchCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
-        when(branchRepo.findByParentCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
-        when(shipmentRepo.countByCompanyId(companyId)).thenReturn(5L);
-        when(shipmentRepo.findByCompanyIdOrderByCreatedAtDesc(companyId)).thenReturn(List.of());
-
-        Map<String, Object> result = service.consolidateShipments();
-
-        assertThat(result)
-                .containsEntry("totalShipments", 5L)
-                .containsEntry("companiesCount", 1);
-    }
+    // consolidateShipments() a ete retiree avec le domaine Transport
+    // (ShipmentOrderRepository) -- voir MultiBranchService.
 
     @Test
     @DisplayName("transferGoods → crée un transfert PENDING quand les deux filiales appartiennent à la société")

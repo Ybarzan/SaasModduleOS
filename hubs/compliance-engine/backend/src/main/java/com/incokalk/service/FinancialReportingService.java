@@ -47,7 +47,7 @@ public class FinancialReportingService {
         calculateFinancials(financials);
 
         ShipmentFinancials saved = financialsRepo.save(financials);
-        log.info("Shipment financials created for shipment: {}", financials.getShipment() != null ? financials.getShipment().getId() : "N/A");
+        log.info("Shipment financials created for shipment: {}", financials.getShipmentId() != null ? financials.getShipmentId() : "N/A");
         return saved;
     }
 

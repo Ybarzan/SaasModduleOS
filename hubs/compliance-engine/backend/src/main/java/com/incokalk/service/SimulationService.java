@@ -12,6 +12,7 @@ import com.incokalk.model.User;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.SimulationRepository;
 import com.incokalk.repository.UserRepository;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import com.incokalk.tenant.TenantContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SimulationService {
 
-    private final FreightRateService freightSvc;
+    private final FleetHubIntegrationClient fleetHubClient;
     private final CustomsDutyService dutySvc;
     private final CurrencyService currencySvc;
     private final SimulationRepository simRepo;
@@ -37,7 +38,6 @@ public class SimulationService {
     private final CompanyRepository companyRepo;
     private final ObjectMapper objectMapper;
     private final ComplianceService complianceService;
-    private final PackagingService packagingService;
     private final VatService vatService;
 
     // ── Frais fixes par Incoterm (Simulés) ───────────────────────────────────
@@ -54,8 +54,9 @@ public class SimulationService {
         // 1. Conversion devise → EUR
         double goodsEur = currencySvc.toEur(req.getGoodsValue(), req.getCurrency());
 
-        // 2. Estimation fret (Maintenant retourne FreightEstimate)
-        FreightRateService.FreightEstimate freightEst = freightSvc.estimate(req.getOriginCountry(), req.getDestinationCountry(),
+        // 2. Estimation fret (via fleet-hub depuis le retrait du domaine Transport)
+        FleetHubIntegrationClient.FreightEstimate freightEst = fleetHubClient.estimateFreight(
+            req.getOriginCountry(), req.getDestinationCountry(),
             req.getTransportMode(), req.getWeightKg(), req.getVolumeM3(), goodsEur);
         double freight = freightEst.cost();
         int estimatedDays = freightEst.days();
@@ -246,7 +247,7 @@ public class SimulationService {
                     return item;
                 })
                 .collect(Collectors.toList()));
-            PackagingResult packResult = packagingService.calculatePackaging(packReq);
+            PackagingResult packResult = fleetHubClient.calculatePackaging(packReq);
             totalBoxes = packResult.getTotalBoxes();
             totalVolumeM3 = packResult.getTotalVolumeM3();
             utilization = packResult.getUtilizationPercent();

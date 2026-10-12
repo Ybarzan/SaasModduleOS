@@ -2,6 +2,8 @@ package com.incokalk.service.compliance;
 
 import com.incokalk.model.*;
 import com.incokalk.repository.*;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
+import com.incokalk.service.integration.fleethub.ShipmentSummary;
 import com.incokalk.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +23,7 @@ public class CustomsInvoiceGeneratorService {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private final ShipmentOrderRepository shipmentRepo;
-    private final ShipmentItemRepository shipmentItemRepo;
+    private final FleetHubIntegrationClient fleetHubClient;
     private final TaricRateRepository taricRepo;
     private final CompanyRepository companyRepo;
     private final EoriNumberRepository eoriRepo;
@@ -30,15 +31,16 @@ public class CustomsInvoiceGeneratorService {
 
     @Transactional
     public CustomsInvoice generateInvoice(UUID shipmentId, UUID companyId) {
-        ShipmentOrder shipment = shipmentRepo.findByIdAndCompanyId(shipmentId, companyId)
-                .orElseThrow(() -> new RuntimeException("Expédition non trouvée"));
+        // Remplace l'ancienne lecture directe de ShipmentOrderRepository/ShipmentItemRepository
+        // (domaine Transport, retiré vers fleet-hub) par un appel REST vers fleet-hub.
+        ShipmentSummary shipment = fleetHubClient.getShipmentSummary(shipmentId, companyId);
 
         companyRepo.findById(companyId)
                 .orElseThrow(() -> new RuntimeException("Entreprise non trouvée"));
 
         EoriNumber eori = eoriRepo.findByCompanyIdAndIsDefaultTrue(companyId).orElse(null);
 
-        List<ShipmentItem> items = shipmentItemRepo.findByShipmentId(shipmentId);
+        List<ShipmentSummary.Item> items = shipment.getItems() != null ? shipment.getItems() : List.of();
 
         CustomsInvoice invoice = CustomsInvoice.builder()
                 .companyId(companyId)
@@ -70,9 +72,9 @@ public class CustomsInvoiceGeneratorService {
         BigDecimal totalVat = BigDecimal.ZERO;
 
         for (int i = 0; i < items.size(); i++) {
-            ShipmentItem item = items.get(i);
-            CustomsInvoice.InvoiceItem invoiceItem = buildInvoiceItem(item, companyId, i + 1,
-                    shipment.getConsigneeCountry());
+            ShipmentSummary.Item item = items.get(i);
+            CustomsInvoice.InvoiceItem invoiceItem = buildInvoiceItem(item, i + 1,
+                    shipment.getShipperCountry(), shipment.getConsigneeCountry());
             invoiceItem.setInvoice(invoice);
             invoice.getItems().add(invoiceItem);
             totalDuty = totalDuty.add(invoiceItem.getDutyAmount());
@@ -91,15 +93,19 @@ public class CustomsInvoiceGeneratorService {
         return invoice;
     }
 
-    private CustomsInvoice.InvoiceItem buildInvoiceItem(ShipmentItem item, UUID companyId, int lineNumber,
-            String destinationCountry) {
+    private CustomsInvoice.InvoiceItem buildInvoiceItem(ShipmentSummary.Item item, int lineNumber,
+            String originCountry, String destinationCountry) {
         BigDecimal dutyRate = BigDecimal.ZERO;
         String dutyType = "AD";
         boolean isPreferential = false;
 
+        // L'ancien modèle ShipmentItem portait un originCountry par ligne ; le résumé
+        // fleet-hub (sku/hsCode/quantity/unit/unitPrice) n'expose pas ce niveau de détail
+        // par ligne, donc le taux TARIC est recherché avec le pays d'origine de l'expédition
+        // (shipperCountry) plutôt qu'un pays d'origine par article -- suivi documenté.
         if (item.getHsCode() != null && !item.getHsCode().isBlank()) {
             List<TaricRate> rates = taricRepo.findByHsCodeAndOriginCountryAndDestinationCountry(
-                    item.getHsCode(), item.getOriginCountry(), destinationCountry);
+                    item.getHsCode(), originCountry, destinationCountry);
             if (!rates.isEmpty()) {
                 TaricRate rate = rates.get(0);
                 dutyRate = BigDecimal.valueOf(rate.getDutyRate());
@@ -117,14 +123,11 @@ public class CustomsInvoiceGeneratorService {
         return CustomsInvoice.InvoiceItem.builder()
                 .lineNumber(lineNumber)
                 .sku(item.getSku())
-                .name(item.getName())
-                .description(item.getDescription())
                 .hsCode(item.getHsCode())
                 .quantity(item.getQuantity())
                 .unit(item.getUnit() != null ? item.getUnit() : "PCS")
                 .unitPrice(unitPrice)
                 .totalValue(itemValue)
-                .countryOfOrigin(item.getOriginCountry())
                 .dutyRate(dutyRate)
                 .dutyType(dutyType)
                 .isPreferential(isPreferential)
