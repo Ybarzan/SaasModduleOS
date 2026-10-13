@@ -90,4 +90,28 @@ class InternalDashboardControllerTest {
         mvc.perform(get("/api/internal/dashboard-summary").header("X-Internal-Integration-Key", key))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void getBillingSummary_withoutKeyHeader_returns401() throws Exception {
+        mvc.perform(get("/api/internal/billing-summary"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getBillingSummary_withWrongKey_returns401() throws Exception {
+        mvc.perform(get("/api/internal/billing-summary").header("X-Internal-Integration-Key", "clef-incorrecte"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void getBillingSummary_withValidKey_returnsSummaryShape() throws Exception {
+        String token = registerAndGetToken();
+        String key = enableIntegrationAndGetKey(token);
+
+        mvc.perform(get("/api/internal/billing-summary").header("X-Internal-Integration-Key", key))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.plan").isString())
+                .andExpect(jsonPath("$.status").isString())
+                .andExpect(jsonPath("$.stripeConfigured").isBoolean());
+    }
 }

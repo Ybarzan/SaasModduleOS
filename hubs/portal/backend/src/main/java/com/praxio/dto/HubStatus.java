@@ -11,7 +11,8 @@ public record HubStatus<T>(Status status, T data) {
     public enum Status {
         OK,
         NOT_CONFIGURED,
-        UNREACHABLE
+        UNREACHABLE,
+        NOT_APPLICABLE
     }
 
     public static <T> HubStatus<T> ok(T data) {
@@ -24,5 +25,10 @@ public record HubStatus<T>(Status status, T data) {
 
     public static <T> HubStatus<T> unreachable() {
         return new HubStatus<>(Status.UNREACHABLE, null);
+    }
+
+    /** Le hub n'a pas (encore) cette fonctionnalité -- distinct de NOT_CONFIGURED : aucune clé ne la débloquerait. */
+    public static <T> HubStatus<T> notApplicable() {
+        return new HubStatus<>(Status.NOT_APPLICABLE, null);
     }
 }

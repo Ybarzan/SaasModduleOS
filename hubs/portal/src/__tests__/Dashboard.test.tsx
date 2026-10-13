@@ -10,6 +10,7 @@ vi.mock('../lib/praxioApi', async () => {
     ...actual,
     praxioAPI: {
       getDashboard: vi.fn(),
+      getBilling: vi.fn(),
       getKeysStatus: vi.fn(),
       updateKeys: vi.fn(),
       getSsoStatus: vi.fn(),
@@ -48,11 +49,18 @@ const allUnconfiguredSso = {
   logistixEmail: null,
 };
 
+const notConfiguredBilling = {
+  complianceEngine: { status: 'NOT_CONFIGURED' as const, data: null },
+  fleetHub: { status: 'NOT_CONFIGURED' as const, data: null },
+  logistix: { status: 'NOT_APPLICABLE' as const, data: null },
+};
+
 describe('Dashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStorage.clear();
     vi.mocked(praxioAPI.getSsoStatus).mockResolvedValue(allUnconfiguredSso);
+    vi.mocked(praxioAPI.getBilling).mockResolvedValue(notConfiguredBilling);
   });
 
   it('shows a login gate when no password is stored', () => {
@@ -83,6 +91,39 @@ describe('Dashboard', () => {
     const fleetHubHeading = screen.getByRole('heading', { name: 'Fleet Hub' });
     expect(within(fleetHubHeading.parentElement!).getByText('Non configuré')).toBeInTheDocument();
     expect(screen.getByText('Inaccessible')).toBeInTheDocument();
+  });
+
+  it('shows the consolidated billing summary with per-hub amounts', async () => {
+    vi.mocked(praxioAPI.getDashboard).mockResolvedValue(notConfiguredDashboard);
+    vi.mocked(praxioAPI.getKeysStatus).mockResolvedValue(allUnconfiguredKeys);
+    vi.mocked(praxioAPI.getBilling).mockResolvedValue({
+      complianceEngine: {
+        status: 'OK',
+        data: {
+          plan: 'PRO',
+          status: 'ACTIVE',
+          billingCycle: 'MONTHLY',
+          amount: 149,
+          currency: 'EUR',
+          nextBillingDate: '2026-11-01T00:00:00',
+          cancelAtPeriodEnd: false,
+        },
+      },
+      fleetHub: { status: 'NOT_CONFIGURED', data: null },
+      logistix: { status: 'NOT_APPLICABLE', data: null },
+    });
+    renderDashboard();
+
+    fireEvent.change(screen.getByPlaceholderText('Mot de passe administrateur'), {
+      target: { value: 'secret' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Entrer' }));
+
+    expect(await screen.findByText('Facturation groupée')).toBeInTheDocument();
+    // Le total ("Estimé / mois") et le montant du plan Compliance Engine affichent tous deux 149,00 € ici.
+    expect(screen.getAllByText(/149,00/)).toHaveLength(2);
+    expect(screen.getByText('Pas de facturation propre à ce module.')).toBeInTheDocument();
+    expect(screen.getByText('Aucune clé enregistrée pour ce hub.')).toBeInTheDocument();
   });
 
   it('shows an error and stays on the login gate when the password is wrong', async () => {

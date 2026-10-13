@@ -1,6 +1,6 @@
 const API_URL = import.meta.env.VITE_PRAXIO_API_URL ?? 'http://localhost:8092';
 
-export type HubStatusValue = 'OK' | 'NOT_CONFIGURED' | 'UNREACHABLE';
+export type HubStatusValue = 'OK' | 'NOT_CONFIGURED' | 'UNREACHABLE' | 'NOT_APPLICABLE';
 
 export interface HubStatus<T> {
   status: HubStatusValue;
@@ -30,6 +30,32 @@ export interface CrossHubDashboard {
   complianceEngine: HubStatus<ComplianceEngineSummary>;
   fleetHub: HubStatus<FleetHubSummary>;
   logistix: HubStatus<LogistixSummary>;
+}
+
+export interface ComplianceEngineBillingSummary {
+  plan: string;
+  status: string;
+  billingCycle: string;
+  amount: number;
+  currency: string;
+  nextBillingDate: string | null;
+  cancelAtPeriodEnd: boolean;
+}
+
+export interface FleetHubBillingSummary {
+  plan: string;
+  status: string;
+  trialEndsAt: string | null;
+  amount: number | null;
+  currency: string | null;
+  nextBillingDate: string | null;
+  stripeConfigured: boolean;
+}
+
+export interface CrossHubBilling {
+  complianceEngine: HubStatus<ComplianceEngineBillingSummary>;
+  fleetHub: HubStatus<FleetHubBillingSummary>;
+  logistix: HubStatus<never>;
 }
 
 export interface DashboardKeysStatus {
@@ -94,6 +120,7 @@ export interface SsoLaunchResult {
 
 export const praxioAPI = {
   getDashboard: (password: string) => request<CrossHubDashboard>('/api/dashboard', password),
+  getBilling: (password: string) => request<CrossHubBilling>('/api/billing', password),
   getKeysStatus: (password: string) => request<DashboardKeysStatus>('/api/dashboard/keys', password),
   updateKeys: (password: string, keys: DashboardKeysUpdate) =>
     request<DashboardKeysStatus>('/api/dashboard/keys', password, {

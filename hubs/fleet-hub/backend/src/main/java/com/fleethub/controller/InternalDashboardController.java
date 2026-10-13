@@ -1,6 +1,8 @@
 package com.fleethub.controller;
 
+import com.fleethub.dto.BillingSummaryDto;
 import com.fleethub.dto.InternalDashboardSummaryDto;
+import com.fleethub.service.InternalBillingSummaryService;
 import com.fleethub.service.InternalDashboardSummaryService;
 import com.fleethub.service.InternalIntegrationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,6 +27,7 @@ public class InternalDashboardController {
 
     private final InternalIntegrationService internalIntegrationService;
     private final InternalDashboardSummaryService internalDashboardSummaryService;
+    private final InternalBillingSummaryService internalBillingSummaryService;
 
     @GetMapping("/dashboard-summary")
     @Operation(summary = "Résumé d'activité (Praxio)",
@@ -35,5 +38,16 @@ public class InternalDashboardController {
             @RequestHeader(value = "X-Internal-Integration-Key", required = false) String apiKey) {
         Long companyId = internalIntegrationService.resolveCompanyId(apiKey);
         return internalDashboardSummaryService.getDashboardSummary(companyId);
+    }
+
+    @GetMapping("/billing-summary")
+    @Operation(summary = "Résumé de facturation (Praxio)",
+            description = "Appel machine-à-machine, authentifié par X-Internal-Integration-Key")
+    @ApiResponse(responseCode = "200", description = "Résumé retourné")
+    @ApiResponse(responseCode = "401", description = "Clé manquante, invalide, ou partage désactivé")
+    public BillingSummaryDto getBillingSummary(
+            @RequestHeader(value = "X-Internal-Integration-Key", required = false) String apiKey) {
+        Long companyId = internalIntegrationService.resolveCompanyId(apiKey);
+        return internalBillingSummaryService.getBillingSummary(companyId);
     }
 }

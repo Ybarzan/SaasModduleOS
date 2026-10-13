@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   praxioAPI,
   UnauthorizedError,
+  type CrossHubBilling,
   type CrossHubDashboard,
   type DashboardKeysStatus,
   type HubId,
@@ -39,6 +40,7 @@ function clearStoredPassword() {
 export default function Dashboard() {
   const [password, setPassword] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<CrossHubDashboard | null>(null);
+  const [billing, setBilling] = useState<CrossHubBilling | null>(null);
   const [keysStatus, setKeysStatus] = useState<DashboardKeysStatus | null>(null);
   const [ssoStatus, setSsoStatus] = useState<SsoCredentialsStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -49,12 +51,14 @@ export default function Dashboard() {
     setLoading(true);
     setError('');
     try {
-      const [dash, keys, sso] = await Promise.all([
+      const [dash, bill, keys, sso] = await Promise.all([
         praxioAPI.getDashboard(pwd),
+        praxioAPI.getBilling(pwd),
         praxioAPI.getKeysStatus(pwd),
         praxioAPI.getSsoStatus(pwd),
       ]);
       setDashboard(dash);
+      setBilling(bill);
       setKeysStatus(keys);
       setSsoStatus(sso);
       setPassword(pwd);
@@ -86,6 +90,7 @@ export default function Dashboard() {
     clearStoredPassword();
     setPassword(null);
     setDashboard(null);
+    setBilling(null);
     setKeysStatus(null);
     setSsoStatus(null);
   };
@@ -150,6 +155,8 @@ export default function Dashboard() {
             />
           </div>
         )}
+
+        {billing && ssoStatus && <BillingSection billing={billing} ssoStatus={ssoStatus} onLaunch={launch} />}
 
         {keysStatus && (
           <SettingsPanel
@@ -220,9 +227,19 @@ function LoginGate({
 
 function StatusBadge({ status }: { status: HubStatus<unknown>['status'] }) {
   const label =
-    status === 'OK' ? 'Connecté' : status === 'NOT_CONFIGURED' ? 'Non configuré' : 'Inaccessible';
+    status === 'OK'
+      ? 'Connecté'
+      : status === 'NOT_CONFIGURED'
+        ? 'Non configuré'
+        : status === 'NOT_APPLICABLE'
+          ? 'Non applicable'
+          : 'Inaccessible';
   const cls =
-    status === 'OK' ? 'tag-live' : status === 'NOT_CONFIGURED' ? 'tag-soon' : 'tag-sim';
+    status === 'OK'
+      ? 'tag-live'
+      : status === 'NOT_CONFIGURED' || status === 'NOT_APPLICABLE'
+        ? 'tag-soon'
+        : 'tag-sim';
   return (
     <span className={`tag ${cls}`}>
       <span className="tag-dot" />
@@ -344,6 +361,151 @@ function LogistixCard({
         </div>
       )}
     </HubCardShell>
+  );
+}
+
+function formatAmount(amount: number, currency: string): string {
+  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(amount);
+}
+
+function formatDate(value: string | null): string | null {
+  return value ? new Date(value).toLocaleDateString('fr-FR') : null;
+}
+
+function monthlyEquivalent(amount: number, billingCycle: string): number {
+  return billingCycle === 'ANNUAL' ? amount / 12 : amount;
+}
+
+interface BillingRowData {
+  hub: HubId;
+  title: string;
+  status: HubStatus<unknown>['status'];
+  plan: string | null;
+  planStatus: string | null;
+  amount: number | null;
+  currency: string | null;
+  cycleLabel: string | null;
+  nextBillingDate: string | null;
+  ssoConfigured: boolean;
+}
+
+function BillingSection({
+  billing,
+  ssoStatus,
+  onLaunch,
+}: {
+  billing: CrossHubBilling;
+  ssoStatus: SsoCredentialsStatus;
+  onLaunch: (hub: HubId) => void;
+}) {
+  const ce = billing.complianceEngine.data;
+  const fh = billing.fleetHub.data;
+
+  const rows: BillingRowData[] = [
+    {
+      hub: 'complianceEngine',
+      title: 'Compliance Engine',
+      status: billing.complianceEngine.status,
+      plan: ce?.plan ?? null,
+      planStatus: ce?.status ?? null,
+      amount: ce?.amount ?? null,
+      currency: ce?.currency ?? null,
+      cycleLabel: ce ? (ce.billingCycle === 'ANNUAL' ? '/an' : '/mois') : null,
+      nextBillingDate: ce?.nextBillingDate ?? null,
+      ssoConfigured: ssoStatus.complianceEngineConfigured,
+    },
+    {
+      hub: 'fleetHub',
+      title: 'Fleet Hub',
+      status: billing.fleetHub.status,
+      plan: fh?.plan ?? null,
+      planStatus: fh?.status ?? null,
+      amount: fh?.amount ?? null,
+      currency: fh?.currency ?? null,
+      cycleLabel: fh?.amount != null ? '/mois' : null,
+      nextBillingDate: fh?.nextBillingDate ?? null,
+      ssoConfigured: ssoStatus.fleetHubConfigured,
+    },
+    {
+      hub: 'logistix',
+      title: 'Logistix',
+      status: billing.logistix.status,
+      plan: null,
+      planStatus: null,
+      amount: null,
+      currency: null,
+      cycleLabel: null,
+      nextBillingDate: null,
+      ssoConfigured: ssoStatus.logistixConfigured,
+    },
+  ];
+
+  const total = (ce ? monthlyEquivalent(ce.amount, ce.billingCycle) : 0) + (fh?.amount ?? 0);
+
+  return (
+    <div className="bg-surface border border-line overflow-hidden">
+      <div className="px-6 py-4 border-b border-line flex items-start justify-between gap-6 flex-wrap">
+        <div>
+          <h2 className="text-lg font-semibold">Facturation groupée</h2>
+          <p className="text-sm text-ink-soft mt-1 max-w-md">
+            Vue de lecture seule : chaque hub facture et encaisse de façon indépendante. Utilisez
+            « gérer » pour payer ou changer de plan directement sur le hub concerné.
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="text-xs text-ink-soft uppercase tracking-wide">Estimé / mois</div>
+          <div className="text-2xl font-bold">{formatAmount(total, 'EUR')}</div>
+        </div>
+      </div>
+      <div className="divide-y divide-line">
+        {rows.map((row) => (
+          <BillingRow key={row.hub} row={row} onLaunch={() => onLaunch(row.hub)} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BillingRow({ row, onLaunch }: { row: BillingRowData; onLaunch: () => void }) {
+  const nextBillingDate = formatDate(row.nextBillingDate);
+  return (
+    <div className="px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+      <div>
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">{row.title}</span>
+          <StatusBadge status={row.status} />
+        </div>
+        {row.status === 'OK' && row.plan && (
+          <p className="text-sm text-ink-soft mt-1">
+            Plan {row.plan.toLowerCase()}
+            {row.planStatus && ` — ${row.planStatus.toLowerCase()}`}
+            {nextBillingDate && ` — prochaine échéance le ${nextBillingDate}`}
+          </p>
+        )}
+        {row.status === 'NOT_APPLICABLE' && (
+          <p className="text-sm text-ink-soft mt-1">Pas de facturation propre à ce module.</p>
+        )}
+        {row.status === 'NOT_CONFIGURED' && (
+          <p className="text-sm text-ink-soft mt-1">Aucune clé enregistrée pour ce hub.</p>
+        )}
+        {row.status === 'UNREACHABLE' && (
+          <p className="text-sm text-ink-soft mt-1">Le hub n'a pas répondu.</p>
+        )}
+      </div>
+      <div className="flex items-center gap-4">
+        {row.amount != null && row.currency && (
+          <span className="text-lg font-semibold">
+            {formatAmount(row.amount, row.currency)}
+            <span className="text-sm text-ink-soft font-normal">{row.cycleLabel}</span>
+          </span>
+        )}
+        {row.ssoConfigured && row.status !== 'NOT_APPLICABLE' && (
+          <button type="button" onClick={onLaunch} className="btn-secondary">
+            &gt; gérer
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
 
