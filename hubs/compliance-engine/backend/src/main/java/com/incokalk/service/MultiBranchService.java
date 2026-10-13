@@ -3,6 +3,7 @@ package com.incokalk.service;
 import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.*;
 import com.incokalk.repository.*;
+import com.incokalk.service.integration.finance.FinanceIntegrationClient;
 import com.incokalk.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,8 +23,7 @@ public class MultiBranchService {
     private final CompanyBranchRepository branchRepo;
     private final InterBranchTransferRepository transferRepo;
     private final CompanyRepository companyRepo;
-    private final ShipmentFinancialsRepository financialsRepo;
-    private final CarbonOffsetRepository carbonRepo;
+    private final FinanceIntegrationClient financeIntegrationClient;
 
     @Transactional
     public CompanyBranch addBranch(UUID parentCompanyId, UUID branchCompanyId, String branchName) {
@@ -79,42 +79,6 @@ public class MultiBranchService {
     // findByCompanyIdOrderByCreatedAtDesc. Une agregation inter-societes future
     // necessiterait un appel REST batch vers fleet-hub, hors scope de cette passe.
 
-    public Map<String, Object> consolidateFinancials() {
-        List<UUID> companyIds = getConsolidationCompanyIds();
-        BigDecimal totalRevenue = BigDecimal.ZERO;
-        BigDecimal totalCost = BigDecimal.ZERO;
-        BigDecimal totalMargin = BigDecimal.ZERO;
-        for (UUID cid : companyIds) {
-            totalRevenue = totalRevenue.add(financialsRepo.sumRevenueByCompanyId(cid));
-            totalCost = totalCost.add(financialsRepo.sumCostByCompanyId(cid));
-            totalMargin = totalMargin.add(financialsRepo.sumMarginByCompanyId(cid));
-        }
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("totalRevenue", totalRevenue);
-        result.put("totalCost", totalCost);
-        result.put("totalMargin", totalMargin);
-        result.put("companiesCount", companyIds.size());
-        return result;
-    }
-
-    public Map<String, Object> consolidateCarbon() {
-        List<UUID> companyIds = getConsolidationCompanyIds();
-        BigDecimal totalEmissions = BigDecimal.ZERO;
-        BigDecimal totalCreditsRetired = BigDecimal.ZERO;
-        BigDecimal totalOffsetCost = BigDecimal.ZERO;
-        for (UUID cid : companyIds) {
-            totalEmissions = totalEmissions.add(carbonRepo.sumCo2EmissionsKgByCompanyId(cid));
-            totalCreditsRetired = totalCreditsRetired.add(carbonRepo.sumOffsetCreditsRetiredByCompanyId(cid));
-            totalOffsetCost = totalOffsetCost.add(carbonRepo.sumOffsetTotalCostByCompanyId(cid));
-        }
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("totalCo2EmissionsKg", totalEmissions);
-        result.put("totalOffsetCreditsRetired", totalCreditsRetired);
-        result.put("totalOffsetCost", totalOffsetCost);
-        result.put("companiesCount", companyIds.size());
-        return result;
-    }
-
     public Map<String, Object> getConsolidatedReport() {
         List<UUID> companyIds = getConsolidationCompanyIds();
         Map<String, Object> report = new LinkedHashMap<>();
@@ -136,19 +100,17 @@ public class MultiBranchService {
         BigDecimal totalRevenue = BigDecimal.ZERO;
         BigDecimal totalCost = BigDecimal.ZERO;
         BigDecimal totalMargin = BigDecimal.ZERO;
+        BigDecimal totalEmissions = BigDecimal.ZERO;
         for (UUID cid : companyIds) {
-            totalRevenue = totalRevenue.add(financialsRepo.sumRevenueByCompanyId(cid));
-            totalCost = totalCost.add(financialsRepo.sumCostByCompanyId(cid));
-            totalMargin = totalMargin.add(financialsRepo.sumMarginByCompanyId(cid));
+            FinanceIntegrationClient.FinancialTotals financials = financialTotalsOrZero(cid);
+            totalRevenue = totalRevenue.add(financials.totalRevenue());
+            totalCost = totalCost.add(financials.totalCost());
+            totalMargin = totalMargin.add(financials.totalMargin());
+            totalEmissions = totalEmissions.add(carbonTotalsOrZero(cid).co2EmissionsKg());
         }
         report.put("totalRevenue", totalRevenue);
         report.put("totalCost", totalCost);
         report.put("totalMargin", totalMargin);
-
-        BigDecimal totalEmissions = BigDecimal.ZERO;
-        for (UUID cid : companyIds) {
-            totalEmissions = totalEmissions.add(carbonRepo.sumCo2EmissionsKgByCompanyId(cid));
-        }
         report.put("totalCo2EmissionsKg", totalEmissions);
 
         UUID currentId = TenantContext.get();
@@ -184,5 +146,27 @@ public class MultiBranchService {
             return List.of();
         }
         return transferRepo.findByFromBranchIdInOrToBranchIdInOrderByCreatedAtDesc(branchIds, branchIds);
+    }
+
+    /** Dégradation gracieuse : une filiale sans clé Finance configurée (ou
+     * Finance indisponible) contribue zéro à la consolidation plutôt que de
+     * faire échouer le rapport entier -- même principe que
+     * CrossHubDashboardService côté Praxio. */
+    private FinanceIntegrationClient.FinancialTotals financialTotalsOrZero(UUID companyId) {
+        try {
+            return financeIntegrationClient.getFinancialTotals(companyId);
+        } catch (FinanceIntegrationClient.FinanceIntegrationException e) {
+            log.debug("[Finance] Agrégats financiers indisponibles pour {} : {}", companyId, e.getMessage());
+            return new FinanceIntegrationClient.FinancialTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        }
+    }
+
+    private FinanceIntegrationClient.CarbonTotals carbonTotalsOrZero(UUID companyId) {
+        try {
+            return financeIntegrationClient.getCarbonTotals(companyId);
+        } catch (FinanceIntegrationClient.FinanceIntegrationException e) {
+            log.debug("[Finance] Agrégats carbone indisponibles pour {} : {}", companyId, e.getMessage());
+            return new FinanceIntegrationClient.CarbonTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        }
     }
 }

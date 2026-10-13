@@ -127,6 +127,36 @@ public class CompanyController {
         return ResponseEntity.ok(new FleetHubKeyStatusRes(false));
     }
 
+    @GetMapping("/{id}/finance-key")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
+    @Operation(summary = "Statut de l'intégration Finance & Trésorerie", description = "Indique si une clé est enregistrée, jamais la clé elle-même")
+    public ResponseEntity<FinanceKeyStatusRes> getFinanceKeyStatus(@PathVariable UUID id) {
+        UUID companyId = TenantContext.get();
+        if (!id.equals(companyId)) return ResponseEntity.status(403).build();
+        return ResponseEntity.ok(new FinanceKeyStatusRes(companyService.hasFinanceApiKey(companyId)));
+    }
+
+    @PutMapping("/{id}/finance-key")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
+    @Operation(summary = "Enregistrer la clé d'intégration Finance & Trésorerie", description = "Clé générée côté hubs/finance (paramètres > Intégration interne)")
+    public ResponseEntity<FinanceKeyStatusRes> setFinanceKey(
+            @PathVariable UUID id, @Valid @RequestBody FinanceKeyReq req) {
+        UUID companyId = TenantContext.get();
+        if (!id.equals(companyId)) return ResponseEntity.status(403).build();
+        companyService.setFinanceApiKey(companyId, req.apiKey());
+        return ResponseEntity.ok(new FinanceKeyStatusRes(companyService.hasFinanceApiKey(companyId)));
+    }
+
+    @DeleteMapping("/{id}/finance-key")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
+    @Operation(summary = "Effacer la clé d'intégration Finance & Trésorerie")
+    public ResponseEntity<FinanceKeyStatusRes> clearFinanceKey(@PathVariable UUID id) {
+        UUID companyId = TenantContext.get();
+        if (!id.equals(companyId)) return ResponseEntity.status(403).build();
+        companyService.setFinanceApiKey(companyId, null);
+        return ResponseEntity.ok(new FinanceKeyStatusRes(false));
+    }
+
     private UUID extractUserId(HttpServletRequest req) {
         Object id = req.getAttribute("userId");
         if (id == null) throw new RuntimeException("Non authentifié");
@@ -153,4 +183,6 @@ public class CompanyController {
     public record InviteReq(@Email @NotBlank String email, CompanyRole.Role role) {}
     public record FleetHubKeyReq(@NotBlank String apiKey) {}
     public record FleetHubKeyStatusRes(boolean configured) {}
+    public record FinanceKeyReq(@NotBlank String apiKey) {}
+    public record FinanceKeyStatusRes(boolean configured) {}
 }

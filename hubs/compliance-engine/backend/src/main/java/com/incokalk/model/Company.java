@@ -61,6 +61,13 @@ public class Company {
     @Column(name = "fleethub_api_key", length = 64)
     private String fleetHubApiKey;
 
+    /** Clé d'intégration Finance & Trésorerie (en-tête X-Internal-Integration-Key)
+     *  -- générée côté hubs/finance quand cette société y active le partage
+     *  d'agrégats, puis collée ici par un admin. Voir
+     *  service/integration/finance/FinanceIntegrationClient. */
+    @Column(name = "finance_api_key", length = 64)
+    private String financeApiKey;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

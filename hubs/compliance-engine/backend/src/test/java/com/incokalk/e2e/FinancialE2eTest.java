@@ -24,22 +24,4 @@ public class FinancialE2eTest extends E2eTestBase {
         assertTrue(resp.getStatusCode().is2xxSuccessful() || resp.getStatusCode().is4xxClientError());
     }
 
-    @Test
-    @DisplayName("GET /v1/client-invoices")
-    void clientInvoices() {
-        registerAndSetToken();
-        upgradeCompanyPlan(com.incokalk.model.Company.Plan.ENTERPRISE);
-        var resp = getList("/v1/client-invoices");
-        assertTrue(resp.getStatusCode().is2xxSuccessful() || resp.getStatusCode().is4xxClientError());
-    }
-
-    @Test
-    @DisplayName("GET /v1/payment-terms")
-    void paymentTerms() {
-        registerAndSetToken();
-        upgradeCompanyPlan(com.incokalk.model.Company.Plan.ENTERPRISE);
-        var resp = getList("/v1/payment-terms");
-        assertTrue(resp.getStatusCode().is2xxSuccessful() || resp.getStatusCode().is4xxClientError());
-    }
-
 }

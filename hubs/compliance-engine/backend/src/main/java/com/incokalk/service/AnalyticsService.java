@@ -2,17 +2,16 @@ package com.incokalk.service;
 
 import com.incokalk.dto.analytics.DashboardStatsDTO;
 import com.incokalk.dto.analytics.DashboardSummaryDTO;
-import com.incokalk.model.ClientInvoice;
 import com.incokalk.model.CustomsDeclaration;
-import com.incokalk.repository.ClientInvoiceRepository;
 import com.incokalk.repository.CustomsDeclarationRepository;
 import com.incokalk.repository.SimulationRepository;
+import com.incokalk.service.integration.finance.FinanceIntegrationClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -45,13 +44,9 @@ public class AnalyticsService {
             CustomsDeclaration.DeclarationStatus.SUBMITTED,
             CustomsDeclaration.DeclarationStatus.UNDER_REVIEW);
 
-    private static final List<ClientInvoice.InvoiceStatus> SETTLED_INVOICE_STATUSES = List.of(
-            ClientInvoice.InvoiceStatus.PAID,
-            ClientInvoice.InvoiceStatus.CANCELLED);
-
     private final SimulationRepository simulationRepo;
     private final CustomsDeclarationRepository customsDeclarationRepo;
-    private final ClientInvoiceRepository clientInvoiceRepo;
+    private final FinanceIntegrationClient financeIntegrationClient;
 
     @Transactional(readOnly = true)
     public DashboardStatsDTO getDashboardStats(UUID companyId, String period) {
@@ -78,17 +73,25 @@ public class AnalyticsService {
 
         long openDeclarations = customsDeclarationRepo.countByCompanyIdAndStatusIn(companyId, OPEN_DECLARATION_STATUSES);
 
-        LocalDate today = LocalDate.now();
-        long overdueInvoicesCount = clientInvoiceRepo.countByCompanyIdAndDueDateBeforeAndStatusNotIn(
-                companyId, today, SETTLED_INVOICE_STATUSES);
-        var overdueInvoicesAmount = clientInvoiceRepo.sumTotalAmountByCompanyIdAndDueDateBeforeAndStatusNotIn(
-                companyId, today, SETTLED_INVOICE_STATUSES);
+        FinanceIntegrationClient.DashboardSummary financeSummary = financeSummaryOrEmpty(companyId);
 
         return DashboardSummaryDTO.builder()
                 .simulationsThisMonth(simulationsThisMonth)
                 .openDeclarations(openDeclarations)
-                .overdueInvoicesCount(overdueInvoicesCount)
-                .overdueInvoicesAmount(overdueInvoicesAmount)
+                .overdueInvoicesCount(financeSummary.overdueInvoicesCount())
+                .overdueInvoicesAmount(financeSummary.overdueInvoicesAmount())
                 .build();
+    }
+
+    /** Dégradation gracieuse : une société sans clé Finance configurée (ou
+     * Finance indisponible) n'empêche jamais le reste du tableau de bord de
+     * s'afficher -- même principe que CrossHubDashboardService côté Praxio. */
+    private FinanceIntegrationClient.DashboardSummary financeSummaryOrEmpty(UUID companyId) {
+        try {
+            return financeIntegrationClient.getDashboardSummary(companyId);
+        } catch (FinanceIntegrationClient.FinanceIntegrationException e) {
+            log.debug("[Finance] Résumé de facturation indisponible pour {} : {}", companyId, e.getMessage());
+            return new FinanceIntegrationClient.DashboardSummary(0, BigDecimal.ZERO);
+        }
     }
 }

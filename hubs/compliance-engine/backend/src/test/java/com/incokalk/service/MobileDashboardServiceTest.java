@@ -3,9 +3,9 @@ package com.incokalk.service;
 import com.incokalk.model.Company;
 import com.incokalk.model.User;
 import com.incokalk.repository.ApprovalRequestRepository;
-import com.incokalk.repository.CarbonOffsetRepository;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.UserRepository;
+import com.incokalk.service.integration.finance.FinanceIntegrationClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,14 +25,15 @@ import static org.mockito.Mockito.when;
 /**
  * getRecentShipments/getRecentActivity et les stats d'expédition de getDashboard
  * ont été retirées avec le domaine Transport (ShipmentOrderRepository) — voir
- * MobileDashboardService. Seuls pending_approvals/carbon_offset_month survivent
- * dans getDashboard ; getUserProfile/getCompanyProfile sont inchangées.
+ * MobileDashboardService. pending_approvals reste local ; carbon_offset_month
+ * vient désormais de hubs/finance via FinanceIntegrationClient ;
+ * getUserProfile/getCompanyProfile sont inchangées.
  */
 @DisplayName("MobileDashboardService — Tests unitaires")
 class MobileDashboardServiceTest {
 
     @Mock ApprovalRequestRepository approvalRequestRepo;
-    @Mock CarbonOffsetRepository carbonOffsetRepo;
+    @Mock FinanceIntegrationClient financeIntegrationClient;
     @Mock UserRepository userRepo;
     @Mock CompanyRepository companyRepo;
 
@@ -47,10 +48,11 @@ class MobileDashboardServiceTest {
     }
 
     @Test
-    @DisplayName("getDashboard : renvoie pending_approvals et carbon_offset_month")
+    @DisplayName("getDashboard : renvoie pending_approvals et carbon_offset_month (via Finance)")
     void getDashboard_returnsSurvivingFields() {
         when(approvalRequestRepo.countByCompanyIdAndStatus(any(), any())).thenReturn(4L);
-        when(carbonOffsetRepo.sumCo2EmissionsKgByCompanyId(companyId)).thenReturn(new BigDecimal("123.45"));
+        when(financeIntegrationClient.getCarbonTotals(companyId)).thenReturn(
+                new FinanceIntegrationClient.CarbonTotals(new BigDecimal("123.45"), BigDecimal.ZERO, BigDecimal.ZERO));
 
         Map<String, Object> result = service.getDashboard(companyId);
 
@@ -63,10 +65,11 @@ class MobileDashboardServiceTest {
     }
 
     @Test
-    @DisplayName("getDashboard : carbon_offset_month null → 0.0")
-    void getDashboard_nullCarbonOffset_returnsZero() {
+    @DisplayName("getDashboard : Finance non configurée → dégradation gracieuse (0.0, pas d'exception)")
+    void getDashboard_financeUnavailable_gracefulDegradation() {
         when(approvalRequestRepo.countByCompanyIdAndStatus(any(), any())).thenReturn(0L);
-        when(carbonOffsetRepo.sumCo2EmissionsKgByCompanyId(companyId)).thenReturn(null);
+        when(financeIntegrationClient.getCarbonTotals(companyId))
+                .thenThrow(new FinanceIntegrationClient.FinanceIntegrationException("non configurée"));
 
         Map<String, Object> result = service.getDashboard(companyId);
 

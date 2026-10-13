@@ -124,6 +124,10 @@ export const incokalkAPI = {
     setFleetHubKey: (id: string, apiKey: string) =>
       api.put(`/v1/companies/${id}/fleethub-key`, { apiKey }),
     clearFleetHubKey: (id: string) => api.delete(`/v1/companies/${id}/fleethub-key`),
+    financeKeyStatus: (id: string) => api.get(`/v1/companies/${id}/finance-key`),
+    setFinanceKey: (id: string, apiKey: string) =>
+      api.put(`/v1/companies/${id}/finance-key`, { apiKey }),
+    clearFinanceKey: (id: string) => api.delete(`/v1/companies/${id}/finance-key`),
   },
 
   // Incoterms

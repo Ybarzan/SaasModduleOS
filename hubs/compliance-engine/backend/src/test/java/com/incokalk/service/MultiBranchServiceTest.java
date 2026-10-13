@@ -4,6 +4,7 @@ import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.CompanyBranch;
 import com.incokalk.model.InterBranchTransfer;
 import com.incokalk.repository.*;
+import com.incokalk.service.integration.finance.FinanceIntegrationClient;
 import com.incokalk.tenant.TenantContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,17 +23,15 @@ class MultiBranchServiceTest {
     CompanyBranchRepository branchRepo;
     InterBranchTransferRepository transferRepo;
     CompanyRepository companyRepo;
-    ShipmentFinancialsRepository financialsRepo;
-    CarbonOffsetRepository carbonRepo;
+    FinanceIntegrationClient financeIntegrationClient;
 
     @BeforeEach
     void setUp() {
         branchRepo = mock(CompanyBranchRepository.class);
         transferRepo = mock(InterBranchTransferRepository.class);
         companyRepo = mock(CompanyRepository.class);
-        financialsRepo = mock(ShipmentFinancialsRepository.class);
-        carbonRepo = mock(CarbonOffsetRepository.class);
-        service = new MultiBranchService(branchRepo, transferRepo, companyRepo, financialsRepo, carbonRepo);
+        financeIntegrationClient = mock(FinanceIntegrationClient.class);
+        service = new MultiBranchService(branchRepo, transferRepo, companyRepo, financeIntegrationClient);
         TenantContext.set(UUID.randomUUID());
     }
 
@@ -117,6 +116,46 @@ class MultiBranchServiceTest {
 
     // consolidateShipments() a ete retiree avec le domaine Transport
     // (ShipmentOrderRepository) -- voir MultiBranchService.
+
+    @Test
+    @DisplayName("getConsolidatedReport → agrège les totaux Finance de la société courante")
+    void getConsolidatedReport_aggregatesFinanceTotals() {
+        UUID companyId = TenantContext.get();
+        when(branchRepo.findByBranchCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
+        when(branchRepo.findByParentCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
+        when(branchRepo.countByParentCompanyId(companyId)).thenReturn(0L);
+        when(companyRepo.findById(companyId)).thenReturn(Optional.of(
+                com.incokalk.model.Company.builder().id(companyId).name("Ma Société").slug("ma-societe").build()));
+        when(financeIntegrationClient.getFinancialTotals(companyId)).thenReturn(
+                new FinanceIntegrationClient.FinancialTotals(new BigDecimal("10000"), new BigDecimal("6000"), new BigDecimal("4000")));
+        when(financeIntegrationClient.getCarbonTotals(companyId)).thenReturn(
+                new FinanceIntegrationClient.CarbonTotals(new BigDecimal("50.5"), BigDecimal.ZERO, BigDecimal.ZERO));
+
+        Map<String, Object> report = service.getConsolidatedReport();
+
+        assertThat(report.get("totalRevenue")).isEqualTo(new BigDecimal("10000"));
+        assertThat(report.get("totalMargin")).isEqualTo(new BigDecimal("4000"));
+        assertThat(report.get("totalCo2EmissionsKg")).isEqualTo(new BigDecimal("50.5"));
+    }
+
+    @Test
+    @DisplayName("getConsolidatedReport → Finance non configurée → dégradation gracieuse (zéro, pas d'exception)")
+    void getConsolidatedReport_financeUnavailable_gracefulDegradation() {
+        UUID companyId = TenantContext.get();
+        when(branchRepo.findByBranchCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
+        when(branchRepo.findByParentCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
+        when(branchRepo.countByParentCompanyId(companyId)).thenReturn(0L);
+        when(companyRepo.findById(companyId)).thenReturn(Optional.empty());
+        when(financeIntegrationClient.getFinancialTotals(companyId))
+                .thenThrow(new FinanceIntegrationClient.FinanceIntegrationException("non configurée"));
+        when(financeIntegrationClient.getCarbonTotals(companyId))
+                .thenThrow(new FinanceIntegrationClient.FinanceIntegrationException("non configurée"));
+
+        Map<String, Object> report = service.getConsolidatedReport();
+
+        assertThat(report.get("totalRevenue")).isEqualTo(BigDecimal.ZERO);
+        assertThat(report.get("totalCo2EmissionsKg")).isEqualTo(BigDecimal.ZERO);
+    }
 
     @Test
     @DisplayName("transferGoods → crée un transfert PENDING quand les deux filiales appartiennent à la société")

@@ -60,24 +60,17 @@ const DeniedPartyScreening = lazy(() => import('./pages/DeniedPartyScreening'));
 const LandedCostCalculator = lazy(() => import('./pages/LandedCostCalculator'));
 const DocumentParser = lazy(() => import('./pages/DocumentParser'));
 const HsClassification = lazy(() => import('./pages/HsClassification'));
-const FinancialReports = lazy(() => import('./pages/FinancialReports'));
 const QualityDashboard = lazy(() => import('./pages/QualityDashboard'));
 const ApprovalWorkflows = lazy(() => import('./pages/ApprovalWorkflows'));
 const OrchestrationSuggestions = lazy(() => import('./pages/OrchestrationSuggestions'));
-const CarbonDashboard = lazy(() => import('./pages/CarbonDashboard'));
-const ClientInvoicing = lazy(() => import('./pages/ClientInvoicing'));
 const ECommerce = lazy(() => import('./pages/ECommerce'));
 const Academy = lazy(() => import('./pages/Academy'));
-const FinanceSupplyChain = lazy(() => import('./pages/FinanceSupplyChain'));
 const MultiBranch = lazy(() => import('./pages/MultiBranch'));
-const CsrdReport = lazy(() => import('./pages/CsrdReport'));
-const FintechPage = lazy(() => import('./pages/FintechPage'));
 const EmailIntake = lazy(() => import('./pages/EmailIntake'));
 const ApiKeys = lazy(() => import('./pages/ApiKeys'));
 const Webhooks = lazy(() => import('./pages/Webhooks'));
 const CompanySettings = lazy(() => import('./pages/CompanySettings'));
 const RoleManagement = lazy(() => import('./pages/RoleManagement'));
-const PaymentTerms = lazy(() => import('./pages/PaymentTerms'));
 const TaricData = lazy(() => import('./pages/TaricData'));
 const FrenchFiscal = lazy(() => import('./pages/FrenchFiscal'));
 const Eur1Certificates = lazy(() => import('./pages/Eur1Certificates'));
@@ -220,26 +213,19 @@ function AppRoutes() {
               <Route path="/document-parser" element={<ProtectedRoute requiredRole="MANAGER"><DocumentParser /></ProtectedRoute>} />
 
               {/* Protected Routes — P3 Enterprise */}
-              <Route path="/financials" element={<ProtectedRoute requireAdmin><FinancialReports /></ProtectedRoute>} />
               <Route path="/quality" element={<ProtectedRoute requiredRole="MANAGER"><QualityDashboard /></ProtectedRoute>} />
 
               {/* Protected Routes — P4 Enterprise */}
               <Route path="/approvals" element={<ProtectedRoute requiredRole="MANAGER"><ApprovalWorkflows /></ProtectedRoute>} />
-              <Route path="/carbon" element={<ProtectedRoute requiredRole="MANAGER"><CarbonDashboard /></ProtectedRoute>} />
-              <Route path="/client-invoices" element={<ProtectedRoute requireAdmin><ClientInvoicing /></ProtectedRoute>} />
               <Route path="/ecommerce" element={<ProtectedRoute requiredRole="MANAGER"><ECommerce /></ProtectedRoute>} />
-              <Route path="/fintech" element={<ProtectedRoute requireAdmin><FintechPage /></ProtectedRoute>} />
               <Route path="/academy" element={<ProtectedRoute><Academy /></ProtectedRoute>} />
-              <Route path="/finance" element={<ProtectedRoute requireAdmin><FinanceSupplyChain /></ProtectedRoute>} />
               <Route path="/branches" element={<ProtectedRoute requireAdmin><MultiBranch /></ProtectedRoute>} />
-              <Route path="/csrd" element={<ProtectedRoute requireAdmin><CsrdReport /></ProtectedRoute>} />
               <Route path="/email-intake" element={<ProtectedRoute requireAdmin><EmailIntake /></ProtectedRoute>} />
               <Route path="/orchestration-suggestions" element={<ProtectedRoute requiredRole="MANAGER"><OrchestrationSuggestions /></ProtectedRoute>} />
               <Route path="/api-keys" element={<ProtectedRoute requireAdmin><ApiKeys /></ProtectedRoute>} />
               <Route path="/webhooks" element={<ProtectedRoute requireAdmin><Webhooks /></ProtectedRoute>} />
               <Route path="/company-settings" element={<ProtectedRoute requireAdmin><CompanySettings /></ProtectedRoute>} />
               <Route path="/roles" element={<ProtectedRoute requireAdmin><RoleManagement /></ProtectedRoute>} />
-              <Route path="/payment-terms" element={<ProtectedRoute requiredRole="MANAGER"><PaymentTerms /></ProtectedRoute>} />
               <Route path="/taric" element={<ProtectedRoute requiredRole="MANAGER"><TaricData /></ProtectedRoute>} />
               <Route path="/french-fiscal" element={<ProtectedRoute requireAdmin><FrenchFiscal /></ProtectedRoute>} />
               <Route path="/eur1" element={<ProtectedRoute requiredRole="MANAGER"><Eur1Certificates /></ProtectedRoute>} />

@@ -1,7 +1,8 @@
 package com.incokalk.controller.config;
 
 import com.incokalk.service.CurrencyExchangeService;
-import com.incokalk.service.FinancialReportingService;
+import com.incokalk.service.integration.finance.FinanceIntegrationClient;
+import com.incokalk.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ import java.util.*;
 public class CurrencyController {
 
     private final CurrencyExchangeService exchangeService;
-    private final FinancialReportingService financialReportingService;
+    private final FinanceIntegrationClient financeIntegrationClient;
 
     @GetMapping
     @Operation(summary = "Lister les devises supportées")
@@ -83,8 +84,9 @@ public class CurrencyController {
     }
 
     @GetMapping("/exposure-report")
-    @Operation(summary = "Rapport d exposition aux changes (FX risk)")
+    @Operation(summary = "Rapport d exposition aux changes (FX risk)",
+            description = "Lu depuis hubs/finance via FinanceIntegrationClient (voir Paramètres > Intégration Finance & Trésorerie)")
     public ResponseEntity<Map<String, Object>> getFxExposureReport() {
-        return ResponseEntity.ok(financialReportingService.getFxExposureReport());
+        return ResponseEntity.ok(financeIntegrationClient.getFxExposureReport(TenantContext.get()));
     }
 }

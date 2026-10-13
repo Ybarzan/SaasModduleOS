@@ -223,6 +223,10 @@ incokalk:
   integration:
     fleethub:
       base-url: ${FLEETHUB_URL:http://localhost:8090}
+    # Finance & Trésorerie (porté dans hubs/finance) -- voir
+    # service/integration/finance/FinanceIntegrationClient.
+    finance:
+      base-url: ${FINANCE_URL:http://localhost:8093}
 
 # ===========================================
 # Configuration Swagger / OpenAPI
