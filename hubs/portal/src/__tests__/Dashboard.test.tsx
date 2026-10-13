@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import Dashboard from '../pages/Dashboard';
@@ -12,6 +12,9 @@ vi.mock('../lib/praxioApi', async () => {
       getDashboard: vi.fn(),
       getKeysStatus: vi.fn(),
       updateKeys: vi.fn(),
+      getSsoStatus: vi.fn(),
+      updateSsoCredentials: vi.fn(),
+      launchSso: vi.fn(),
     },
   };
 });
@@ -36,10 +39,20 @@ const allUnconfiguredKeys = {
   logistixConfigured: false,
 };
 
+const allUnconfiguredSso = {
+  complianceEngineConfigured: false,
+  complianceEngineEmail: null,
+  fleetHubConfigured: false,
+  fleetHubEmail: null,
+  logistixConfigured: false,
+  logistixEmail: null,
+};
+
 describe('Dashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStorage.clear();
+    vi.mocked(praxioAPI.getSsoStatus).mockResolvedValue(allUnconfiguredSso);
   });
 
   it('shows a login gate when no password is stored', () => {
@@ -65,9 +78,10 @@ describe('Dashboard', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'Entrer' }));
 
-    expect(await screen.findByText('Compliance Engine')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Compliance Engine' })).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
-    expect(screen.getAllByText('Non configuré')).toHaveLength(1);
+    const fleetHubHeading = screen.getByRole('heading', { name: 'Fleet Hub' });
+    expect(within(fleetHubHeading.parentElement!).getByText('Non configuré')).toBeInTheDocument();
     expect(screen.getByText('Inaccessible')).toBeInTheDocument();
   });
 
@@ -102,7 +116,8 @@ describe('Dashboard', () => {
     await screen.findByText('Fleet Hub (X-Internal-Integration-Key)');
     const [, fleetHubInput] = screen.getAllByPlaceholderText('Coller la clé…');
     fireEvent.change(fleetHubInput, { target: { value: 'fh-key-123' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Enregistrer' }));
+    const [apiKeysSaveButton] = screen.getAllByRole('button', { name: 'Enregistrer' });
+    fireEvent.click(apiKeysSaveButton);
 
     await waitFor(() => {
       expect(praxioAPI.updateKeys).toHaveBeenCalledWith('secret', {
@@ -112,5 +127,81 @@ describe('Dashboard', () => {
       });
     });
     expect(await screen.findByText('Clés enregistrées')).toBeInTheDocument();
+  });
+
+  it('saves SSO credentials from the SSO settings panel', async () => {
+    vi.mocked(praxioAPI.getDashboard).mockResolvedValue(notConfiguredDashboard);
+    vi.mocked(praxioAPI.getKeysStatus).mockResolvedValue(allUnconfiguredKeys);
+    vi.mocked(praxioAPI.updateSsoCredentials).mockResolvedValue({
+      ...allUnconfiguredSso,
+      fleetHubConfigured: true,
+      fleetHubEmail: 'ops@acme.fr',
+    });
+    renderDashboard();
+
+    fireEvent.change(screen.getByPlaceholderText('Mot de passe administrateur'), {
+      target: { value: 'secret' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Entrer' }));
+
+    await screen.findByText('Paramètres — connexion automatique (SSO)');
+    const [, fleetHubEmailInput] = screen.getAllByPlaceholderText('Email du compte…');
+    const [, fleetHubPasswordInput] = screen.getAllByPlaceholderText('Mot de passe…');
+    fireEvent.change(fleetHubEmailInput, { target: { value: 'ops@acme.fr' } });
+    fireEvent.change(fleetHubPasswordInput, { target: { value: 'secret-pw' } });
+    const [, ssoSaveButton] = screen.getAllByRole('button', { name: 'Enregistrer' });
+    fireEvent.click(ssoSaveButton);
+
+    await waitFor(() => {
+      expect(praxioAPI.updateSsoCredentials).toHaveBeenCalledWith('secret', {
+        complianceEngineEmail: undefined,
+        complianceEnginePassword: undefined,
+        fleetHubEmail: 'ops@acme.fr',
+        fleetHubPassword: 'secret-pw',
+        logistixEmail: undefined,
+        logistixPassword: undefined,
+      });
+    });
+    expect(await screen.findByText('Identifiants SSO enregistrés')).toBeInTheDocument();
+    expect(screen.getByText('ops@acme.fr')).toBeInTheDocument();
+  });
+
+  it('shows an "ouvrir" button only for hubs with SSO configured, and redirects on click', async () => {
+    const originalLocation = window.location;
+    Object.defineProperty(window, 'location', {
+      writable: true,
+      value: { ...originalLocation, href: '' },
+    });
+
+    vi.mocked(praxioAPI.getDashboard).mockResolvedValue(notConfiguredDashboard);
+    vi.mocked(praxioAPI.getKeysStatus).mockResolvedValue(allUnconfiguredKeys);
+    vi.mocked(praxioAPI.getSsoStatus).mockResolvedValue({
+      ...allUnconfiguredSso,
+      fleetHubConfigured: true,
+      fleetHubEmail: 'ops@acme.fr',
+    });
+    vi.mocked(praxioAPI.launchSso).mockResolvedValue({
+      redirectUrl: 'http://fh-frontend.test/sso-entry#payload',
+    });
+    renderDashboard();
+
+    fireEvent.change(screen.getByPlaceholderText('Mot de passe administrateur'), {
+      target: { value: 'secret' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Entrer' }));
+
+    await screen.findByRole('heading', { name: 'Fleet Hub' });
+    const launchButtons = await screen.findAllByRole('button', { name: '> ouvrir' });
+    expect(launchButtons).toHaveLength(1);
+    fireEvent.click(launchButtons[0]);
+
+    await waitFor(() => {
+      expect(praxioAPI.launchSso).toHaveBeenCalledWith('secret', 'fleetHub');
+    });
+    await waitFor(() => {
+      expect(window.location.href).toBe('http://fh-frontend.test/sso-entry#payload');
+    });
+
+    Object.defineProperty(window, 'location', { writable: true, value: originalLocation });
   });
 });

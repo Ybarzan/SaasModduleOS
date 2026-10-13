@@ -36,6 +36,19 @@ describe('AuthContext', () => {
     expect(localStorage.getItem('fh_user')).toContain('"username":"admin"')
   })
 
+  it('loginWithSession stores the relayed SSO response without any network call', () => {
+    const { result } = renderHook(() => useAuth(), { wrapper })
+
+    act(() => {
+      result.current.loginWithSession({ token: 'jwt-sso', username: 'ops', role: 'ADMIN' })
+    })
+
+    expect(api.post).not.toHaveBeenCalled()
+    expect(result.current.user.username).toBe('ops')
+    expect(localStorage.getItem('fh_token')).toBe('jwt-sso')
+    expect(localStorage.getItem('fh_user')).toContain('"username":"ops"')
+  })
+
   it('logs out and clears the session', async () => {
     localStorage.setItem('fh_user', JSON.stringify({ username: 'admin' }))
     const { result } = renderHook(() => useAuth(), { wrapper })

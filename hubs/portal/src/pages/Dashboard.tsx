@@ -5,7 +5,9 @@ import {
   UnauthorizedError,
   type CrossHubDashboard,
   type DashboardKeysStatus,
+  type HubId,
   type HubStatus,
+  type SsoCredentialsStatus,
 } from '../lib/praxioApi';
 
 const STORAGE_KEY = 'praxio-admin-password';
@@ -38,16 +40,23 @@ export default function Dashboard() {
   const [password, setPassword] = useState<string | null>(null);
   const [dashboard, setDashboard] = useState<CrossHubDashboard | null>(null);
   const [keysStatus, setKeysStatus] = useState<DashboardKeysStatus | null>(null);
+  const [ssoStatus, setSsoStatus] = useState<SsoCredentialsStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [launchError, setLaunchError] = useState('');
 
   const load = async (pwd: string) => {
     setLoading(true);
     setError('');
     try {
-      const [dash, keys] = await Promise.all([praxioAPI.getDashboard(pwd), praxioAPI.getKeysStatus(pwd)]);
+      const [dash, keys, sso] = await Promise.all([
+        praxioAPI.getDashboard(pwd),
+        praxioAPI.getKeysStatus(pwd),
+        praxioAPI.getSsoStatus(pwd),
+      ]);
       setDashboard(dash);
       setKeysStatus(keys);
+      setSsoStatus(sso);
       setPassword(pwd);
       storePassword(pwd);
     } catch (err) {
@@ -78,6 +87,18 @@ export default function Dashboard() {
     setPassword(null);
     setDashboard(null);
     setKeysStatus(null);
+    setSsoStatus(null);
+  };
+
+  const launch = async (hub: HubId) => {
+    if (!password) return;
+    setLaunchError('');
+    try {
+      const { redirectUrl } = await praxioAPI.launchSso(password, hub);
+      window.location.href = redirectUrl;
+    } catch (err) {
+      setLaunchError(err instanceof Error ? err.message : "Échec de l'ouverture du hub");
+    }
   };
 
   if (!password) {
@@ -106,12 +127,27 @@ export default function Dashboard() {
 
       <main className="max-w-5xl mx-auto px-6 py-12 space-y-10">
         {error && <div className="border border-danger/40 bg-danger/10 text-danger text-sm px-4 py-3">{error}</div>}
+        {launchError && (
+          <div className="border border-danger/40 bg-danger/10 text-danger text-sm px-4 py-3">{launchError}</div>
+        )}
 
-        {dashboard && (
+        {dashboard && ssoStatus && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <ComplianceEngineCard status={dashboard.complianceEngine} />
-            <FleetHubCard status={dashboard.fleetHub} />
-            <LogistixCard status={dashboard.logistix} />
+            <ComplianceEngineCard
+              status={dashboard.complianceEngine}
+              ssoConfigured={ssoStatus.complianceEngineConfigured}
+              onLaunch={() => launch('complianceEngine')}
+            />
+            <FleetHubCard
+              status={dashboard.fleetHub}
+              ssoConfigured={ssoStatus.fleetHubConfigured}
+              onLaunch={() => launch('fleetHub')}
+            />
+            <LogistixCard
+              status={dashboard.logistix}
+              ssoConfigured={ssoStatus.logistixConfigured}
+              onLaunch={() => launch('logistix')}
+            />
           </div>
         )}
 
@@ -121,6 +157,14 @@ export default function Dashboard() {
             keysStatus={keysStatus}
             onUpdated={(status) => setKeysStatus(status)}
             onReload={() => load(password)}
+          />
+        )}
+
+        {ssoStatus && (
+          <SsoSettingsPanel
+            password={password}
+            ssoStatus={ssoStatus}
+            onUpdated={(status) => setSsoStatus(status)}
           />
         )}
       </main>
@@ -190,10 +234,14 @@ function StatusBadge({ status }: { status: HubStatus<unknown>['status'] }) {
 function HubCardShell({
   title,
   status,
+  ssoConfigured,
+  onLaunch,
   children,
 }: {
   title: string;
   status: HubStatus<unknown>['status'];
+  ssoConfigured: boolean;
+  onLaunch: () => void;
   children?: React.ReactNode;
 }) {
   return (
@@ -211,6 +259,15 @@ function HubCardShell({
       ) : (
         <p className="text-sm text-ink-soft">Le hub n'a pas répondu. Réessayez plus tard.</p>
       )}
+      {ssoConfigured && (
+        <button
+          type="button"
+          onClick={onLaunch}
+          className="btn-secondary self-start mt-auto"
+        >
+          &gt; ouvrir
+        </button>
+      )}
     </div>
   );
 }
@@ -224,9 +281,17 @@ function Kpi({ label, value }: { label: string; value: string | number }) {
   );
 }
 
-function ComplianceEngineCard({ status }: { status: CrossHubDashboard['complianceEngine'] }) {
+function ComplianceEngineCard({
+  status,
+  ssoConfigured,
+  onLaunch,
+}: {
+  status: CrossHubDashboard['complianceEngine'];
+  ssoConfigured: boolean;
+  onLaunch: () => void;
+}) {
   return (
-    <HubCardShell title="Compliance Engine" status={status.status}>
+    <HubCardShell title="Compliance Engine" status={status.status} ssoConfigured={ssoConfigured} onLaunch={onLaunch}>
       {status.data && (
         <div className="space-y-2">
           <Kpi label="Simulations ce mois" value={status.data.simulationsThisMonth} />
@@ -238,9 +303,17 @@ function ComplianceEngineCard({ status }: { status: CrossHubDashboard['complianc
   );
 }
 
-function FleetHubCard({ status }: { status: CrossHubDashboard['fleetHub'] }) {
+function FleetHubCard({
+  status,
+  ssoConfigured,
+  onLaunch,
+}: {
+  status: CrossHubDashboard['fleetHub'];
+  ssoConfigured: boolean;
+  onLaunch: () => void;
+}) {
   return (
-    <HubCardShell title="Fleet Hub" status={status.status}>
+    <HubCardShell title="Fleet Hub" status={status.status} ssoConfigured={ssoConfigured} onLaunch={onLaunch}>
       {status.data && (
         <div className="space-y-2">
           <Kpi label="Expéditions actives" value={status.data.activeShipments} />
@@ -252,9 +325,17 @@ function FleetHubCard({ status }: { status: CrossHubDashboard['fleetHub'] }) {
   );
 }
 
-function LogistixCard({ status }: { status: CrossHubDashboard['logistix'] }) {
+function LogistixCard({
+  status,
+  ssoConfigured,
+  onLaunch,
+}: {
+  status: CrossHubDashboard['logistix'];
+  ssoConfigured: boolean;
+  onLaunch: () => void;
+}) {
   return (
-    <HubCardShell title="Logistix" status={status.status}>
+    <HubCardShell title="Logistix" status={status.status} ssoConfigured={ssoConfigured} onLaunch={onLaunch}>
       {status.data && (
         <div className="space-y-2">
           <Kpi label="Entrepôts actifs" value={status.data.activeWarehouses} />
@@ -347,6 +428,154 @@ function SettingsPanel({
         >
           {saving ? 'Enregistrement…' : 'Enregistrer'}
         </button>
+      </div>
+    </div>
+  );
+}
+
+function SsoSettingsPanel({
+  password,
+  ssoStatus,
+  onUpdated,
+}: {
+  password: string;
+  ssoStatus: SsoCredentialsStatus;
+  onUpdated: (status: SsoCredentialsStatus) => void;
+}) {
+  const [complianceEngineEmail, setComplianceEngineEmail] = useState('');
+  const [complianceEnginePassword, setComplianceEnginePassword] = useState('');
+  const [fleetHubEmail, setFleetHubEmail] = useState('');
+  const [fleetHubPassword, setFleetHubPassword] = useState('');
+  const [logistixEmail, setLogistixEmail] = useState('');
+  const [logistixPassword, setLogistixPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [error, setError] = useState('');
+
+  const save = async () => {
+    setSaving(true);
+    setError('');
+    setNotice('');
+    try {
+      const status = await praxioAPI.updateSsoCredentials(password, {
+        complianceEngineEmail: complianceEngineEmail || undefined,
+        complianceEnginePassword: complianceEnginePassword || undefined,
+        fleetHubEmail: fleetHubEmail || undefined,
+        fleetHubPassword: fleetHubPassword || undefined,
+        logistixEmail: logistixEmail || undefined,
+        logistixPassword: logistixPassword || undefined,
+      });
+      onUpdated(status);
+      setComplianceEngineEmail('');
+      setComplianceEnginePassword('');
+      setFleetHubEmail('');
+      setFleetHubPassword('');
+      setLogistixEmail('');
+      setLogistixPassword('');
+      setNotice('Identifiants SSO enregistrés');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Échec de l'enregistrement");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="bg-surface border border-line overflow-hidden">
+      <div className="px-6 py-4 border-b border-line">
+        <h2 className="text-lg font-semibold">Paramètres — connexion automatique (SSO)</h2>
+        <p className="text-sm text-ink-soft mt-1">
+          Les identifiants d'un compte de chaque module, utilisés uniquement pour vous connecter
+          automatiquement en un clic (« ouvrir ») depuis ce tableau de bord -- jamais affichés ni
+          renvoyés après enregistrement.
+        </p>
+      </div>
+      <div className="px-6 py-4 space-y-5">
+        {error && <p className="text-sm text-danger">{error}</p>}
+        {notice && <p className="text-sm text-success">{notice}</p>}
+
+        <SsoCredentialField
+          label="Compliance Engine"
+          configured={ssoStatus.complianceEngineConfigured}
+          configuredEmail={ssoStatus.complianceEngineEmail}
+          email={complianceEngineEmail}
+          onEmailChange={setComplianceEngineEmail}
+          password={complianceEnginePassword}
+          onPasswordChange={setComplianceEnginePassword}
+        />
+        <SsoCredentialField
+          label="Fleet Hub"
+          configured={ssoStatus.fleetHubConfigured}
+          configuredEmail={ssoStatus.fleetHubEmail}
+          email={fleetHubEmail}
+          onEmailChange={setFleetHubEmail}
+          password={fleetHubPassword}
+          onPasswordChange={setFleetHubPassword}
+        />
+        <SsoCredentialField
+          label="Logistix"
+          configured={ssoStatus.logistixConfigured}
+          configuredEmail={ssoStatus.logistixEmail}
+          email={logistixEmail}
+          onEmailChange={setLogistixEmail}
+          password={logistixPassword}
+          onPasswordChange={setLogistixPassword}
+        />
+
+        <button
+          type="button"
+          onClick={save}
+          disabled={saving}
+          className="btn-primary disabled:opacity-50"
+        >
+          {saving ? 'Enregistrement…' : 'Enregistrer'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function SsoCredentialField({
+  label,
+  configured,
+  configuredEmail,
+  email,
+  onEmailChange,
+  password,
+  onPasswordChange,
+}: {
+  label: string;
+  configured: boolean;
+  configuredEmail: string | null;
+  email: string;
+  onEmailChange: (value: string) => void;
+  password: string;
+  onPasswordChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-sm text-ink-soft">
+        <span>{label}</span>
+        <span className={`tag ${configured ? 'tag-live' : 'tag-soon'}`}>
+          <span className="tag-dot" />
+          {configured && configuredEmail ? configuredEmail : 'Non configuré'}
+        </span>
+      </div>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => onEmailChange(e.target.value)}
+          placeholder={configured ? "Remplacer l'email…" : 'Email du compte…'}
+          className="flex-1 px-3 py-2 border border-line bg-bg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+        />
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => onPasswordChange(e.target.value)}
+          placeholder={configured ? 'Remplacer le mot de passe…' : 'Mot de passe…'}
+          className="flex-1 px-3 py-2 border border-line bg-bg text-sm font-mono focus:ring-2 focus:ring-accent focus:border-transparent"
+        />
       </div>
     </div>
   );

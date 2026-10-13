@@ -34,7 +34,10 @@ class CrossHubDashboardServiceTest {
     void setUp() {
         restTemplate = mock(RestTemplate.class);
         dashboardConfigService = mock(DashboardConfigService.class);
-        hubUrls = new HubUrlsProperties("http://ce.test", "http://fh.test", "http://lx.test");
+        hubUrls = new HubUrlsProperties(
+                "http://ce.test", "http://ce-frontend.test",
+                "http://fh.test", "http://fh-frontend.test",
+                "http://lx.test", "http://lx-frontend.test");
         service = new CrossHubDashboardService(restTemplate, dashboardConfigService, hubUrls);
     }
 

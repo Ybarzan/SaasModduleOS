@@ -22,6 +22,7 @@ const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const SsoEntry = lazy(() => import('./pages/SsoEntry'));
 const Simulation = lazy(() => import('./pages/Simulation'));
 const Calculator = lazy(() => import('./pages/Calculator'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -98,7 +99,7 @@ function PageLoader() {
 // Routes that keep the marketing chrome (Navbar/Footer) even for a logged-in user —
 // everything else authenticated renders inside AppLayout (sidebar app shell).
 const PUBLIC_PATHS = new Set([
-  '/', '/login', '/register', '/forgot-password', '/reset-password', '/verify-email',
+  '/', '/login', '/register', '/forgot-password', '/reset-password', '/verify-email', '/sso-entry',
   '/pricing', '/pricing-comparison', '/faq', '/guide-incoterms', '/hubs', '/cas-usage', '/cout-erreur-douane', '/developers', '/status', '/confidentialite', '/cgu', '/mentions-legales',
   '/douane', '/change', '/poids-volumetrique', '/assurance-cargo',
 ]);
@@ -167,6 +168,7 @@ function AppRoutes() {
               <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
               <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
               <Route path="/verify-email" element={<VerifyEmail />} />
+              <Route path="/sso-entry" element={<SsoEntry />} />
               <Route path="/s/landed-cost/:token" element={<SharedLandedCost />} />
 
               {/* Protected Routes — Any authenticated user */}

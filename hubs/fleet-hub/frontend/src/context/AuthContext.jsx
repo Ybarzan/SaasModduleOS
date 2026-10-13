@@ -41,6 +41,19 @@ export function AuthProvider({ children }) {
     return res.data
   }, [])
 
+  // Relais SSO depuis Praxio (voir hubs/portal/backend SsoService + pages/SsoEntry.jsx) :
+  // la réponse de connexion a déjà été obtenue côté serveur par Praxio, donc contrairement
+  // à `login`/`register` il n'y a aucun appel réseau ici -- seulement la même mise à jour
+  // d'état que leur dernière étape. Le token est toujours stocké en localStorage (y compris
+  // web, pas seulement natif) : le navigateur n'a jamais reçu le cookie fh_token de
+  // fleet-hub (la connexion a eu lieu entre Praxio et fleet-hub, pas entre ce navigateur et
+  // fleet-hub), donc services/api.js doit pouvoir envoyer le jeton via Authorization: Bearer.
+  const loginWithSession = useCallback((data) => {
+    localStorage.setItem('fh_token', data.token)
+    localStorage.setItem('fh_user', JSON.stringify(data))
+    setUser(data)
+  }, [])
+
   const register = useCallback(async (payload) => {
     const res = await api.post('/auth/register', payload)
     if (Capacitor.isNativePlatform()) localStorage.setItem('fh_token', res.data.token)
@@ -62,7 +75,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, loginWithSession, register, logout }}>
       {children}
     </AuthContext.Provider>
   )

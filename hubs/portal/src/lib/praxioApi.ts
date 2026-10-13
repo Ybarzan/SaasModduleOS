@@ -44,6 +44,26 @@ export interface DashboardKeysUpdate {
   logistixApiKey?: string;
 }
 
+export type HubId = 'complianceEngine' | 'fleetHub' | 'logistix';
+
+export interface SsoCredentialsStatus {
+  complianceEngineConfigured: boolean;
+  complianceEngineEmail: string | null;
+  fleetHubConfigured: boolean;
+  fleetHubEmail: string | null;
+  logistixConfigured: boolean;
+  logistixEmail: string | null;
+}
+
+export interface SsoCredentialsUpdate {
+  complianceEngineEmail?: string;
+  complianceEnginePassword?: string;
+  fleetHubEmail?: string;
+  fleetHubPassword?: string;
+  logistixEmail?: string;
+  logistixPassword?: string;
+}
+
 /** Levée sur un 401 (mauvais mot de passe) -- distincte d'une erreur réseau générique. */
 export class UnauthorizedError extends Error {
   constructor() {
@@ -68,6 +88,10 @@ async function request<T>(path: string, password: string, init?: RequestInit): P
   return res.json() as Promise<T>;
 }
 
+export interface SsoLaunchResult {
+  redirectUrl: string;
+}
+
 export const praxioAPI = {
   getDashboard: (password: string) => request<CrossHubDashboard>('/api/dashboard', password),
   getKeysStatus: (password: string) => request<DashboardKeysStatus>('/api/dashboard/keys', password),
@@ -77,4 +101,14 @@ export const praxioAPI = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(keys),
     }),
+
+  getSsoStatus: (password: string) => request<SsoCredentialsStatus>('/api/sso/credentials', password),
+  updateSsoCredentials: (password: string, credentials: SsoCredentialsUpdate) =>
+    request<SsoCredentialsStatus>('/api/sso/credentials', password, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    }),
+  launchSso: (password: string, hub: HubId) =>
+    request<SsoLaunchResult>(`/api/sso/launch/${hub}`, password, { method: 'POST' }),
 };
