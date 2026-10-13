@@ -21,7 +21,7 @@ public class SsoCredentialsService {
     @Transactional(readOnly = true)
     public SsoCredentialsStatusDto getStatus() {
         SsoCredentials creds = repository.findById(SsoCredentials.SINGLETON_ID).orElse(null);
-        return creds == null ? new SsoCredentialsStatusDto(false, null, false, null, false, null) : toStatus(creds);
+        return creds == null ? new SsoCredentialsStatusDto(false, null, false, null, false, null, false, null) : toStatus(creds);
     }
 
     @Transactional
@@ -47,6 +47,12 @@ public class SsoCredentialsService {
         if (request.logistixPassword() != null) {
             creds.setLogistixPassword(blankToNull(request.logistixPassword()));
         }
+        if (request.financeEmail() != null) {
+            creds.setFinanceEmail(blankToNull(request.financeEmail()));
+        }
+        if (request.financePassword() != null) {
+            creds.setFinancePassword(blankToNull(request.financePassword()));
+        }
         SsoCredentials saved = repository.save(creds);
         return toStatus(saved);
     }
@@ -65,7 +71,9 @@ public class SsoCredentialsService {
                 isConfigured(creds.getFleetHubEmail(), creds.getFleetHubPassword()),
                 creds.getFleetHubEmail(),
                 isConfigured(creds.getLogistixEmail(), creds.getLogistixPassword()),
-                creds.getLogistixEmail());
+                creds.getLogistixEmail(),
+                isConfigured(creds.getFinanceEmail(), creds.getFinancePassword()),
+                creds.getFinanceEmail());
     }
 
     private boolean isConfigured(String email, String password) {

@@ -3,6 +3,7 @@ package com.praxio.service;
 import com.praxio.config.HubUrlsProperties;
 import com.praxio.dto.ComplianceEngineSummaryDto;
 import com.praxio.dto.CrossHubDashboardDto;
+import com.praxio.dto.FinanceSummaryDto;
 import com.praxio.dto.FleetHubSummaryDto;
 import com.praxio.dto.HubStatus;
 import com.praxio.dto.LogistixSummaryDto;
@@ -55,7 +56,14 @@ public class CrossHubDashboardService {
                 LogistixSummaryDto.class,
                 "logistix");
 
-        return new CrossHubDashboardDto(complianceEngine, fleetHub, logistix);
+        HubStatus<FinanceSummaryDto> finance = fetch(
+                config.getFinanceApiKey(),
+                "X-Internal-Integration-Key",
+                hubUrls.financeUrl() + "/v1/internal/dashboard-summary",
+                FinanceSummaryDto.class,
+                "finance");
+
+        return new CrossHubDashboardDto(complianceEngine, fleetHub, logistix, finance);
     }
 
     private <T> HubStatus<T> fetch(String apiKey, String headerName, String url, Class<T> responseType, String hubName) {

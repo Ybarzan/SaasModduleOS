@@ -39,4 +39,7 @@ public class SsoCredentials {
 
     private String logistixEmail;
     private String logistixPassword;
+
+    private String financeEmail;
+    private String financePassword;
 }

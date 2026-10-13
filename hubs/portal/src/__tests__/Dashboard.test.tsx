@@ -32,12 +32,14 @@ const notConfiguredDashboard = {
   complianceEngine: { status: 'NOT_CONFIGURED' as const, data: null },
   fleetHub: { status: 'NOT_CONFIGURED' as const, data: null },
   logistix: { status: 'NOT_CONFIGURED' as const, data: null },
+  finance: { status: 'NOT_CONFIGURED' as const, data: null },
 };
 
 const allUnconfiguredKeys = {
   complianceEngineConfigured: false,
   fleetHubConfigured: false,
   logistixConfigured: false,
+  financeConfigured: false,
 };
 
 const allUnconfiguredSso = {
@@ -47,6 +49,8 @@ const allUnconfiguredSso = {
   fleetHubEmail: null,
   logistixConfigured: false,
   logistixEmail: null,
+  financeConfigured: false,
+  financeEmail: null,
 };
 
 const notConfiguredBilling = {
@@ -77,6 +81,7 @@ describe('Dashboard', () => {
       },
       fleetHub: { status: 'NOT_CONFIGURED', data: null },
       logistix: { status: 'UNREACHABLE', data: null },
+      finance: { status: 'NOT_CONFIGURED', data: null },
     });
     vi.mocked(praxioAPI.getKeysStatus).mockResolvedValue(allUnconfiguredKeys);
     renderDashboard();
@@ -165,6 +170,7 @@ describe('Dashboard', () => {
         complianceEngineApiKey: undefined,
         fleetHubApiKey: 'fh-key-123',
         logistixApiKey: undefined,
+        financeApiKey: undefined,
       });
     });
     expect(await screen.findByText('Clés enregistrées')).toBeInTheDocument();
@@ -201,6 +207,8 @@ describe('Dashboard', () => {
         fleetHubPassword: 'secret-pw',
         logistixEmail: undefined,
         logistixPassword: undefined,
+        financeEmail: undefined,
+        financePassword: undefined,
       });
     });
     expect(await screen.findByText('Identifiants SSO enregistrés')).toBeInTheDocument();

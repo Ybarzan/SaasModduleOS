@@ -4,5 +4,6 @@ package com.praxio.dto;
 public record DashboardKeysStatusDto(
         boolean complianceEngineConfigured,
         boolean fleetHubConfigured,
-        boolean logistixConfigured
+        boolean logistixConfigured,
+        boolean financeConfigured
 ) {}

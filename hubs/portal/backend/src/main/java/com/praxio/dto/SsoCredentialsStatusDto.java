@@ -7,5 +7,7 @@ public record SsoCredentialsStatusDto(
         boolean fleetHubConfigured,
         String fleetHubEmail,
         boolean logistixConfigured,
-        String logistixEmail
+        String logistixEmail,
+        boolean financeConfigured,
+        String financeEmail
 ) {}

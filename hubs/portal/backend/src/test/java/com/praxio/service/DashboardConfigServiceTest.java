@@ -45,7 +45,7 @@ class DashboardConfigServiceTest {
                 .thenAnswer(inv -> inv.getArgument(0));
 
         DashboardKeysStatusDto status = service.updateKeys(
-                new DashboardKeysRequest("ic_live_abc", "fleethub-key", null));
+                new DashboardKeysRequest("ic_live_abc", "fleethub-key", null, null));
 
         assertThat(status.complianceEngineConfigured()).isTrue();
         assertThat(status.fleetHubConfigured()).isTrue();
@@ -67,7 +67,7 @@ class DashboardConfigServiceTest {
         when(repository.save(org.mockito.ArgumentMatchers.any(DashboardConfig.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        service.updateKeys(new DashboardKeysRequest(null, "new-fleethub-key", null));
+        service.updateKeys(new DashboardKeysRequest(null, "new-fleethub-key", null, null));
 
         assertThat(existing.getComplianceEngineApiKey()).isEqualTo("existing-key");
         assertThat(existing.getFleetHubApiKey()).isEqualTo("new-fleethub-key");
@@ -84,7 +84,7 @@ class DashboardConfigServiceTest {
         when(repository.save(org.mockito.ArgumentMatchers.any(DashboardConfig.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        DashboardKeysStatusDto status = service.updateKeys(new DashboardKeysRequest("   ", null, null));
+        DashboardKeysStatusDto status = service.updateKeys(new DashboardKeysRequest("   ", null, null, null));
 
         assertThat(existing.getComplianceEngineApiKey()).isNull();
         assertThat(status.complianceEngineConfigured()).isFalse();

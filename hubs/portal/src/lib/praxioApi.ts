@@ -26,10 +26,16 @@ export interface LogistixSummary {
   openDiscrepancies: number;
 }
 
+export interface FinanceSummary {
+  overdueInvoicesCount: number;
+  overdueInvoicesAmount: number;
+}
+
 export interface CrossHubDashboard {
   complianceEngine: HubStatus<ComplianceEngineSummary>;
   fleetHub: HubStatus<FleetHubSummary>;
   logistix: HubStatus<LogistixSummary>;
+  finance: HubStatus<FinanceSummary>;
 }
 
 export interface ComplianceEngineBillingSummary {
@@ -62,15 +68,17 @@ export interface DashboardKeysStatus {
   complianceEngineConfigured: boolean;
   fleetHubConfigured: boolean;
   logistixConfigured: boolean;
+  financeConfigured: boolean;
 }
 
 export interface DashboardKeysUpdate {
   complianceEngineApiKey?: string;
   fleetHubApiKey?: string;
   logistixApiKey?: string;
+  financeApiKey?: string;
 }
 
-export type HubId = 'complianceEngine' | 'fleetHub' | 'logistix';
+export type HubId = 'complianceEngine' | 'fleetHub' | 'logistix' | 'finance';
 
 export interface SsoCredentialsStatus {
   complianceEngineConfigured: boolean;
@@ -79,6 +87,8 @@ export interface SsoCredentialsStatus {
   fleetHubEmail: string | null;
   logistixConfigured: boolean;
   logistixEmail: string | null;
+  financeConfigured: boolean;
+  financeEmail: string | null;
 }
 
 export interface SsoCredentialsUpdate {
@@ -88,6 +98,8 @@ export interface SsoCredentialsUpdate {
   fleetHubPassword?: string;
   logistixEmail?: string;
   logistixPassword?: string;
+  financeEmail?: string;
+  financePassword?: string;
 }
 
 /** Levée sur un 401 (mauvais mot de passe) -- distincte d'une erreur réseau générique. */

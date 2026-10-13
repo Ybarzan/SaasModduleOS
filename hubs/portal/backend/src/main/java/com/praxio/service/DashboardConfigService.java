@@ -21,7 +21,7 @@ public class DashboardConfigService {
     @Transactional(readOnly = true)
     public DashboardKeysStatusDto getStatus() {
         DashboardConfig config = repository.findById(DashboardConfig.SINGLETON_ID).orElse(null);
-        return config == null ? new DashboardKeysStatusDto(false, false, false) : toStatus(config);
+        return config == null ? new DashboardKeysStatusDto(false, false, false, false) : toStatus(config);
     }
 
     @Transactional
@@ -38,6 +38,9 @@ public class DashboardConfigService {
         if (request.logistixApiKey() != null) {
             config.setLogistixApiKey(blankToNull(request.logistixApiKey()));
         }
+        if (request.financeApiKey() != null) {
+            config.setFinanceApiKey(blankToNull(request.financeApiKey()));
+        }
         DashboardConfig saved = repository.save(config);
         return toStatus(saved);
     }
@@ -46,7 +49,8 @@ public class DashboardConfigService {
         return new DashboardKeysStatusDto(
                 isConfigured(config.getComplianceEngineApiKey()),
                 isConfigured(config.getFleetHubApiKey()),
-                isConfigured(config.getLogistixApiKey()));
+                isConfigured(config.getLogistixApiKey()),
+                isConfigured(config.getFinanceApiKey()));
     }
 
     /** Lecture interne pour l'agrégation cross-hub -- jamais exposée via l'API. */

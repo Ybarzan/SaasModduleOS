@@ -137,7 +137,7 @@ export default function Dashboard() {
         )}
 
         {dashboard && ssoStatus && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <ComplianceEngineCard
               status={dashboard.complianceEngine}
               ssoConfigured={ssoStatus.complianceEngineConfigured}
@@ -152,6 +152,11 @@ export default function Dashboard() {
               status={dashboard.logistix}
               ssoConfigured={ssoStatus.logistixConfigured}
               onLaunch={() => launch('logistix')}
+            />
+            <FinanceCard
+              status={dashboard.finance}
+              ssoConfigured={ssoStatus.financeConfigured}
+              onLaunch={() => launch('finance')}
             />
           </div>
         )}
@@ -364,6 +369,27 @@ function LogistixCard({
   );
 }
 
+function FinanceCard({
+  status,
+  ssoConfigured,
+  onLaunch,
+}: {
+  status: CrossHubDashboard['finance'];
+  ssoConfigured: boolean;
+  onLaunch: () => void;
+}) {
+  return (
+    <HubCardShell title="Finance" status={status.status} ssoConfigured={ssoConfigured} onLaunch={onLaunch}>
+      {status.data && (
+        <div className="space-y-2">
+          <Kpi label="Factures en retard" value={status.data.overdueInvoicesCount} />
+          <Kpi label="Montant en retard" value={formatAmount(status.data.overdueInvoicesAmount, 'EUR')} />
+        </div>
+      )}
+    </HubCardShell>
+  );
+}
+
 function formatAmount(amount: number, currency: string): string {
   return new Intl.NumberFormat('fr-FR', { style: 'currency', currency }).format(amount);
 }
@@ -523,6 +549,7 @@ function SettingsPanel({
   const [complianceEngineApiKey, setComplianceEngineApiKey] = useState('');
   const [fleetHubApiKey, setFleetHubApiKey] = useState('');
   const [logistixApiKey, setLogistixApiKey] = useState('');
+  const [financeApiKey, setFinanceApiKey] = useState('');
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
@@ -536,11 +563,13 @@ function SettingsPanel({
         complianceEngineApiKey: complianceEngineApiKey || undefined,
         fleetHubApiKey: fleetHubApiKey || undefined,
         logistixApiKey: logistixApiKey || undefined,
+        financeApiKey: financeApiKey || undefined,
       });
       onUpdated(status);
       setComplianceEngineApiKey('');
       setFleetHubApiKey('');
       setLogistixApiKey('');
+      setFinanceApiKey('');
       setNotice('Clés enregistrées');
       onReload();
     } catch (err) {
@@ -581,6 +610,12 @@ function SettingsPanel({
           value={logistixApiKey}
           onChange={setLogistixApiKey}
         />
+        <KeyField
+          label="Finance (X-Internal-Integration-Key)"
+          configured={keysStatus.financeConfigured}
+          value={financeApiKey}
+          onChange={setFinanceApiKey}
+        />
 
         <button
           type="button"
@@ -610,6 +645,8 @@ function SsoSettingsPanel({
   const [fleetHubPassword, setFleetHubPassword] = useState('');
   const [logistixEmail, setLogistixEmail] = useState('');
   const [logistixPassword, setLogistixPassword] = useState('');
+  const [financeEmail, setFinanceEmail] = useState('');
+  const [financePassword, setFinancePassword] = useState('');
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
@@ -626,6 +663,8 @@ function SsoSettingsPanel({
         fleetHubPassword: fleetHubPassword || undefined,
         logistixEmail: logistixEmail || undefined,
         logistixPassword: logistixPassword || undefined,
+        financeEmail: financeEmail || undefined,
+        financePassword: financePassword || undefined,
       });
       onUpdated(status);
       setComplianceEngineEmail('');
@@ -634,6 +673,8 @@ function SsoSettingsPanel({
       setFleetHubPassword('');
       setLogistixEmail('');
       setLogistixPassword('');
+      setFinanceEmail('');
+      setFinancePassword('');
       setNotice('Identifiants SSO enregistrés');
     } catch (err) {
       setError(err instanceof Error ? err.message : "Échec de l'enregistrement");
@@ -682,6 +723,15 @@ function SsoSettingsPanel({
           onEmailChange={setLogistixEmail}
           password={logistixPassword}
           onPasswordChange={setLogistixPassword}
+        />
+        <SsoCredentialField
+          label="Finance"
+          configured={ssoStatus.financeConfigured}
+          configuredEmail={ssoStatus.financeEmail}
+          email={financeEmail}
+          onEmailChange={setFinanceEmail}
+          password={financePassword}
+          onPasswordChange={setFinancePassword}
         />
 
         <button

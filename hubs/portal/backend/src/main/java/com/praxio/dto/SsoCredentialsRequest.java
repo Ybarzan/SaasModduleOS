@@ -11,5 +11,7 @@ public record SsoCredentialsRequest(
         String fleetHubEmail,
         String fleetHubPassword,
         String logistixEmail,
-        String logistixPassword
+        String logistixPassword,
+        String financeEmail,
+        String financePassword
 ) {}

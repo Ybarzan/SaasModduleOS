@@ -36,4 +36,7 @@ public class DashboardConfig {
 
     /** Clé d'intégration Praxio Logistix, via X-Internal-Integration-Key. */
     private String logistixApiKey;
+
+    /** Clé d'intégration interne Finance & Trésorerie, via X-Internal-Integration-Key. */
+    private String financeApiKey;
 }

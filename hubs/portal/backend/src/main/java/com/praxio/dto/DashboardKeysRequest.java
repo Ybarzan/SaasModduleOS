@@ -9,5 +9,6 @@ package com.praxio.dto;
 public record DashboardKeysRequest(
         String complianceEngineApiKey,
         String fleetHubApiKey,
-        String logistixApiKey
+        String logistixApiKey,
+        String financeApiKey
 ) {}

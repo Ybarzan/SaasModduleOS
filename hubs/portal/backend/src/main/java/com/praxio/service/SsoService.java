@@ -5,6 +5,7 @@ import com.praxio.config.HubUrlsProperties;
 import com.praxio.dto.SsoLaunchResultDto;
 import com.praxio.dto.sso.ComplianceEngineLoginResponse;
 import com.praxio.dto.sso.EmailLoginRequest;
+import com.praxio.dto.sso.FinanceLoginResponse;
 import com.praxio.dto.sso.FleetHubLoginResponse;
 import com.praxio.dto.sso.LogistixLoginResponse;
 import com.praxio.dto.sso.UsernameLoginRequest;
@@ -46,6 +47,7 @@ public class SsoService {
             case "complianceEngine" -> launchComplianceEngine(creds);
             case "fleetHub" -> launchFleetHub(creds);
             case "logistix" -> launchLogistix(creds);
+            case "finance" -> launchFinance(creds);
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hub inconnu : " + hub);
         };
     }
@@ -82,6 +84,16 @@ public class SsoService {
                 LogistixLoginResponse.class,
                 "logistix");
         return redirect(hubUrls.logistixFrontendUrl(), login);
+    }
+
+    private SsoLaunchResultDto launchFinance(SsoCredentials creds) {
+        requireConfigured(creds.getFinanceEmail(), creds.getFinancePassword(), "finance");
+        FinanceLoginResponse login = callLogin(
+                hubUrls.financeUrl() + "/v1/auth/login",
+                new EmailLoginRequest(creds.getFinanceEmail(), creds.getFinancePassword()),
+                FinanceLoginResponse.class,
+                "finance");
+        return redirect(hubUrls.financeFrontendUrl(), login);
     }
 
     private <TReq, TRes> TRes callLogin(String url, TReq requestBody, Class<TRes> responseType, String hubName) {

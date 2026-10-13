@@ -47,7 +47,7 @@ class SsoCredentialsServiceTest {
         when(repository.save(any(SsoCredentials.class))).thenAnswer(inv -> inv.getArgument(0));
 
         SsoCredentialsStatusDto status = service.updateCredentials(
-                new SsoCredentialsRequest("ops@acme.fr", "secret1", null, null, null, null));
+                new SsoCredentialsRequest("ops@acme.fr", "secret1", null, null, null, null, null, null));
 
         assertThat(status.complianceEngineConfigured()).isTrue();
         assertThat(status.complianceEngineEmail()).isEqualTo("ops@acme.fr");
@@ -65,7 +65,7 @@ class SsoCredentialsServiceTest {
         when(repository.save(any(SsoCredentials.class))).thenAnswer(inv -> inv.getArgument(0));
 
         SsoCredentialsStatusDto status = service.updateCredentials(
-                new SsoCredentialsRequest(null, null, "ops@acme.fr", null, null, null));
+                new SsoCredentialsRequest(null, null, "ops@acme.fr", null, null, null, null, null));
 
         assertThat(status.fleetHubConfigured()).isFalse();
         assertThat(status.fleetHubEmail()).isEqualTo("ops@acme.fr");
@@ -82,7 +82,7 @@ class SsoCredentialsServiceTest {
         when(repository.findById(SsoCredentials.SINGLETON_ID)).thenReturn(Optional.of(existing));
         when(repository.save(any(SsoCredentials.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        service.updateCredentials(new SsoCredentialsRequest(null, null, "fh@acme.fr", "fh-pass", null, null));
+        service.updateCredentials(new SsoCredentialsRequest(null, null, "fh@acme.fr", "fh-pass", null, null, null, null));
 
         assertThat(existing.getComplianceEngineEmail()).isEqualTo("existing@acme.fr");
         assertThat(existing.getComplianceEnginePassword()).isEqualTo("existing-pass");
@@ -101,7 +101,7 @@ class SsoCredentialsServiceTest {
         when(repository.save(any(SsoCredentials.class))).thenAnswer(inv -> inv.getArgument(0));
 
         SsoCredentialsStatusDto status = service.updateCredentials(
-                new SsoCredentialsRequest("   ", "   ", null, null, null, null));
+                new SsoCredentialsRequest("   ", "   ", null, null, null, null, null, null));
 
         assertThat(existing.getComplianceEngineEmail()).isNull();
         assertThat(existing.getComplianceEnginePassword()).isNull();

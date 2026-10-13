@@ -5,6 +5,7 @@ import com.praxio.config.HubUrlsProperties;
 import com.praxio.dto.SsoLaunchResultDto;
 import com.praxio.dto.sso.ComplianceEngineLoginResponse;
 import com.praxio.dto.sso.EmailLoginRequest;
+import com.praxio.dto.sso.FinanceLoginResponse;
 import com.praxio.dto.sso.FleetHubLoginResponse;
 import com.praxio.dto.sso.UsernameLoginRequest;
 import com.praxio.model.SsoCredentials;
@@ -41,7 +42,8 @@ class SsoServiceTest {
         hubUrls = new HubUrlsProperties(
                 "http://ce-backend.test", "http://ce-frontend.test",
                 "http://fh-backend.test", "http://fh-frontend.test",
-                "http://lx-backend.test", "http://lx-frontend.test");
+                "http://lx-backend.test", "http://lx-frontend.test",
+                "http://fin-backend.test", "http://fin-frontend.test");
         service = new SsoService(restTemplate, ssoCredentialsService, hubUrls, new ObjectMapper());
     }
 
@@ -146,5 +148,39 @@ class SsoServiceTest {
                 .isInstanceOf(ResponseStatusException.class)
                 .extracting(e -> ((ResponseStatusException) e).getStatusCode())
                 .isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @Test
+    @DisplayName("launch(finance) → envoie {email,password} et renvoie une redirection avec le payload encodé")
+    void launch_finance_success_buildsRedirectUrl() throws Exception {
+        when(ssoCredentialsService.getCredentialsOrEmpty()).thenReturn(SsoCredentials.builder()
+                .id(1L).financeEmail("ops@acme.fr").financePassword("secret").build());
+        FinanceLoginResponse loginResponse = new FinanceLoginResponse(
+                "jwt-token", "ops@acme.fr", "Ops Acme", "ADMIN", "company-1", "Acme");
+        when(restTemplate.postForObject(
+                eq("http://fin-backend.test/v1/auth/login"),
+                eq(new EmailLoginRequest("ops@acme.fr", "secret")),
+                eq(FinanceLoginResponse.class)))
+                .thenReturn(loginResponse);
+
+        SsoLaunchResultDto result = service.launch("finance");
+
+        assertThat(result.redirectUrl()).startsWith("http://fin-frontend.test/sso-entry#");
+        String payload = result.redirectUrl().substring(result.redirectUrl().indexOf('#') + 1);
+        String json = new String(Base64.getUrlDecoder().decode(payload), StandardCharsets.UTF_8);
+        assertThat(json).contains("\"token\":\"jwt-token\"").contains("\"email\":\"ops@acme.fr\"");
+    }
+
+    @Test
+    @DisplayName("launch(finance) → identifiants absents -> 400, aucun appel réseau")
+    void launch_finance_noCredentials_badRequest() {
+        when(ssoCredentialsService.getCredentialsOrEmpty())
+                .thenReturn(SsoCredentials.builder().id(1L).build());
+
+        assertThatThrownBy(() -> service.launch("finance"))
+                .isInstanceOf(ResponseStatusException.class)
+                .extracting(e -> ((ResponseStatusException) e).getStatusCode())
+                .isEqualTo(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(restTemplate);
     }
 }

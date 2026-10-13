@@ -15,5 +15,7 @@ public record HubUrlsProperties(
         String fleetHubUrl,
         String fleetHubFrontendUrl,
         String logistixUrl,
-        String logistixFrontendUrl
+        String logistixFrontendUrl,
+        String financeUrl,
+        String financeFrontendUrl
 ) {}

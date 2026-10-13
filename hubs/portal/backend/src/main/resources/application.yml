@@ -30,6 +30,8 @@ praxio:
     fleet-hub-frontend-url: "${FLEET_HUB_FRONTEND_URL:http://localhost:5199}"
     logistix-url: "${LOGISTIX_URL:http://localhost:8091}"
     logistix-frontend-url: "${LOGISTIX_FRONTEND_URL:http://localhost:5181}"
+    finance-url: "${FINANCE_URL:http://localhost:8093}"
+    finance-frontend-url: "${FINANCE_FRONTEND_URL:http://localhost:5399}"
 
 logging:
   level:
