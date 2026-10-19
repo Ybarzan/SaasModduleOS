@@ -53,27 +53,7 @@ public class LandedCostController {
     @Operation(summary = "Calculer et sauvegarder un coût débarqué")
     public ResponseEntity<?> calculate(@Valid @RequestBody CreateLandedCost req) {
         try {
-            LandedCost cost = LandedCost.builder()
-                .calculationName(req.calculationName())
-                .originCountry(req.originCountry())
-                .destinationCountry(req.destinationCountry())
-                .incoterm(req.incoterm() != null ? req.incoterm() : "FOB")
-                .hsCode(req.hsCode())
-                .transportMode(req.transportMode() != null ? req.transportMode() : "SEA")
-                .productValue(req.productValue())
-                .currency(req.currency() != null ? req.currency() : "EUR")
-                .freightCost(req.freightCost() != null ? req.freightCost() : BigDecimal.ZERO)
-                .insuranceCost(req.insuranceCost() != null ? req.insuranceCost() : BigDecimal.ZERO)
-                .portCharges(req.portCharges() != null ? req.portCharges() : BigDecimal.ZERO)
-                .customsFees(req.customsFees() != null ? req.customsFees() : BigDecimal.ZERO)
-                .handlingFees(req.handlingFees() != null ? req.handlingFees() : BigDecimal.ZERO)
-                .lastMileCost(req.lastMileCost() != null ? req.lastMileCost() : BigDecimal.ZERO)
-                .unitCount(req.unitCount() != null ? req.unitCount() : 1)
-                .sellingPrice(req.sellingPrice())
-                .notes(req.notes())
-                .build();
-
-            LandedCost saved = landedCostService.calculate(cost);
+            LandedCost saved = landedCostService.calculate(toLandedCost(req));
             return ResponseEntity.status(HttpStatus.CREATED).body(saved);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -86,27 +66,7 @@ public class LandedCostController {
     @Operation(summary = "Mettre à jour un coût débarqué")
     public ResponseEntity<?> update(@PathVariable UUID id, @Valid @RequestBody CreateLandedCost req) {
         try {
-            LandedCost cost = LandedCost.builder()
-                .calculationName(req.calculationName())
-                .originCountry(req.originCountry())
-                .destinationCountry(req.destinationCountry())
-                .incoterm(req.incoterm() != null ? req.incoterm() : "FOB")
-                .hsCode(req.hsCode())
-                .transportMode(req.transportMode() != null ? req.transportMode() : "SEA")
-                .productValue(req.productValue())
-                .currency(req.currency() != null ? req.currency() : "EUR")
-                .freightCost(req.freightCost() != null ? req.freightCost() : BigDecimal.ZERO)
-                .insuranceCost(req.insuranceCost() != null ? req.insuranceCost() : BigDecimal.ZERO)
-                .portCharges(req.portCharges() != null ? req.portCharges() : BigDecimal.ZERO)
-                .customsFees(req.customsFees() != null ? req.customsFees() : BigDecimal.ZERO)
-                .handlingFees(req.handlingFees() != null ? req.handlingFees() : BigDecimal.ZERO)
-                .lastMileCost(req.lastMileCost() != null ? req.lastMileCost() : BigDecimal.ZERO)
-                .unitCount(req.unitCount() != null ? req.unitCount() : 1)
-                .sellingPrice(req.sellingPrice())
-                .notes(req.notes())
-                .build();
-
-            return ResponseEntity.ok(landedCostService.update(id, cost));
+            return ResponseEntity.ok(landedCostService.update(id, toLandedCost(req)));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -125,39 +85,12 @@ public class LandedCostController {
         }
     }
 
-    @PostMapping("/from-shipment/{shipmentId}")
-    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
-    @RequiresPlan(Company.Plan.STARTER)
-    @Operation(summary = "Créer un coût débarqué depuis un shipment (temporairement indisponible)")
-    public ResponseEntity<?> createFromShipment(@PathVariable UUID shipmentId) {
-        // LandedCostService.createFromShipment a ete retiree avec le domaine Transport
-        // (elle lisait ShipmentOrderRepository directement) -- reconstruction en suivi
-        // contre le resume d'expedition de fleet-hub, pas faite dans cette passe.
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
-                .body(Map.of("message", "Création depuis une expédition temporairement indisponible"));
-    }
-
     @PostMapping("/what-if")
     @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
     @RequiresPlan(Company.Plan.STARTER)
     @Operation(summary = "Comparer des scénarios what-if (sans sauvegarder)")
     public ResponseEntity<List<Map<String, Object>>> whatIf(@Valid @RequestBody List<CreateLandedCost> scenarios) {
-        List<LandedCost> built = scenarios.stream().map(req -> LandedCost.builder()
-            .originCountry(req.originCountry())
-            .destinationCountry(req.destinationCountry())
-            .incoterm(req.incoterm() != null ? req.incoterm() : "FOB")
-            .hsCode(req.hsCode())
-            .transportMode(req.transportMode() != null ? req.transportMode() : "SEA")
-            .productValue(req.productValue())
-            .currency(req.currency() != null ? req.currency() : "EUR")
-            .freightCost(req.freightCost() != null ? req.freightCost() : BigDecimal.ZERO)
-            .insuranceCost(req.insuranceCost() != null ? req.insuranceCost() : BigDecimal.ZERO)
-            .portCharges(req.portCharges() != null ? req.portCharges() : BigDecimal.ZERO)
-            .customsFees(req.customsFees() != null ? req.customsFees() : BigDecimal.ZERO)
-            .handlingFees(req.handlingFees() != null ? req.handlingFees() : BigDecimal.ZERO)
-            .lastMileCost(req.lastMileCost() != null ? req.lastMileCost() : BigDecimal.ZERO)
-            .unitCount(req.unitCount() != null ? req.unitCount() : 1)
-            .build()).toList();
+        List<LandedCost> built = scenarios.stream().map(this::toLandedCost).toList();
         return ResponseEntity.ok(landedCostService.compareScenarios(built));
     }
 
@@ -190,6 +123,28 @@ public class LandedCostController {
     @Operation(summary = "Statistiques des coûts débarqués")
     public ResponseEntity<Map<String, Object>> stats() {
         return ResponseEntity.ok(landedCostService.getStats());
+    }
+
+    private LandedCost toLandedCost(CreateLandedCost req) {
+        return LandedCost.builder()
+            .calculationName(req.calculationName())
+            .originCountry(req.originCountry())
+            .destinationCountry(req.destinationCountry())
+            .incoterm(req.incoterm() != null ? req.incoterm() : "FOB")
+            .hsCode(req.hsCode())
+            .transportMode(req.transportMode() != null ? req.transportMode() : "SEA")
+            .productValue(req.productValue())
+            .currency(req.currency() != null ? req.currency() : "EUR")
+            .freightCost(req.freightCost() != null ? req.freightCost() : BigDecimal.ZERO)
+            .insuranceCost(req.insuranceCost() != null ? req.insuranceCost() : BigDecimal.ZERO)
+            .portCharges(req.portCharges() != null ? req.portCharges() : BigDecimal.ZERO)
+            .customsFees(req.customsFees() != null ? req.customsFees() : BigDecimal.ZERO)
+            .handlingFees(req.handlingFees() != null ? req.handlingFees() : BigDecimal.ZERO)
+            .lastMileCost(req.lastMileCost() != null ? req.lastMileCost() : BigDecimal.ZERO)
+            .unitCount(req.unitCount() != null ? req.unitCount() : 1)
+            .sellingPrice(req.sellingPrice())
+            .notes(req.notes())
+            .build();
     }
 
     record CreateLandedCost(

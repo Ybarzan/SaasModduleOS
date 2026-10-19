@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -24,6 +26,7 @@ public class MultiBranchService {
     private final InterBranchTransferRepository transferRepo;
     private final CompanyRepository companyRepo;
     private final FinanceIntegrationClient financeIntegrationClient;
+    private final Executor taskExecutor;
 
     @Transactional
     public CompanyBranch addBranch(UUID parentCompanyId, UUID branchCompanyId, String branchName) {
@@ -85,28 +88,44 @@ public class MultiBranchService {
         report.put("consolidationDate", LocalDateTime.now());
         report.put("companiesCount", companyIds.size());
 
-        List<Map<String, Object>> companies = new ArrayList<>();
-        for (UUID cid : companyIds) {
-            companyRepo.findById(cid).ifPresent(c -> {
-                Map<String, Object> comp = new LinkedHashMap<>();
-                comp.put("id", c.getId());
-                comp.put("name", c.getName());
-                comp.put("slug", c.getSlug());
-                companies.add(comp);
-            });
-        }
+        Map<UUID, Company> companiesById = companyRepo.findAllById(companyIds).stream()
+                .collect(Collectors.toMap(Company::getId, c -> c));
+        List<Map<String, Object>> companies = companyIds.stream()
+                .map(companiesById::get)
+                .filter(Objects::nonNull)
+                .map(c -> {
+                    Map<String, Object> comp = new LinkedHashMap<>();
+                    comp.put("id", c.getId());
+                    comp.put("name", c.getName());
+                    comp.put("slug", c.getSlug());
+                    return comp;
+                })
+                .toList();
         report.put("companies", companies);
+
+        // Un appel REST par filiale et par type d'agrégat (financier, carbone) vers
+        // Finance : les lancer en parallèle plutôt que les enchaîner séquentiellement
+        // évite qu'un rapport sur N filiales ait une latence proportionnelle à N
+        // (voir AsyncConfig.taskExecutor, déjà utilisé ailleurs dans ce service).
+        List<CompletableFuture<FinanceIntegrationClient.FinancialTotals>> financialFutures = companyIds.stream()
+                .map(cid -> CompletableFuture.supplyAsync(() -> financialTotalsOrZero(cid), taskExecutor))
+                .toList();
+        List<CompletableFuture<FinanceIntegrationClient.CarbonTotals>> carbonFutures = companyIds.stream()
+                .map(cid -> CompletableFuture.supplyAsync(() -> carbonTotalsOrZero(cid), taskExecutor))
+                .toList();
 
         BigDecimal totalRevenue = BigDecimal.ZERO;
         BigDecimal totalCost = BigDecimal.ZERO;
         BigDecimal totalMargin = BigDecimal.ZERO;
-        BigDecimal totalEmissions = BigDecimal.ZERO;
-        for (UUID cid : companyIds) {
-            FinanceIntegrationClient.FinancialTotals financials = financialTotalsOrZero(cid);
+        for (CompletableFuture<FinanceIntegrationClient.FinancialTotals> future : financialFutures) {
+            FinanceIntegrationClient.FinancialTotals financials = future.join();
             totalRevenue = totalRevenue.add(financials.totalRevenue());
             totalCost = totalCost.add(financials.totalCost());
             totalMargin = totalMargin.add(financials.totalMargin());
-            totalEmissions = totalEmissions.add(carbonTotalsOrZero(cid).co2EmissionsKg());
+        }
+        BigDecimal totalEmissions = BigDecimal.ZERO;
+        for (CompletableFuture<FinanceIntegrationClient.CarbonTotals> future : carbonFutures) {
+            totalEmissions = totalEmissions.add(future.join().co2EmissionsKg());
         }
         report.put("totalRevenue", totalRevenue);
         report.put("totalCost", totalCost);

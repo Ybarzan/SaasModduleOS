@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.Executor;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -31,7 +32,10 @@ class MultiBranchServiceTest {
         transferRepo = mock(InterBranchTransferRepository.class);
         companyRepo = mock(CompanyRepository.class);
         financeIntegrationClient = mock(FinanceIntegrationClient.class);
-        service = new MultiBranchService(branchRepo, transferRepo, companyRepo, financeIntegrationClient);
+        // Exécuteur synchrone (plutôt que le taskExecutor réel, async) : les
+        // assertions sur le rapport retourné doivent rester déterministes.
+        Executor synchronousExecutor = Runnable::run;
+        service = new MultiBranchService(branchRepo, transferRepo, companyRepo, financeIntegrationClient, synchronousExecutor);
         TenantContext.set(UUID.randomUUID());
     }
 
@@ -124,7 +128,7 @@ class MultiBranchServiceTest {
         when(branchRepo.findByBranchCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
         when(branchRepo.findByParentCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
         when(branchRepo.countByParentCompanyId(companyId)).thenReturn(0L);
-        when(companyRepo.findById(companyId)).thenReturn(Optional.of(
+        when(companyRepo.findAllById(List.of(companyId))).thenReturn(List.of(
                 com.incokalk.model.Company.builder().id(companyId).name("Ma Société").slug("ma-societe").build()));
         when(financeIntegrationClient.getFinancialTotals(companyId)).thenReturn(
                 new FinanceIntegrationClient.FinancialTotals(new BigDecimal("10000"), new BigDecimal("6000"), new BigDecimal("4000")));
@@ -145,7 +149,7 @@ class MultiBranchServiceTest {
         when(branchRepo.findByBranchCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
         when(branchRepo.findByParentCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of());
         when(branchRepo.countByParentCompanyId(companyId)).thenReturn(0L);
-        when(companyRepo.findById(companyId)).thenReturn(Optional.empty());
+        when(companyRepo.findAllById(List.of(companyId))).thenReturn(List.of());
         when(financeIntegrationClient.getFinancialTotals(companyId))
                 .thenThrow(new FinanceIntegrationClient.FinanceIntegrationException("non configurée"));
         when(financeIntegrationClient.getCarbonTotals(companyId))
