@@ -1,5 +1,7 @@
 package com.praxio.model;
 
+import com.praxio.security.EncryptedPasswordConverter;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
@@ -32,14 +34,18 @@ public class SsoCredentials {
     private Long id;
 
     private String complianceEngineEmail;
+    @Convert(converter = EncryptedPasswordConverter.class)
     private String complianceEnginePassword;
 
     private String fleetHubEmail;
+    @Convert(converter = EncryptedPasswordConverter.class)
     private String fleetHubPassword;
 
     private String logistixEmail;
+    @Convert(converter = EncryptedPasswordConverter.class)
     private String logistixPassword;
 
     private String financeEmail;
+    @Convert(converter = EncryptedPasswordConverter.class)
     private String financePassword;
 }
