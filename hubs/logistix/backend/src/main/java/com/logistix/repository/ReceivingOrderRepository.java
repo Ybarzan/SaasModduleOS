@@ -24,4 +24,6 @@ public interface ReceivingOrderRepository extends JpaRepository<ReceivingOrder, 
     List<ReceivingOrder> findByCompanyIdAndShipmentId(UUID companyId, UUID shipmentId);
 
     List<ReceivingOrder> findByCompanyIdAndShipmentIdOrderByCreatedAtDesc(UUID companyId, UUID shipmentId);
+
+    long countByCompanyIdAndStatusIn(UUID companyId, List<ReceivingOrder.Status> statuses);
 }

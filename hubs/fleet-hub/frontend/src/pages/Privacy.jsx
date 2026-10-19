@@ -123,7 +123,7 @@ export default function Privacy() {
                 ))}
                 {logs.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="muted table-empty">
+                    <td colSpan={5} className="muted table-empty">
                       Aucun événement
                     </td>
                   </tr>

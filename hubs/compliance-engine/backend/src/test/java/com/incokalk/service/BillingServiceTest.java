@@ -1,5 +1,6 @@
 package com.incokalk.service;
 
+import com.incokalk.dto.financial.BillingSummaryDTO;
 import com.incokalk.model.Company;
 import com.incokalk.model.Invoice;
 import com.incokalk.model.Subscription;
@@ -25,6 +26,7 @@ import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -336,6 +338,57 @@ class BillingServiceTest {
                 .containsEntry("cancelAtPeriodEnd", false)
                 .containsKey("currentPeriodStart")
                 .containsKey("currentPeriodEnd");
+    }
+
+    // ── getBillingSummary (facturation groupée Praxio) ────────────────────
+
+    @Test
+    @DisplayName("getBillingSummary → société sans abonnement = plan FREE à 0€")
+    void getBillingSummary_noSubscription_defaultsToFreePlan() {
+        when(subscriptionRepo.findByCompanyId(companyId)).thenReturn(Optional.empty());
+
+        BillingSummaryDTO dto = service.getBillingSummary(companyId);
+
+        assertThat(dto.getPlan()).isEqualTo("FREE");
+        assertThat(dto.getStatus()).isEqualTo("ACTIVE");
+        assertThat(dto.getBillingCycle()).isEqualTo("MONTHLY");
+        assertThat(dto.getAmount()).isEqualTo(BigDecimal.ZERO);
+        assertThat(dto.getCurrency()).isEqualTo("EUR");
+        assertThat(dto.isCancelAtPeriodEnd()).isFalse();
+    }
+
+    @Test
+    @DisplayName("getBillingSummary → dérive le montant mensuel du catalogue pour un plan payant")
+    void getBillingSummary_paidMonthlyPlan_derivesAmountFromCatalog() {
+        when(subscriptionRepo.findByCompanyId(companyId)).thenReturn(Optional.of(subscription));
+
+        BillingSummaryDTO dto = service.getBillingSummary(companyId);
+
+        assertThat(dto.getPlan()).isEqualTo("PRO");
+        assertThat(dto.getBillingCycle()).isEqualTo("MONTHLY");
+        assertThat(dto.getAmount()).isEqualTo(BigDecimal.valueOf(149));
+        assertThat(dto.getCurrency()).isEqualTo("EUR");
+        assertThat(dto.getNextBillingDate()).isEqualTo(subscription.getCurrentPeriodEnd());
+    }
+
+    @Test
+    @DisplayName("getBillingSummary → dérive le montant annuel du catalogue pour un cycle ANNUAL")
+    void getBillingSummary_paidAnnualPlan_derivesAnnualAmountFromCatalog() {
+        Subscription annualSub = Subscription.builder()
+                .id(UUID.randomUUID())
+                .company(company)
+                .user(user)
+                .plan(Subscription.Plan.STARTER)
+                .status(Subscription.Status.ACTIVE)
+                .billingCycle(Subscription.BillingCycle.ANNUAL)
+                .cancelAtPeriodEnd(false)
+                .build();
+        when(subscriptionRepo.findByCompanyId(companyId)).thenReturn(Optional.of(annualSub));
+
+        BillingSummaryDTO dto = service.getBillingSummary(companyId);
+
+        assertThat(dto.getBillingCycle()).isEqualTo("ANNUAL");
+        assertThat(dto.getAmount()).isEqualTo(BigDecimal.valueOf(290));
     }
 
     // ── getInvoices ──────────────────────────────────────────────────────

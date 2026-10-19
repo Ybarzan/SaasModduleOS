@@ -35,12 +35,15 @@ api.interceptors.request.use((config) => {
     return config
   }
 
-  // Web: cookie is sent automatically by the browser (credentials: 'include').
-  // Native (Capacitor): read token from localStorage and set Authorization header.
-  if (Capacitor.isNativePlatform()) {
-    const token = localStorage.getItem('fh_token')
-    if (token) config.headers.Authorization = `Bearer ${token}`
-  }
+  // Web: cookie is sent automatically by the browser (credentials: 'include'). This also
+  // covers SSO sessions relayed from Praxio (see AuthContext.loginWithSession and
+  // pages/SsoEntry.jsx): the token is exchanged for the same httpOnly cookie via
+  // POST /auth/session-from-token right after redirect, so it is never written to
+  // localStorage on web.
+  // Native (Capacitor): no usable cross-origin cookie, so this always reads the token from
+  // localStorage (written by login/register/loginWithSession) and sets the header instead.
+  const token = localStorage.getItem('fh_token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
   config.withCredentials = true
   return config
 })

@@ -279,7 +279,7 @@ export default function Clients() {
               ))}
               {clients.length === 0 && !loading && (
                 <tr>
-                  <td colSpan="6" className="table-empty">
+                  <td colSpan={6} className="table-empty">
                     Aucun client
                   </td>
                 </tr>

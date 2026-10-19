@@ -29,8 +29,14 @@ public class StripeWebhookController {
     @PostMapping("/stripe")
     public ResponseEntity<Map<String, String>> handleStripeWebhook(HttpServletRequest request) throws IOException {
         if (webhookSecret == null || webhookSecret.isBlank()) {
-            log.warn("Stripe webhook secret not configured — ignoring webhook");
-            return ResponseEntity.ok(Map.of("received", "true"));
+            // Ne jamais renvoyer 200 ici : Stripe considérerait l'événement comme
+            // livré avec succès et ne le retentera jamais, alors que rien n'a été
+            // traité -- une mise à jour d'abonnement/paiement disparaîtrait
+            // silencieusement. 503 fait échouer la livraison Stripe (visible dans
+            // son dashboard, avec retry automatique) jusqu'à ce que le secret soit
+            // réellement configuré.
+            log.error("Stripe webhook secret not configured — refusing webhook (no event processed)");
+            return ResponseEntity.status(503).body(Map.of("error", "Webhook not configured"));
         }
 
         String payload = new String(request.getInputStream().readAllBytes(), StandardCharsets.UTF_8);

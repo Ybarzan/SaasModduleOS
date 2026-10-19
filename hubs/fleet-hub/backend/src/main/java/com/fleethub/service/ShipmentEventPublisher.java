@@ -1,6 +1,7 @@
 package com.fleethub.service;
 
 import com.fleethub.model.TrackingEvent;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -8,19 +9,19 @@ import java.util.UUID;
 
 /**
  * Point d'extension pour les notifications liées aux expéditions (créée /
- * changement de statut). Compliance-engine portait un pipeline complet
- * (outbox transactionnel + notifications push mobiles) bâti sur son propre
- * NotificationService/PushNotificationService générique — infrastructure
- * cross-cutting non portée ici (hors périmètre de cette fusion). Ce
- * publisher se contente de journaliser pour l'instant ; TODO : brancher sur
- * {@code com.fleethub.service.NotificationService} si/quand les événements
- * Transport doivent déclencher une alerte visible dans le centre de
- * notifications FleetHub (actuellement limité aux alertes flotte : maintenance,
- * tachygraphe, temps de conduite, usage anormal — voir NotificationRule.AlertType).
+ * changement de statut). La création reste journalisée seulement : comme pour
+ * les autres types d'alerte de NotificationService (maintenance, tachygraphe…),
+ * une simple création de routine n'est pas en soi digne d'une alerte. Le
+ * changement de statut, lui, est poussé vers le centre de notifications
+ * FleetHub (voir NotificationService.notifyShipmentStatusChanged et
+ * NotificationRule.AlertType.EXPEDITION_STATUT_CHANGE).
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class ShipmentEventPublisher {
+
+    private final NotificationService notificationService;
 
     public void shipmentCreated(UUID shipmentId, String orderNumber, Long companyId) {
         log.info("[ShipmentEvent] Expédition créée: {} ({}) pour company={}", orderNumber, shipmentId, companyId);
@@ -31,5 +32,6 @@ public class ShipmentEventPublisher {
                                        TrackingEvent.DataSource dataSource) {
         log.info("[ShipmentEvent] {} : {} -> {} (company={}, source={})",
                 orderNumber, oldStatus, newStatus, companyId, dataSource);
+        notificationService.notifyShipmentStatusChanged(companyId, orderNumber, oldStatus, newStatus);
     }
 }

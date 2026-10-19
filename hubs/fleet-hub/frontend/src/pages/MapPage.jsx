@@ -32,6 +32,7 @@ export default function MapPage() {
     return () => clearInterval(id)
   }, [])
 
+  /** @type {[number, number]} */
   const center = vehicles.length > 0 ? [vehicles[0].latitude, vehicles[0].longitude] : [46.6, 2.0]
 
   return (

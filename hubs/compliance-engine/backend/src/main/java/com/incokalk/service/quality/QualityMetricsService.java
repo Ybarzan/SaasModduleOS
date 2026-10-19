@@ -1,14 +1,13 @@
 package com.incokalk.service.quality;
 
-import com.incokalk.model.ClientInvoice;
 import com.incokalk.model.CustomsDeclaration;
-import com.incokalk.repository.ClientInvoiceRepository;
 import com.incokalk.repository.CustomsDeclarationRepository;
+import com.incokalk.service.integration.finance.FinanceIntegrationClient;
 import com.incokalk.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,12 +29,13 @@ import java.util.UUID;
  * réintroduction future nécessiterait un appel REST vers fleet-hub plutôt
  * qu'une lecture locale.</p>
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QualityMetricsService {
 
     private final CustomsDeclarationRepository declarationRepo;
-    private final ClientInvoiceRepository invoiceRepo;
+    private final FinanceIntegrationClient financeIntegrationClient;
 
     private static final List<CustomsDeclaration.DeclarationStatus> SUBMITTED_DECLARATION_STATUSES = List.of(
             CustomsDeclaration.DeclarationStatus.SUBMITTED,
@@ -77,19 +77,21 @@ public class QualityMetricsService {
     }
 
     private Ctq invoiceTimeliness(UUID companyId) {
-        List<ClientInvoice> issued = invoiceRepo.findByCompanyIdOrderByCreatedAtDesc(companyId).stream()
-                .filter(i -> i.getStatus() != ClientInvoice.InvoiceStatus.DRAFT)
-                .toList();
-        long opportunities = issued.size();
-        LocalDate today = LocalDate.now();
-        long defects = issued.stream()
-                .filter(i -> i.getStatus() != ClientInvoice.InvoiceStatus.PAID
-                        && i.getStatus() != ClientInvoice.InvoiceStatus.CANCELLED)
-                .filter(i -> i.getDueDate() != null && i.getDueDate().isBefore(today))
-                .count();
-
+        FinanceIntegrationClient.InvoiceTimeliness timeliness = invoiceTimelinessOrEmpty(companyId);
         return new Ctq("invoice_timeliness", "Ponctualité de facturation",
                 "Factures client émises et non en retard de paiement (hors annulées)",
-                SigmaCalculator.compute(opportunities, defects));
+                SigmaCalculator.compute(timeliness.opportunities(), timeliness.defects()));
+    }
+
+    /** Dégradation gracieuse : une société sans clé Finance configurée (ou
+     * Finance indisponible) n'empêche jamais le reste du rapport qualité de
+     * s'afficher -- même principe que CrossHubDashboardService côté Praxio. */
+    private FinanceIntegrationClient.InvoiceTimeliness invoiceTimelinessOrEmpty(UUID companyId) {
+        try {
+            return financeIntegrationClient.getInvoiceTimeliness(companyId);
+        } catch (FinanceIntegrationClient.FinanceIntegrationException e) {
+            log.debug("[Finance] Ponctualité de facturation indisponible pour {} : {}", companyId, e.getMessage());
+            return new FinanceIntegrationClient.InvoiceTimeliness(0, 0);
+        }
     }
 }

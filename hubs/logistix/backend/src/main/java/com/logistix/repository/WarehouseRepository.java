@@ -15,6 +15,8 @@ public interface WarehouseRepository extends JpaRepository<Warehouse, UUID> {
 
     List<Warehouse> findByCompanyIdAndIsActiveTrue(UUID companyId);
 
+    long countByCompanyIdAndIsActiveTrue(UUID companyId);
+
     List<Warehouse> findByCompanyIdAndBranchId(UUID companyId, UUID branchId);
 
     Optional<Warehouse> findByCompanyIdAndId(UUID companyId, UUID id);

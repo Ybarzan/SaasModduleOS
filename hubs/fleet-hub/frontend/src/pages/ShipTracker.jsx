@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaf
 import L from 'leaflet'
 import api from '../services/api'
 
+/** @type {[number, number]} */
 const DEFAULT_CENTER = [30, 0]
 const DEFAULT_ZOOM = 3
 

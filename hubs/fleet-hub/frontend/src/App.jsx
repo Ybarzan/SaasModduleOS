@@ -25,6 +25,7 @@ const Notifications = lazy(() => import('./pages/Notifications'))
 const Integrations = lazy(() => import('./pages/Integrations'))
 const Marketplace = lazy(() => import('./pages/Marketplace'))
 const HubIntegration = lazy(() => import('./pages/HubIntegration'))
+const SsoEntry = lazy(() => import('./pages/SsoEntry'))
 const DataImport = lazy(() => import('./pages/DataImport'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Settings = lazy(() => import('./pages/Settings'))
@@ -118,6 +119,7 @@ export default function App() {
     <Suspense fallback={<PageFallback />}>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/sso-entry" element={<SsoEntry />} />
         <Route path="/register" element={<Register />} />
         <Route path="/accept-invitation" element={<AcceptInvitation />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

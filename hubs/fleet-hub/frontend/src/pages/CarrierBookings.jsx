@@ -297,7 +297,7 @@ export default function CarrierBookings() {
               })}
               {bookings.length === 0 && !error && !loading && (
                 <tr>
-                  <td colSpan="6" className="table-empty">
+                  <td colSpan={6} className="table-empty">
                     Aucune réservation
                   </td>
                 </tr>

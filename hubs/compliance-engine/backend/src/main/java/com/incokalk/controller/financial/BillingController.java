@@ -1,5 +1,6 @@
 package com.incokalk.controller.financial;
 
+import com.incokalk.dto.financial.BillingSummaryDTO;
 import com.incokalk.model.CompanyRole;
 import com.incokalk.security.RolesAllowed;
 import com.incokalk.service.BillingService;
@@ -68,5 +69,11 @@ public class BillingController {
         result.put("stripeConfigured", billingService.isStripeConfigured());
         result.put("subscription", sub);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<BillingSummaryDTO> getBillingSummary(HttpServletRequest request) {
+        UUID companyId = (UUID) request.getAttribute("companyId");
+        return ResponseEntity.ok(billingService.getBillingSummary(companyId));
     }
 }

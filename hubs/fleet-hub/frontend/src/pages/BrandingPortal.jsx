@@ -7,8 +7,10 @@ const DEFAULT_BRANDING = {
   portalTitle: 'Portail Client',
   welcomeMessage: 'Bienvenue sur votre portail de suivi de livraisons',
   footerText: '© 2026 Fleet Hub — Tous droits réservés',
+  customDomain: '',
   customCssEnabled: false,
-  customCss: ''
+  customCss: '',
+  logoUrl: null
 }
 
 export default function BrandingPortal() {

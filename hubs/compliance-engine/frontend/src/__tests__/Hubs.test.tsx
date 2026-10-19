@@ -27,12 +27,13 @@ describe("Hubs page", () => {
 
   it("shows a plan badge derived from the actual gating in navigation.ts", () => {
     renderPage();
-    // Finance hub is entirely ENTERPRISE-gated in navigation.ts
-    expect(screen.getAllByText("À partir du plan Suite")).toHaveLength(1);
+    // Import-Export spans STARTER through ENTERPRISE (/change, Finance & Trésorerie's
+    // sole survivor in compliance-engine, is ENTERPRISE-gated)
+    expect(screen.getByText("Du plan Starter au plan Suite")).toBeInTheDocument();
     // Platform hub items carry no requiredPlan (never sold alone)
     expect(screen.getByText("Inclus dans tous les plans")).toBeInTheDocument();
-    // Import-Export and Documents & Automatisation (since /orchestration-suggestions is PRO-gated) both span STARTER through PRO
-    expect(screen.getAllByText("Du plan Starter au plan Croissance")).toHaveLength(2);
+    // Documents & Automatisation spans STARTER through PRO (/orchestration-suggestions is PRO-gated)
+    expect(screen.getByText("Du plan Starter au plan Croissance")).toBeInTheDocument();
   });
 
   it("links to pricing and registration", () => {

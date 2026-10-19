@@ -47,6 +47,8 @@ public class NotificationRule {
         /** Usage anormal / alerte véhicule (vitesse, freinage…). */
         USAGE_ANORMAL,
         /** Paiement en échec (facturation). */
-        PAIEMENT
+        PAIEMENT,
+        /** Changement de statut d'une expédition (domaine Transport). */
+        EXPEDITION_STATUT_CHANGE
     }
 }

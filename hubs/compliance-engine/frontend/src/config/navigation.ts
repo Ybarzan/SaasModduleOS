@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Bell, Users, Database,
   ScrollText, Calculator, Leaf, Shield, DollarSign, Scale,
   FileText, CreditCard, Globe, BookOpen, FileCheck, ShieldAlert, Tag, Receipt,
-  BarChart3, TrendingDown, Calendar, ShoppingCart, Building2,
+  BarChart3, ShoppingCart, Building2,
   GraduationCap, Mail, KeyRound, Webhook, Euro,
   Zap, CheckSquare,
 } from 'lucide-react';
@@ -60,6 +60,7 @@ export const NAV_GROUPS: NavGroup[] = [
     icon: Globe,
     items: [
       { to: '/landed-cost', icon: DollarSign, label: 'Landed Cost', requiredRole: 'MANAGER', requiredPlan: 'STARTER' },
+      { to: '/change', icon: Euro, label: 'Taux de change', requiredPlan: 'ENTERPRISE' },
       { to: '/poids-volumetrique', icon: Scale, label: 'Poids volumétrique', requiredPlan: 'STARTER' },
       { to: '/douane', icon: Shield, label: 'Droits de douane', requiredPlan: 'STARTER' },
       { to: '/customs', icon: Calculator, label: 'Simulateur douane', requiredRole: 'MANAGER', requiredPlan: 'STARTER' },
@@ -85,21 +86,6 @@ export const NAV_GROUPS: NavGroup[] = [
       { to: '/documents', icon: FileText, label: 'Documents', requiredPlan: 'STARTER' },
       { to: '/email-intake', icon: Mail, label: 'Import Email', requiredRole: 'ADMIN', requiredPlan: 'STARTER' },
       { to: '/orchestration-suggestions', icon: Zap, label: "Suggestions d'action", requiredRole: 'MANAGER', requiredPlan: 'PRO' },
-    ],
-  },
-  {
-    id: 'finance',
-    label: 'Finance & Trésorerie',
-    icon: DollarSign,
-    items: [
-      { to: '/client-invoices', icon: Receipt, label: 'Facturation clients', requiredRole: 'ADMIN', requiredPlan: 'ENTERPRISE' },
-      { to: '/payment-terms', icon: Calendar, label: 'Paiements', requiredRole: 'MANAGER', requiredPlan: 'ENTERPRISE' },
-      { to: '/change', icon: DollarSign, label: 'Taux de change', requiredPlan: 'ENTERPRISE' },
-      { to: '/finance', icon: TrendingDown, label: 'Finance SCF', requiredRole: 'ADMIN', requiredPlan: 'ENTERPRISE' },
-      { to: '/fintech', icon: Building2, label: 'Intégrations fintech', requiredRole: 'ADMIN', requiredPlan: 'ENTERPRISE' },
-      { to: '/financials', icon: BarChart3, label: 'Reporting financier', requiredRole: 'ADMIN', requiredPlan: 'ENTERPRISE' },
-      { to: '/carbon', icon: Leaf, label: 'Dashboard carbone', requiredRole: 'MANAGER', requiredPlan: 'ENTERPRISE' },
-      { to: '/csrd', icon: FileText, label: 'Reporting CSRD', requiredRole: 'ADMIN', requiredPlan: 'ENTERPRISE' },
     ],
   },
   {

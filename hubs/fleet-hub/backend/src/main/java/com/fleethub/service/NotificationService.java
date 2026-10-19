@@ -220,7 +220,35 @@ public class NotificationService {
             saveRule(companyId, new NotificationRuleDto(null, NotificationRule.AlertType.TACHYGRAPHIE_NON_CONFORME, null, true));
             saveRule(companyId, new NotificationRuleDto(null, NotificationRule.AlertType.TEMPS_CONDUITE, 48.0, true));
             saveRule(companyId, new NotificationRuleDto(null, NotificationRule.AlertType.USAGE_ANORMAL, null, true));
+            saveRule(companyId, new NotificationRuleDto(null, NotificationRule.AlertType.EXPEDITION_STATUT_CHANGE, null, true));
         }
+    }
+
+    /**
+     * Notification immédiate sur changement de statut d'une expédition (domaine
+     * Transport) -- contrairement aux autres types ci-dessus, générés par un
+     * balayage périodique de l'état courant, celle-ci est poussée au moment même
+     * du changement (voir ShipmentEventPublisher), donc sans déduplication sur
+     * fenêtre glissante : chaque transition réelle de statut ne survient qu'une
+     * fois et mérite sa propre notification.
+     */
+    @Transactional
+    public void notifyShipmentStatusChanged(Long companyId, String orderNumber, String oldStatus, String newStatus) {
+        ensureDefaultRules(companyId);
+        boolean enabled = ruleRepository.findByCompanyId(companyId).stream()
+                .anyMatch(r -> r.getType() == NotificationRule.AlertType.EXPEDITION_STATUT_CHANGE && r.isEnabled());
+        if (!enabled) {
+            return;
+        }
+        Notification n = new Notification();
+        n.setCompany(companyRepository.getReferenceById(companyId));
+        n.setType(NotificationRule.AlertType.EXPEDITION_STATUT_CHANGE);
+        n.setTitle("Expédition " + orderNumber);
+        n.setMessage("Statut changé de " + oldStatus + " à " + newStatus + ".");
+        n.setEntityType("SHIPMENT");
+        n.setRead(false);
+        n.setCreatedAt(LocalDateTime.now());
+        notificationRepository.save(n);
     }
 
     private NotificationRule findRule(List<NotificationRule> rules, NotificationRule.AlertType type) {

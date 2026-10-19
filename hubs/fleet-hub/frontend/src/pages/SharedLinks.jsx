@@ -211,7 +211,7 @@ export default function SharedLinks() {
               ))}
               {links.length === 0 && !loading && (
                 <tr>
-                  <td colSpan="7" className="table-empty">
+                  <td colSpan={7} className="table-empty">
                     Aucun lien partagé
                   </td>
                 </tr>

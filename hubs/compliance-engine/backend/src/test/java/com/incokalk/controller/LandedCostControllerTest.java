@@ -15,7 +15,6 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -207,25 +206,6 @@ class LandedCostControllerTest extends ControllerTestBase {
         mockMvc.perform(delete("/v1/landed-costs/" + id).header("Authorization", authHeader()))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("Coût débarqué introuvable"));
-    }
-
-    // ── POST /from-shipment/{shipmentId} ────────────────────────────────
-    // createFromShipment a été retirée de LandedCostService avec le domaine
-    // Transport (elle lisait ShipmentOrderRepository directement) ; l'endpoint
-    // reste exposé mais répond désormais 501 en attendant une reconstruction
-    // via fleet-hub (voir LandedCostController).
-
-    @Test
-    @DisplayName("POST /v1/landed-costs/from-shipment/{shipmentId} → 501 temporairement indisponible")
-    void createFromShipment_notImplemented() throws Exception {
-        UUID shipmentId = UUID.randomUUID();
-
-        mockMvc.perform(post("/v1/landed-costs/from-shipment/" + shipmentId)
-                .header("Authorization", authHeader()))
-            .andExpect(status().isNotImplemented())
-            .andExpect(jsonPath("$.message").value("Création depuis une expédition temporairement indisponible"));
-
-        verifyNoInteractions(landedCostService);
     }
 
     // ── POST /what-if ────────────────────────────────────────────────────

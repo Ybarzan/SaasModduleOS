@@ -140,6 +140,23 @@ public class CompanyService {
         companyRepo.save(company);
     }
 
+    /** true si une clé d'intégration Finance & Trésorerie est enregistrée pour
+     * cette société -- jamais la clé elle-même (voir FinanceIntegrationClient). */
+    public boolean hasFinanceApiKey(UUID companyId) {
+        return companyRepo.findById(companyId)
+            .map(Company::getFinanceApiKey)
+            .filter(k -> !k.isBlank())
+            .isPresent();
+    }
+
+    @Transactional
+    public void setFinanceApiKey(UUID companyId, String apiKey) {
+        Company company = companyRepo.findById(companyId)
+            .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
+        company.setFinanceApiKey(apiKey != null && !apiKey.isBlank() ? apiKey.trim() : null);
+        companyRepo.save(company);
+    }
+
     public boolean existsById(UUID id) {
         return companyRepo.existsById(id);
     }

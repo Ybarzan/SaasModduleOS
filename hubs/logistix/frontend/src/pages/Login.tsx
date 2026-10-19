@@ -19,7 +19,18 @@ const Login = () => {
     setIsSubmitting(true);
     try {
       const { data } = await logistixAPI.auth.login(email, password);
-      login(data.token, data.user);
+      // /v1/auth/login répond à plat (voir com.logistix.dto.AuthResponse),
+      // jamais un objet `user` imbriqué -- même reconstruction que SsoEntry.tsx.
+      const [firstName, ...rest] = (data.displayName || data.email.split('@')[0]).split(' ');
+      login(data.token, {
+        id: data.email,
+        email: data.email,
+        firstName,
+        lastName: rest.join(' '),
+        role: data.role,
+        company: data.companyName,
+        companyId: data.companyId,
+      });
       navigate('/warehouses', { replace: true });
     } catch (err) {
       const apiErr = err as ApiError;

@@ -61,4 +61,14 @@ class ApiKeyE2eTest extends E2eTestBase {
                 new HttpEntity<>(withKey("ic_live_doesnotexist000")), String.class);
         assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
+
+    @Test
+    void validKey_reachesDashboardSummary_forPraxioCrossHubDashboard() {
+        registerAndSetToken();
+        String key = createKey();
+        var resp = restTemplate.exchange(baseUrl + "/v1/analytics/dashboard-summary", HttpMethod.GET,
+                new HttpEntity<>(withKey(key)), String.class);
+        assertThat(resp.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(resp.getBody()).contains("simulationsThisMonth", "openDeclarations", "overdueInvoicesCount");
+    }
 }

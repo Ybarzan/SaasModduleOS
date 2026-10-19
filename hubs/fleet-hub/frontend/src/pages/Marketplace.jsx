@@ -140,8 +140,9 @@ export default function Marketplace() {
           <p className="muted">
             Utilisez cette clé pour inscrire votre société comme transporteur sur{' '}
             <strong>FleetMarket</strong> (page « Transporteur » de l'inscription). Si vous la
-            perdez, désactivez puis réactivez le partage ci-dessus pour la retrouver — la clé ne
-            change pas.
+            perdez, désactivez puis réactivez le partage ci-dessus pour en générer une nouvelle —
+            l'ancienne cesse de fonctionner dès la désactivation, pensez à la remplacer sur
+            FleetMarket.
           </p>
         </div>
       )}

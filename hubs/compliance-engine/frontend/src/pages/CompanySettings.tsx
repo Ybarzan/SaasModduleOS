@@ -126,6 +126,97 @@ const FleetHubIntegrationCard = () => {
   );
 };
 
+const FinanceIntegrationCard = () => {
+  const queryClient = useQueryClient();
+  const [apiKey, setApiKey] = useState('');
+
+  const { data: me } = useQuery({
+    queryKey: ['companies-me'],
+    queryFn: async () => (await incokalkAPI.companies.me()).data as { id: string },
+  });
+
+  const { data: status, isLoading } = useQuery({
+    queryKey: ['finance-key-status', me?.id],
+    queryFn: async () => (await incokalkAPI.companies.financeKeyStatus(me!.id)).data as { configured: boolean },
+    enabled: !!me?.id,
+  });
+
+  const saveMutation = useMutation({
+    mutationFn: () => incokalkAPI.companies.setFinanceKey(me!.id, apiKey),
+    onSuccess: () => {
+      toast.success('Clé Finance enregistrée');
+      setApiKey('');
+      queryClient.invalidateQueries({ queryKey: ['finance-key-status', me?.id] });
+    },
+    onError: (err: AxiosError<{ message?: string }>) => {
+      toast.error(err.response?.data?.message || "Échec de l'enregistrement de la clé");
+    },
+  });
+
+  const clearMutation = useMutation({
+    mutationFn: () => incokalkAPI.companies.clearFinanceKey(me!.id),
+    onSuccess: () => {
+      toast.success('Clé Finance effacée');
+      queryClient.invalidateQueries({ queryKey: ['finance-key-status', me?.id] });
+    },
+    onError: (err: AxiosError<{ message?: string }>) => {
+      toast.error(err.response?.data?.message || "Échec de l'effacement de la clé");
+    },
+  });
+
+  return (
+    <div className="bg-surface rounded-none border border-line overflow-hidden">
+      <div className="px-6 py-4 border-b border-line flex items-center gap-2">
+        <Link2 size={18} className="text-terra-500" />
+        <h2 className="text-lg font-semibold text-ink">Intégration Finance & Trésorerie</h2>
+      </div>
+      <div className="px-6 py-4 space-y-4">
+        <p className="text-sm text-ink-soft">
+          Permet l'affichage des indicateurs de ponctualité de facturation, de consolidation
+          multi-filiales et le rapport d'exposition de change depuis Finance & Trésorerie.
+          Générez la clé dans Finance (Paramètres → « Intégration interne »), puis collez-la ici.
+        </p>
+        {isLoading ? (
+          <p className="text-sm text-ink-soft">Chargement…</p>
+        ) : status?.configured ? (
+          <div className="flex items-center justify-between gap-4">
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-ink">
+              <span className="w-2 h-2 rounded-full bg-green-500" aria-hidden="true" />
+              Clé configurée
+            </span>
+            <button
+              type="button"
+              onClick={() => clearMutation.mutate()}
+              disabled={clearMutation.isPending}
+              className="px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors disabled:opacity-50"
+            >
+              {clearMutation.isPending ? 'Effacement…' : 'Effacer la clé'}
+            </button>
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="text"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="Clé d'intégration Finance (X-Internal-Integration-Key)"
+              className="flex-1 px-3 py-2 border border-line rounded-none text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+            />
+            <button
+              type="button"
+              onClick={() => saveMutation.mutate()}
+              disabled={saveMutation.isPending || !apiKey.trim()}
+              className="px-4 py-2 bg-terra-600 text-white rounded-none text-sm font-medium hover:bg-terra-700 disabled:opacity-50 transition-colors"
+            >
+              {saveMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const CompanySettings = () => {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -444,6 +535,9 @@ const CompanySettings = () => {
 
           {/* Fleet Hub integration */}
           <FleetHubIntegrationCard />
+
+          {/* Finance & Trésorerie integration */}
+          <FinanceIntegrationCard />
 
           {/* Save button (mobile sticky) */}
           <div className="sticky bottom-4 bg-surface border border-line rounded-none p-4 shadow-lg flex items-center justify-between">

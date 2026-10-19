@@ -23,5 +23,7 @@ public interface CustomsDeclarationRepository extends JpaRepository<CustomsDecla
 
     long countByCompanyIdAndStatus(UUID companyId, CustomsDeclaration.DeclarationStatus status);
 
+    long countByCompanyIdAndStatusIn(UUID companyId, List<CustomsDeclaration.DeclarationStatus> statuses);
+
     Optional<CustomsDeclaration> findByCompanyIdAndId(UUID companyId, UUID id);
 }
