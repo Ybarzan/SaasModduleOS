@@ -55,4 +55,15 @@ describe('SsoEntry page', () => {
     expect(mockNavigate).not.toHaveBeenCalled()
     expect(mockLoginWithSession).not.toHaveBeenCalled()
   })
+
+  it('shows an error and does not navigate when the token exchange fails', async () => {
+    mockLoginWithSession.mockRejectedValueOnce(new Error('session-from-token rejected'))
+    const payload = { token: 'jwt-revoked', username: 'ops', role: 'ADMIN' }
+    window.location.hash = '#' + encodeSsoPayload(payload)
+
+    render(<SsoEntry />)
+
+    expect(await screen.findByText(/Lien de connexion invalide/)).toBeInTheDocument()
+    expect(mockNavigate).not.toHaveBeenCalled()
+  })
 })

@@ -203,6 +203,42 @@ class AuthControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    void sessionFromToken_validToken_setsHttpOnlyCookie() throws Exception {
+        String token = loginToken();
+
+        var result = mvc.perform(post("/api/auth/session-from-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"" + token + "\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var cookie = result.getResponse().getCookie("fh_token");
+        org.junit.jupiter.api.Assertions.assertNotNull(cookie);
+        org.junit.jupiter.api.Assertions.assertEquals(token, cookie.getValue());
+        org.junit.jupiter.api.Assertions.assertTrue(cookie.isHttpOnly());
+    }
+
+    @Test
+    void sessionFromToken_revokedToken_returns401() throws Exception {
+        String token = loginToken();
+        mvc.perform(post("/api/auth/logout").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+        mvc.perform(post("/api/auth/session-from-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"" + token + "\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void sessionFromToken_garbageToken_returns401() throws Exception {
+        mvc.perform(post("/api/auth/session-from-token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"not-a-real-jwt\"}"))
+                .andExpect(status().isUnauthorized());
+    }
+
     private String loginToken() throws Exception {
         return loginTokenFor("admin", "admin");
     }

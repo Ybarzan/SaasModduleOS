@@ -120,10 +120,10 @@ class NotificationTest {
         e.setSpeedKph(85.0);
         drivingEventRepository.save(e);
 
-        // Les règles par défaut existent.
+        // Les règles par défaut existent (4 règles flotte + EXPEDITION_STATUT_CHANGE).
         mvc.perform(get("/api/notifications/rules").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(4));
+                .andExpect(jsonPath("$.length()").value(5));
 
         // Le balayage génère les 3 notifications.
         MvcResult list = mvc.perform(get("/api/notifications").header("Authorization", "Bearer " + token))

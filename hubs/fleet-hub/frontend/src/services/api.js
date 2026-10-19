@@ -35,13 +35,13 @@ api.interceptors.request.use((config) => {
     return config
   }
 
-  // Web: cookie is sent automatically by the browser (credentials: 'include').
-  // Native (Capacitor): always reads token from localStorage and sets Authorization header.
-  // Web SSO sessions (relayed from Praxio, see pages/SsoEntry.jsx) also need this header:
-  // the browser never received fleet-hub's own Set-Cookie, since that login call was made
-  // server-side by Praxio, not by this browser -- so fall back to the stored token on web
-  // too whenever one is present (normal web logins never write fh_token to localStorage,
-  // so this is a no-op for them; only loginWithSession does).
+  // Web: cookie is sent automatically by the browser (credentials: 'include'). This also
+  // covers SSO sessions relayed from Praxio (see AuthContext.loginWithSession and
+  // pages/SsoEntry.jsx): the token is exchanged for the same httpOnly cookie via
+  // POST /auth/session-from-token right after redirect, so it is never written to
+  // localStorage on web.
+  // Native (Capacitor): no usable cross-origin cookie, so this always reads the token from
+  // localStorage (written by login/register/loginWithSession) and sets the header instead.
   const token = localStorage.getItem('fh_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   config.withCredentials = true
