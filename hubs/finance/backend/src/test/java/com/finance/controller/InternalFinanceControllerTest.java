@@ -1,6 +1,8 @@
 package com.finance.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.finance.model.Company;
+import com.finance.repository.CompanyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,12 +32,25 @@ class InternalFinanceControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private CompanyRepository companyRepository;
 
     private String adminToken;
 
     @BeforeEach
     void setUp() throws Exception {
         adminToken = loginToken("admin@finance.fr");
+        // Chaque test appelle enableIntegrationAndGetKey() sur la même société
+        // seedée (contexte Spring mis en cache entre les méthodes de test, et
+        // partagé avec InternalIntegrationControllerTest) : repartir sans clé à
+        // chaque fois, sinon un test exécuté après un autre tomberait sur le cas
+        // "clé déjà existante" de enable() (qui ne renvoie plus la clé -- voir
+        // InternalIntegrationService), au lieu d'une clé fraîchement générée.
+        for (Company company : companyRepository.findAll()) {
+            company.setInternalIntegrationApiKey(null);
+            company.setInternalIntegrationEnabled(false);
+            companyRepository.save(company);
+        }
     }
 
     @Test

@@ -2,6 +2,9 @@ package com.finance.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.finance.model.Company;
+import com.finance.repository.CompanyRepository;
+import com.finance.security.ApiKeyHasher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,6 +38,8 @@ class InternalIntegrationControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private CompanyRepository companyRepository;
 
     private String adminToken;
     private String managerToken;
@@ -42,6 +48,18 @@ class InternalIntegrationControllerTest {
     void setUp() throws Exception {
         adminToken = loginToken("admin@finance.fr");
         managerToken = loginToken("manager@finance.fr");
+        // Chaque test appelle /enable sur la même société seedée (contexte Spring
+        // mis en cache entre les méthodes de test, et partagé avec
+        // InternalFinanceControllerTest) : repartir sans clé à chaque fois, sinon
+        // un test exécuté après un autre tomberait sur le cas "clé déjà
+        // existante" de enable() (qui ne renvoie plus la clé -- voir
+        // InternalIntegrationService), au lieu du cas "première activation"
+        // attendu ici.
+        for (Company company : companyRepository.findAll()) {
+            company.setInternalIntegrationApiKey(null);
+            company.setInternalIntegrationEnabled(false);
+            companyRepository.save(company);
+        }
     }
 
     @Test
@@ -54,6 +72,14 @@ class InternalIntegrationControllerTest {
         String key = body.get("internalIntegrationApiKey").asText();
         assertNotNull(key);
         assertTrue(key.length() >= 32, "La clé doit être suffisamment longue pour ne pas être devinable");
+
+        // Le champ stocké ne contient que le hash de la clé renvoyée ci-dessus,
+        // jamais la clé en clair elle-même -- voir ApiKeyHasher.
+        Company stored = companyRepository.findAll().stream()
+                .filter(c -> c.getInternalIntegrationApiKey() != null)
+                .findFirst().orElseThrow();
+        assertThat(stored.getInternalIntegrationApiKey()).isNotEqualTo(key);
+        assertThat(stored.getInternalIntegrationApiKey()).isEqualTo(ApiKeyHasher.hash(key));
 
         mvc.perform(get("/v1/internal-integration/settings").header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
