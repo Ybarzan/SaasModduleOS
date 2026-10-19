@@ -1,6 +1,8 @@
 package com.incokalk.controller.analytics;
 
 import com.incokalk.model.AuditLog;
+import com.incokalk.model.CompanyRole;
+import com.incokalk.security.RolesAllowed;
 import com.incokalk.service.AuditLogService;
 import com.incokalk.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +25,7 @@ public class AuditLogController {
 
     @GetMapping
     @Operation(summary = "Lister les journaux d'activité")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
     public ResponseEntity<Page<AuditLog>> listAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -32,6 +35,7 @@ public class AuditLogController {
 
     @GetMapping("/action/{action}")
     @Operation(summary = "Filtrer par action")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
     public ResponseEntity<Page<AuditLog>> listByAction(
             @PathVariable String action,
             @RequestParam(defaultValue = "0") int page,
@@ -42,6 +46,7 @@ public class AuditLogController {
 
     @GetMapping("/entity/{entityType}")
     @Operation(summary = "Filtrer par type d'entité")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
     public ResponseEntity<Page<AuditLog>> listByEntity(
             @PathVariable String entityType,
             @RequestParam(defaultValue = "0") int page,
@@ -52,6 +57,7 @@ public class AuditLogController {
 
     @GetMapping("/user/{userId}")
     @Operation(summary = "Filtrer par utilisateur")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
     public ResponseEntity<Page<AuditLog>> listByUser(
             @PathVariable UUID userId,
             @RequestParam(defaultValue = "0") int page,
@@ -62,6 +68,7 @@ public class AuditLogController {
 
     @GetMapping("/stats")
     @Operation(summary = "Statistiques du journal d'activité")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN})
     public ResponseEntity<Map<String, Object>> getStats() {
         UUID companyId = TenantContext.get();
         return ResponseEntity.ok(auditLogService.getStats(companyId));

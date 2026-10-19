@@ -110,27 +110,27 @@ class StripeWebhookControllerTest {
     // ------------------------------------------------------------------
 
     @Test
-    @DisplayName("Secret webhook non configuré -> 200 no-op sans vérification")
-    void handle_webhookSecretNotConfigured_returnsOkNoop() throws Exception {
+    @DisplayName("Secret webhook non configuré -> 503, jamais 200 (Stripe doit retenter)")
+    void handle_webhookSecretNotConfigured_returnsServiceUnavailable() throws Exception {
         ReflectionTestUtils.setField(controller, "webhookSecret", null);
         MockHttpServletRequest request = requestWithBody("{}", null);
 
         ResponseEntity<Map<String, String>> response = controller.handleStripeWebhook(request);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).containsEntry("received", "true");
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertThat(response.getBody()).containsEntry("error", "Webhook not configured");
         verifyNoInteractions(billingService);
     }
 
     @Test
-    @DisplayName("Secret webhook vide/blank -> 200 no-op sans vérification")
-    void handle_webhookSecretBlank_returnsOkNoop() throws Exception {
+    @DisplayName("Secret webhook vide/blank -> 503, jamais 200 (Stripe doit retenter)")
+    void handle_webhookSecretBlank_returnsServiceUnavailable() throws Exception {
         ReflectionTestUtils.setField(controller, "webhookSecret", "   ");
         MockHttpServletRequest request = requestWithBody("{}", null);
 
         ResponseEntity<Map<String, String>> response = controller.handleStripeWebhook(request);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
         verifyNoInteractions(billingService);
     }
 

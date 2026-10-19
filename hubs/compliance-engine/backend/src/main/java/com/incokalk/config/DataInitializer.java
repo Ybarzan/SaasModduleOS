@@ -12,12 +12,21 @@ import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Seed de démo (compte admin + société IncoKalk Demo) -- jamais en prod :
+ * au-delà du principe de ne pas faire apparaître un compte démo dans une base
+ * de production, le mot de passe généré est journalisé en clair ci-dessous
+ * pour permettre la première connexion, ce qui ne doit jamais atterrir dans
+ * un fichier de log persistant de production.
+ */
 @Slf4j
 @Component
+@Profile("!prod")
 @RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
