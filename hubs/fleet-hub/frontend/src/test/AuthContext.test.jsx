@@ -61,7 +61,11 @@ describe('AuthContext', () => {
 
     await expect(
       act(async () => {
-        await result.current.loginWithSession({ token: 'jwt-revoked', username: 'ops', role: 'ADMIN' })
+        await result.current.loginWithSession({
+          token: 'jwt-revoked',
+          username: 'ops',
+          role: 'ADMIN'
+        })
       })
     ).rejects.toThrow()
 
