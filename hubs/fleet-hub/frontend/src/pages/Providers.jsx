@@ -374,7 +374,7 @@ export default function Providers() {
                 })
               ) : (
                 <tr>
-                  <td colSpan="5" className="table-empty">
+                  <td colSpan={5} className="table-empty">
                     Aucun fournisseur configuré
                   </td>
                 </tr>

@@ -457,7 +457,7 @@ export default function DriverDetail() {
               <tbody>
                 {trips.length === 0 && (
                   <tr>
-                    <td colSpan="7" className="table-empty">
+                    <td colSpan={7} className="table-empty">
                       Aucun trajet sur la période
                     </td>
                   </tr>
@@ -500,7 +500,7 @@ export default function DriverDetail() {
               <tbody>
                 {tacho.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="table-empty">
+                    <td colSpan={6} className="table-empty">
                       Aucun jour de tachygraphe sur la période
                     </td>
                   </tr>
@@ -548,7 +548,7 @@ export default function DriverDetail() {
               <tbody>
                 {events.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="table-empty">
+                    <td colSpan={6} className="table-empty">
                       Aucun événement sur la période
                     </td>
                   </tr>

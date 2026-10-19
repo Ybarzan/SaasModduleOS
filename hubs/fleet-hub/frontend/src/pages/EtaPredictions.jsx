@@ -462,7 +462,7 @@ export default function EtaPredictions() {
                     </tr>
                     {isExpanded && (
                       <tr>
-                        <td colSpan="8">
+                        <td colSpan={8}>
                           {parseRiskFactors(pred.riskFactors).length > 0 && (
                             <div className="alert alert-warning">
                               <strong>Ce qui peut affecter ce délai :</strong>
@@ -540,7 +540,7 @@ export default function EtaPredictions() {
               })}
               {predictions.length === 0 && !loading && (
                 <tr>
-                  <td colSpan="8" className="table-empty">
+                  <td colSpan={8} className="table-empty">
                     Aucune prédiction pour le moment
                   </td>
                 </tr>

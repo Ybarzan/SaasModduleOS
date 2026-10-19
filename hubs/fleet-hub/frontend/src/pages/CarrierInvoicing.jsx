@@ -633,7 +633,7 @@ export default function CarrierInvoicing() {
               ))}
               {invoices.length === 0 && !error && !loading && (
                 <tr>
-                  <td colSpan="7" className="table-empty">
+                  <td colSpan={7} className="table-empty">
                     Aucune facture
                   </td>
                 </tr>

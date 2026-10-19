@@ -177,7 +177,7 @@ export default function Tachographie() {
             <tbody>
               {summary.length === 0 && (
                 <tr>
-                  <td colSpan="8" className="table-empty">
+                  <td colSpan={8} className="table-empty">
                     Aucune donnée tachygraphe sur la période
                   </td>
                 </tr>
@@ -257,7 +257,7 @@ export default function Tachographie() {
             <tbody>
               {journal.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="table-empty">
+                  <td colSpan={7} className="table-empty">
                     Aucun jour de tachygraphe sur la période
                   </td>
                 </tr>
