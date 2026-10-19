@@ -3,6 +3,7 @@ package com.logistix.service;
 import com.logistix.dto.PraxioIntegrationSettingsDto;
 import com.logistix.model.Company;
 import com.logistix.repository.CompanyRepository;
+import com.logistix.security.ApiKeyHasher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,7 @@ class PraxioIntegrationServiceTest {
     }
 
     @Test
-    @DisplayName("enable → génère une clé si absente et l'expose une fois")
+    @DisplayName("enable → génère une clé si absente, l'expose une fois en clair, stocke son hash")
     void enable_generatesKey_whenAbsent() {
         Company company = Company.builder().id(companyId).build();
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
@@ -49,31 +50,38 @@ class PraxioIntegrationServiceTest {
 
         assertThat(dto.praxioIntegrationEnabled()).isTrue();
         assertThat(dto.praxioIntegrationApiKey()).isNotBlank();
-        assertThat(company.getPraxioIntegrationApiKey()).isEqualTo(dto.praxioIntegrationApiKey());
+        // Le champ stocké n'est jamais la clé en clair, seulement son hash (voir
+        // ApiKeyHasher) -- la clé en clair n'est récupérable qu'une fois, ici.
+        assertThat(company.getPraxioIntegrationApiKey()).isEqualTo(ApiKeyHasher.hash(dto.praxioIntegrationApiKey()));
         verify(companyRepo).save(company);
     }
 
     @Test
-    @DisplayName("enable → réutilise la clé existante plutôt que d'en regénérer une")
+    @DisplayName("enable → réutilise le hash existant sans le régénérer, et ne renvoie plus la clé")
     void enable_reusesExistingKey() {
-        Company company = Company.builder().id(companyId).praxioIntegrationApiKey("existing-key").build();
+        String existingHash = ApiKeyHasher.hash("existing-key");
+        Company company = Company.builder().id(companyId).praxioIntegrationApiKey(existingHash).build();
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
 
         PraxioIntegrationSettingsDto dto = service.enable(companyId);
 
-        assertThat(dto.praxioIntegrationApiKey()).isEqualTo("existing-key");
+        // Le hash existant ne peut pas être "redéchiffré" en la clé d'origine : la
+        // clé en clair n'est donc plus renvoyée sur un appel enable() ultérieur
+        // (même règle que settings(), qui ne l'a jamais renvoyée non plus).
+        assertThat(dto.praxioIntegrationApiKey()).isNull();
+        assertThat(company.getPraxioIntegrationApiKey()).isEqualTo(existingHash);
     }
 
     @Test
-    @DisplayName("disable → désactive sans effacer la clé")
-    void disable_disablesWithoutClearingKey() {
+    @DisplayName("disable → désactive et efface le hash (une réactivation en génère un nouveau)")
+    void disable_clearsStoredKeyHash() {
         Company company = Company.builder().id(companyId).praxioIntegrationEnabled(true).praxioIntegrationApiKey("k").build();
         when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
 
         service.disable(companyId);
 
         assertThat(company.isPraxioIntegrationEnabled()).isFalse();
-        assertThat(company.getPraxioIntegrationApiKey()).isEqualTo("k");
+        assertThat(company.getPraxioIntegrationApiKey()).isNull();
     }
 
     @Test
@@ -88,7 +96,7 @@ class PraxioIntegrationServiceTest {
     @Test
     @DisplayName("resolveCompanyId → clé invalide ou désactivée -> 401")
     void resolveCompanyId_invalidKey_unauthorized() {
-        when(companyRepo.findByPraxioIntegrationApiKeyAndPraxioIntegrationEnabledTrue("bad-key"))
+        when(companyRepo.findByPraxioIntegrationApiKeyAndPraxioIntegrationEnabledTrue(ApiKeyHasher.hash("bad-key")))
                 .thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.resolveCompanyId("bad-key"))
@@ -100,8 +108,9 @@ class PraxioIntegrationServiceTest {
     @Test
     @DisplayName("resolveCompanyId → clé valide -> id de la société propriétaire")
     void resolveCompanyId_validKey_returnsCompanyId() {
-        Company company = Company.builder().id(companyId).praxioIntegrationEnabled(true).praxioIntegrationApiKey("good-key").build();
-        when(companyRepo.findByPraxioIntegrationApiKeyAndPraxioIntegrationEnabledTrue("good-key"))
+        Company company = Company.builder().id(companyId).praxioIntegrationEnabled(true)
+                .praxioIntegrationApiKey(ApiKeyHasher.hash("good-key")).build();
+        when(companyRepo.findByPraxioIntegrationApiKeyAndPraxioIntegrationEnabledTrue(ApiKeyHasher.hash("good-key")))
                 .thenReturn(Optional.of(company));
 
         assertThat(service.resolveCompanyId("good-key")).isEqualTo(companyId);

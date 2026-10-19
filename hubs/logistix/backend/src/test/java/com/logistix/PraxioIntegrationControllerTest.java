@@ -2,6 +2,9 @@ package com.logistix;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.logistix.model.Company;
+import com.logistix.repository.CompanyRepository;
+import com.logistix.security.ApiKeyHasher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,6 +38,8 @@ class PraxioIntegrationControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private CompanyRepository companyRepository;
 
     private String adminToken;
     private String managerToken;
@@ -42,6 +48,16 @@ class PraxioIntegrationControllerTest {
     void setUp() throws Exception {
         adminToken = loginToken("admin@logistix.fr");
         managerToken = loginToken("manager@logistix.fr");
+        // Chaque test appelle /enable sur la même société seedée (contexte Spring
+        // mis en cache entre les méthodes de test) : repartir sans clé à chaque
+        // fois, sinon un test exécuté après un autre tomberait sur le cas "clé déjà
+        // existante" de enable() (qui ne renvoie plus la clé -- voir
+        // PraxioIntegrationService), au lieu du cas "première activation" attendu ici.
+        for (Company company : companyRepository.findAll()) {
+            company.setPraxioIntegrationApiKey(null);
+            company.setPraxioIntegrationEnabled(false);
+            companyRepository.save(company);
+        }
     }
 
     @Test
@@ -54,6 +70,14 @@ class PraxioIntegrationControllerTest {
         String key = body.get("praxioIntegrationApiKey").asText();
         assertNotNull(key);
         assertTrue(key.length() >= 32, "La clé doit être suffisamment longue pour ne pas être devinable");
+
+        // Le champ stocké ne contient que le hash de la clé renvoyée ci-dessus,
+        // jamais la clé en clair elle-même -- voir ApiKeyHasher.
+        Company stored = companyRepository.findAll().stream()
+                .filter(c -> c.getPraxioIntegrationApiKey() != null)
+                .findFirst().orElseThrow();
+        assertThat(stored.getPraxioIntegrationApiKey()).isNotEqualTo(key);
+        assertThat(stored.getPraxioIntegrationApiKey()).isEqualTo(ApiKeyHasher.hash(key));
 
         mvc.perform(get("/v1/praxio-integration/settings").header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())

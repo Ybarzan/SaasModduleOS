@@ -31,8 +31,11 @@ public class Company {
     /** Clé d'intégration fleet-hub (en-tête X-Internal-Integration-Key) --
      *  générée côté fleet-hub quand cette société y active le partage
      *  d'expéditions, puis collée ici par un admin. Voir
-     *  service/integration/fleethub/FleetHubIntegrationClient. */
-    @Column(name = "fleethub_api_key", length = 64)
+     *  service/integration/fleethub/FleetHubIntegrationClient. Chiffrée au
+     *  repos (voir EncryptedApiKeyConverter) : jamais recherchée par égalité
+     *  ici, seulement relue en clair pour l'en-tête sortant. */
+    @Column(name = "fleethub_api_key", length = 255)
+    @Convert(converter = com.logistix.security.EncryptedApiKeyConverter.class)
     private String fleetHubApiKey;
 
     // ---- Intégration entrante Praxio (opt-in) ----
@@ -43,10 +46,11 @@ public class Company {
     @Builder.Default
     private boolean praxioIntegrationEnabled = false;
 
-    /** Clé d'authentification machine-à-machine pour cette intégration
-     *  (présentée via l'en-tête X-Internal-Integration-Key), générée à
-     *  l'activation. Logistix résout la société depuis cette clé -- jamais
-     *  depuis un identifiant fourni par l'appelant. */
+    /** Hash SHA-256 (voir ApiKeyHasher) de la clé d'authentification
+     *  machine-à-machine pour cette intégration (présentée via l'en-tête
+     *  X-Internal-Integration-Key), générée à l'activation et affichée une
+     *  seule fois -- ce champ ne contient jamais la clé en clair, seulement
+     *  son hash, comparé à PraxioIntegrationService.resolveCompanyId(). */
     @Column(name = "praxio_integration_api_key", length = 64)
     private String praxioIntegrationApiKey;
 

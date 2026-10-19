@@ -3,6 +3,7 @@ package com.logistix.service;
 import com.logistix.dto.PraxioIntegrationSettingsDto;
 import com.logistix.model.Company;
 import com.logistix.repository.CompanyRepository;
+import com.logistix.security.ApiKeyHasher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,18 +34,33 @@ public class PraxioIntegrationService {
     @Transactional
     public PraxioIntegrationSettingsDto enable(UUID companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow();
+        // praxioIntegrationApiKey ne contient qu'un hash (voir ApiKeyHasher) : la
+        // clé en clair n'est jamais récupérable une fois générée. Si une clé existe
+        // déjà, on ne peut donc plus la renvoyer -- comme settings(), qui ne la
+        // renvoie jamais non plus. Seule une activation initiale (première
+        // génération) retourne la clé en clair, une seule fois.
+        String plainKeyToReturn = null;
         if (company.getPraxioIntegrationApiKey() == null) {
-            company.setPraxioIntegrationApiKey(Company.generatePraxioIntegrationApiKey());
+            String generated = Company.generatePraxioIntegrationApiKey();
+            company.setPraxioIntegrationApiKey(ApiKeyHasher.hash(generated));
+            plainKeyToReturn = generated;
         }
         company.setPraxioIntegrationEnabled(true);
         companyRepository.save(company);
-        return new PraxioIntegrationSettingsDto(true, company.getPraxioIntegrationApiKey());
+        return new PraxioIntegrationSettingsDto(true, plainKeyToReturn);
     }
 
+    /**
+     * La clé stockée n'étant qu'un hash (voir enable()), elle ne peut plus être
+     * réaffichée après coup -- on l'efface donc à la désactivation : une
+     * réactivation ultérieure en génère une nouvelle plutôt que de laisser une
+     * clé orpheline, invisible mais toujours présente en base, sans utilité.
+     */
     @Transactional
     public void disable(UUID companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow();
         company.setPraxioIntegrationEnabled(false);
+        company.setPraxioIntegrationApiKey(null);
         companyRepository.save(company);
     }
 
@@ -58,7 +74,7 @@ public class PraxioIntegrationService {
         if (apiKey == null || apiKey.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé X-Internal-Integration-Key manquante");
         }
-        return companyRepository.findByPraxioIntegrationApiKeyAndPraxioIntegrationEnabledTrue(apiKey)
+        return companyRepository.findByPraxioIntegrationApiKeyAndPraxioIntegrationEnabledTrue(ApiKeyHasher.hash(apiKey))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé invalide ou intégration désactivée"))
                 .getId();
     }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useAuthStore, type User } from "../stores/auth";
+import { useAuthStore, type UserRole } from "../stores/auth";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:8091",
@@ -45,10 +45,21 @@ api.interceptors.response.use(
 // `incokalkAPI.{warehouses,inventory,receivings}` so the REST contract keeps
 // matching the backend being extracted in parallel. Everything outside the
 // warehousing/réception domain is intentionally left out.
+// /v1/auth/login répond à plat (voir com.logistix.dto.AuthResponse côté
+// backend), jamais un objet `user` imbriqué.
+export interface AuthLoginResponse {
+  token: string;
+  email: string;
+  displayName: string;
+  role: UserRole;
+  companyId: string;
+  companyName: string;
+}
+
 export const logistixAPI = {
   auth: {
     login: (email: string, password: string) =>
-      api.post<{ token: string; user: User }>("/v1/auth/login", { email, password }),
+      api.post<AuthLoginResponse>("/v1/auth/login", { email, password }),
   },
 
   // Warehouses / Réception
