@@ -51,6 +51,8 @@ incokalk:
       expiration: 86400000
     api-key:
       salt: ${API_KEY_SALT:test-salt}
+    mailbox-encryption:
+      key: ${MAILBOX_ENCRYPTION_KEY:test-mailbox-encryption-key-test-only-not-prod}
 
   rate-limiting:
     free:

@@ -27,6 +27,9 @@ public class SecurityPropertiesValidator implements ApplicationRunner {
     @Value("${incokalk.security.api-key.salt:}")
     private String apiKeySalt;
 
+    @Value("${incokalk.security.mailbox-encryption.key:}")
+    private String mailboxEncryptionKey;
+
     public SecurityPropertiesValidator(Environment environment) {
         this.environment = environment;
     }
@@ -59,10 +62,22 @@ public class SecurityPropertiesValidator implements ApplicationRunner {
             hasErrors = true;
         }
 
+        if (mailboxEncryptionKey == null || mailboxEncryptionKey.isBlank()) {
+            log.error("❌ FATAL: MAILBOX_ENCRYPTION_KEY non défini. Définissez la variable d'env "
+                    + "MAILBOX_ENCRYPTION_KEY (jamais égale à JWT_SECRET -- clé dédiée au chiffrement "
+                    + "des mots de passe IMAP)");
+            hasErrors = true;
+        } else if (mailboxEncryptionKey.equals(jwtSecret)) {
+            log.error("❌ FATAL: MAILBOX_ENCRYPTION_KEY est identique à JWT_SECRET. Ces deux secrets "
+                    + "doivent être distincts (une fuite de l'un ne doit pas compromettre l'autre).");
+            hasErrors = true;
+        }
+
         if (hasErrors) {
             log.error("🔒 L'application ne peut pas démarrer sans les secrets de sécurité configurés.");
             log.error("   Copiez infrastructure/docker/.env.example en infrastructure/docker/.env");
-            log.error("   et configurez JWT_SECRET et API_KEY_SALT avec des valeurs sécurisées.");
+            log.error("   et configurez JWT_SECRET, API_KEY_SALT et MAILBOX_ENCRYPTION_KEY avec des "
+                    + "valeurs sécurisées et distinctes.");
             throw new IllegalStateException("Secrets de sécurité manquants en mode production");
         }
 

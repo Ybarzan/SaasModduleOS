@@ -85,8 +85,12 @@ incokalk:
       expiration: 86400000
     api-key:
       salt: ${API_KEY_SALT}
+    # Clé dédiée, jamais dérivée de JWT_SECRET : réutiliser le secret de
+    # signature des JWT comme clé de chiffrement des mots de passe IMAP ferait
+    # qu'une fuite de JWT_SECRET compromette aussi ces mots de passe, et
+    # qu'une rotation de JWT_SECRET casse silencieusement leur déchiffrement.
     mailbox-encryption:
-      key: ${MAILBOX_ENCRYPTION_KEY:${JWT_SECRET}}
+      key: ${MAILBOX_ENCRYPTION_KEY}
 
   rate-limiting:
     free:

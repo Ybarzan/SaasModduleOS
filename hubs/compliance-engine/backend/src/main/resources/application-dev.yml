@@ -8,6 +8,8 @@ incokalk:
       secret: dev-only-insecure-jwt-secret-not-for-production-use
     api-key:
       salt: "110861"
+    mailbox-encryption:
+      key: dev-only-insecure-mailbox-encryption-key-not-for-production
   storage:
     endpoint: http://localhost:9000
     access-key: minioadmin
