@@ -3,6 +3,7 @@ package com.fleethub.service;
 import com.fleethub.dto.InternalIntegrationSettingsDto;
 import com.fleethub.model.Company;
 import com.fleethub.repository.CompanyRepository;
+import com.fleethub.security.ApiKeyHasher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -31,18 +32,33 @@ public class InternalIntegrationService {
     @Transactional
     public InternalIntegrationSettingsDto enable(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow();
+        // internalIntegrationApiKey ne contient qu'un hash (voir ApiKeyHasher) : la
+        // clé en clair n'est jamais récupérable une fois générée. Si une clé existe
+        // déjà, on ne peut donc plus la renvoyer -- comme settings(), qui ne la
+        // renvoie jamais non plus. Seule une activation initiale (première
+        // génération) retourne la clé en clair, une seule fois.
+        String plainKeyToReturn = null;
         if (company.getInternalIntegrationApiKey() == null) {
-            company.setInternalIntegrationApiKey(Company.generateInternalIntegrationApiKey());
+            String generated = Company.generateInternalIntegrationApiKey();
+            company.setInternalIntegrationApiKey(ApiKeyHasher.hash(generated));
+            plainKeyToReturn = generated;
         }
         company.setInternalIntegrationEnabled(true);
         companyRepository.save(company);
-        return new InternalIntegrationSettingsDto(true, company.getInternalIntegrationApiKey());
+        return new InternalIntegrationSettingsDto(true, plainKeyToReturn);
     }
 
+    /**
+     * La clé stockée n'étant qu'un hash (voir enable()), elle ne peut plus être
+     * réaffichée après coup -- on l'efface donc à la désactivation : une
+     * réactivation ultérieure en génère une nouvelle plutôt que de laisser une
+     * clé orpheline, invisible mais toujours présente en base, sans utilité.
+     */
     @Transactional
     public void disable(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow();
         company.setInternalIntegrationEnabled(false);
+        company.setInternalIntegrationApiKey(null);
         companyRepository.save(company);
     }
 
@@ -56,7 +72,7 @@ public class InternalIntegrationService {
         if (apiKey == null || apiKey.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé X-Internal-Integration-Key manquante");
         }
-        return companyRepository.findByInternalIntegrationApiKeyAndInternalIntegrationEnabledTrue(apiKey)
+        return companyRepository.findByInternalIntegrationApiKeyAndInternalIntegrationEnabledTrue(ApiKeyHasher.hash(apiKey))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé invalide ou intégration désactivée"))
                 .getId();
     }

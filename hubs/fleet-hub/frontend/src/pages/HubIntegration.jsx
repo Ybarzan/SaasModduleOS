@@ -142,8 +142,9 @@ export default function HubIntegration() {
           <p className="muted">
             Collez cette clé dans les paramètres de <strong>Compliance Engine</strong> ou de{' '}
             <strong>Logistix</strong> (section « Intégration Fleet Hub »). Si vous la perdez,
-            désactivez puis réactivez l'intégration ci-dessus pour la retrouver — la clé ne change
-            pas.
+            désactivez puis réactivez l'intégration ci-dessus pour en générer une nouvelle —
+            l'ancienne cesse de fonctionner dès la désactivation, pensez à la remplacer partout où
+            vous l'aviez collée.
           </p>
         </div>
       )}
