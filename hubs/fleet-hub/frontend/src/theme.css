@@ -7,49 +7,49 @@
 [data-theme='light'] {
   color-scheme: light;
 
-  /* Base -- palette Praxio v0.2, meme principe que le mode sombre : sable/pierre,
-     pas la creme jaune par defaut. */
-  --bg: #e6e0d3;
-  --bg-soft: #eae3d5;
-  --card: #f1ece1;
-  --card-2: #eae3d5;
-  --surface-alt: #dcd4c2;
-  --surface-3: #d3cbb8;
+  /* Camel très clair -- plus doux pour les yeux qu'un gris neutre froid.
+     Mêmes valeurs que hubs/portal, hubs/logistix, hubs/finance. */
+  --bg: #faf6ee;
+  --bg-soft: #f6f1e6;
+  --card: #ffffff;
+  --card-2: #f3ede1;
+  --surface-alt: #f3ede1;
+  --surface-3: #e7decb;
 
   /* Texte */
-  --text: #211a15;
-  --text-soft: #4a3f35;
-  --muted: #6b5f52;
+  --text: #221c16;
+  --text-soft: #4a4136;
+  --muted: #5d5244;
 
   /* Bordures */
-  --border: #d3cbb8;
-  --border-strong: #bcaf97;
+  --border: #e7decb;
+  --border-strong: #d8cbaf;
 
-  /* Accents -- terracotta (primaire) + zellige (secondaire) */
-  --primary: #bf4e2e;
-  --primary-2: #1e6b6e;
-  --primary-3: #9e3f24;
-  --primary-rgb: 191, 78, 46;
-  --primary-2-rgb: 30, 107, 110;
+  /* Accents -- un seul accent (indigo) + un secondaire (teal) */
+  --primary: #4f46e5;
+  --primary-2: #0d9488;
+  --primary-3: #4338ca;
+  --primary-rgb: 79, 70, 229;
+  --primary-2-rgb: 13, 148, 136;
 
-  /* Semantiques -- olive/ochre/rust */
-  --green: #6e7a4a;
-  --orange: #c08a2e;
-  --red: #a6311f;
-  --blue: #4a7a8c;
-  --purple: #8c6b7a;
+  /* Sémantiques -- utilisées uniquement pour porter du sens (statut) */
+  --green: #16a34a;
+  --orange: #d97706;
+  --red: #dc2626;
+  --blue: #4f46e5;
+  --purple: #7c3aed;
 
-  --green-soft: rgba(110, 122, 74, 0.1);
-  --orange-soft: rgba(192, 138, 46, 0.1);
-  --red-soft: rgba(166, 49, 31, 0.1);
-  --blue-soft: rgba(74, 122, 140, 0.1);
-  --purple-soft: rgba(140, 107, 122, 0.1);
+  --green-soft: rgba(22, 163, 74, 0.1);
+  --orange-soft: rgba(217, 119, 6, 0.1);
+  --red-soft: rgba(220, 38, 38, 0.1);
+  --blue-soft: rgba(79, 70, 229, 0.1);
+  --purple-soft: rgba(124, 58, 237, 0.1);
 
-  /* Ombres — plus subtiles sur fond clair */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
-  --shadow: 0 2px 12px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.03);
-  --shadow-lg: 0 16px 48px -12px rgba(0, 0, 0, 0.15);
-  --shadow-primary: 0 2px 12px -4px rgba(var(--primary-rgb), 0.2);
+  /* Ombres quasi invisibles sur fond clair */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 16px 40px -16px rgba(0, 0, 0, 0.12);
+  --shadow-primary: 0 2px 12px -4px rgba(var(--primary-rgb), 0.15);
 }
 
 /* ---------- Body ---------- */
@@ -59,19 +59,8 @@
   color: var(--text);
 }
 
-/* Supprimer la grille technique en mode clair (trop visible) */
-[data-theme='light'] body::before {
-  background:
-    linear-gradient(rgba(var(--primary-rgb), 0.015) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(var(--primary-rgb), 0.015) 1px, transparent 1px);
-  background-size: 42px 42px;
-  mask-image: radial-gradient(ellipse 90% 80% at 50% 0%, rgba(0, 0, 0, 0.6), transparent 100%);
-}
-
-/* Supprimer le scanline overlay en mode clair */
-[data-theme='light'] body::after {
-  display: none;
-}
+/* Grille technique + scanline déjà supprimées globalement dans styles.css
+   (body::before/::after { display: none }) -- rien à surcharger ici. */
 
 /* ---------- Scrollbar ---------- */
 

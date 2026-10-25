@@ -74,7 +74,7 @@ const createIcon = (color) =>
   })
 
 const ORIGIN_ICON = createIcon('#7fb98f')
-const STOP_ICON = createIcon('#3e9194')
+const STOP_ICON = createIcon('#0d9488')
 const DEST_ICON = createIcon('#c98b8f')
 
 function FitBounds({ positions }) {
@@ -324,7 +324,7 @@ export default function RouteOptimizer() {
               <FitBounds positions={polylinePositions} />
               <Polyline
                 positions={polylinePositions}
-                pathOptions={{ color: '#3e9194', weight: 4, opacity: 0.8 }}
+                pathOptions={{ color: '#0d9488', weight: 4, opacity: 0.8 }}
               />
               {mapMarkers.map((m, idx) => (
                 <Marker
@@ -345,7 +345,7 @@ export default function RouteOptimizer() {
               <span className="legend-dot" style={{ background: '#7fb98f' }} /> Départ
             </span>
             <span className="legend-item">
-              <span className="legend-dot" style={{ background: '#3e9194' }} /> Stop
+              <span className="legend-dot" style={{ background: '#0d9488' }} /> Stop
             </span>
             <span className="legend-item">
               <span className="legend-dot" style={{ background: '#c98b8f' }} /> Arrivée
