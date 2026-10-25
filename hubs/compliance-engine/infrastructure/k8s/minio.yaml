@@ -49,7 +49,12 @@ spec:
     spec:
       containers:
         - name: minio
-          image: quay.io/minio/minio:latest
+          # quay.io/minio/minio:latest est mort (401, MinIO a retiré ses
+          # images officielles -- cf. infrastructure/docker/minio/Dockerfile).
+          # Avant de déployer : construire cette image et la pousser vers un
+          # registre accessible par le cluster, puis remplacer la valeur
+          # ci-dessous par son adresse.
+          image: quay.io/minio/minio:latest # TODO: remplacer (voir commentaire)
           ports:
             - containerPort: 9000
               name: api
@@ -69,21 +74,17 @@ spec:
             - "--console-address"
             - ":9001"
           livenessProbe:
-            exec:
-              command:
-                - mc
-                - ready
-                - local
+            httpGet:
+              path: /minio/health/live
+              port: 9000
             initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 6
           readinessProbe:
-            exec:
-              command:
-                - mc
-                - ready
-                - local
+            httpGet:
+              path: /minio/health/ready
+              port: 9000
             initialDelaySeconds: 5
             periodSeconds: 5
             timeoutSeconds: 3

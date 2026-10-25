@@ -51,8 +51,11 @@ services:
     restart: unless-stopped
 
   # ── MinIO (S3-compatible object storage) ───────────────────────────────
+  # Image officielle retirée de Docker Hub et quay.io (cf. minio/Dockerfile) :
+  # on construit le serveur depuis les sources.
   minio:
-    image: quay.io/minio/minio:latest
+    build:
+      context: ./minio
     ports:
       - "${MINIO_API_PORT:-9000}:9000"
       - "${MINIO_CONSOLE_PORT:-9001}:9001"
@@ -63,7 +66,7 @@ services:
       - miniodata:/data
     command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD", "curl", "-fsS", "http://localhost:9000/minio/health/live"]
       interval: 10s
       timeout: 5s
       retries: 5
