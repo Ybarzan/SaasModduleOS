@@ -130,12 +130,22 @@ Puis :
 
 ### Option B — Dev local (sans Docker)
 
-Backend (port 8080) :
+Backend (port 8080) — profil `local` : tout en H2 mémoire, zéro dépendance externe
+(sans ce profil, le backend essaie de se connecter à un vrai Postgres sur
+`localhost:5432` et plante immédiatement s'il n'y en a pas) :
 
 ```bash
 cd backend
-mvn spring-boot:run
+mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
+
+> PowerShell mange parfois l'argument `-D...` : utiliser plutôt la variable
+> d'environnement, qui marche partout :
+> `$env:SPRING_PROFILES_ACTIVE="local"; mvn spring-boot:run` (PowerShell) ou
+> `SPRING_PROFILES_ACTIVE=local mvn spring-boot:run` (bash/zsh).
+
+Un compte admin de démo est créé au premier démarrage — voir les logs
+(`DataInitializer`) pour le mot de passe généré.
 
 Frontend (port 5173) :
 
