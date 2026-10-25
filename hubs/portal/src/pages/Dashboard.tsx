@@ -10,6 +10,7 @@ import {
   type HubStatus,
   type SsoCredentialsStatus,
 } from '../lib/praxioApi';
+import ThemeToggle from '../components/ThemeToggle';
 
 const STORAGE_KEY = 'praxio-admin-password';
 
@@ -115,25 +116,34 @@ export default function Dashboard() {
       <header className="border-b border-line">
         <div className="max-w-5xl mx-auto px-6 py-10 flex items-start justify-between gap-6">
           <div>
-            <Link to="/" className="eyebrow hover:text-accent transition-colors">
-              &larr; prax<b className="font-bold">io</b>
+            <Link to="/" className="text-sm font-medium text-ink-soft hover:text-ink transition-colors">
+              &larr; Praxio
             </Link>
-            <h1 className="text-3xl font-extralight tracking-tight mt-2">Tableau de bord cross-hub</h1>
+            <h1 className="text-3xl font-semibold tracking-tight mt-2">Tableau de bord cross-hub</h1>
           </div>
-          <button
-            type="button"
-            onClick={logout}
-            className="text-xs text-ink-soft hover:text-ink transition-colors underline"
-          >
-            Se déconnecter
-          </button>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={logout}
+              className="text-sm text-ink-soft hover:text-ink transition-colors"
+            >
+              Se déconnecter
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-12 space-y-10">
-        {error && <div className="border border-danger/40 bg-danger/10 text-danger text-sm px-4 py-3">{error}</div>}
+        {error && (
+          <div className="rounded-lg border border-danger/30 bg-danger-soft text-danger text-sm px-4 py-3">
+            {error}
+          </div>
+        )}
         {launchError && (
-          <div className="border border-danger/40 bg-danger/10 text-danger text-sm px-4 py-3">{launchError}</div>
+          <div className="rounded-lg border border-danger/30 bg-danger-soft text-danger text-sm px-4 py-3">
+            {launchError}
+          </div>
         )}
 
         {dashboard && ssoStatus && (
@@ -197,17 +207,18 @@ function LoginGate({
 
   return (
     <div className="min-h-screen bg-bg text-ink flex items-center justify-center px-6">
+      <div className="absolute top-6 right-6">
+        <ThemeToggle />
+      </div>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           if (input.trim()) onSubmit(input.trim());
         }}
-        className="w-full max-w-sm border border-line bg-surface p-8 space-y-4"
+        className="w-full max-w-sm card p-8 space-y-4"
       >
-        <div className="eyebrow">portail — tableau de bord</div>
-        <h1 className="text-2xl font-extralight tracking-tight">
-          prax<b className="font-bold">io</b>
-        </h1>
+        <span className="eyebrow">Tableau de bord</span>
+        <h1 className="text-2xl font-semibold tracking-tight">Praxio</h1>
         <p className="text-sm text-ink-soft">Accès administrateur requis.</p>
         {error && <p className="text-sm text-danger">{error}</p>}
         <input
@@ -216,13 +227,9 @@ function LoginGate({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Mot de passe administrateur"
-          className="w-full px-3 py-2 border border-line bg-bg text-sm font-mono focus:ring-2 focus:ring-accent focus:border-transparent"
+          className="field"
         />
-        <button
-          type="submit"
-          disabled={loading || !input.trim()}
-          className="btn-primary w-full justify-center disabled:opacity-50"
-        >
+        <button type="submit" disabled={loading || !input.trim()} className="btn-primary w-full disabled:opacity-50">
           {loading ? 'Connexion…' : 'Entrer'}
         </button>
       </form>
@@ -239,15 +246,10 @@ function StatusBadge({ status }: { status: HubStatus<unknown>['status'] }) {
         : status === 'NOT_APPLICABLE'
           ? 'Non applicable'
           : 'Inaccessible';
-  const cls =
-    status === 'OK'
-      ? 'tag-live'
-      : status === 'NOT_CONFIGURED' || status === 'NOT_APPLICABLE'
-        ? 'tag-soon'
-        : 'tag-sim';
+  const cls = status === 'OK' ? 'badge-live' : 'badge-soon';
   return (
-    <span className={`tag ${cls}`}>
-      <span className="tag-dot" />
+    <span className={`badge ${cls}`}>
+      <span className="badge-dot" />
       {label}
     </span>
   );
@@ -267,9 +269,9 @@ function HubCardShell({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="bg-surface border border-line p-6 flex flex-col gap-4">
+    <div className="card p-6 flex flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-base font-bold uppercase tracking-[0.02em]">{title}</h2>
+        <h2 className="text-base font-semibold">{title}</h2>
         <StatusBadge status={status} />
       </div>
       {status === 'OK' ? (
@@ -279,15 +281,11 @@ function HubCardShell({
           Aucune clé enregistrée pour ce hub — voir « Paramètres » ci-dessous.
         </p>
       ) : (
-        <p className="text-sm text-ink-soft">Le hub n'a pas répondu. Réessayez plus tard.</p>
+        <p className="text-sm text-ink-soft">Le hub n'a pas répondu. Réessaie plus tard.</p>
       )}
       {ssoConfigured && (
-        <button
-          type="button"
-          onClick={onLaunch}
-          className="btn-secondary self-start mt-auto"
-        >
-          &gt; ouvrir
+        <button type="button" onClick={onLaunch} className="btn-secondary self-start mt-auto">
+          Ouvrir
         </button>
       )}
     </div>
@@ -469,18 +467,18 @@ function BillingSection({
   const total = (ce ? monthlyEquivalent(ce.amount, ce.billingCycle) : 0) + (fh?.amount ?? 0);
 
   return (
-    <div className="bg-surface border border-line overflow-hidden">
+    <div className="card overflow-hidden">
       <div className="px-6 py-4 border-b border-line flex items-start justify-between gap-6 flex-wrap">
         <div>
           <h2 className="text-lg font-semibold">Facturation groupée</h2>
           <p className="text-sm text-ink-soft mt-1 max-w-md">
-            Vue de lecture seule : chaque hub facture et encaisse de façon indépendante. Utilisez
+            Vue de lecture seule : chaque hub facture et encaisse de façon indépendante. Utilise
             « gérer » pour payer ou changer de plan directement sur le hub concerné.
           </p>
         </div>
         <div className="text-right">
-          <div className="text-xs text-ink-soft uppercase tracking-wide">Estimé / mois</div>
-          <div className="text-2xl font-bold">{formatAmount(total, 'EUR')}</div>
+          <div className="text-xs font-medium text-ink-soft uppercase tracking-wide">Estimé / mois</div>
+          <div className="text-2xl font-semibold">{formatAmount(total, 'EUR')}</div>
         </div>
       </div>
       <div className="divide-y divide-line">
@@ -498,7 +496,7 @@ function BillingRow({ row, onLaunch }: { row: BillingRowData; onLaunch: () => vo
     <div className="px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
       <div>
         <div className="flex items-center gap-2">
-          <span className="font-semibold">{row.title}</span>
+          <span className="font-medium">{row.title}</span>
           <StatusBadge status={row.status} />
         </div>
         {row.status === 'OK' && row.plan && (
@@ -527,7 +525,7 @@ function BillingRow({ row, onLaunch }: { row: BillingRowData; onLaunch: () => vo
         )}
         {row.ssoConfigured && row.status !== 'NOT_APPLICABLE' && (
           <button type="button" onClick={onLaunch} className="btn-secondary">
-            &gt; gérer
+            Gérer
           </button>
         )}
       </div>
@@ -580,12 +578,12 @@ function SettingsPanel({
   };
 
   return (
-    <div className="bg-surface border border-line overflow-hidden">
+    <div className="card overflow-hidden">
       <div className="px-6 py-4 border-b border-line">
         <h2 className="text-lg font-semibold">Paramètres — clés d'intégration</h2>
         <p className="text-sm text-ink-soft mt-1">
-          Collez ici les clés générées dans chaque module (laissez vide pour ne pas changer une
-          clé déjà enregistrée).
+          Colle ici les clés générées dans chaque module (laisse vide pour ne pas changer une clé
+          déjà enregistrée).
         </p>
       </div>
       <div className="px-6 py-4 space-y-4">
@@ -617,12 +615,7 @@ function SettingsPanel({
           onChange={setFinanceApiKey}
         />
 
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving}
-          className="btn-primary disabled:opacity-50"
-        >
+        <button type="button" onClick={save} disabled={saving} className="btn-primary disabled:opacity-50">
           {saving ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </div>
@@ -684,12 +677,12 @@ function SsoSettingsPanel({
   };
 
   return (
-    <div className="bg-surface border border-line overflow-hidden">
+    <div className="card overflow-hidden">
       <div className="px-6 py-4 border-b border-line">
         <h2 className="text-lg font-semibold">Paramètres — connexion automatique (SSO)</h2>
         <p className="text-sm text-ink-soft mt-1">
-          Les identifiants d'un compte de chaque module, utilisés uniquement pour vous connecter
-          automatiquement en un clic (« ouvrir ») depuis ce tableau de bord -- jamais affichés ni
+          Les identifiants d'un compte de chaque module, utilisés uniquement pour te connecter
+          automatiquement en un clic (« Ouvrir ») depuis ce tableau de bord -- jamais affichés ni
           renvoyés après enregistrement.
         </p>
       </div>
@@ -734,12 +727,7 @@ function SsoSettingsPanel({
           onPasswordChange={setFinancePassword}
         />
 
-        <button
-          type="button"
-          onClick={save}
-          disabled={saving}
-          className="btn-primary disabled:opacity-50"
-        >
+        <button type="button" onClick={save} disabled={saving} className="btn-primary disabled:opacity-50">
           {saving ? 'Enregistrement…' : 'Enregistrer'}
         </button>
       </div>
@@ -768,8 +756,8 @@ function SsoCredentialField({
     <div className="space-y-1.5">
       <div className="flex items-center justify-between text-sm text-ink-soft">
         <span>{label}</span>
-        <span className={`tag ${configured ? 'tag-live' : 'tag-soon'}`}>
-          <span className="tag-dot" />
+        <span className={`badge ${configured ? 'badge-live' : 'badge-soon'}`}>
+          <span className="badge-dot" />
           {configured && configuredEmail ? configuredEmail : 'Non configuré'}
         </span>
       </div>
@@ -779,14 +767,14 @@ function SsoCredentialField({
           value={email}
           onChange={(e) => onEmailChange(e.target.value)}
           placeholder={configured ? "Remplacer l'email…" : 'Email du compte…'}
-          className="flex-1 px-3 py-2 border border-line bg-bg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+          className="field flex-1"
         />
         <input
           type="password"
           value={password}
           onChange={(e) => onPasswordChange(e.target.value)}
           placeholder={configured ? 'Remplacer le mot de passe…' : 'Mot de passe…'}
-          className="flex-1 px-3 py-2 border border-line bg-bg text-sm font-mono focus:ring-2 focus:ring-accent focus:border-transparent"
+          className="field flex-1"
         />
       </div>
     </div>
@@ -808,8 +796,8 @@ function KeyField({
     <div className="space-y-1">
       <label className="flex items-center justify-between text-sm text-ink-soft">
         <span>{label}</span>
-        <span className={`tag ${configured ? 'tag-live' : 'tag-soon'}`}>
-          <span className="tag-dot" />
+        <span className={`badge ${configured ? 'badge-live' : 'badge-soon'}`}>
+          <span className="badge-dot" />
           {configured ? 'Configurée' : 'Non configurée'}
         </span>
       </label>
@@ -818,7 +806,7 @@ function KeyField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={configured ? 'Remplacer la clé existante…' : 'Coller la clé…'}
-        className="w-full px-3 py-2 border border-line bg-bg text-sm font-mono focus:ring-2 focus:ring-accent focus:border-transparent"
+        className="field"
       />
     </div>
   );
