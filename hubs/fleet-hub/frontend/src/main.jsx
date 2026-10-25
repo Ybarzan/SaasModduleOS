@@ -75,9 +75,7 @@ const CrashFallback = () => (
       padding: 24
     }}
   >
-    <div style={{ fontSize: 28, fontWeight: 700 }}>
-      Oups, un écran a planté.
-    </div>
+    <div style={{ fontSize: 28, fontWeight: 700 }}>Oups, un écran a planté.</div>
     <div style={{ color: '#A1A1AA' }}>
       Rechargez la page pour continuer. L'erreur a été enregistrée si la supervision est active.
     </div>
