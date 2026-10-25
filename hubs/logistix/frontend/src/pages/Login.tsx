@@ -4,6 +4,7 @@ import { Loader2, Warehouse as WarehouseIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { logistixAPI } from '../lib/api';
 import { useAuthStore } from '../stores/auth';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 type ApiError = { response?: { data?: { message?: string } } };
 
@@ -42,26 +43,26 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg px-4">
+      <div className="absolute top-6 right-6">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 rounded-none bg-accent-soft flex items-center justify-center mb-3">
+          <div className="w-12 h-12 rounded-lg bg-accent-soft flex items-center justify-center mb-3">
             <WarehouseIcon size={22} className="text-accent" />
           </div>
-          <h1 className="text-xl font-bold text-ink">
-            <span className="text-accent font-normal" aria-hidden="true">:: </span>
-            Logistix
-          </h1>
+          <h1 className="text-xl font-bold text-ink">Logistix</h1>
           <p className="text-ink-soft text-sm mt-1">Entrepôts, stock et réception</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-surface border border-line rounded-none p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-surface border border-line rounded-lg p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-ink mb-1">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               autoComplete="email"
               required
             />
@@ -72,7 +73,7 @@ const Login = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               autoComplete="current-password"
               required
             />
@@ -80,7 +81,7 @@ const Login = () => {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 bg-accent text-white px-4 py-2 rounded-none font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
+            className="w-full flex items-center justify-center gap-2 bg-accent text-white px-4 py-2 rounded-lg font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
           >
             {isSubmitting && <Loader2 size={14} className="animate-spin" />}
             Se connecter
