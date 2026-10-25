@@ -9,12 +9,13 @@
      hubs au fil de leur propre refonte : le portail et les modules doivent
      se lire comme une seule plateforme. */
   :root {
-    --c-bg: 247 247 248;
+    /* Camel très clair -- plus doux pour les yeux qu'un gris neutre froid. */
+    --c-bg: 250 246 238;
     --c-surface: 255 255 255;
-    --c-surface-2: 244 244 245;
-    --c-ink: 24 24 27;
-    --c-ink-soft: 82 82 91;
-    --c-line: 228 228 231;
+    --c-surface-2: 243 237 225;
+    --c-ink: 34 28 22;
+    --c-ink-soft: 93 82 68;
+    --c-line: 231 222 203;
     --c-accent: 79 70 229;
     --c-accent-soft: 238 242 255;
     --c-accent-strong: 67 56 202;
