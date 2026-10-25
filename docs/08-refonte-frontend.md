@@ -1,5 +1,11 @@
 # Refonte frontend — scope réaliste
 
+> **Mise à jour 2026-10-25** : le registre "Praxio v0.2" (zellige/terracotta,
+> terminal/HUD) décrit et migré ci-dessous a depuis été remplacé par le
+> système v0.3 — voir [09-design-system.md](09-design-system.md). Ce document
+> reste tel quel comme historique de la migration v0.2 ; il ne décrit plus
+> l'état actuel du code.
+
 ## Pourquoi ce document existe
 
 La demande initiale est un frontend « intuitif et évolué » par rapport à l'existant. C'est un objectif légitime, mais la surface réelle est grande : **compliance-engine a ~88 pages fonctionnelles** (audit frontend antérieur, couverture de tests à 100% sur cette base — voir mémoire projet) et **fleet-hub en a 21**. Reconstruire ~109 pages avec un nouveau design en une seule fois n'est ni réaliste ni souhaitable dans un seul chantier — le risque de régression fonctionnelle sur un produit déjà vendu à des clients réels dépasse la valeur d'un lifting visuel big-bang. Ce document découpe le travail en étapes livrables séparément.
