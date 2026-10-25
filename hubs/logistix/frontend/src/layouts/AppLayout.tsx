@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Warehouse, Package, Boxes, ClipboardList, ScanLine, Settings as SettingsIcon, LogOut } from 'lucide-react';
 import { useAuthStore } from '../stores/auth';
+import ThemeToggle from '../components/ui/ThemeToggle';
 
 const NAV_ITEMS = [
   { to: '/warehouses', label: 'Entrepôts', icon: Warehouse },
@@ -33,7 +34,6 @@ const AppLayout = () => {
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-6">
             <span className="text-sm font-bold text-ink shrink-0">
-              <span className="text-accent font-normal" aria-hidden="true">:: </span>
               Logistix
             </span>
             <nav className="flex items-center gap-1">
@@ -42,7 +42,7 @@ const AppLayout = () => {
                   key={to}
                   to={to}
                   className={({ isActive }) =>
-                    `flex items-center gap-1.5 px-3 py-1.5 rounded-none text-sm font-medium transition-colors ${
+                    `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive ? 'bg-accent-soft text-accent-strong' : 'text-ink-soft hover:text-ink hover:bg-surface-2'
                     }`
                   }
@@ -55,9 +55,10 @@ const AppLayout = () => {
           </div>
           <div className="flex items-center gap-3">
             {user?.email && <span className="hidden sm:inline text-xs text-ink-soft">{user.email}</span>}
+            <ThemeToggle />
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-none text-sm font-medium text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
               title="Se déconnecter"
             >
               <LogOut size={14} />
