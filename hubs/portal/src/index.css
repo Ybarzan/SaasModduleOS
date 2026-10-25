@@ -3,48 +3,52 @@
 @tailwind utilities;
 
 @layer base {
-  /* Tokens identiques à hubs/compliance-engine/frontend/src/index.css —
-     docs/09-design-system.md (palette Praxio v0.2 : medina/sable/terracotta/
-     zellige/olive/ochre/rust). Garder les deux fichiers synchronisés : le
-     portail et les modules doivent se lire comme une seule plateforme. */
+  /* Palette neutre + un seul accent, pensée pour réduire la charge cognitive
+     (hiérarchie claire, couleur utilisée uniquement pour porter du sens —
+     jamais en décoration). Garder ce fichier synchronisé avec les autres
+     hubs au fil de leur propre refonte : le portail et les modules doivent
+     se lire comme une seule plateforme. */
   :root {
-    --c-bg: 230 224 211;
-    --c-surface: 241 236 225;
-    --c-surface-2: 234 227 213;
-    --c-ink: 33 26 21;
-    --c-ink-soft: 107 95 82;
-    --c-line: 211 203 184;
-    --c-accent: 191 78 46;
-    --c-accent-soft: 230 210 199;
-    --c-accent-strong: 158 63 36;
-    --c-accent-2: 30 107 110;
-    --c-success: 110 122 74;
-    --c-warning: 192 138 46;
-    --c-danger: 166 49 31;
+    --c-bg: 247 247 248;
+    --c-surface: 255 255 255;
+    --c-surface-2: 244 244 245;
+    --c-ink: 24 24 27;
+    --c-ink-soft: 82 82 91;
+    --c-line: 228 228 231;
+    --c-accent: 79 70 229;
+    --c-accent-soft: 238 242 255;
+    --c-accent-strong: 67 56 202;
+    --c-accent-2: 13 148 136;
+    --c-success: 22 163 74;
+    --c-success-soft: 240 253 244;
+    --c-warning: 217 119 6;
+    --c-warning-soft: 255 251 235;
+    --c-danger: 220 38 38;
+    --c-danger-soft: 254 242 242;
   }
 
   .dark {
-    --c-bg: 20 16 12;
-    --c-surface: 28 23 18;
-    --c-surface-2: 36 29 23;
-    --c-ink: 232 225 210;
-    --c-ink-soft: 143 130 103;
-    --c-line: 54 44 34;
-    --c-accent: 217 104 63;
-    --c-accent-soft: 62 42 32;
-    --c-accent-strong: 232 135 92;
-    --c-accent-2: 62 145 148;
-    --c-success: 150 166 107;
-    --c-warning: 217 162 78;
-    --c-danger: 199 77 52;
+    --c-bg: 10 10 11;
+    --c-surface: 24 24 27;
+    --c-surface-2: 31 31 35;
+    --c-ink: 250 250 250;
+    --c-ink-soft: 161 161 170;
+    --c-line: 39 39 42;
+    --c-accent: 129 140 248;
+    --c-accent-soft: 49 46 129;
+    --c-accent-strong: 165 180 252;
+    --c-accent-2: 45 212 191;
+    --c-success: 74 222 128;
+    --c-success-soft: 20 46 32;
+    --c-warning: 251 191 36;
+    --c-warning-soft: 49 38 14;
+    --c-danger: 248 113 113;
+    --c-danger-soft: 50 23 23;
   }
 
-  html {
-    scroll-behavior: smooth;
-  }
   body {
     @apply font-sans antialiased bg-bg text-ink;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
   ::selection {
     background-color: rgb(var(--c-accent));
@@ -54,53 +58,35 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-accent text-white px-6 py-3 font-semibold uppercase text-xs tracking-[0.08em] hover:bg-accent-strong transition-colors duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent text-white px-4 py-2.5 text-sm font-medium hover:bg-accent-strong transition-colors duration-150;
   }
   .btn-secondary {
-    @apply bg-transparent text-ink border border-line px-6 py-3 font-semibold uppercase text-xs tracking-[0.08em] hover:border-accent/50 transition-colors duration-200;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-transparent text-ink border border-line px-4 py-2.5 text-sm font-medium hover:bg-surface-2 transition-colors duration-150;
+  }
+  .icon-btn {
+    @apply inline-flex items-center justify-center w-11 h-11 rounded-lg border border-line bg-surface-2 text-ink hover:bg-line/50 transition-colors duration-150;
   }
 
-  /* Registre terminal/HUD (docs/09-design-system.md) -- coins-crochets sur les
-     cartes les plus visibles, pas un balayage systematique. Parent `relative`. */
-  .hud-corner {
-    @apply absolute w-2.5 h-2.5 border-accent/70 pointer-events-none;
+  .card {
+    @apply bg-surface border border-line rounded-xl;
   }
-  .hud-corner-tl { @apply -top-px -left-px border-l-2 border-t-2; }
-  .hud-corner-tr { @apply -top-px -right-px border-r-2 border-t-2; }
-  .hud-corner-bl { @apply -bottom-px -left-px border-l-2 border-b-2; }
-  .hud-corner-br { @apply -bottom-px -right-px border-r-2 border-b-2; }
 
   .eyebrow {
-    @apply text-xs font-bold uppercase tracking-[0.15em] text-accent flex items-center gap-2;
-  }
-  .eyebrow::before {
-    content: "::";
-    opacity: 0.6;
+    @apply text-sm font-medium text-ink-soft;
   }
 
-  .tag {
-    @apply inline-flex items-center gap-1.5 text-[10.5px] font-semibold tracking-[0.06em] uppercase px-1.5 py-0.5 border;
+  /* Badge de statut : pastille colorée + libellé, jamais la couleur seule. */
+  .badge {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full;
   }
-  .tag-dot {
+  .badge-dot {
     @apply w-1.5 h-1.5 rounded-full bg-current;
   }
-  .tag-live { @apply text-success border-success; }
-  .tag-sim { @apply text-ink-soft border-line; }
-  .tag-soon { @apply text-ink-soft border-line border-dashed; }
+  .badge-live { @apply text-success bg-success-soft; }
+  .badge-sim { @apply text-ink-soft bg-surface-2; }
+  .badge-soon { @apply text-ink-soft bg-surface-2; }
 
-  .cursor {
-    display: inline-block;
-    width: 0.5rem;
-    height: 1.1em;
-    background: rgb(var(--c-accent));
-    vertical-align: -0.15em;
-    animation: blink 1.1s step-end infinite;
+  .field {
+    @apply w-full px-3.5 py-2.5 rounded-lg border border-line bg-bg text-sm text-ink placeholder:text-ink-soft focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent transition-colors duration-150;
   }
-  @media (prefers-reduced-motion: reduce) {
-    .cursor { animation: none; }
-  }
-}
-
-@keyframes blink {
-  50% { opacity: 0; }
 }

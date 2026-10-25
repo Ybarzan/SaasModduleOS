@@ -215,7 +215,7 @@ describe('Dashboard', () => {
     expect(screen.getByText('ops@acme.fr')).toBeInTheDocument();
   });
 
-  it('shows an "ouvrir" button only for hubs with SSO configured, and redirects on click', async () => {
+  it('shows an "Ouvrir" button only for hubs with SSO configured, and redirects on click', async () => {
     const originalLocation = window.location;
     Object.defineProperty(window, 'location', {
       writable: true,
@@ -240,7 +240,7 @@ describe('Dashboard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Entrer' }));
 
     await screen.findByRole('heading', { name: 'Fleet Hub' });
-    const launchButtons = await screen.findAllByRole('button', { name: '> ouvrir' });
+    const launchButtons = await screen.findAllByRole('button', { name: 'Ouvrir' });
     expect(launchButtons).toHaveLength(1);
     fireEvent.click(launchButtons[0]);
 
