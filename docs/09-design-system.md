@@ -1,44 +1,57 @@
 # Système de design — Praxio
 
-> Direction visuelle proposée pour l'Étape 0 de la refonte frontend ([08-refonte-frontend.md](08-refonte-frontend.md)). Fait évoluer l'identité "zellige/sable/olive/medina/terracotta" déjà en place côté compliance-engine plutôt que de la remplacer, et l'étend à fleet-hub pour que les deux hubs se lisent comme une seule plateforme.
+> Révision v0.3 (2026-10-25) : remplace la direction v0.2 ("zellige/sable/olive/medina/terracotta", registre terminal/HUD) décrite dans l'historique de [08-refonte-frontend.md](08-refonte-frontend.md). Retour utilisateur direct sur v0.2 : palette jugée agressive/étouffée, registre trop chargé cognitivement. Déployée sur les 5 hubs (portal, logistix, finance, compliance-engine, fleet-hub) qui se lisent maintenant comme une seule plateforme.
 
 ## Thèse visuelle
 
-**Praxio a l'air de savoir exactement ce qui se passe — et de s'en occuper déjà.** L'assurance tranquille d'un expert douanier chevronné : chaleureuse et précise dans le détail (héritage zellige, registre du document officiel — manifeste, tampon douanier, connaissement), nette et sans friction dans l'exécution (contrôle temps réel, action automatisée visible comme telle).
-
-Angle de différenciation délibéré : les plateformes de visibilité supply chain (FourKites, project44, Flexport) convergent toutes vers le même bleu corporate froid et générique. Praxio part d'un terrain différent — la chaleur terracotta/sable déjà associée au produit, une teinte sarcelle (zellige) plutôt que le bleu SaaS par défaut, et un vocabulaire visuel emprunté au document officiel (tampon, manifeste, registre) plutôt qu'au tableau de bord tech générique.
+**Réduire la charge cognitive plutôt que signaler une identité.** Une palette neutre (camel très clair en mode clair, pensé pour ne pas agresser les yeux — pas un gris froid ; neutre sombre en mode sombre) et un seul accent (indigo) utilisé avec parcimonie. Les couleurs sémantiques (succès/alerte/danger) ne servent qu'à porter du statut, jamais en décoration — c'est la règle qui distingue le plus ce système de la dérive "IA générique" bariolée. Hiérarchie typographique claire (taille/poids/contraste guident l'œil), espace blanc généreux, ombres quasi invisibles. Proche de la famille Linear/Stripe/Vercel — référence actuelle en clarté d'interface SaaS.
 
 ## Palette
 
-| Token | Hex | Usage |
-|---|---|---|
-| `--ink` (medina au crépuscule) | `#211A15` | Fond mode sombre, texte principal en mode clair — jamais un noir pur |
-| `--sable` | `#E6E0D3` | Fond mode clair — pierre chaude, pas la crème jaune par défaut |
-| `--terracotta` | `#BF4E2E` | Accent principal — action, marque. Utilisé avec parcimonie, jamais en fond dominant |
-| `--zellige` (sarcelle) | `#1E6B6E` | Accent secondaire — liens, confiance haute, données. Ce qui distingue Praxio du bleu SaaS générique |
-| `--olive` | `#6E7A4A` | État stable / action orchestrée avec succès |
-| `--ochre` | `#C08A2E` | Sémantique avertissement |
-| `--rust` | `#A6311F` | Sémantique critique — volontairement plus saturé/rouge que `--terracotta` pour rester distinguable |
+Deux thèmes (bascule clair/sombre sur chaque hub), tokens exprimés en triplets RGB (`--c-bg: 250 246 238` etc. — permet `rgb(var(--c-bg) / <alpha>)` côté Tailwind) :
 
-## Typographie (v0.2 — révisée après retour utilisateur : "simpliste cybernétique")
+| Token | Clair | Sombre | Usage |
+|---|---|---|---|
+| `bg` | `#FAF6EE` (camel très clair) | `#0A0A0B` | Fond de page |
+| `surface` | `#FFFFFF` | `#18181B` | Cartes, panneaux |
+| `surface-2` | `#F3EDE1` | `#1F1F23` | Survol, fond secondaire |
+| `ink` | `#221C16` | `#FAFAFA` | Texte principal |
+| `ink-soft` | `#5D5244` | `#A1A1AA` | Texte secondaire/méta |
+| `line` | `#E7DECB` | `#27272A` | Bordures |
+| `accent` | `#4F46E5` (indigo) | `#818CF8` | Action, lien, état actif — **le seul accent, utilisé avec parcimonie** |
+| `accent-2` | `#0D9488` (teal) | `#2DD4BF` | Secondaire, usages ponctuels (ex. dégradé de logo) |
+| `success` | `#16A34A` | `#4ADE80` | Statut uniquement |
+| `warning` | `#D97706` | `#FBBF24` | Statut uniquement |
+| `danger` | `#DC2626` | `#F87171` | Statut uniquement |
 
-**Une seule famille : JetBrains Mono.** Pas de duo serif/sans — la hiérarchie vient du poids (200 pour les grands nombres, 400 pour le corps, 700 en majuscules pour les titres) et de l'espacement, pas d'un changement de caractère. Ce choix sert directement le positionnement Couche 3 : un système d'orchestration autonome a plus de sens visuel en registre terminal/HUD ("le système surveille et agit") qu'en registre document officiel — la première version (Fraunces + IBM Plex Sans, référence "manifeste douanier") a été abandonnée pour ça.
+Contraste vérifié WCAG AA sur toutes les paires texte/fond ci-dessus.
 
-- **Chiffres/statistiques** — poids 200 (ultra-léger), grande taille — ETA, score de confiance, coûts. Toujours en `tabular-nums`.
-- **Titres** — poids 700, majuscules, espacement de lettres — labels de section, titres de carte.
-- **Corps de texte** — poids 400, interligne 1.6-1.7 (le monospace a besoin de plus d'air qu'un sans-serif en paragraphe).
-- **Codes, identifiants, données tabulaires** — poids 500, `tabular-nums` — déjà natif au monospace, pas de rupture de registre avec le reste.
+## Typographie
 
-Conventions typographiques empruntées au terminal, utilisées avec sens (pas en décoration) : `::` comme séparateur, `>` comme marqueur d'item actif/de commande, curseur clignotant sur le wordmark (respecte `prefers-reduced-motion`), tags bordés `[LIVE]`/`[SIMULÉ]`/`[AGI]` plutôt que des pastilles colorées pleines.
+**Une seule famille : Inter.** Hiérarchie par taille/poids, pas par changement de registre :
+- Titre de page — 28-32px, poids 600
+- Titre de section — 18-20px, poids 600
+- Corps — 14-16px, poids 400
+- Labels/méta — 12-13px, poids 500
 
-## Layout
+Le monospace (JetBrains Mono, conservé) reste réservé à l'affichage de codes/identifiants littéraux (SKU, EORI, clé API) — jamais comme police d'interface généraliste.
 
-Composition "terminal de contrôle" : cartes à coins carrés (zéro `border-radius`) avec des coins-crochets fins façon réticule HUD (au lieu d'une bordure double façon tampon), rail de navigation traité comme une console (règles fines, marqueur `>` sur l'item actif), grille de fond basse opacité utilisée uniquement sur les zones d'accueil/état vide — lisible à la fois comme trame technique et comme écho abstrait du zellige, jamais sur un écran dense en données où elle ajouterait du bruit plutôt que du sens.
+## Layout et composants
+
+- **Coins doux** (`rounded-lg`/`rounded-xl`, ou variables `--radius*` à 8-16px côté fleet-hub) — jamais de coins carrés systématiques.
+- **Cartes** : fond `surface`, bordure `line` 1px, ombre quasi invisible, léger changement de bordure au survol (pas de lift + ombre lourde).
+- **Statut** : badge pilule avec pastille colorée + libellé texte (jamais la couleur seule comme vecteur d'information).
+- **Boutons** : `btn-primary` (fond accent plein) / `btn-secondary` (contour) — texte normal, pas de majuscules forcées.
+- Pas de décoration "terminal" : ni coins-crochets HUD, ni préfixe `::`/`>`, ni curseur clignotant, ni grille de fond.
 
 ## Ce que ce n'est pas
 
-Explicitement pas la dérive "IA générique" : pas de crème + serif + terracotta seul (le piège le plus commun, c'est d'ailleurs la direction v0.1 initialement proposée puis écartée), pas de `rounded-lg` partout, pas de pastilles colorées pleines comme seul vecteur de statut. La teinte sarcelle et le registre terminal (une seule famille mono, tags bordés, marqueurs `>`/`::`) sont ce qui sort Praxio du générique.
+Pas la dérive "IA générique" bariolée (plusieurs couleurs vives sans hiérarchie), mais pas non plus le registre terminal/HUD de la v0.2 (coins carrés, tags bordés, marqueurs `>`/`::`) — ce dernier a été explicitement abandonné sur retour utilisateur direct : jugé agressif pour les yeux et trop chargé cognitivement pour un usage quotidien.
+
+## Implémentation
+
+Les tokens vivent dans `src/index.css` (`:root`/`.dark`) + `tailwind.config.js` de chaque hub Tailwind (portal, logistix, finance, compliance-engine) ; fleet-hub (sans Tailwind) porte les mêmes valeurs dans `src/styles.css`/`src/theme.css` via ses propres variables CSS (`--bg`, `--card`, `--primary`, `--radius`...). Garder ces fichiers synchronisés à chaque évolution de palette.
 
 ## Aperçu
 
-Maquette complète (palette, spécimens typographiques, composants, aperçu de la nouvelle coquille applicative unifiant compliance-engine et fleet-hub) : https://claude.ai/code/artifact/3bd4f46d-4895-434c-ab3d-476bd56b284b
+Maquette de la direction (palette, tableau de bord type, bascule clair/sombre) : https://claude.ai/artifact/QXVtg1hzVGBcGH3yuGTVTW
