@@ -180,7 +180,6 @@ const Dashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-ink">
-              <span className="text-accent font-normal" aria-hidden="true">:: </span>
               Tableau de bord
             </h1>
             <p className="text-ink-soft mt-1">
@@ -189,7 +188,7 @@ const Dashboard = () => {
           </div>
           <button
             onClick={refreshAll}
-            className="self-start sm:self-auto flex items-center gap-2 px-3 py-2 text-sm text-ink-soft bg-surface border border-line rounded-none hover:bg-surface-2 transition-colors whitespace-nowrap tap-target"
+            className="self-start sm:self-auto flex items-center gap-2 px-3 py-2 text-sm text-ink-soft bg-surface border border-line rounded-lg hover:bg-surface-2 transition-colors whitespace-nowrap tap-target"
           >
             <RefreshCw size={14} />
             Actualiser
@@ -204,9 +203,9 @@ const Dashboard = () => {
           {statsLoading ? (
             <SkeletonCard />
           ) : stats ? (
-            <div className="bg-surface rounded-none border border-line p-4">
+            <div className="bg-surface rounded-lg border border-line p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-accent-soft rounded-none flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 bg-accent-soft rounded-lg flex items-center justify-center shrink-0">
                   <Calculator className="text-accent" size={20} />
                 </div>
                 <div className="min-w-0">
@@ -248,17 +247,17 @@ const Dashboard = () => {
 
           {fxLoading ? (
             [...Array(3)].map((_, i) => (
-              <div key={i} className="bg-surface rounded-none border border-line p-4 animate-pulse">
+              <div key={i} className="bg-surface rounded-lg border border-line p-4 animate-pulse">
                 <div className="h-4 bg-surface-2 rounded w-1/2 mb-2" />
                 <div className="h-6 bg-surface-2 rounded w-1/3" />
               </div>
             ))
           ) : fxRates && fxRates.length > 0 ? (
             fxRates.map((fx: FxRate, i: number) => (
-              <div key={i} className="bg-surface rounded-none border border-line p-4">
+              <div key={i} className="bg-surface rounded-lg border border-line p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-warning/10 rounded-none flex items-center justify-center">
+                    <div className="w-8 h-8 bg-warning/10 rounded-lg flex items-center justify-center">
                       <ArrowLeftRight className="text-warning" size={16} />
                     </div>
                     <span className="text-xs font-medium text-ink-soft uppercase">
@@ -272,14 +271,14 @@ const Dashboard = () => {
               </div>
             ))
           ) : (
-            <div className="col-span-full bg-surface rounded-none border border-line p-6 text-center text-ink-soft text-sm">
+            <div className="col-span-full bg-surface rounded-lg border border-line p-6 text-center text-ink-soft text-sm">
               Taux de change indisponible — configurez EXCHANGERATE_API_KEY
             </div>
           )}
         </div>
 
         {/* ROI Calculator */}
-        <div className="bg-surface rounded-none border border-line p-6 mb-6">
+        <div className="bg-surface rounded-lg border border-line p-6 mb-6">
           <div className="flex items-center gap-2 mb-2">
             <Calculator className="text-accent" size={20} />
             <h2 className="text-lg font-semibold text-ink">Estimez vos économies</h2>
@@ -296,7 +295,7 @@ const Dashboard = () => {
                 min={0}
                 value={roi.shipments}
                 onChange={setRoiField('shipments')}
-                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
             <div>
@@ -306,7 +305,7 @@ const Dashboard = () => {
                 min={0}
                 value={roi.avgCost}
                 onChange={setRoiField('avgCost')}
-                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
             <div>
@@ -316,7 +315,7 @@ const Dashboard = () => {
                 min={0}
                 value={roi.hoursSaved}
                 onChange={setRoiField('hoursSaved')}
-                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
             <div>
@@ -326,7 +325,7 @@ const Dashboard = () => {
                 min={0}
                 value={roi.hourlyRate}
                 onChange={setRoiField('hourlyRate')}
-                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
             <div>
@@ -337,25 +336,25 @@ const Dashboard = () => {
                 max={100}
                 value={roi.marginPct}
                 onChange={setRoiField('marginPct')}
-                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-bg rounded-none p-4">
+            <div className="bg-bg rounded-lg p-4">
               <p className="text-xs text-ink-soft">Temps gagné</p>
               <p className="text-lg font-bold text-ink">{formatNumber(savingsTime)} €/mois</p>
             </div>
-            <div className="bg-bg rounded-none p-4">
+            <div className="bg-bg rounded-lg p-4">
               <p className="text-xs text-ink-soft">Marge transitaire évitée</p>
               <p className="text-lg font-bold text-ink">{formatNumber(savingsMargin, { maximumFractionDigits: 0 })} €/mois</p>
             </div>
-            <div className="bg-bg rounded-none p-4">
+            <div className="bg-bg rounded-lg p-4">
               <p className="text-xs text-ink-soft">Coût plan Pro ({proMonthly}€/mois)</p>
               <p className="text-lg font-bold text-ink">-{formatNumber(proMonthly)} €/mois</p>
             </div>
-            <div className={`rounded-none p-4 ${netMonthly > 0 ? 'bg-success/10 border border-success/20' : 'bg-bg'}`}>
+            <div className={`rounded-lg p-4 ${netMonthly > 0 ? 'bg-success/10 border border-success/20' : 'bg-bg'}`}>
               <p className="text-xs text-ink-soft">Économies nettes</p>
               <p className={`text-lg font-bold ${netMonthly > 0 ? 'text-success' : 'text-ink'}`}>
                 {netMonthly > 0 ? '+' : ''}{formatNumber(netMonthly, { maximumFractionDigits: 0 })} €/mois
@@ -366,7 +365,7 @@ const Dashboard = () => {
         </div>
 
         {/* Simulation History — Collapsible */}
-        <div className="bg-surface rounded-none border border-line overflow-hidden mb-6">
+        <div className="bg-surface rounded-lg border border-line overflow-hidden mb-6">
           <button
             onClick={() => setHistoryOpen(!historyOpen)}
             className="w-full flex items-center justify-between p-6 text-left hover:bg-surface-2 transition-colors"

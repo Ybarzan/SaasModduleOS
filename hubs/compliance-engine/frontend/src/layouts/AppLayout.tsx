@@ -48,7 +48,6 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 shrink-0 bg-surface/95 backdrop-blur-xl border-b border-line flex items-center justify-between px-4 md:px-6 sticky top-0 z-30">
           <h1 className="text-base font-bold text-ink truncate">
-            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             {pageLabel ?? 'IncoKalk'}
           </h1>
           <div className="flex items-center gap-3">

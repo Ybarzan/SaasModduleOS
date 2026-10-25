@@ -103,14 +103,7 @@ const Sidebar = () => {
               } ${collapsed ? 'justify-center hover:translate-x-0' : ''}`}
             >
               <Icon size={18} />
-              {!collapsed && (
-                <span className="truncate flex items-center gap-1.5">
-                  {active && (
-                    <span className={item.highlight ? 'text-white' : 'text-accent'} aria-hidden="true">&gt;</span>
-                  )}
-                  {item.label}
-                </span>
-              )}
+              {!collapsed && <span className="truncate">{item.label}</span>}
             </Link>
           );
         })}
@@ -207,10 +200,7 @@ function SidebarGroup({
                 }`}
               >
                 <Icon size={15} className={active ? 'text-accent' : 'text-ink-soft'} />
-                <span className="truncate flex items-center gap-1.5">
-                  {active && <span aria-hidden="true">&gt;</span>}
-                  {item.label}
-                </span>
+                <span className="truncate">{item.label}</span>
               </Link>
             );
           })}
