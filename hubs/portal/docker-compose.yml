@@ -21,6 +21,11 @@ services:
     restart: unless-stopped
     ports:
       - "${BACKEND_PORT:-8092}:8092"
+    extra_hosts:
+      # Permet d'utiliser host.docker.internal dans les *_URL ci-dessous pour
+      # joindre les autres hubs publiés sur l'hôte (natif sur Docker Desktop
+      # Windows/Mac ; nécessaire explicitement sur Docker Linux).
+      - "host.docker.internal:host-gateway"
     environment:
       SPRING_PROFILES_ACTIVE: prod
       DB_HOST: db
