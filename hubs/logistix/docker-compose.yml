@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: logistix-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: logistix
+      POSTGRES_USER: logistix
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD (voir .env.example)}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U logistix -d logistix"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: logistix-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8091}:8091"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: logistix
+      DB_USER: logistix
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD (voir .env.example)}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET (voir .env.example)}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD (voir .env.example)}
+      CREDENTIAL_ENCRYPTION_KEY: ${CREDENTIAL_ENCRYPTION_KEY:?Set CREDENTIAL_ENCRYPTION_KEY (voir .env.example)}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-https://localhost}
+      APP_BASE_URL: ${APP_BASE_URL:-https://localhost}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8091/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ""
+    container_name: logistix-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5181}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  pgdata:
