@@ -451,7 +451,7 @@ export default function ShippingRates() {
                   </tr>
                   {expandedId === r.id && (
                     <tr>
-                      <td colSpan="9">
+                      <td colSpan={9}>
                         <div className="truck-card-grid">
                           <div className="couple-stat">
                             <span>Poids</span>
@@ -487,7 +487,7 @@ export default function ShippingRates() {
               ))}
               {filtered.length === 0 && !error && !loading && (
                 <tr>
-                  <td colSpan="9" className="table-empty">
+                  <td colSpan={9} className="table-empty">
                     {rates.length === 0 ? 'Aucun tarif configuré' : 'Aucun résultat'}
                   </td>
                 </tr>

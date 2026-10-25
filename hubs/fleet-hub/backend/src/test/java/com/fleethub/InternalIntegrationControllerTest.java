@@ -2,16 +2,19 @@ package com.fleethub;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fleethub.security.ApiKeyHasher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -33,6 +36,8 @@ class InternalIntegrationControllerTest {
     private MockMvc mvc;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private String adminToken;
 
@@ -66,6 +71,14 @@ class InternalIntegrationControllerTest {
         String key = body.get("internalIntegrationApiKey").asText();
         assertNotNull(key);
         assertTrue(key.length() >= 32, "La clé doit être suffisamment longue pour ne pas être devinable");
+
+        // En base, seul le hash de la clé est stocké (voir ApiKeyHasher), jamais la clé en clair.
+        Integer hashedCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM company WHERE internal_integration_api_key = ?", Integer.class, ApiKeyHasher.hash(key));
+        assertThat(hashedCount).isEqualTo(1);
+        Integer plaintextCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM company WHERE internal_integration_api_key = ?", Integer.class, key);
+        assertThat(plaintextCount).isEqualTo(0);
 
         mvc.perform(get("/api/internal-integrations/settings").header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())

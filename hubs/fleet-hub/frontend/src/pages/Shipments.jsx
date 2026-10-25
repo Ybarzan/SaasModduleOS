@@ -812,7 +812,7 @@ export default function Shipments() {
                       </tr>
                       {isExpanded && (
                         <tr>
-                          <td colSpan="7">
+                          <td colSpan={7}>
                             <div className="dashboard-grid">
                               <div>
                                 <h4>Détails</h4>

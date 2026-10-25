@@ -32,5 +32,8 @@ public interface CarrierBookingRequestRepository extends JpaRepository<CarrierBo
     @Query("SELECT COUNT(cbr) FROM CarrierBookingRequest cbr WHERE cbr.company.id = :companyId")
     long countByCompanyId(@Param("companyId") Long companyId);
 
+    @Query("SELECT COUNT(cbr) FROM CarrierBookingRequest cbr WHERE cbr.company.id = :companyId AND cbr.carrierBookingStatus IN :statuses")
+    long countByCompanyIdAndStatusIn(@Param("companyId") Long companyId, @Param("statuses") List<CarrierBookingRequest.BookingStatus> statuses);
+
     Optional<CarrierBookingRequest> findByCarrierReferenceAndCompanyId(String carrierReference, Long companyId);
 }

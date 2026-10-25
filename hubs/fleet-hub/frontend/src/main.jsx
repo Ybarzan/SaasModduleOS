@@ -7,7 +7,7 @@ import { AuthProvider } from './context/AuthContext'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
 import { Capacitor } from '@capacitor/core'
 import { StatusBar, Style as StatusBarStyle } from '@capacitor/status-bar'
-import { Haptics, ImpactStyle } from '@capacitor/haptics'
+import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics'
 import 'leaflet/dist/leaflet.css'
 import '@fontsource-variable/jetbrains-mono'
 import './styles.css'
@@ -54,7 +54,7 @@ window.__fhHaptics = {
     if (Capacitor.isNativePlatform()) Haptics.impact({ style: ImpactStyle.Medium })
   },
   success() {
-    if (Capacitor.isNativePlatform()) Haptics.notification({ type: 'SUCCESS' })
+    if (Capacitor.isNativePlatform()) Haptics.notification({ type: NotificationType.Success })
   }
 }
 
@@ -103,7 +103,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <Sentry.ErrorBoundary fallback={CrashFallback}>
       <ThemeProvider>
         <StatusBarSync />
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <BrowserRouter>
           <AuthProvider>
             <App />
           </AuthProvider>

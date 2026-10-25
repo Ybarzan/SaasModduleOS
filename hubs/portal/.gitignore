@@ -1,4 +1,20 @@
+# Frontend (racine de hubs/portal/)
 node_modules/
 dist/
 .env.local
 *.local
+
+# Backend (hubs/portal/backend/)
+backend/target/
+backend/app.log
+backend/*.log
+backend/.mvn/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Base de données / déploiement
+.env

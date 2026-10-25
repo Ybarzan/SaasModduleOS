@@ -346,7 +346,7 @@ export default function Carriers() {
               ))}
               {filtered.length === 0 && !error && (
                 <tr>
-                  <td colSpan="6" className="table-empty">
+                  <td colSpan={6} className="table-empty">
                     Aucun transporteur ne correspond à la recherche
                   </td>
                 </tr>

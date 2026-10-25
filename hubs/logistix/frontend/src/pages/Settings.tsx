@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link2, Loader2 } from 'lucide-react';
+import { Link2, Loader2, Share2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { logistixAPI } from '../lib/api';
 
 type ApiError = { response?: { data?: { message?: string } } };
+type PraxioIntegrationSettings = { praxioIntegrationEnabled: boolean; praxioIntegrationApiKey: string | null };
 
 const Settings = () => {
   const queryClient = useQueryClient();
@@ -101,6 +102,117 @@ const Settings = () => {
           )}
         </div>
       </div>
+
+      <div className="bg-surface rounded-none border border-line overflow-hidden mt-6">
+        <div className="px-6 py-4 border-b border-line flex items-center gap-2">
+          <Share2 size={18} className="text-accent" />
+          <h2 className="text-lg font-semibold text-ink">Tableau de bord Praxio</h2>
+        </div>
+        <PraxioIntegrationCard />
+      </div>
+    </div>
+  );
+};
+
+const PraxioIntegrationCard = () => {
+  const queryClient = useQueryClient();
+  const [newKey, setNewKey] = useState<string | null>(null);
+
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ['praxio-integration-settings'],
+    queryFn: async () => (await logistixAPI.praxioIntegration.settings()).data as PraxioIntegrationSettings,
+  });
+
+  const enableMutation = useMutation({
+    mutationFn: () => logistixAPI.praxioIntegration.enable(),
+    onSuccess: (res) => {
+      const data = res.data as PraxioIntegrationSettings;
+      setNewKey(data.praxioIntegrationApiKey);
+      queryClient.invalidateQueries({ queryKey: ['praxio-integration-settings'] });
+    },
+    onError: (err: ApiError) => {
+      toast.error(err.response?.data?.message || "Échec de l'activation");
+    },
+  });
+
+  const disableMutation = useMutation({
+    mutationFn: () => logistixAPI.praxioIntegration.disable(),
+    onSuccess: () => {
+      setNewKey(null);
+      toast.success('Partage désactivé');
+      queryClient.invalidateQueries({ queryKey: ['praxio-integration-settings'] });
+    },
+    onError: (err: ApiError) => {
+      toast.error(err.response?.data?.message || 'Échec de la désactivation');
+    },
+  });
+
+  const copyKey = async () => {
+    if (!newKey) return;
+    try {
+      await navigator.clipboard.writeText(newKey);
+      toast.success('Copié dans le presse-papiers');
+    } catch {
+      toast.error('Impossible de copier — copiez le texte manuellement');
+    }
+  };
+
+  return (
+    <div className="px-6 py-4 space-y-4">
+      <p className="text-sm text-ink-soft">
+        Autorise le tableau de bord cross-hub de Praxio à lire un résumé d'activité (entrepôts
+        actifs, réceptions ouvertes, écarts ouverts) via une clé propre à votre société, jamais un
+        accès direct à vos données.
+      </p>
+      {isLoading ? (
+        <p className="text-sm text-ink-soft flex items-center gap-2">
+          <Loader2 size={14} className="animate-spin" /> Chargement…
+        </p>
+      ) : settings?.praxioIntegrationEnabled ? (
+        <div className="flex items-center justify-between gap-4">
+          <span className="inline-flex items-center gap-2 text-sm font-medium text-ink">
+            <span className="w-2 h-2 rounded-full bg-success" aria-hidden="true" />
+            Partage activé
+          </span>
+          <button
+            type="button"
+            onClick={() => disableMutation.mutate()}
+            disabled={disableMutation.isPending}
+            className="px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors disabled:opacity-50"
+          >
+            {disableMutation.isPending ? 'Désactivation…' : 'Désactiver le partage'}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => enableMutation.mutate()}
+          disabled={enableMutation.isPending}
+          className="px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
+        >
+          {enableMutation.isPending ? 'Activation…' : 'Activer le partage'}
+        </button>
+      )}
+      {newKey && (
+        <div className="space-y-2">
+          <p className="text-sm text-ink-soft">Montrée une seule fois — notez-la maintenant :</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 px-3 py-2 bg-bg border border-line text-sm font-mono overflow-x-auto">
+              {newKey}
+            </code>
+            <button
+              type="button"
+              onClick={copyKey}
+              className="px-3 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
+            >
+              Copier
+            </button>
+          </div>
+          <p className="text-sm text-ink-soft">
+            Collez cette clé dans les paramètres du tableau de bord de Praxio.
+          </p>
+        </div>
+      )}
     </div>
   );
 };

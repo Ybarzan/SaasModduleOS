@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Tokens identiques à hubs/portal/src/index.css et hubs/compliance-engine/frontend/src/index.css —
+     docs/09-design-system.md (palette Praxio v0.2). Garder synchronisé : chaque hub doit se lire
+     comme une seule plateforme. */
+  :root {
+    --c-bg: 230 224 211;
+    --c-surface: 241 236 225;
+    --c-surface-2: 234 227 213;
+    --c-ink: 33 26 21;
+    --c-ink-soft: 107 95 82;
+    --c-line: 211 203 184;
+    --c-accent: 191 78 46;
+    --c-accent-soft: 230 210 199;
+    --c-accent-strong: 158 63 36;
+    --c-accent-2: 30 107 110;
+    --c-success: 110 122 74;
+    --c-warning: 192 138 46;
+    --c-danger: 166 49 31;
+  }
+
+  .dark {
+    --c-bg: 20 16 12;
+    --c-surface: 28 23 18;
+    --c-surface-2: 36 29 23;
+    --c-ink: 232 225 210;
+    --c-ink-soft: 143 130 103;
+    --c-line: 54 44 34;
+    --c-accent: 217 104 63;
+    --c-accent-soft: 62 42 32;
+    --c-accent-strong: 232 135 92;
+    --c-accent-2: 62 145 148;
+    --c-success: 150 166 107;
+    --c-warning: 217 162 78;
+    --c-danger: 199 77 52;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply font-sans antialiased bg-bg text-ink;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+  ::selection {
+    background-color: rgb(var(--c-accent));
+    color: white;
+  }
+}
+
+@layer components {
+  /* Registre terminal/HUD (docs/09-design-system.md) -- coins-crochets sur les
+     cartes les plus visibles, pas un balayage systematique. Parent `relative`. */
+  .hud-corner {
+    @apply absolute w-2.5 h-2.5 border-accent/70 pointer-events-none;
+  }
+  .hud-corner-tl { @apply -top-px -left-px border-l-2 border-t-2; }
+  .hud-corner-tr { @apply -top-px -right-px border-r-2 border-t-2; }
+  .hud-corner-bl { @apply -bottom-px -left-px border-l-2 border-b-2; }
+  .hud-corner-br { @apply -bottom-px -right-px border-r-2 border-b-2; }
+
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.15em] text-accent flex items-center gap-2;
+  }
+  .eyebrow::before {
+    content: "::";
+    opacity: 0.6;
+  }
+}

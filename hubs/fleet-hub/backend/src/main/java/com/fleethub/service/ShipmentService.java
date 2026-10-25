@@ -371,9 +371,18 @@ public class ShipmentService {
         shipmentItemRepo.deleteByShipmentId(shipmentId);
     }
 
+    /**
+     * order_number est unique sur toute la plateforme, pas par société (voir
+     * processWebhookEvent, qui résout le tenant depuis ce seul numéro sans
+     * contexte société) : 4 chiffres (10 000 combinaisons/jour) collisionnait
+     * de façon mesurable dès qu'assez d'expéditions s'accumulaient le même
+     * jour sur toute la plateforme (observé en CI, suite de tests partageant
+     * une seule base entre classes). 6 chiffres (1 000 000 combinaisons/jour)
+     * rend la collision négligeable sans changer le format.
+     */
     private String generateOrderNumber() {
         String dateStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String randomDigits = String.format("%04d", RANDOM.nextInt(10000));
+        String randomDigits = String.format("%06d", RANDOM.nextInt(1_000_000));
         return "SHP-" + dateStr + "-" + randomDigits;
     }
 }

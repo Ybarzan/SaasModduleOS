@@ -42,6 +42,13 @@ describe('api client', () => {
     expect(out.headers.Authorization).toBeUndefined()
   })
 
+  it('attaches the Bearer token on web when an SSO session stored one (no cookie to rely on)', () => {
+    localStorage.setItem('fh_token', 'jwt-from-praxio')
+    const out = requestHandlers[0]({ url: '/api/trucks', headers: {} })
+    expect(out.headers.Authorization).toBe('Bearer jwt-from-praxio')
+    expect(out.withCredentials).toBe(true)
+  })
+
   it('clears the user session and redirects on 401 after refresh fails', async () => {
     instance.post.mockRejectedValueOnce(new Error('refresh failed'))
     localStorage.setItem('fh_user', JSON.stringify({ username: 'admin' }))

@@ -1,0 +1,70 @@
+name: Portal CI
+
+# Monorepo : GitHub Actions ne lit que .github/workflows à la racine — voir
+# fleet-hub-ci.yml / compliance-engine-ci.yml / logistix-ci.yml / finance-ci.yml
+# pour le même constat. Ce fichier active la CI pour hubs/portal/ (Praxio),
+# filtrée par path. Contrairement aux autres hubs, le frontend n'a pas de
+# sous-dossier frontend/ dédié : les sources sont à la racine de hubs/portal.
+
+on:
+  push:
+    branches: [main]
+    paths: ['hubs/portal/**']
+  pull_request:
+    branches: [main]
+    paths: ['hubs/portal/**']
+
+concurrency:
+  group: portal-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Maven)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: hubs/portal/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: hubs/portal/backend/pom.xml
+      - run: mvn -B test
+      - name: Publier les rapports de tests
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: portal-backend-surefire-reports
+          path: hubs/portal/backend/target/surefire-reports/
+          retention-days: 7
+
+  frontend:
+    name: Frontend (Vite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: hubs/portal
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # npm ci refuse ce lockfile (généré en --legacy-peer-deps, seul mode qui
+      # contourne un bug d'arborist npm sur les peerDependencies optionnelles
+      # de vitest 4 en mode browser — reproduit avec plusieurs versions de npm
+      # dans cet environnement). Pas de cache npm tant que npm ci ne fonctionne
+      # pas : actions/setup-node@v4 avec cache: npm exigerait un lockfile
+      # compatible npm ci.
+      - run: npm install --legacy-peer-deps
+      - name: Lint
+        run: npm run lint
+      - name: Tests unitaires (vitest)
+        run: npm test
+      - name: Build
+        run: npm run build

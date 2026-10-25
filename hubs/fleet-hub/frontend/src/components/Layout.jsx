@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
 
+/** @type {{fill: string, stroke: string, strokeWidth: number, strokeLinecap: 'round', strokeLinejoin: 'round'}} */
 const stroke = {
   fill: 'none',
   stroke: 'currentColor',

@@ -1,17 +1,14 @@
 package com.incokalk.service.quality;
 
-import com.incokalk.model.ClientInvoice;
 import com.incokalk.model.CustomsDeclaration;
-import com.incokalk.repository.ClientInvoiceRepository;
 import com.incokalk.repository.CustomsDeclarationRepository;
+import com.incokalk.service.integration.finance.FinanceIntegrationClient;
 import com.incokalk.tenant.TenantContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
@@ -22,21 +19,22 @@ class QualityMetricsServiceTest {
 
     QualityMetricsService service;
     CustomsDeclarationRepository declarationRepo;
-    ClientInvoiceRepository invoiceRepo;
+    FinanceIntegrationClient financeIntegrationClient;
     UUID companyId;
 
     @BeforeEach
     void setUp() {
         declarationRepo = mock(CustomsDeclarationRepository.class);
-        invoiceRepo = mock(ClientInvoiceRepository.class);
-        service = new QualityMetricsService(declarationRepo, invoiceRepo);
+        financeIntegrationClient = mock(FinanceIntegrationClient.class);
+        service = new QualityMetricsService(declarationRepo, financeIntegrationClient);
         companyId = UUID.randomUUID();
         TenantContext.set(companyId);
 
         for (CustomsDeclaration.DeclarationStatus s : CustomsDeclaration.DeclarationStatus.values()) {
             when(declarationRepo.countByCompanyIdAndStatus(any(), eq(s))).thenReturn(0L);
         }
-        when(invoiceRepo.findByCompanyIdOrderByCreatedAtDesc(any())).thenReturn(List.of());
+        when(financeIntegrationClient.getInvoiceTimeliness(any()))
+                .thenReturn(new FinanceIntegrationClient.InvoiceTimeliness(0, 0));
     }
 
     @AfterEach
@@ -72,29 +70,10 @@ class QualityMetricsServiceTest {
     }
 
     @Test
-    @DisplayName("invoiceTimeliness → exclut DRAFT, exclut PAID/CANCELLED du calcul de retard, compte les échues")
-    void invoiceTimeliness_excludesDraftAndPaid_countsOverdue() {
-        LocalDate yesterday = LocalDate.now().minusDays(1);
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
-
-        ClientInvoice draft = new ClientInvoice();
-        draft.setStatus(ClientInvoice.InvoiceStatus.DRAFT);
-        draft.setDueDate(yesterday);
-
-        ClientInvoice overdueUnpaid = new ClientInvoice();
-        overdueUnpaid.setStatus(ClientInvoice.InvoiceStatus.SENT);
-        overdueUnpaid.setDueDate(yesterday);
-
-        ClientInvoice overduePaid = new ClientInvoice();
-        overduePaid.setStatus(ClientInvoice.InvoiceStatus.PAID);
-        overduePaid.setDueDate(yesterday);
-
-        ClientInvoice notYetDue = new ClientInvoice();
-        notYetDue.setStatus(ClientInvoice.InvoiceStatus.SENT);
-        notYetDue.setDueDate(tomorrow);
-
-        when(invoiceRepo.findByCompanyIdOrderByCreatedAtDesc(companyId))
-                .thenReturn(List.of(draft, overdueUnpaid, overduePaid, notYetDue));
+    @DisplayName("invoiceTimeliness → agrège opportunities/defects renvoyés par Finance")
+    void invoiceTimeliness_usesFinanceIntegrationClient() {
+        when(financeIntegrationClient.getInvoiceTimeliness(companyId))
+                .thenReturn(new FinanceIntegrationClient.InvoiceTimeliness(3, 1));
 
         QualityMetricsService.QualityReport report = service.getReport();
         QualityMetricsService.Ctq invoicing = report.characteristics().get(1);
@@ -102,5 +81,18 @@ class QualityMetricsServiceTest {
         assertThat(invoicing.key()).isEqualTo("invoice_timeliness");
         assertThat(invoicing.result().opportunities()).isEqualTo(3);
         assertThat(invoicing.result().defects()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("invoiceTimeliness → Finance non configurée → dégradation gracieuse (zéro, pas d'exception)")
+    void invoiceTimeliness_financeUnavailable_gracefulDegradation() {
+        when(financeIntegrationClient.getInvoiceTimeliness(companyId))
+                .thenThrow(new FinanceIntegrationClient.FinanceIntegrationException("non configurée"));
+
+        QualityMetricsService.QualityReport report = service.getReport();
+        QualityMetricsService.Ctq invoicing = report.characteristics().get(1);
+
+        assertThat(invoicing.result().opportunities()).isZero();
+        assertThat(invoicing.result().defects()).isZero();
     }
 }

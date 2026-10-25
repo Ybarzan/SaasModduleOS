@@ -14,6 +14,7 @@ const Inventory = lazy(() => import('./pages/Inventory'));
 const Receiving = lazy(() => import('./pages/Receiving'));
 const ScanReceiving = lazy(() => import('./pages/ScanReceiving'));
 const Settings = lazy(() => import('./pages/Settings'));
+const SsoEntry = lazy(() => import('./pages/SsoEntry'));
 
 function PageLoader() {
   return (
@@ -59,6 +60,9 @@ function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/login" element={<PublicOnly><Login /></PublicOnly>} />
+        {/* Pas de PublicOnly ici : relancer le SSO depuis Praxio doit fonctionner
+            même si une session (potentiellement différente) est déjà active. */}
+        <Route path="/sso-entry" element={<SsoEntry />} />
 
         <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
           <Route path="/" element={<Navigate to="/warehouses" replace />} />

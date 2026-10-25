@@ -34,7 +34,7 @@ IncoKalk est un calculateur et outil d'opérations logistiques. Il couvre le cyc
 
 | Couche | Technologie |
 |---|---|
-| **Backend** | Java 21, Spring Boot 3.3.5, Maven (`com.incokalk:incokalk-backend:1.0.0`) |
+| **Backend** | Java 21, Spring Boot 3.4.5, Maven (`com.incokalk:incokalk-backend:1.0.0`) |
 | **Frontend** | React 19, TypeScript 5.9, Vite 5.4, Tailwind 3.4 |
 | **Bases** | PostgreSQL 16, Redis 7, MinIO (S3) |
 | **Proxy** | Nginx |
@@ -46,7 +46,7 @@ IncoKalk est un calculateur et outil d'opérations logistiques. Il couvre le cyc
 
 ### Backend (détail)
 
-- **Spring Boot 3.3.5, Java 21**, context-path `/api`
+- **Spring Boot 3.4.5, Java 21**, context-path `/api`
 - JWT (JJWT 0.12.3) + API keys, bucket4j 8.7.0 (rate limiting / quotas)
 - PostgreSQL + H2 (test), Flyway (44 migrations, `ddl-auto: validate` en prod), Redis
 - springdoc-openapi 2.3.0 (Swagger UI sur `/api/swagger-ui.html`)
@@ -130,12 +130,22 @@ Puis :
 
 ### Option B — Dev local (sans Docker)
 
-Backend (port 8080) :
+Backend (port 8080) — profil `local` : tout en H2 mémoire, zéro dépendance externe
+(sans ce profil, le backend essaie de se connecter à un vrai Postgres sur
+`localhost:5432` et plante immédiatement s'il n'y en a pas) :
 
 ```bash
 cd backend
-mvn spring-boot:run
+mvn spring-boot:run -Dspring-boot.run.profiles=local
 ```
+
+> PowerShell mange parfois l'argument `-D...` : utiliser plutôt la variable
+> d'environnement, qui marche partout :
+> `$env:SPRING_PROFILES_ACTIVE="local"; mvn spring-boot:run` (PowerShell) ou
+> `SPRING_PROFILES_ACTIVE=local mvn spring-boot:run` (bash/zsh).
+
+Un compte admin de démo est créé au premier démarrage — voir les logs
+(`DataInitializer`) pour le mot de passe généré.
 
 Frontend (port 5173) :
 

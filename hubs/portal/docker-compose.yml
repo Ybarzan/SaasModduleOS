@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: praxio-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: praxio
+      POSTGRES_USER: praxio
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD (voir .env.example)}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U praxio -d praxio"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: praxio-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-8092}:8092"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: praxio
+      DB_USER: praxio
+      DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD (voir .env.example)}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set ADMIN_PASSWORD (voir .env.example)}
+      SSO_ENCRYPTION_KEY: ${SSO_ENCRYPTION_KEY:?Set SSO_ENCRYPTION_KEY (voir .env.example)}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-https://localhost}
+      COMPLIANCE_ENGINE_URL: ${COMPLIANCE_ENGINE_URL:-}
+      COMPLIANCE_ENGINE_FRONTEND_URL: ${COMPLIANCE_ENGINE_FRONTEND_URL:-}
+      FLEET_HUB_URL: ${FLEET_HUB_URL:-}
+      FLEET_HUB_FRONTEND_URL: ${FLEET_HUB_FRONTEND_URL:-}
+      LOGISTIX_URL: ${LOGISTIX_URL:-}
+      LOGISTIX_FRONTEND_URL: ${LOGISTIX_FRONTEND_URL:-}
+      FINANCE_URL: ${FINANCE_URL:-}
+      FINANCE_FRONTEND_URL: ${FINANCE_FRONTEND_URL:-}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8092/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      args:
+        VITE_PRAXIO_API_URL: ""
+    container_name: praxio-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-5180}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  pgdata:

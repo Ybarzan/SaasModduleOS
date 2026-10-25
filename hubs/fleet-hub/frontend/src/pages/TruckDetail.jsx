@@ -384,7 +384,7 @@ export default function TruckDetail() {
               <tbody>
                 {detail.trips.length === 0 && (
                   <tr>
-                    <td colSpan="7" className="table-empty">
+                    <td colSpan={7} className="table-empty">
                       Aucun trajet sur la période
                     </td>
                   </tr>
@@ -428,7 +428,7 @@ export default function TruckDetail() {
               <tbody>
                 {detail.fuels.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="table-empty">
+                    <td colSpan={5} className="table-empty">
                       Aucun relevé de carburant sur la période
                     </td>
                   </tr>
@@ -467,7 +467,7 @@ export default function TruckDetail() {
               <tbody>
                 {detail.maintenance.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="table-empty">
+                    <td colSpan={6} className="table-empty">
                       Aucune maintenance sur la période
                     </td>
                   </tr>
@@ -508,7 +508,7 @@ export default function TruckDetail() {
               <tbody>
                 {detail.events.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="table-empty">
+                    <td colSpan={5} className="table-empty">
                       Aucun événement sur la période
                     </td>
                   </tr>

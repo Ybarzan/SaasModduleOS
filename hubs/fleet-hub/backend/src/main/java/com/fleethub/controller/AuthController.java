@@ -6,6 +6,7 @@ import com.fleethub.dto.ForgotPasswordRequest;
 import com.fleethub.dto.LoginRequest;
 import com.fleethub.dto.RegisterRequest;
 import com.fleethub.dto.ResetPasswordRequest;
+import com.fleethub.dto.SessionFromTokenRequest;
 import com.fleethub.security.JwtService;
 import com.fleethub.security.TokenRevocationService;
 import com.fleethub.service.AuthService;
@@ -21,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -113,6 +116,40 @@ public class AuthController {
         Long companyId = jwtService.extractCompanyId(token);
         String newToken = jwtService.generateToken(username, role, companyId);
         addTokenCookie(response, newToken);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/session-from-token")
+    @Operation(summary = "Échange un jeton relayé en cookie de session",
+            description = "Utilisé par le relais SSO depuis Praxio : le navigateur n'a jamais reçu "
+                    + "le Set-Cookie fleet-hub (la connexion a eu lieu côté serveur, entre Praxio et "
+                    + "fleet-hub), donc ce jeton valide est échangé ici contre le même cookie httpOnly "
+                    + "qu'une connexion directe, pour ne jamais avoir à le stocker en clair côté client.")
+    @ApiResponse(responseCode = "200", description = "Cookie de session posé")
+    @ApiResponse(responseCode = "401", description = "Jeton invalide, expiré ou révoqué")
+    public ResponseEntity<Void> sessionFromToken(@Valid @RequestBody SessionFromTokenRequest request,
+                                                 HttpServletResponse response) {
+        String token = request.token();
+        String username;
+        try {
+            username = jwtService.extractUsername(token);
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        String tokenId = jwtService.extractTokenId(token);
+        if (tokenId != null && tokenRevocationService.isRevoked(tokenId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        UserDetails userDetails;
+        try {
+            userDetails = userDetailsService.loadUserByUsername(username);
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        if (!userDetails.isEnabled() || !jwtService.isTokenValid(token, userDetails)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        addTokenCookie(response, token);
         return ResponseEntity.ok().build();
     }
 

@@ -49,6 +49,9 @@ const COMPOSITE_PARTS = [
   { label: 'Km en charge', weight: '10%', hint: 'part des km parcourus en charge' }
 ]
 
+/**
+ * @param {{icon: any, label: any, value: any, sub: any, tone: any, onClick: any, active?: boolean}} props
+ */
 function LiveTile({ icon, label, value, sub, tone, onClick, active }) {
   const clickable = !!onClick
   return (

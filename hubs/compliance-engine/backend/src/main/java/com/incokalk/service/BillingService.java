@@ -1,5 +1,6 @@
 package com.incokalk.service;
 
+import com.incokalk.dto.financial.BillingSummaryDTO;
 import com.incokalk.model.Company;
 import com.incokalk.model.Invoice;
 import com.incokalk.model.Subscription;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -293,6 +295,38 @@ public class BillingService {
         result.put("canceledAt", sub.getCanceledAt());
         result.put("createdAt", sub.getCreatedAt());
         return result;
+    }
+
+    // ── Billing summary (Praxio, facturation groupée) ──────────────────────
+
+    @Transactional(readOnly = true)
+    public BillingSummaryDTO getBillingSummary(UUID companyId) {
+        Map<String, Object> sub = getSubscription(companyId);
+        String plan = (String) sub.get("plan");
+        String billingCycle = (String) sub.get("billingCycle");
+
+        BigDecimal amount = BigDecimal.ZERO;
+        String currency = "EUR";
+        for (Map<String, Object> planDef : getPlans()) {
+            if (planDef.get("id").equals(plan.toLowerCase())) {
+                Number price = "ANNUAL".equals(billingCycle)
+                    ? (Number) planDef.get("priceAnnual")
+                    : (Number) planDef.get("priceMonthly");
+                amount = BigDecimal.valueOf(price.longValue());
+                currency = (String) planDef.get("currency");
+                break;
+            }
+        }
+
+        return BillingSummaryDTO.builder()
+            .plan(plan)
+            .status((String) sub.get("status"))
+            .billingCycle(billingCycle)
+            .amount(amount)
+            .currency(currency)
+            .nextBillingDate((LocalDateTime) sub.get("currentPeriodEnd"))
+            .cancelAtPeriodEnd((Boolean) sub.get("cancelAtPeriodEnd"))
+            .build();
     }
 
     // ── Invoices ──────────────────────────────────────────────────────────

@@ -20,13 +20,16 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Jeu de données de démonstration (dev). Désactivé en prod par défaut
- * ({@code app.seed.enabled=false}) : le premier SAAS_ADMIN est alors créé par
- * {@link SaaSAdminBootstrap}.
+ * Jeu de données de démonstration (dev). Désactivé par défaut si
+ * {@code app.seed.enabled} n'est pas explicitement positionné à {@code true}
+ * ({@code matchIfMissing = false}) : le profil prod n'a donc pas besoin de
+ * son propre override pour rester sûr, contrairement à avant où un défaut de
+ * secours (sans override explicite) aurait activé ce seed. Le premier
+ * SAAS_ADMIN est alors créé par {@link SaaSAdminBootstrap}.
  */
 @Configuration
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true", matchIfMissing = false)
 public class DataSeeder {
 
     private final PasswordEncoder passwordEncoder;

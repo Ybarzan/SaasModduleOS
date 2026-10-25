@@ -1,13 +1,19 @@
 package com.incokalk.service;
 
 import com.incokalk.dto.analytics.DashboardStatsDTO;
+import com.incokalk.dto.analytics.DashboardSummaryDTO;
+import com.incokalk.model.CustomsDeclaration;
+import com.incokalk.repository.CustomsDeclarationRepository;
 import com.incokalk.repository.SimulationRepository;
+import com.incokalk.service.integration.finance.FinanceIntegrationClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -33,7 +39,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AnalyticsService {
 
+    private static final List<CustomsDeclaration.DeclarationStatus> OPEN_DECLARATION_STATUSES = List.of(
+            CustomsDeclaration.DeclarationStatus.DRAFT,
+            CustomsDeclaration.DeclarationStatus.SUBMITTED,
+            CustomsDeclaration.DeclarationStatus.UNDER_REVIEW);
+
     private final SimulationRepository simulationRepo;
+    private final CustomsDeclarationRepository customsDeclarationRepo;
+    private final FinanceIntegrationClient financeIntegrationClient;
 
     @Transactional(readOnly = true)
     public DashboardStatsDTO getDashboardStats(UUID companyId, String period) {
@@ -46,5 +59,39 @@ public class AnalyticsService {
                 .simulationsThisMonth(simulationsThisMonth)
                 .period(period)
                 .build();
+    }
+
+    /**
+     * Résumé compact pour le tableau de bord cross-hub de Praxio. Appelé via
+     * la clé API générale (ApiKeyService/ApiKeyAuthFilter) : le companyId
+     * vient du TenantContext résolu par la clé, jamais d'un paramètre client.
+     */
+    @Transactional(readOnly = true)
+    public DashboardSummaryDTO getDashboardSummary(UUID companyId) {
+        LocalDateTime monthStart = LocalDateTime.now().withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+        long simulationsThisMonth = simulationRepo.countByCompanyIdAndCreatedAtAfter(companyId, monthStart);
+
+        long openDeclarations = customsDeclarationRepo.countByCompanyIdAndStatusIn(companyId, OPEN_DECLARATION_STATUSES);
+
+        FinanceIntegrationClient.DashboardSummary financeSummary = financeSummaryOrEmpty(companyId);
+
+        return DashboardSummaryDTO.builder()
+                .simulationsThisMonth(simulationsThisMonth)
+                .openDeclarations(openDeclarations)
+                .overdueInvoicesCount(financeSummary.overdueInvoicesCount())
+                .overdueInvoicesAmount(financeSummary.overdueInvoicesAmount())
+                .build();
+    }
+
+    /** Dégradation gracieuse : une société sans clé Finance configurée (ou
+     * Finance indisponible) n'empêche jamais le reste du tableau de bord de
+     * s'afficher -- même principe que CrossHubDashboardService côté Praxio. */
+    private FinanceIntegrationClient.DashboardSummary financeSummaryOrEmpty(UUID companyId) {
+        try {
+            return financeIntegrationClient.getDashboardSummary(companyId);
+        } catch (FinanceIntegrationClient.FinanceIntegrationException e) {
+            log.debug("[Finance] Résumé de facturation indisponible pour {} : {}", companyId, e.getMessage());
+            return new FinanceIntegrationClient.DashboardSummary(0, BigDecimal.ZERO);
+        }
     }
 }

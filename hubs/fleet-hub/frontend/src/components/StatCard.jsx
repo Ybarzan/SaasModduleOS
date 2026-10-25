@@ -1,3 +1,6 @@
+/**
+ * @param {{label: any, value: any, unit?: any, icon: any, tone?: string, sub?: any}} props
+ */
 export default function StatCard({ label, value, unit, icon, tone = 'default', sub }) {
   return (
     <div className={`stat-card ${tone}`}>

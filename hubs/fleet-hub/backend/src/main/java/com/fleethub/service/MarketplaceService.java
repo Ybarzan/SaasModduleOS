@@ -8,6 +8,7 @@ import com.fleethub.model.Truck;
 import com.fleethub.repository.CompanyRepository;
 import com.fleethub.repository.TachographDayRepository;
 import com.fleethub.repository.TruckRepository;
+import com.fleethub.security.ApiKeyHasher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -46,18 +47,31 @@ public class MarketplaceService {
     @Transactional
     public MarketplaceSettingsDto optIn(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow();
+        // marketplaceApiKey ne contient qu'un hash (voir ApiKeyHasher) : même
+        // raisonnement que InternalIntegrationService.enable() -- la clé en clair
+        // n'est renvoyée qu'à sa toute première génération.
+        String plainKeyToReturn = null;
         if (company.getMarketplaceApiKey() == null) {
-            company.setMarketplaceApiKey(Company.generateMarketplaceApiKey());
+            String generated = Company.generateMarketplaceApiKey();
+            company.setMarketplaceApiKey(ApiKeyHasher.hash(generated));
+            plainKeyToReturn = generated;
         }
         company.setMarketplaceOptIn(true);
         companyRepository.save(company);
-        return new MarketplaceSettingsDto(true, company.getMarketplaceApiKey());
+        return new MarketplaceSettingsDto(true, plainKeyToReturn);
     }
 
+    /**
+     * marketplaceApiKey n'étant qu'un hash (voir optIn()), elle ne peut plus être
+     * réaffichée après coup -- on l'efface donc à la désactivation : une
+     * réactivation ultérieure en génère une nouvelle plutôt que de laisser une
+     * clé orpheline, invisible mais toujours présente en base, sans utilité.
+     */
     @Transactional
     public void optOut(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow();
         company.setMarketplaceOptIn(false);
+        company.setMarketplaceApiKey(null);
         companyRepository.save(company);
     }
 
@@ -66,7 +80,7 @@ public class MarketplaceService {
         if (apiKey == null || apiKey.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé X-Marketplace-Key manquante");
         }
-        Company company = companyRepository.findByMarketplaceApiKeyAndMarketplaceOptInTrue(apiKey)
+        Company company = companyRepository.findByMarketplaceApiKeyAndMarketplaceOptInTrue(ApiKeyHasher.hash(apiKey))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé invalide ou partage désactivé"));
 
         List<MarketplaceAvailabilityDto.AvailableTruckDto> trucks = truckRepository.findByCompanyId(company.getId()).stream()
@@ -93,7 +107,7 @@ public class MarketplaceService {
         if (apiKey == null || apiKey.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé X-Marketplace-Key manquante");
         }
-        Company company = companyRepository.findByMarketplaceApiKeyAndMarketplaceOptInTrue(apiKey)
+        Company company = companyRepository.findByMarketplaceApiKeyAndMarketplaceOptInTrue(ApiKeyHasher.hash(apiKey))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé invalide ou partage désactivé"));
         Truck truck = truckRepository.findByRegistrationAndCompanyId(registration, company.getId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Camion introuvable pour cette société"));

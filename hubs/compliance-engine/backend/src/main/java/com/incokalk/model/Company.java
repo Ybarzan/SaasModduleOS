@@ -57,9 +57,21 @@ public class Company {
     /** Clé d'intégration fleet-hub (en-tête X-Internal-Integration-Key) --
      *  générée côté fleet-hub quand cette société y active le partage
      *  d'expéditions, puis collée ici par un admin. Voir
-     *  service/integration/fleethub/FleetHubIntegrationClient. */
-    @Column(name = "fleethub_api_key", length = 64)
+     *  service/integration/fleethub/FleetHubIntegrationClient. Chiffrée au
+     *  repos (voir EncryptedApiKeyConverter) : jamais recherchée par égalité
+     *  ici, seulement relue en clair pour l'en-tête sortant. */
+    @Column(name = "fleethub_api_key", length = 255)
+    @Convert(converter = com.incokalk.security.EncryptedApiKeyConverter.class)
     private String fleetHubApiKey;
+
+    /** Clé d'intégration Finance & Trésorerie (en-tête X-Internal-Integration-Key)
+     *  -- générée côté hubs/finance quand cette société y active le partage
+     *  d'agrégats, puis collée ici par un admin. Voir
+     *  service/integration/finance/FinanceIntegrationClient. Chiffrée au
+     *  repos, même raison que fleetHubApiKey ci-dessus. */
+    @Column(name = "finance_api_key", length = 255)
+    @Convert(converter = com.incokalk.security.EncryptedApiKeyConverter.class)
+    private String financeApiKey;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
