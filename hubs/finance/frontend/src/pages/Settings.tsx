@@ -20,7 +20,7 @@ const Settings = () => {
         <p className="text-ink-soft mt-1">Intégrations de Finance avec les autres modules Praxio</p>
       </div>
 
-      <div className="bg-surface rounded-none border border-line overflow-hidden">
+      <div className="bg-surface rounded-lg border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line flex items-center gap-2">
           <Share2 size={18} className="text-accent" />
           <h2 className="text-lg font-semibold text-ink">Intégration interne (Praxio &amp; compliance-engine)</h2>
@@ -95,7 +95,7 @@ const InternalIntegrationCard = () => {
             type="button"
             onClick={() => disableMutation.mutate()}
             disabled={disableMutation.isPending}
-            className="px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors disabled:opacity-50"
+            className="px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors disabled:opacity-50"
           >
             {disableMutation.isPending ? 'Désactivation…' : 'Désactiver le partage'}
           </button>
@@ -105,7 +105,7 @@ const InternalIntegrationCard = () => {
           type="button"
           onClick={() => enableMutation.mutate()}
           disabled={enableMutation.isPending}
-          className="px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
+          className="px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors"
         >
           {enableMutation.isPending ? 'Activation…' : 'Activer le partage'}
         </button>
@@ -120,7 +120,7 @@ const InternalIntegrationCard = () => {
             <button
               type="button"
               onClick={copyKey}
-              className="px-3 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
+              className="px-3 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
             >
               Copier
             </button>
