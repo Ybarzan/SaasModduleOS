@@ -5,9 +5,8 @@ export default {
   theme: {
     extend: {
       colors: {
-        // ---- semantic tokens (Praxio v0.2 design system, light/dark via CSS vars) ----
-        // rgb(var(..) / <alpha-value>) — pas juste var(--x) — pour que les
-        // modificateurs d'opacite Tailwind (bg-accent/20, text-ink/60...) fonctionnent.
+        // Palette neutre + accent unique, pensée pour réduire la charge
+        // cognitive -- identique à hubs/portal.
         bg: 'rgb(var(--c-bg) / <alpha-value>)',
         surface: 'rgb(var(--c-surface) / <alpha-value>)',
         'surface-2': 'rgb(var(--c-surface-2) / <alpha-value>)',
@@ -20,17 +19,21 @@ export default {
           strong: 'rgb(var(--c-accent-strong) / <alpha-value>)',
         },
         'accent-2': 'rgb(var(--c-accent-2) / <alpha-value>)',
-        success: 'rgb(var(--c-success) / <alpha-value>)',
-        warning: 'rgb(var(--c-warning) / <alpha-value>)',
-        danger: 'rgb(var(--c-danger) / <alpha-value>)',
+        success: {
+          DEFAULT: 'rgb(var(--c-success) / <alpha-value>)',
+          soft: 'rgb(var(--c-success-soft) / <alpha-value>)',
+        },
+        warning: {
+          DEFAULT: 'rgb(var(--c-warning) / <alpha-value>)',
+          soft: 'rgb(var(--c-warning-soft) / <alpha-value>)',
+        },
+        danger: {
+          DEFAULT: 'rgb(var(--c-danger) / <alpha-value>)',
+          soft: 'rgb(var(--c-danger-soft) / <alpha-value>)',
+        },
       },
       fontFamily: {
-        // Praxio v0.2 : une seule famille monospace pour toute l'app (docs/09-design-system.md).
-        sans: ['"JetBrains Mono"', 'ui-monospace', '"SFMono-Regular"', 'Consolas', 'monospace'],
-      },
-      borderRadius: {
-        '2xl': '1rem',
-        '3xl': '1.5rem',
+        sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
       },
     },
   },

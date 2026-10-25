@@ -4,6 +4,7 @@ import {
   Settings as SettingsIcon, LogOut,
 } from 'lucide-react';
 import { useAuthStore } from '../stores/auth';
+import ThemeToggle from '../components/ThemeToggle';
 
 const NAV_ITEMS = [
   { to: '/client-invoices', label: 'Facturation', icon: FileText },
@@ -36,17 +37,14 @@ const AppLayout = () => {
       <header className="border-b border-line bg-surface">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-6">
-            <span className="text-sm font-bold text-ink shrink-0">
-              <span className="text-accent font-normal" aria-hidden="true">:: </span>
-              Finance
-            </span>
+            <span className="text-sm font-semibold text-ink shrink-0">Finance</span>
             <nav className="flex items-center gap-1 overflow-x-auto">
               {navItems.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
                   to={to}
                   className={({ isActive }) =>
-                    `flex items-center gap-1.5 px-3 py-1.5 rounded-none text-sm font-medium transition-colors whitespace-nowrap ${
+                    `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
                       isActive ? 'bg-accent-soft text-accent-strong' : 'text-ink-soft hover:text-ink hover:bg-surface-2'
                     }`
                   }
@@ -59,9 +57,10 @@ const AppLayout = () => {
           </div>
           <div className="flex items-center gap-3">
             {user?.email && <span className="hidden sm:inline text-xs text-ink-soft">{user.email}</span>}
+            <ThemeToggle />
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-none text-sm font-medium text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-ink-soft hover:text-danger hover:bg-danger/10 transition-colors"
               title="Se déconnecter"
             >
               <LogOut size={14} />
