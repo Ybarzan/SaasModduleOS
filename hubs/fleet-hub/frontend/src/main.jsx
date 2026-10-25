@@ -10,6 +10,7 @@ import { StatusBar, Style as StatusBarStyle } from '@capacitor/status-bar'
 import { Haptics, ImpactStyle, NotificationType } from '@capacitor/haptics'
 import 'leaflet/dist/leaflet.css'
 import '@fontsource-variable/jetbrains-mono'
+import '@fontsource-variable/inter'
 import './styles.css'
 import './premium.css'
 import './theme.css'
@@ -41,7 +42,7 @@ function StatusBarSync() {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
     StatusBar.setStyle({ style: isDark ? StatusBarStyle.Dark : StatusBarStyle.Light })
-    StatusBar.setBackgroundColor({ color: isDark ? '#14100c' : '#e6e0d3' })
+    StatusBar.setBackgroundColor({ color: isDark ? '#0a0a0b' : '#faf6ee' })
   }, [isDark])
   return null
 }
@@ -67,17 +68,15 @@ const CrashFallback = () => (
       alignItems: 'center',
       justifyContent: 'center',
       gap: 12,
-      background: '#14100C',
-      color: '#E8E1D2',
-      fontFamily: '"JetBrains Mono", monospace',
+      background: '#0A0A0B',
+      color: '#FAFAFA',
+      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
       textAlign: 'center',
       padding: 24
     }}
   >
-    <div style={{ fontSize: 28, fontWeight: 700, fontFamily: '"JetBrains Mono", monospace' }}>
-      Oups, un écran a planté.
-    </div>
-    <div style={{ color: '#CFC5B2' }}>
+    <div style={{ fontSize: 28, fontWeight: 700 }}>Oups, un écran a planté.</div>
+    <div style={{ color: '#A1A1AA' }}>
       Rechargez la page pour continuer. L'erreur a été enregistrée si la supervision est active.
     </div>
     <button
@@ -85,12 +84,12 @@ const CrashFallback = () => (
       style={{
         marginTop: 8,
         padding: '10px 20px',
-        borderRadius: 0,
-        border: '1px solid #362C22',
-        background: '#1C1712',
-        color: '#E8E1D2',
+        borderRadius: 10,
+        border: '1px solid #27272A',
+        background: '#18181B',
+        color: '#FAFAFA',
         cursor: 'pointer',
-        fontFamily: '"JetBrains Mono", monospace'
+        fontFamily: 'inherit'
       }}
     >
       Recharger

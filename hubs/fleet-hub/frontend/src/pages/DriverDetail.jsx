@@ -291,12 +291,12 @@ export default function DriverDetail() {
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#16202e',
-                    border: '1px solid #32405a',
-                    borderRadius: 10,
-                    color: '#dbe3ee'
+                    background: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)',
+                    color: 'var(--text)'
                   }}
-                  labelStyle={{ color: '#a9b6c6' }}
+                  labelStyle={{ color: 'var(--muted)' }}
                 />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Line
@@ -356,12 +356,12 @@ export default function DriverDetail() {
                 />
                 <Tooltip
                   contentStyle={{
-                    background: '#16202e',
-                    border: '1px solid #32405a',
-                    borderRadius: 10,
-                    color: '#dbe3ee'
+                    background: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)',
+                    color: 'var(--text)'
                   }}
-                  labelStyle={{ color: '#a9b6c6' }}
+                  labelStyle={{ color: 'var(--muted)' }}
                 />
                 <Bar dataKey="count" name="Nombre" radius={[0, 5, 5, 0]} barSize={20}>
                   {detail.eventBreakdown.map((e) => (
@@ -395,12 +395,12 @@ export default function DriverDetail() {
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    background: '#16202e',
-                    border: '1px solid #32405a',
-                    borderRadius: 10,
-                    color: '#dbe3ee'
+                    background: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)',
+                    color: 'var(--text)'
                   }}
-                  labelStyle={{ color: '#a9b6c6' }}
+                  labelStyle={{ color: 'var(--muted)' }}
                   formatter={(v) => `${v.toLocaleString('fr-FR')} €`}
                 />
               </PieChart>
