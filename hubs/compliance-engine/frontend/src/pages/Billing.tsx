@@ -145,14 +145,13 @@ export default function Billing() {
           </button>
           <h1 className="text-3xl font-extrabold text-ink">
             <CreditCard className="inline mr-3 text-accent" size={28} />
-            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Facturation
           </h1>
         </div>
 
         {/* Stripe not configured */}
         {!stripeConfigured && (
-          <div className="bg-warning/10 border border-warning/20 rounded-none p-6 mb-8">
+          <div className="bg-warning/10 border border-warning/20 rounded-lg p-6 mb-8">
             <div className="flex items-start gap-3">
               <AlertTriangle className="text-warning shrink-0 mt-0.5" size={20} />
               <div>
@@ -166,11 +165,7 @@ export default function Billing() {
         )}
 
         {/* Current Plan */}
-        <div className="relative bg-surface rounded-none border border-line p-8 mb-8">
-          <span className="hud-corner hud-corner-tl" aria-hidden="true" />
-          <span className="hud-corner hud-corner-tr" aria-hidden="true" />
-          <span className="hud-corner hud-corner-bl" aria-hidden="true" />
-          <span className="hud-corner hud-corner-br" aria-hidden="true" />
+        <div className="relative bg-surface rounded-lg border border-line p-8 mb-8">
           <h2 className="text-xl font-bold text-ink mb-6 flex items-center gap-2">
             <Settings size={20} className="text-ink-soft" />
             Plan actuel
@@ -208,7 +203,7 @@ export default function Billing() {
                 <button
                   onClick={() => portalMutation.mutate()}
                   disabled={portalMutation.isPending}
-                  className="px-4 py-2 rounded-none text-sm font-semibold border border-line text-ink-soft hover:bg-surface-2 transition-colors inline-flex items-center gap-2"
+                  className="px-4 py-2 rounded-lg text-sm font-semibold border border-line text-ink-soft hover:bg-surface-2 transition-colors inline-flex items-center gap-2"
                 >
                   <ExternalLink size={14} />
                   {portalMutation.isPending ? 'Ouverture...' : 'Gérer l\'abonnement'}
@@ -216,7 +211,7 @@ export default function Billing() {
               )}
               <button
                 onClick={() => navigate('/pricing')}
-                className="px-4 py-2 rounded-none text-sm font-semibold bg-accent text-white hover:bg-accent-strong transition-colors"
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-accent text-white hover:bg-accent-strong transition-colors"
               >
                 {subscription?.plan === 'FREE' ? 'Upgrade' : 'Changer de plan'}
               </button>
@@ -226,7 +221,7 @@ export default function Billing() {
 
         {/* Referral program */}
         {referralCode && (
-          <div className="bg-surface rounded-none border border-line p-8 mb-8">
+          <div className="bg-surface rounded-lg border border-line p-8 mb-8">
             <h2 className="text-xl font-bold text-ink mb-2 flex items-center gap-2">
               <Gift size={20} className="text-accent" />
               Parrainez une entreprise
@@ -240,11 +235,11 @@ export default function Billing() {
                 readOnly
                 value={referralLink}
                 onFocus={(e) => e.target.select()}
-                className="flex-1 px-4 py-2 border border-line rounded-none bg-surface-2 text-sm text-ink-soft"
+                className="flex-1 px-4 py-2 border border-line rounded-lg bg-surface-2 text-sm text-ink-soft"
               />
               <button
                 onClick={copyReferralLink}
-                className="px-4 py-2 rounded-none text-sm font-semibold bg-accent text-white hover:bg-accent-strong transition-colors inline-flex items-center justify-center gap-2 shrink-0"
+                className="px-4 py-2 rounded-lg text-sm font-semibold bg-accent text-white hover:bg-accent-strong transition-colors inline-flex items-center justify-center gap-2 shrink-0"
               >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
                 {copied ? 'Copié' : 'Copier le lien'}
@@ -254,7 +249,7 @@ export default function Billing() {
         )}
 
         {/* Invoices */}
-        <div className="bg-surface rounded-none border border-line p-8">
+        <div className="bg-surface rounded-lg border border-line p-8">
           <h2 className="text-xl font-bold text-ink mb-6 flex items-center gap-2">
             <Calendar size={20} className="text-ink-soft" />
             Historique de facturation

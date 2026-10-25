@@ -62,7 +62,6 @@ const FrenchFiscal = () => {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-ink">
-          <span className="text-accent font-normal" aria-hidden="true">:: </span>
           Fiscalité française
         </h1>
         <p className="text-ink-soft mt-1">Configuration TVA, DEB & Intrastat</p>
@@ -76,7 +75,7 @@ const FrenchFiscal = () => {
       ) : (
         <div className="space-y-6">
           {/* TVA intracommunautaire */}
-          <div className="bg-surface rounded-none border border-line p-6">
+          <div className="bg-surface rounded-lg border border-line p-6">
             <div className="flex items-center gap-3 mb-4">
               <Euro size={20} className="text-accent" />
               <h2 className="text-lg font-semibold text-ink">TVA intracommunautaire</h2>
@@ -90,7 +89,7 @@ const FrenchFiscal = () => {
                   type="number"
                   value={vatConfig.tvaRate}
                   onChange={(e) => setVatConfig({ ...vatConfig, tvaRate: parseFloat(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
               <div>
@@ -102,7 +101,7 @@ const FrenchFiscal = () => {
                   value={vatConfig.vatNumber}
                   onChange={(e) => setVatConfig({ ...vatConfig, vatNumber: e.target.value })}
                   placeholder="FRXX999999999"
-                  className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
               <div>
@@ -112,7 +111,7 @@ const FrenchFiscal = () => {
                 <select
                   value={vatConfig.intraEuScheme}
                   onChange={(e) => setVatConfig({ ...vatConfig, intraEuScheme: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
                 >
                   <option value="normal">Normal (autoliquidation)</option>
                   <option value="franchise">Franchise en base</option>
@@ -123,7 +122,7 @@ const FrenchFiscal = () => {
             <button
               onClick={saveVat}
               disabled={saveMutation.isPending}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-none text-sm hover:bg-accent-strong transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg text-sm hover:bg-accent-strong transition-colors disabled:opacity-50"
             >
               <Save size={14} />
               {saveMutation.isPending ? 'Enregistrement...' : 'Enregistrer TVA'}
@@ -131,7 +130,7 @@ const FrenchFiscal = () => {
           </div>
 
           {/* DEB */}
-          <div className="bg-surface rounded-none border border-line p-6">
+          <div className="bg-surface rounded-lg border border-line p-6">
             <div className="flex items-center gap-3 mb-4">
               <FileText size={20} className="text-warning" />
               <h2 className="text-lg font-semibold text-ink">DEB (Déclaration d'Échanges de Biens)</h2>
@@ -144,7 +143,7 @@ const FrenchFiscal = () => {
                 <select
                   value={debConfig.frequency}
                   onChange={(e) => setDebConfig({ ...debConfig, frequency: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
                 >
                   <option value="monthly">Mensuelle</option>
                   <option value="quarterly">Trimestrielle</option>
@@ -158,14 +157,14 @@ const FrenchFiscal = () => {
                   type="number"
                   value={debConfig.threshold}
                   onChange={(e) => setDebConfig({ ...debConfig, threshold: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
             </div>
             <button
               onClick={saveDeb}
               disabled={saveMutation.isPending}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-warning text-white rounded-none text-sm hover:bg-warning/90 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-warning text-white rounded-lg text-sm hover:bg-warning/90 transition-colors disabled:opacity-50"
             >
               <Save size={14} />
               {saveMutation.isPending ? 'Enregistrement...' : 'Enregistrer DEB'}
@@ -173,7 +172,7 @@ const FrenchFiscal = () => {
           </div>
 
           {/* Intrastat */}
-          <div className="bg-surface rounded-none border border-line p-6">
+          <div className="bg-surface rounded-lg border border-line p-6">
             <div className="flex items-center gap-3 mb-4">
               <Calculator size={20} className="text-success" />
               <h2 className="text-lg font-semibold text-ink">Intrastat</h2>
@@ -189,7 +188,7 @@ const FrenchFiscal = () => {
                   onChange={(e) =>
                     setIntrastatConfig({ ...intrastatConfig, dispatchThreshold: parseInt(e.target.value) || 0 })
                   }
-                  className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
               <div>
@@ -202,7 +201,7 @@ const FrenchFiscal = () => {
                   onChange={(e) =>
                     setIntrastatConfig({ ...intrastatConfig, arrivalThreshold: parseInt(e.target.value) || 0 })
                   }
-                  className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-accent focus:border-transparent"
                 />
               </div>
               <div>
@@ -212,7 +211,7 @@ const FrenchFiscal = () => {
                 <select
                   value={intrastatConfig.declarationType}
                   onChange={(e) => setIntrastatConfig({ ...intrastatConfig, declarationType: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-none text-sm bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
+                  className="w-full px-3 py-2 border border-line rounded-lg text-sm bg-surface focus:ring-2 focus:ring-accent focus:border-transparent"
                 >
                   <option value="simplified">Simplifiée</option>
                   <option value="complete">Complète</option>
@@ -222,7 +221,7 @@ const FrenchFiscal = () => {
             <button
               onClick={saveIntrastat}
               disabled={saveMutation.isPending}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-success text-white rounded-none text-sm hover:bg-success/90 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-success text-white rounded-lg text-sm hover:bg-success/90 transition-colors disabled:opacity-50"
             >
               <Save size={14} />
               {saveMutation.isPending ? 'Enregistrement...' : 'Enregistrer Intrastat'}

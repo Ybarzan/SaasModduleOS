@@ -11,14 +11,14 @@ const Card = ({ variant = 'default', hover = true, className, children, ...props
   return (
     <motion.div
       className={clsx(
-        'bg-surface rounded-none border border-line',
+        'bg-surface rounded-lg border border-line',
         variant === 'default' && 'p-6',
         variant === 'stat' && 'p-6 text-center',
         variant === 'flat' && 'p-4',
         className,
       )}
-      whileHover={hover && !reduceMotion ? { y: -4, boxShadow: '0 20px 40px -20px rgba(0,0,0,0.25)' } : undefined}
-      transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+      whileHover={hover && !reduceMotion ? { borderColor: 'rgb(var(--c-accent) / 0.4)' } : undefined}
+      transition={{ duration: 0.15 }}
       {...props}
     >
       {children}

@@ -74,7 +74,7 @@ const FleetHubIntegrationCard = () => {
   });
 
   return (
-    <div className="bg-surface rounded-none border border-line overflow-hidden">
+    <div className="bg-surface rounded-lg border border-line overflow-hidden">
       <div className="px-6 py-4 border-b border-line flex items-center gap-2">
         <Link2 size={18} className="text-terra-500" />
         <h2 className="text-lg font-semibold text-ink">Intégration Fleet Hub</h2>
@@ -97,7 +97,7 @@ const FleetHubIntegrationCard = () => {
               type="button"
               onClick={() => clearMutation.mutate()}
               disabled={clearMutation.isPending}
-              className="px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors disabled:opacity-50"
+              className="px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors disabled:opacity-50"
             >
               {clearMutation.isPending ? 'Effacement…' : 'Effacer la clé'}
             </button>
@@ -109,13 +109,13 @@ const FleetHubIntegrationCard = () => {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Clé d'intégration fleet-hub (X-Internal-Integration-Key)"
-              className="flex-1 px-3 py-2 border border-line rounded-none text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+              className="flex-1 px-3 py-2 border border-line rounded-lg text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent"
             />
             <button
               type="button"
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending || !apiKey.trim()}
-              className="px-4 py-2 bg-terra-600 text-white rounded-none text-sm font-medium hover:bg-terra-700 disabled:opacity-50 transition-colors"
+              className="px-4 py-2 bg-terra-600 text-white rounded-lg text-sm font-medium hover:bg-terra-700 disabled:opacity-50 transition-colors"
             >
               {saveMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
             </button>
@@ -165,7 +165,7 @@ const FinanceIntegrationCard = () => {
   });
 
   return (
-    <div className="bg-surface rounded-none border border-line overflow-hidden">
+    <div className="bg-surface rounded-lg border border-line overflow-hidden">
       <div className="px-6 py-4 border-b border-line flex items-center gap-2">
         <Link2 size={18} className="text-terra-500" />
         <h2 className="text-lg font-semibold text-ink">Intégration Finance & Trésorerie</h2>
@@ -188,7 +188,7 @@ const FinanceIntegrationCard = () => {
               type="button"
               onClick={() => clearMutation.mutate()}
               disabled={clearMutation.isPending}
-              className="px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors disabled:opacity-50"
+              className="px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors disabled:opacity-50"
             >
               {clearMutation.isPending ? 'Effacement…' : 'Effacer la clé'}
             </button>
@@ -200,13 +200,13 @@ const FinanceIntegrationCard = () => {
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="Clé d'intégration Finance (X-Internal-Integration-Key)"
-              className="flex-1 px-3 py-2 border border-line rounded-none text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+              className="flex-1 px-3 py-2 border border-line rounded-lg text-sm font-mono focus:ring-2 focus:ring-terra-500 focus:border-transparent"
             />
             <button
               type="button"
               onClick={() => saveMutation.mutate()}
               disabled={saveMutation.isPending || !apiKey.trim()}
-              className="px-4 py-2 bg-terra-600 text-white rounded-none text-sm font-medium hover:bg-terra-700 disabled:opacity-50 transition-colors"
+              className="px-4 py-2 bg-terra-600 text-white rounded-lg text-sm font-medium hover:bg-terra-700 disabled:opacity-50 transition-colors"
             >
               {saveMutation.isPending ? 'Enregistrement…' : 'Enregistrer'}
             </button>
@@ -318,7 +318,6 @@ const CompanySettings = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-ink">
-            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Paramètres entreprise
           </h1>
           <p className="text-ink-soft mt-1">Informations légales et coordonnées de votre entreprise</p>
@@ -326,7 +325,7 @@ const CompanySettings = () => {
         <button
           onClick={handleSave}
           disabled={isSaving || !hasChanges}
-          className="flex items-center gap-2 px-4 py-2 bg-terra-600 text-white rounded-none font-medium hover:bg-terra-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-terra-600 text-white rounded-lg font-medium hover:bg-terra-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
@@ -334,21 +333,21 @@ const CompanySettings = () => {
       </div>
 
       {isLoading ? (
-        <div className="bg-surface rounded-none border border-line px-6 py-12 text-center text-ink-soft">
+        <div className="bg-surface rounded-lg border border-line px-6 py-12 text-center text-ink-soft">
           <Loader2 size={24} className="animate-spin mx-auto mb-2 text-ink-soft" />
           Chargement...
         </div>
       ) : (
         <div className="space-y-6">
           {/* Logo */}
-          <div className="bg-surface rounded-none border border-line overflow-hidden">
+          <div className="bg-surface rounded-lg border border-line overflow-hidden">
             <div className="px-6 py-4 border-b border-line flex items-center gap-2">
               <Image size={18} className="text-terra-500" />
               <h2 className="text-lg font-semibold text-ink">Logo</h2>
             </div>
             <div className="px-6 py-4">
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 rounded-none border-2 border-dashed border-line flex items-center justify-center overflow-hidden bg-bg">
+                <div className="w-24 h-24 rounded-lg border-2 border-dashed border-line flex items-center justify-center overflow-hidden bg-bg">
                   {logoPreview ? (
                     <img src={logoPreview} alt="Logo" className="w-full h-full object-contain" />
                   ) : (
@@ -366,7 +365,7 @@ const CompanySettings = () => {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
+                    className="px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
                   >
                     Choisir un fichier
                   </button>
@@ -377,7 +376,7 @@ const CompanySettings = () => {
           </div>
 
           {/* Company Info */}
-          <div className="bg-surface rounded-none border border-line overflow-hidden">
+          <div className="bg-surface rounded-lg border border-line overflow-hidden">
             <div className="px-6 py-4 border-b border-line flex items-center gap-2">
               <Building2 size={18} className="text-terra-500" />
               <h2 className="text-lg font-semibold text-ink">Informations légales</h2>
@@ -390,7 +389,7 @@ const CompanySettings = () => {
                     type="text"
                     value={settings.name}
                     onChange={(e) => updateField('name', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="IncoKalk SAS"
                   />
                 </div>
@@ -400,7 +399,7 @@ const CompanySettings = () => {
                     type="text"
                     value={settings.legalName}
                     onChange={(e) => updateField('legalName', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="IncoKalk Société par Actions Simplifiée"
                   />
                 </div>
@@ -412,7 +411,7 @@ const CompanySettings = () => {
                     type="text"
                     value={settings.siret}
                     onChange={(e) => updateField('siret', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="123 456 789 00012"
                   />
                 </div>
@@ -422,7 +421,7 @@ const CompanySettings = () => {
                     type="text"
                     value={settings.vatNumber}
                     onChange={(e) => updateField('vatNumber', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="FR12345678901"
                   />
                 </div>
@@ -431,7 +430,7 @@ const CompanySettings = () => {
           </div>
 
           {/* Address */}
-          <div className="bg-surface rounded-none border border-line overflow-hidden">
+          <div className="bg-surface rounded-lg border border-line overflow-hidden">
             <div className="px-6 py-4 border-b border-line flex items-center gap-2">
               <MapPin size={18} className="text-terra-500" />
               <h2 className="text-lg font-semibold text-ink">Adresse</h2>
@@ -443,7 +442,7 @@ const CompanySettings = () => {
                   type="text"
                   value={settings.address}
                   onChange={(e) => updateField('address', e.target.value)}
-                  className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                   placeholder="123 Rue de l'Exemple"
                 />
               </div>
@@ -454,7 +453,7 @@ const CompanySettings = () => {
                     type="text"
                     value={settings.city}
                     onChange={(e) => updateField('city', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="Paris"
                   />
                 </div>
@@ -464,7 +463,7 @@ const CompanySettings = () => {
                     type="text"
                     value={settings.postalCode}
                     onChange={(e) => updateField('postalCode', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="75001"
                   />
                 </div>
@@ -474,7 +473,7 @@ const CompanySettings = () => {
                     type="text"
                     value={settings.country}
                     onChange={(e) => updateField('country', e.target.value)}
-                    className="w-full px-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="France"
                   />
                 </div>
@@ -483,7 +482,7 @@ const CompanySettings = () => {
           </div>
 
           {/* Contact */}
-          <div className="bg-surface rounded-none border border-line overflow-hidden">
+          <div className="bg-surface rounded-lg border border-line overflow-hidden">
             <div className="px-6 py-4 border-b border-line flex items-center gap-2">
               <Phone size={18} className="text-terra-500" />
               <h2 className="text-lg font-semibold text-ink">Contact</h2>
@@ -498,7 +497,7 @@ const CompanySettings = () => {
                       type="tel"
                       value={settings.phone}
                       onChange={(e) => updateField('phone', e.target.value)}
-                      className="w-full pl-10 pr-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                      className="w-full pl-10 pr-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                       placeholder="+33 1 23 45 67 89"
                     />
                   </div>
@@ -511,7 +510,7 @@ const CompanySettings = () => {
                       type="email"
                       value={settings.email}
                       onChange={(e) => updateField('email', e.target.value)}
-                      className="w-full pl-10 pr-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                      className="w-full pl-10 pr-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                       placeholder="contact@entreprise.com"
                     />
                   </div>
@@ -525,7 +524,7 @@ const CompanySettings = () => {
                     type="url"
                     value={settings.website}
                     onChange={(e) => updateField('website', e.target.value)}
-                    className="w-full pl-10 pr-3 py-2 border border-line rounded-none text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
+                    className="w-full pl-10 pr-3 py-2 border border-line rounded-lg text-sm focus:ring-2 focus:ring-terra-500 focus:border-transparent"
                     placeholder="https://www.entreprise.com"
                   />
                 </div>
@@ -540,7 +539,7 @@ const CompanySettings = () => {
           <FinanceIntegrationCard />
 
           {/* Save button (mobile sticky) */}
-          <div className="sticky bottom-4 bg-surface border border-line rounded-none p-4 shadow-lg flex items-center justify-between">
+          <div className="sticky bottom-4 bg-surface border border-line rounded-lg p-4 shadow-lg flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-ink">Modifications non sauvegardées</p>
               <p className="text-xs text-ink-soft">Les changements seront appliqués après sauvegarde</p>
@@ -548,7 +547,7 @@ const CompanySettings = () => {
             <button
               onClick={handleSave}
               disabled={isSaving || !hasChanges}
-              className="flex items-center gap-2 px-6 py-2 bg-terra-600 text-white rounded-none font-medium hover:bg-terra-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 px-6 py-2 bg-terra-600 text-white rounded-lg font-medium hover:bg-terra-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
               {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}

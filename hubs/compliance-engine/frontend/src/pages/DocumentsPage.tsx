@@ -13,7 +13,6 @@ const DocumentsPage = () => {
             <FileText size={32} className="text-ink-soft" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-ink mb-3">
-            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Documents
           </h1>
           <p className="text-ink-soft max-w-xl mx-auto">
@@ -26,9 +25,9 @@ const DocumentsPage = () => {
         {hasMinimumRole('MANAGER') && (
           <Link
             to="/document-parser"
-            className="flex items-center gap-4 bg-surface rounded-none shadow-sm border border-line p-6 mb-6 hover:border-accent/40 transition-colors group"
+            className="flex items-center gap-4 bg-surface rounded-lg shadow-sm border border-line p-6 mb-6 hover:border-accent/40 transition-colors group"
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-none bg-accent/10 shrink-0">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-accent/10 shrink-0">
               <ScanText size={24} className="text-accent" />
             </div>
             <div className="flex-1">
@@ -43,9 +42,9 @@ const DocumentsPage = () => {
         {hasMinimumRole('ADMIN') && (
           <Link
             to="/email-intake"
-            className="flex items-center gap-4 bg-surface rounded-none shadow-sm border border-line p-6 mb-6 hover:border-accent/40 transition-colors group"
+            className="flex items-center gap-4 bg-surface rounded-lg shadow-sm border border-line p-6 mb-6 hover:border-accent/40 transition-colors group"
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-none bg-accent/10 shrink-0">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-accent/10 shrink-0">
               <Mail size={24} className="text-accent" />
             </div>
             <div className="flex-1">

@@ -44,7 +44,7 @@ function StatusTag({ status }: { status: OrchestrationSuggestion['status'] }) {
   const cfg = STATUS_CONFIG[status];
   return (
     <span
-      className={`inline-block text-[10px] font-medium uppercase tracking-wide border rounded-none px-1.5 py-0.5 ${cfg.className}`}
+      className={`inline-block text-[10px] font-medium uppercase tracking-wide border rounded-lg px-1.5 py-0.5 ${cfg.className}`}
     >
       [{cfg.label}]
     </span>
@@ -111,7 +111,6 @@ const OrchestrationSuggestions = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-ink">
-          <span className="text-accent font-normal" aria-hidden="true">:: </span>
           Suggestions d'action
         </h1>
         <p className="text-ink-soft mt-1">
@@ -121,10 +120,10 @@ const OrchestrationSuggestions = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-surface-2 p-1 rounded-none border border-line mb-6 w-fit">
+      <div className="flex gap-1 bg-surface-2 p-1 rounded-lg border border-line mb-6 w-fit">
         <button
           onClick={() => setTab('pending')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-none text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === 'pending' ? 'bg-surface text-ink shadow-sm' : 'text-ink-soft hover:text-ink'
           }`}
         >
@@ -133,7 +132,7 @@ const OrchestrationSuggestions = () => {
         </button>
         <button
           onClick={() => setTab('history')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-none text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             tab === 'history' ? 'bg-surface text-ink shadow-sm' : 'text-ink-soft hover:text-ink'
           }`}
         >
@@ -148,12 +147,12 @@ const OrchestrationSuggestions = () => {
           Chargement...
         </div>
       ) : rows.length === 0 ? (
-        <div className="bg-surface rounded-none border border-line px-6 py-12 text-center text-ink-soft">
+        <div className="bg-surface rounded-lg border border-line px-6 py-12 text-center text-ink-soft">
           <Zap size={32} className="mx-auto mb-3 text-ink-soft" />
           <p>{tab === 'pending' ? 'Aucune suggestion en attente' : 'Aucune suggestion décidée'}</p>
         </div>
       ) : (
-        <div className="bg-surface rounded-none border border-line overflow-hidden">
+        <div className="bg-surface rounded-lg border border-line overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -198,14 +197,14 @@ const OrchestrationSuggestions = () => {
                             <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
                               <button
                                 onClick={() => openDecision(s.id, 'approve')}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-success text-white rounded-none hover:bg-success/90 transition-colors"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-success text-white rounded-lg hover:bg-success/90 transition-colors"
                               >
                                 <Check size={12} />
                                 Approuver
                               </button>
                               <button
                                 onClick={() => openDecision(s.id, 'reject')}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-danger text-white rounded-none hover:bg-danger/90 transition-colors"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-danger text-white rounded-lg hover:bg-danger/90 transition-colors"
                               >
                                 <X size={12} />
                                 Rejeter
@@ -222,7 +221,7 @@ const OrchestrationSuggestions = () => {
                                 <p className="text-xs font-medium text-ink-soft uppercase tracking-wider mb-2">
                                   Contexte au déclenchement
                                 </p>
-                                <pre className="text-xs font-mono text-ink-soft bg-surface border border-line rounded-none p-3 overflow-x-auto">
+                                <pre className="text-xs font-mono text-ink-soft bg-surface border border-line rounded-lg p-3 overflow-x-auto">
                                   {formatContextJson(s.contextJson)}
                                 </pre>
                                 <p className="text-xs text-ink-soft mt-2">
@@ -265,7 +264,7 @@ const OrchestrationSuggestions = () => {
       {decision && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setDecision(null)} />
-          <div className="relative bg-surface rounded-none border border-line shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-lg border border-line shadow-2xl w-full max-w-md mx-4 p-6">
             <h3 className="text-lg font-semibold text-ink mb-2">
               {decision.action === 'approve' ? 'Approuver la suggestion' : 'Rejeter la suggestion'}
             </h3>
@@ -278,21 +277,21 @@ const OrchestrationSuggestions = () => {
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
               rows={3}
               placeholder="Motif de la décision..."
             />
             <div className="flex gap-3 pt-4">
               <button
                 onClick={() => setDecision(null)}
-                className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
+                className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={confirmDecision}
                 disabled={decide.isPending}
-                className={`flex-1 px-4 py-2 rounded-none text-sm font-medium text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 ${
+                className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors flex items-center justify-center gap-2 disabled:opacity-50 ${
                   decision.action === 'approve' ? 'bg-success hover:bg-success/90' : 'bg-danger hover:bg-danger/90'
                 }`}
               >

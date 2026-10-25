@@ -152,7 +152,6 @@ const MultiBranch = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-ink">
-          <span className="text-accent font-normal" aria-hidden="true">:: </span>
           Multi-Branche
         </h1>
         <p className="text-ink-soft mt-1">Gestion des filiales et consolidation P4.23</p>
@@ -165,9 +164,9 @@ const MultiBranch = () => {
           Chargement...
         </div>
       ) : parent ? (
-        <div className="bg-surface rounded-none border border-line p-5 mb-6">
+        <div className="bg-surface rounded-lg border border-line p-5 mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-none bg-accent-soft flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-accent-soft flex items-center justify-center">
               <Building2 size={20} className="text-accent" />
             </div>
             <div>
@@ -180,7 +179,7 @@ const MultiBranch = () => {
       ) : null}
 
       {/* Branches section */}
-      <div className="bg-surface rounded-none border border-line overflow-hidden mb-6">
+      <div className="bg-surface rounded-lg border border-line overflow-hidden mb-6">
         <div className="px-6 py-4 border-b border-line flex items-center justify-between">
           <h2 className="text-lg font-semibold text-ink">Filiales</h2>
           {canEdit() && (
@@ -189,14 +188,14 @@ const MultiBranch = () => {
                 type="text"
                 value={branchName}
                 onChange={(e) => setBranchName(e.target.value)}
-                className="px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="Nom de la filiale"
                 required
               />
               <button
                 type="submit"
                 disabled={addBranch.isPending}
-                className="flex items-center gap-1 px-3 py-2 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong disabled:opacity-50 transition-colors"
+                className="flex items-center gap-1 px-3 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong disabled:opacity-50 transition-colors"
               >
                 <Plus size={16} />
                 Ajouter
@@ -246,7 +245,7 @@ const MultiBranch = () => {
                         <button
                           onClick={() => removeBranch.mutate(b.id)}
                           disabled={removeBranch.isPending}
-                          className="p-2 text-danger hover:bg-danger/10 rounded-none transition-colors"
+                          className="p-2 text-danger hover:bg-danger/10 rounded-lg transition-colors"
                           title="Supprimer"
                         >
                           <Trash2 size={16} />
@@ -262,13 +261,13 @@ const MultiBranch = () => {
       </div>
 
       {/* Consolidated report */}
-      <div className="bg-surface rounded-none border border-line p-6 mb-6">
+      <div className="bg-surface rounded-lg border border-line p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-ink">Rapport consolidé</h2>
           <button
             onClick={handleConsolidatedReport}
             disabled={consLoading}
-            className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-none hover:bg-accent-strong disabled:opacity-50 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-accent text-white text-sm font-medium rounded-lg hover:bg-accent-strong disabled:opacity-50 transition-colors"
           >
             {consLoading ? <Loader2 size={16} className="animate-spin" /> : <BarChart3 size={16} />}
             Générer
@@ -282,19 +281,19 @@ const MultiBranch = () => {
         )}
         {consolidated && !consLoading && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-4 bg-surface-2 rounded-none">
+            <div className="p-4 bg-surface-2 rounded-lg">
               <p className="text-sm text-ink-soft">Revenu total</p>
               <p className="text-lg font-bold text-ink">{formatEUR(consolidated.totalRevenue)}</p>
             </div>
-            <div className="p-4 bg-surface-2 rounded-none">
+            <div className="p-4 bg-surface-2 rounded-lg">
               <p className="text-sm text-ink-soft">Coûts totaux</p>
               <p className="text-lg font-bold text-ink">{formatEUR(consolidated.totalCost)}</p>
             </div>
-            <div className="p-4 bg-surface-2 rounded-none">
+            <div className="p-4 bg-surface-2 rounded-lg">
               <p className="text-sm text-ink-soft">Marge totale</p>
               <p className="text-lg font-bold text-ink">{formatEUR(consolidated.totalMargin)}</p>
             </div>
-            <div className="p-4 bg-surface-2 rounded-none">
+            <div className="p-4 bg-surface-2 rounded-lg">
               <p className="text-sm text-ink-soft">Nb filiales</p>
               <p className="text-lg font-bold text-ink">{consolidated.branchCount}</p>
             </div>
@@ -303,7 +302,7 @@ const MultiBranch = () => {
       </div>
 
       {/* Inter-branch transfers */}
-      <div className="bg-surface rounded-none border border-line overflow-hidden">
+      <div className="bg-surface rounded-lg border border-line overflow-hidden">
         <div className="px-6 py-4 border-b border-line">
           <h2 className="text-lg font-semibold text-ink">Transferts inter-branches</h2>
         </div>
@@ -317,7 +316,7 @@ const MultiBranch = () => {
                 type="text"
                 value={fromBranch}
                 onChange={(e) => setFromBranch(e.target.value)}
-                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="Branche source"
                 required
               />
@@ -328,7 +327,7 @@ const MultiBranch = () => {
                 type="text"
                 value={toBranch}
                 onChange={(e) => setToBranch(e.target.value)}
-                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="Branche destination"
                 required
               />
@@ -339,7 +338,7 @@ const MultiBranch = () => {
                 type="text"
                 value={goodsDesc}
                 onChange={(e) => setGoodsDesc(e.target.value)}
-                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="Description"
                 required
               />
@@ -350,7 +349,7 @@ const MultiBranch = () => {
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-full px-3 py-2 border border-line rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-accent"
+                className="w-full px-3 py-2 border border-line rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="1"
                 min={1}
                 required
@@ -360,7 +359,7 @@ const MultiBranch = () => {
               <button
                 type="submit"
                 disabled={createTransfer.isPending}
-                className="flex items-center gap-1 px-4 py-2 bg-success text-white text-sm font-medium rounded-none hover:bg-success/90 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-1 px-4 py-2 bg-success text-white text-sm font-medium rounded-lg hover:bg-success/90 disabled:opacity-50 transition-colors"
               >
                 <ArrowRightLeft size={16} />
                 Transférer

@@ -73,7 +73,7 @@ describe("HeroShowcase", () => {
     vi.useFakeTimers();
     const { container } = render(<HeroShowcase />);
     const dots = screen.getAllByRole("button", { name: /Scène \d/ });
-    const card = container.querySelector(".bg-bg.rounded-none") as HTMLElement;
+    const card = container.querySelector(".bg-bg.rounded-lg") as HTMLElement;
 
     act(() => {
       fireEvent.mouseEnter(card);

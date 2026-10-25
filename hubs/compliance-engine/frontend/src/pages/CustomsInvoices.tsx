@@ -58,7 +58,6 @@ const CustomsInvoices = () => {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-ink">
-            <span className="text-accent font-normal" aria-hidden="true">:: </span>
             Factures douanières
           </h1>
           <p className="text-ink-soft mt-1">
@@ -67,7 +66,7 @@ const CustomsInvoices = () => {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-none hover:bg-accent-strong transition-colors"
+          className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-strong transition-colors"
         >
           <Plus size={18} />
           Générer une facture
@@ -80,13 +79,13 @@ const CustomsInvoices = () => {
           Chargement...
         </div>
       ) : invoices.length === 0 ? (
-        <div className="bg-surface rounded-none border border-line px-6 py-12 text-center text-ink-soft">
+        <div className="bg-surface rounded-lg border border-line px-6 py-12 text-center text-ink-soft">
           <FileText size={32} className="mx-auto mb-3 text-ink-soft" />
           <p>Aucune facture douanière</p>
           <p className="text-sm text-ink-soft mt-1">Générez-en une depuis une expédition existante.</p>
         </div>
       ) : (
-        <div className="bg-surface rounded-none border border-line overflow-hidden">
+        <div className="bg-surface rounded-lg border border-line overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -123,7 +122,7 @@ const CustomsInvoices = () => {
                           {formatMoney(inv.totalAmount, inv.currency)}
                         </td>
                         <td className="px-6 py-4">
-                          <span className="inline-block text-[10px] font-medium uppercase tracking-wide border rounded-none px-1.5 py-0.5 text-ink-soft border-line">
+                          <span className="inline-block text-[10px] font-medium uppercase tracking-wide border rounded-lg px-1.5 py-0.5 text-ink-soft border-line">
                             [{inv.status}]
                           </span>
                         </td>
@@ -150,7 +149,7 @@ const CustomsInvoices = () => {
                               </div>
                               <button
                                 onClick={(e) => { e.stopPropagation(); window.print(); }}
-                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-line rounded-none text-ink-soft hover:text-ink hover:bg-surface transition-colors shrink-0 ml-4"
+                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border border-line rounded-lg text-ink-soft hover:text-ink hover:bg-surface transition-colors shrink-0 ml-4"
                                 title="Imprimer cette facture (aucun PDF téléchargeable n'est généré côté serveur)"
                               >
                                 <Printer size={12} />
@@ -229,10 +228,10 @@ const CustomsInvoices = () => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowModal(false)} />
-          <div className="relative bg-surface rounded-none border border-line shadow-2xl w-full max-w-md mx-4 p-6">
+          <div className="relative bg-surface rounded-lg border border-line shadow-2xl w-full max-w-md mx-4 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-ink">Générer une facture douanière</h3>
-              <button onClick={() => setShowModal(false)} className="p-1.5 text-ink-soft hover:bg-surface-2 rounded-none transition-colors">
+              <button onClick={() => setShowModal(false)} className="p-1.5 text-ink-soft hover:bg-surface-2 rounded-lg transition-colors">
                 <X size={18} />
               </button>
             </div>
@@ -241,7 +240,7 @@ const CustomsInvoices = () => {
               type="text"
               value={selectedShipmentId}
               onChange={(e) => setSelectedShipmentId(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-none focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono mb-1"
+              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono mb-1"
               placeholder="UUID de l'expédition (saisie manuelle)"
             />
             {/* TODO(fleet-hub): remplacer par une recherche en direct des expéditions une fois
@@ -252,14 +251,14 @@ const CustomsInvoices = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 px-4 py-2 border border-line rounded-none text-sm font-medium text-ink hover:bg-bg transition-colors"
+                className="flex-1 px-4 py-2 border border-line rounded-lg text-sm font-medium text-ink hover:bg-bg transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={() => selectedShipmentId && generateMutation.mutate(selectedShipmentId)}
                 disabled={!selectedShipmentId || generateMutation.isPending}
-                className="flex-1 px-4 py-2 bg-accent text-white rounded-none text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-strong disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
               >
                 {generateMutation.isPending && <Loader2 size={14} className="animate-spin" />}
                 Générer

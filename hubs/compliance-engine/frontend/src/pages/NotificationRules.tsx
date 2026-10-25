@@ -296,7 +296,7 @@ const NotificationRules = () => {
         <div className="container mx-auto px-4">
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-surface rounded-none shadow-lg p-6 animate-pulse">
+              <div key={i} className="bg-surface rounded-lg shadow-lg p-6 animate-pulse">
                 <div className="flex items-start justify-between">
                   <div className="space-y-3 flex-1">
                     <div className="h-5 bg-surface-2 rounded w-1/3" />
@@ -322,14 +322,13 @@ const NotificationRules = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold text-ink mb-2">
-              <span className="text-accent font-normal" aria-hidden="true">:: </span>
               Règles de notification
             </h1>
             <p className="text-ink-soft">Configurez vos alertes et canaux de diffusion</p>
           </div>
           <button
             onClick={openCreate}
-            className="bg-accent text-white px-4 py-2 rounded-none hover:bg-accent-strong transition-colors flex items-center space-x-2"
+            className="bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-strong transition-colors flex items-center space-x-2"
           >
             <Plus size={20} />
             <span>Nouvelle règle</span>
@@ -348,7 +347,7 @@ const NotificationRules = () => {
             {rules.map((rule) => (
               <div
                 key={rule.id}
-                className="bg-surface rounded-none shadow-lg p-6 hover:shadow-xl transition-shadow"
+                className="bg-surface rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -421,7 +420,7 @@ const NotificationRules = () => {
                     <button
                       onClick={() => handleTest(rule)}
                       disabled={testMutation.isPending}
-                      className="p-2 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-none transition-colors disabled:opacity-50"
+                      className="p-2 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-lg transition-colors disabled:opacity-50"
                       title="Tester"
                     >
                       {testMutation.isPending ? (
@@ -444,14 +443,14 @@ const NotificationRules = () => {
                     </button>
                     <button
                       onClick={() => openEdit(rule)}
-                      className="p-2 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-none transition-colors"
+                      className="p-2 text-ink-soft hover:text-accent hover:bg-accent-soft rounded-lg transition-colors"
                       title="Modifier"
                     >
                       <Pencil size={16} />
                     </button>
                     <button
                       onClick={() => setDeleteId(rule.id)}
-                      className="p-2 text-ink-soft hover:text-danger hover:bg-danger/10 rounded-none transition-colors"
+                      className="p-2 text-ink-soft hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
                       title="Supprimer"
                     >
                       <Trash2 size={16} />
@@ -478,7 +477,7 @@ const NotificationRules = () => {
               </h2>
               <button
                 onClick={closeModal}
-                className="p-1.5 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-none transition-colors"
+                className="p-1.5 text-ink-soft hover:text-ink-soft hover:bg-surface-2 rounded-lg transition-colors"
               >
                 <X size={18} />
               </button>
@@ -497,7 +496,7 @@ const NotificationRules = () => {
                               key={tpl.id}
                               type="button"
                               onClick={() => setForm({ ...EMPTY_FORM, ...tpl.data })}
-                              className="flex items-start gap-2 text-left p-3 border border-line rounded-none hover:border-accent hover:bg-accent-soft transition-colors"
+                              className="flex items-start gap-2 text-left p-3 border border-line rounded-lg hover:border-accent hover:bg-accent-soft transition-colors"
                             >
                               <Icon size={16} className="text-accent mt-0.5 flex-shrink-0" />
                               <span>
@@ -516,7 +515,7 @@ const NotificationRules = () => {
                       type="text"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                       placeholder="Ex: Alerte changement de statut"
                     />
                   </div>
@@ -525,7 +524,7 @@ const NotificationRules = () => {
                     <select
                       value={form.eventType}
                       onChange={(e) => handleEventTypeChange(e.target.value)}
-                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
+                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent"
                     >
                       {EVENT_TYPES.map((et) => (
                         <option key={et.value} value={et.value}>{et.label}</option>
@@ -536,7 +535,7 @@ const NotificationRules = () => {
                   <div>
                     <label className="block text-sm font-medium text-ink mb-2">Canaux de diffusion *</label>
                     <div className="space-y-3">
-                      <label className="flex items-center gap-3 p-3 border border-line rounded-none hover:bg-bg cursor-pointer">
+                      <label className="flex items-center gap-3 p-3 border border-line rounded-lg hover:bg-bg cursor-pointer">
                         <input
                           type="checkbox"
                           checked={form.sendInApp}
@@ -547,7 +546,7 @@ const NotificationRules = () => {
                         <span className="text-sm font-medium text-ink">In-App</span>
                         <span className="text-xs text-ink-soft ml-auto">Notifications dans l'application</span>
                       </label>
-                      <label className="flex items-center gap-3 p-3 border border-line rounded-none hover:bg-bg cursor-pointer">
+                      <label className="flex items-center gap-3 p-3 border border-line rounded-lg hover:bg-bg cursor-pointer">
                         <input
                           type="checkbox"
                           checked={form.sendEmail}
@@ -566,13 +565,13 @@ const NotificationRules = () => {
                           <textarea
                             value={form.emailRecipients || ''}
                             onChange={(e) => setForm({ ...form, emailRecipients: e.target.value })}
-                            className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                            className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                             rows={2}
                             placeholder="email1@exemple.com, email2@exemple.com"
                           />
                         </div>
                       )}
-                      <label className="flex items-center gap-3 p-3 border border-line rounded-none hover:bg-bg cursor-pointer">
+                      <label className="flex items-center gap-3 p-3 border border-line rounded-lg hover:bg-bg cursor-pointer">
                         <input
                           type="checkbox"
                           checked={form.sendWebhook}
@@ -591,7 +590,7 @@ const NotificationRules = () => {
                               type="url"
                               value={form.webhookUrl || ''}
                               onChange={(e) => setForm({ ...form, webhookUrl: e.target.value })}
-                              className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                              className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                               placeholder="https://..."
                             />
                           </div>
@@ -601,7 +600,7 @@ const NotificationRules = () => {
                               type="password"
                               value={form.webhookSecret || ''}
                               onChange={(e) => setForm({ ...form, webhookSecret: e.target.value })}
-                              className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                              className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                               placeholder="Clé secrète pour la signature"
                             />
                           </div>
@@ -613,7 +612,7 @@ const NotificationRules = () => {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <label className="block text-sm font-medium text-ink">Condition de déclenchement</label>
-                      <div className="flex gap-1 bg-surface-2 p-0.5 rounded-none">
+                      <div className="flex gap-1 bg-surface-2 p-0.5 rounded-lg">
                         <button
                           type="button"
                           onClick={() => setConditionMode('simple')}
@@ -642,7 +641,7 @@ const NotificationRules = () => {
                           <select
                             value={form.filterStatus || ''}
                             onChange={(e) => setForm({ ...form, filterStatus: e.target.value || undefined })}
-                            className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                            className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                           >
                             <option value="">Tous les statuts</option>
                             {STATUS_OPTIONS.map((s) => (
@@ -655,7 +654,7 @@ const NotificationRules = () => {
                           <select
                             value={form.filterDataSource || ''}
                             onChange={(e) => setForm({ ...form, filterDataSource: (e.target.value || undefined) as NotificationRuleFormData['filterDataSource'] })}
-                            className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                            className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                           >
                             <option value="">Toutes provenances</option>
                             <option value="LIVE">Live uniquement (transporteur/webhook)</option>
@@ -687,7 +686,7 @@ const NotificationRules = () => {
                     <select
                       value={form.actionType || ''}
                       onChange={(e) => setForm({ ...form, actionType: e.target.value || undefined })}
-                      className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                      className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                     >
                       <option value="">Aucune (notification seule)</option>
                       {ACTION_TYPES.map((a) => (
@@ -695,7 +694,7 @@ const NotificationRules = () => {
                       ))}
                     </select>
                     {form.actionType && (
-                      <div className="mt-3 space-y-3 p-3 border border-line rounded-none bg-bg">
+                      <div className="mt-3 space-y-3 p-3 border border-line rounded-lg bg-bg">
                         <p className="text-xs text-ink-soft flex items-start gap-1.5">
                           <Zap size={14} className="text-warning shrink-0 mt-0.5" />
                           Cette règle créera une suggestion à valider manuellement — jamais d'exécution
@@ -711,7 +710,7 @@ const NotificationRules = () => {
                             onChange={(e) =>
                               setForm({ ...form, maxBudgetAmount: e.target.value === '' ? undefined : Number(e.target.value) })
                             }
-                            className="w-full border border-line rounded-none px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                            className="w-full border border-line rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-accent text-sm"
                             placeholder="Aucune limite"
                           />
                         </div>
@@ -723,14 +722,14 @@ const NotificationRules = () => {
                     <button
                       type="button"
                       onClick={closeModal}
-                      className="px-4 py-2 text-ink bg-surface-2 rounded-none hover:bg-surface-2 transition-colors"
+                      className="px-4 py-2 text-ink bg-surface-2 rounded-lg hover:bg-surface-2 transition-colors"
                     >
                       Annuler
                     </button>
                     <button
                       type="submit"
                       disabled={createMutation.isPending || updateMutation.isPending}
-                      className="px-4 py-2 bg-accent text-white rounded-none hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
+                      className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-strong transition-colors disabled:opacity-50 flex items-center space-x-2"
                     >
                       {(createMutation.isPending || updateMutation.isPending) && (
                         <Loader2 className="h-4 w-4 animate-spin" />
