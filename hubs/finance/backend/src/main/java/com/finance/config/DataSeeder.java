@@ -11,11 +11,14 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * Jeu de données de démonstration (dev). Désactivé en prod par défaut
- * ({@code app.seed.enabled=false}).
+ * ({@code app.seed.enabled=false}) -- {@link AdminBootstrap} garantit malgré
+ * tout qu'un compte admin existe dans ce cas. S'exécute AVANT ce dernier
+ * (ordre 1 &lt; 2) pour que les 3 comptes de démo soient créés en premier.
  */
 @Configuration
 @RequiredArgsConstructor
@@ -28,6 +31,7 @@ public class DataSeeder {
     private String adminPassword;
 
     @Bean
+    @Order(1)
     CommandLineRunner seed(UserRepository userRepository, CompanyRepository companyRepository) {
         return args -> {
             if (userRepository.count() > 0) return;
