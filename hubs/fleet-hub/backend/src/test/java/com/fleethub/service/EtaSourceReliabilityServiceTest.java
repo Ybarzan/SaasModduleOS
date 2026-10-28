@@ -62,7 +62,7 @@ class EtaSourceReliabilityServiceTest {
                 observation("CHN", "DEU", "SEA", base, base.minusDays(1)), // -1j (avance)
                 observation("CHN", "DEU", "SEA", base, base)               // 0j (pile à l'heure)
         );
-        when(reportedSourceRepo.findScorable(EtaReportedSource.Source.CARRIER_BOOKING)).thenReturn(observations);
+        when(reportedSourceRepo.findScorable()).thenReturn(observations);
 
         int groups = service.recomputeAll();
 
@@ -96,7 +96,7 @@ class EtaSourceReliabilityServiceTest {
                 .reportedArrival(base)
                 .build();
 
-        when(reportedSourceRepo.findScorable(EtaReportedSource.Source.CARRIER_BOOKING))
+        when(reportedSourceRepo.findScorable())
                 .thenReturn(List.of(dhlObs, maerskObs));
 
         int groups = service.recomputeAll();
@@ -109,7 +109,7 @@ class EtaSourceReliabilityServiceTest {
     @DisplayName("ligne de fiabilité déjà existante pour le groupe → mise à jour en place, pas de doublon")
     void recomputeAll_existingReliabilityRow_updatesInPlace() {
         LocalDateTime base = LocalDateTime.of(2026, 1, 1, 0, 0);
-        when(reportedSourceRepo.findScorable(EtaReportedSource.Source.CARRIER_BOOKING))
+        when(reportedSourceRepo.findScorable())
                 .thenReturn(List.of(observation("CHN", "DEU", "SEA", base, base.plusDays(3))));
 
         EtaSourceReliability existing = EtaSourceReliability.builder()
@@ -131,7 +131,7 @@ class EtaSourceReliabilityServiceTest {
     @Test
     @DisplayName("aucune observation comparable → aucun recalcul")
     void recomputeAll_noScorableObservations_doesNothing() {
-        when(reportedSourceRepo.findScorable(EtaReportedSource.Source.CARRIER_BOOKING)).thenReturn(List.of());
+        when(reportedSourceRepo.findScorable()).thenReturn(List.of());
 
         int groups = service.recomputeAll();
 

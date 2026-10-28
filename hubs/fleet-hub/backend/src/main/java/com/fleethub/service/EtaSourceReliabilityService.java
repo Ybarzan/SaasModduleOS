@@ -25,10 +25,15 @@ import java.util.UUID;
 
 /**
  * Recalcule, chaque semaine, la fiabilité réelle (transporteur x lane x mode)
- * de l'ETA annoncée au booking -- voir docs/03-plan-migration.md Phase 2
- * J3-J4. Repart de zéro à chaque run (recalcul complet, pas d'incrément) :
- * plus simple à vérifier et insensible à un double comptage, le volume de
- * données reste modeste pour ce calcul.
+ * de l'ETA annoncée -- voir docs/03-plan-migration.md Phase 2 J3-J4. Repart de
+ * zéro à chaque run (recalcul complet, pas d'incrément) : plus simple à
+ * vérifier et insensible à un double comptage, le volume de données reste
+ * modeste pour ce calcul.
+ * <p>
+ * Mélange les observations CARRIER_BOOKING (ETA annoncée au booking) et
+ * AIS_BROADCAST (ETA diffusée par le navire suivi) dans une seule mesure par
+ * groupe -- pas de ventilation par source (voir
+ * EtaReportedSourceRepository.findScorable()).
  * <p>
  * L'écart mesuré est {@code actualDeliveryDate - reportedArrival} en jours :
  * positif = livré en retard par rapport à l'ETA annoncée, négatif = en
@@ -51,7 +56,7 @@ public class EtaSourceReliabilityService {
 
     @Transactional
     public int recomputeAll() {
-        List<EtaReportedSource> scorable = reportedSourceRepo.findScorable(EtaReportedSource.Source.CARRIER_BOOKING);
+        List<EtaReportedSource> scorable = reportedSourceRepo.findScorable();
 
         Map<GroupKey, List<Long>> deviationsByGroup = new LinkedHashMap<>();
         Map<GroupKey, Company> companyByGroup = new LinkedHashMap<>();

@@ -16,9 +16,12 @@ import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -37,12 +40,19 @@ public class AisStreamService {
 
     private static final String STREAM_URL = "wss://stream.aisstream.io/v0/stream";
     private static final long STALE_AFTER_MINUTES = 20;
+    /** Les messages ShipStaticData (type 5) sont diffusés beaucoup moins
+     *  souvent que les positions (toutes les ~6 minutes selon le standard AIS,
+     *  parfois plus espacé en pratique) -- fenêtre de péremption plus large
+     *  que STALE_AFTER_MINUTES pour ne pas jeter une ETA valide simplement
+     *  parce que le navire n'a pas rediffusé ses données statiques récemment. */
+    private static final long VOYAGE_INFO_STALE_AFTER_HOURS = 6;
 
     @Value("${fleethub.tracking.aisstream.api-key:}")
     private String apiKey;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final Map<String, LiveVesselPosition> positions = new ConcurrentHashMap<>();
+    private final Map<String, VesselVoyageInfo> voyageInfo = new ConcurrentHashMap<>();
     private volatile WebSocketSession session;
 
     public record LiveVesselPosition(
@@ -53,6 +63,18 @@ public class AisStreamService {
             Double speedKnots,
             Double course,
             Integer heading,
+            LocalDateTime updatedAt
+    ) {}
+
+    /** Infos de voyage diffusées par le navire lui-même (message ShipStaticData,
+     *  AIS type 5) -- destination et ETA telles que RAPPORTÉES par le navire,
+     *  jamais calculées par ce système (voir javadoc d'EtaReportedSource.Source.AIS_BROADCAST).
+     *  broadcastEta est déjà résolue en date complète (voir resolveBroadcastEta) --
+     *  null si l'ETA diffusée est absente ou vaut le sentinel AIS "non disponible". */
+    public record VesselVoyageInfo(
+            String mmsi,
+            String destination,
+            LocalDateTime broadcastEta,
             LocalDateTime updatedAt
     ) {}
 
@@ -102,6 +124,9 @@ public class AisStreamService {
     public void pruneStale() {
         LocalDateTime cutoff = LocalDateTime.now().minus(STALE_AFTER_MINUTES, ChronoUnit.MINUTES);
         positions.entrySet().removeIf(e -> e.getValue().updatedAt().isBefore(cutoff));
+
+        LocalDateTime voyageCutoff = LocalDateTime.now().minus(VOYAGE_INFO_STALE_AFTER_HOURS, ChronoUnit.HOURS);
+        voyageInfo.entrySet().removeIf(e -> e.getValue().updatedAt().isBefore(voyageCutoff));
     }
 
     public Map<String, LiveVesselPosition> getPositions(double latMin, double latMax, double lonMin, double lonMax) {
@@ -114,6 +139,58 @@ public class AisStreamService {
             }
         });
         return result;
+    }
+
+    /** ETA que le navire identifié par ce MMSI diffuse lui-même via AIS, si
+     *  connue et non périmée -- voir VesselVoyageInfo. Utilisé par
+     *  AisEtaCaptureService pour les expéditions liées à un navire suivi
+     *  (ShipmentOrder.trackedVesselMmsi). */
+    public Optional<LocalDateTime> getBroadcastEta(String mmsi) {
+        if (mmsi == null) return Optional.empty();
+        VesselVoyageInfo info = voyageInfo.get(mmsi);
+        return info != null ? Optional.ofNullable(info.broadcastEta()) : Optional.empty();
+    }
+
+    /**
+     * Résout l'ETA diffusée par un navire (AIS type 5, champs Month/Day/Hour/Minute
+     * -- pas d'année, limite du standard AIS ITU) en une date complète. Les
+     * sentinelles AIS "non disponible" (Month=0, Day=0, Hour=24, Minute=60) et
+     * toute valeur hors plage renvoient null plutôt qu'une date fausse. Comme
+     * l'année n'est jamais diffusée, suppose l'occurrence la plus proche dans le
+     * futur : si le mois/jour semble déjà passé de plus d'une semaine cette
+     * année (marge pour tolérer un peu de retard de mise à jour), on suppose
+     * l'année suivante.
+     */
+    static LocalDateTime resolveBroadcastEta(JsonNode etaNode) {
+        if (etaNode == null || etaNode.isMissingNode()) return null;
+        int month = etaNode.path("Month").asInt(-1);
+        int day = etaNode.path("Day").asInt(-1);
+        int hour = etaNode.path("Hour").asInt(-1);
+        int minute = etaNode.path("Minute").asInt(-1);
+
+        if (month < 1 || month > 12 || day < 1 || day > 31 || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+            return null;
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate candidate;
+        try {
+            candidate = LocalDate.of(today.getYear(), month, day);
+        } catch (Exception e) {
+            return null; // date invalide (ex. 30 février) -- jamais une ETA fausse
+        }
+        long diffDays = ChronoUnit.DAYS.between(today, candidate);
+        if (diffDays < -7) {
+            // Mois/jour déjà passés cette année (hors marge) -- le navire parle probablement
+            // de l'année prochaine.
+            candidate = candidate.plusYears(1);
+        } else if (diffDays > 300) {
+            // À l'inverse, début janvier avec une ETA de fin décembre : interprétée avec
+            // l'année courante, la date tomberait presque un an dans le futur -- elle
+            // parlait en fait de l'année précédente (ex. aujourd'hui 2 janvier, ETA 30 décembre).
+            candidate = candidate.minusYears(1);
+        }
+        return LocalDateTime.of(candidate, LocalTime.of(hour, minute));
     }
 
     private void openConnection() {
@@ -144,7 +221,7 @@ public class AisStreamService {
             Map<String, Object> subscription = Map.of(
                     "APIKey", apiKey,
                     "BoundingBoxes", new double[][][]{{{-90, -180}, {90, 180}}},
-                    "FilterMessageTypes", new String[]{"PositionReport"}
+                    "FilterMessageTypes", new String[]{"PositionReport", "ShipStaticData"}
             );
             newSession.sendMessage(new TextMessage(objectMapper.writeValueAsString(subscription)));
         }
@@ -163,26 +240,47 @@ public class AisStreamService {
             try {
                 JsonNode root = objectMapper.readTree(payload);
                 JsonNode meta = root.path("MetaData");
-                JsonNode report = root.path("Message").path("PositionReport");
-                if (meta.isMissingNode() || report.isMissingNode()) return;
+                if (meta.isMissingNode()) return;
 
                 String mmsi = meta.path("MMSI").asText(null);
                 if (mmsi == null || mmsi.isBlank()) return;
 
-                LiveVesselPosition pos = new LiveVesselPosition(
-                        mmsi,
-                        meta.path("ShipName").asText("").trim(),
-                        report.has("Latitude") ? report.get("Latitude").asDouble() : null,
-                        report.has("Longitude") ? report.get("Longitude").asDouble() : null,
-                        report.has("Sog") ? report.get("Sog").asDouble() : null,
-                        report.has("Cog") ? report.get("Cog").asDouble() : null,
-                        report.has("TrueHeading") ? report.get("TrueHeading").asInt() : null,
-                        LocalDateTime.now()
-                );
-                positions.put(mmsi, pos);
+                JsonNode positionReport = root.path("Message").path("PositionReport");
+                if (!positionReport.isMissingNode()) {
+                    processPositionReport(mmsi, meta, positionReport);
+                }
+
+                JsonNode shipStaticData = root.path("Message").path("ShipStaticData");
+                if (!shipStaticData.isMissingNode()) {
+                    processShipStaticData(mmsi, shipStaticData);
+                }
             } catch (Exception e) {
                 log.warn("[AisStream] Message illisible ignoré: {}", e.getMessage());
             }
+        }
+
+        private void processPositionReport(String mmsi, JsonNode meta, JsonNode report) {
+            LiveVesselPosition pos = new LiveVesselPosition(
+                    mmsi,
+                    meta.path("ShipName").asText("").trim(),
+                    report.has("Latitude") ? report.get("Latitude").asDouble() : null,
+                    report.has("Longitude") ? report.get("Longitude").asDouble() : null,
+                    report.has("Sog") ? report.get("Sog").asDouble() : null,
+                    report.has("Cog") ? report.get("Cog").asDouble() : null,
+                    report.has("TrueHeading") ? report.get("TrueHeading").asInt() : null,
+                    LocalDateTime.now()
+            );
+            positions.put(mmsi, pos);
+        }
+
+        private void processShipStaticData(String mmsi, JsonNode shipStaticData) {
+            String destination = shipStaticData.path("Destination").asText(null);
+            LocalDateTime broadcastEta = AisStreamService.resolveBroadcastEta(shipStaticData.path("Eta"));
+            voyageInfo.put(mmsi, new VesselVoyageInfo(
+                    mmsi,
+                    destination != null && !destination.isBlank() ? destination.trim() : null,
+                    broadcastEta,
+                    LocalDateTime.now()));
         }
 
         @Override

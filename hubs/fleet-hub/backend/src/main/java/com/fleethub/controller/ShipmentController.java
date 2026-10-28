@@ -77,6 +77,17 @@ public class ShipmentController {
 
     public record AssignClientReq(UUID clientId) {}
 
+    @PatchMapping("/{id}/vessel")
+    @Operation(summary = "Lier (ou délier) une expédition à un navire suivi par MMSI")
+    public ResponseEntity<ShipmentOrder> assignVessel(
+            @PathVariable UUID id,
+            @RequestBody AssignVesselReq req) {
+        Long companyId = TenantContext.companyId();
+        return ResponseEntity.ok(shipmentService.assignVessel(id, req.mmsi(), companyId));
+    }
+
+    public record AssignVesselReq(String mmsi) {}
+
     @DeleteMapping("/{id}")
     @Operation(summary = "Supprimer une expédition")
     public ResponseEntity<Void> deleteShipment(@PathVariable UUID id) {
