@@ -156,4 +156,12 @@ class WooCommerceAdapterTest {
 
     // mapOrderToShipment a été retirée avec le domaine Transport
     // (voir ECommerceAdapter / ECommerceSyncService) — ses tests partaient avec elle.
+
+    @Test
+    @DisplayName("markOrderShipped/pushEta → échec explicite, non implémenté pour WooCommerce")
+    void markOrderShippedAndPushEta_notImplemented() {
+        var integration = integration("https://shop.example.com/", "key", "secret");
+        assertThat(adapter.markOrderShipped(integration, "1001", "TRACK", "DHL", true).success()).isFalse();
+        assertThat(adapter.pushEta(integration, "1001", java.time.LocalDateTime.now()).success()).isFalse();
+    }
 }

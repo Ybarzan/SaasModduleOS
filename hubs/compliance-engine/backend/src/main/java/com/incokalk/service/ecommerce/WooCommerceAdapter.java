@@ -94,4 +94,19 @@ public class WooCommerceAdapter implements ECommerceAdapter {
         headers.set("Authorization", "Basic " + encoded);
         return headers;
     }
+
+    // markOrderShipped/pushEta (Phase 1 J4) non implémentées pour WooCommerce
+    // -- voir ECommerceAdapter.markOrderShipped pour le pourquoi (vérifié
+    // uniquement pour Shopify dans cette passe). Échec explicite plutôt
+    // qu'un faux succès.
+    @Override
+    public PushResult markOrderShipped(ECommerceIntegration integration, String externalOrderId,
+                                        String trackingNumber, String carrierName, boolean notifyCustomer) {
+        return PushResult.fail("markOrderShipped non implémenté pour WooCommerce");
+    }
+
+    @Override
+    public PushResult pushEta(ECommerceIntegration integration, String externalOrderId, java.time.LocalDateTime estimatedDeliveryDate) {
+        return PushResult.fail("pushEta non implémenté pour WooCommerce");
+    }
 }

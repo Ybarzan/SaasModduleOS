@@ -3,6 +3,7 @@ package com.incokalk.controller;
 import com.incokalk.model.ECommerceIntegration;
 import com.incokalk.model.ECommerceSyncLog;
 import com.incokalk.service.ECommerceSyncService;
+import com.incokalk.service.ecommerce.ECommerceAdapter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -168,5 +169,65 @@ class ECommerceControllerTest extends ControllerTestBase {
         mockMvc.perform(delete("/v1/ecommerce/integrations/" + integrationId)
                         .header("Authorization", authHeader()))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("POST /v1/ecommerce/integrations/{id}/orders/{externalOrderId}/mark-shipped → délègue à l'adaptateur résolu")
+    void markOrderShipped() throws Exception {
+        UUID integrationId = UUID.randomUUID();
+        ECommerceIntegration integration = ECommerceIntegration.builder()
+                .id(integrationId).platform(ECommerceIntegration.Platform.SHOPIFY).build();
+        ECommerceAdapter adapter = org.mockito.Mockito.mock(ECommerceAdapter.class);
+
+        when(syncService.findIntegrationById(eq(integrationId), any())).thenReturn(java.util.Optional.of(integration));
+        when(syncService.resolveAdapter(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(adapter);
+        when(adapter.markOrderShipped(integration, "1001", "TRACK123", "DHL", true))
+                .thenReturn(ECommerceAdapter.PushResult.ok("Fulfillment créé"));
+
+        mockMvc.perform(post("/v1/ecommerce/integrations/" + integrationId + "/orders/1001/mark-shipped")
+                        .header("Authorization", authHeader())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"trackingNumber\":\"TRACK123\",\"carrierName\":\"DHL\",\"notifyCustomer\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @DisplayName("POST .../mark-shipped → échec explicite quand aucun adaptateur ne gère la plateforme")
+    void markOrderShipped_noAdapter() throws Exception {
+        UUID integrationId = UUID.randomUUID();
+        ECommerceIntegration integration = ECommerceIntegration.builder()
+                .id(integrationId).platform(ECommerceIntegration.Platform.PRESTASHOP).build();
+
+        when(syncService.findIntegrationById(eq(integrationId), any())).thenReturn(java.util.Optional.of(integration));
+        when(syncService.resolveAdapter(ECommerceIntegration.Platform.PRESTASHOP)).thenReturn(null);
+
+        mockMvc.perform(post("/v1/ecommerce/integrations/" + integrationId + "/orders/1001/mark-shipped")
+                        .header("Authorization", authHeader())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    @DisplayName("POST /v1/ecommerce/integrations/{id}/orders/{externalOrderId}/eta → délègue à l'adaptateur résolu")
+    void pushEta() throws Exception {
+        UUID integrationId = UUID.randomUUID();
+        ECommerceIntegration integration = ECommerceIntegration.builder()
+                .id(integrationId).platform(ECommerceIntegration.Platform.SHOPIFY).build();
+        ECommerceAdapter adapter = org.mockito.Mockito.mock(ECommerceAdapter.class);
+
+        when(syncService.findIntegrationById(eq(integrationId), any())).thenReturn(java.util.Optional.of(integration));
+        when(syncService.resolveAdapter(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(adapter);
+        when(adapter.pushEta(eq(integration), eq("1001"), any()))
+                .thenReturn(ECommerceAdapter.PushResult.ok("Metafield écrit"));
+
+        mockMvc.perform(post("/v1/ecommerce/integrations/" + integrationId + "/orders/1001/eta")
+                        .header("Authorization", authHeader())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"estimatedDeliveryDate\":\"2026-11-15T00:00:00\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
     }
 }

@@ -105,6 +105,45 @@ public class ECommerceController {
         return ResponseEntity.ok(orders);
     }
 
+    @PostMapping("/integrations/{id}/orders/{externalOrderId}/mark-shipped")
+    @RolesAllowed({com.incokalk.model.CompanyRole.Role.OWNER, com.incokalk.model.CompanyRole.Role.ADMIN, com.incokalk.model.CompanyRole.Role.MANAGER})
+    @Operation(summary = "Marquer une commande comme expédiée chez le marchand (Phase 1 J4) -- "
+            + "externalOrderId est l'id de la commande côté plateforme, à résoudre par l'appelant : "
+            + "aucune table ne relie aujourd'hui une expédition fleet-hub à sa commande d'origine")
+    public ResponseEntity<ECommerceAdapter.PushResult> markOrderShipped(
+            @PathVariable UUID id,
+            @PathVariable String externalOrderId,
+            @Valid @RequestBody MarkShippedRequest request,
+            HttpServletRequest httpReq) {
+        UUID companyId = TenantContext.get();
+        ECommerceIntegration integration = syncService.findIntegrationById(id, companyId)
+            .orElseThrow(() -> new RuntimeException("Integration not found"));
+        ECommerceAdapter adapter = syncService.resolveAdapter(integration.getPlatform());
+        if (adapter == null) {
+            return ResponseEntity.ok(ECommerceAdapter.PushResult.fail("Aucun adaptateur pour " + integration.getPlatform()));
+        }
+        return ResponseEntity.ok(adapter.markOrderShipped(integration, externalOrderId,
+                request.getTrackingNumber(), request.getCarrierName(), Boolean.TRUE.equals(request.getNotifyCustomer())));
+    }
+
+    @PostMapping("/integrations/{id}/orders/{externalOrderId}/eta")
+    @RolesAllowed({com.incokalk.model.CompanyRole.Role.OWNER, com.incokalk.model.CompanyRole.Role.ADMIN, com.incokalk.model.CompanyRole.Role.MANAGER})
+    @Operation(summary = "Pousser l'ETA courante sur la commande d'origine (Phase 1 J4)")
+    public ResponseEntity<ECommerceAdapter.PushResult> pushEta(
+            @PathVariable UUID id,
+            @PathVariable String externalOrderId,
+            @Valid @RequestBody PushEtaRequest request,
+            HttpServletRequest httpReq) {
+        UUID companyId = TenantContext.get();
+        ECommerceIntegration integration = syncService.findIntegrationById(id, companyId)
+            .orElseThrow(() -> new RuntimeException("Integration not found"));
+        ECommerceAdapter adapter = syncService.resolveAdapter(integration.getPlatform());
+        if (adapter == null) {
+            return ResponseEntity.ok(ECommerceAdapter.PushResult.fail("Aucun adaptateur pour " + integration.getPlatform()));
+        }
+        return ResponseEntity.ok(adapter.pushEta(integration, externalOrderId, request.getEstimatedDeliveryDate()));
+    }
+
     @GetMapping("/sync-log")
     @RolesAllowed({com.incokalk.model.CompanyRole.Role.OWNER, com.incokalk.model.CompanyRole.Role.ADMIN, com.incokalk.model.CompanyRole.Role.MANAGER})
     @Operation(summary = "Historique des synchronisations")
@@ -132,5 +171,18 @@ public class ECommerceController {
         private String webhookSecret;
         private Boolean isActive;
         private Integer syncFrequencyMin;
+    }
+
+    @Data
+    public static class MarkShippedRequest {
+        private String trackingNumber;
+        private String carrierName;
+        private Boolean notifyCustomer;
+    }
+
+    @Data
+    public static class PushEtaRequest {
+        @jakarta.validation.constraints.NotNull
+        private java.time.LocalDateTime estimatedDeliveryDate;
     }
 }
