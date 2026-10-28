@@ -11,11 +11,13 @@ import java.util.List;
 
 /**
  * Résumé d'une expédition fleet-hub, limité aux champs dont
- * {@code CustomsInvoiceGeneratorService.generateInvoice()} a besoin. Mappé
- * directement depuis la réponse JSON de {@code GET /api/shipments/{id}} de
- * fleet-hub (en-tête) et de {@code GET /api/shipments/{id}/items} (lignes) --
- * les noms de champs correspondent exactement à ceux de l'entité ShipmentOrder/
- * ShipmentItem de fleet-hub, {@code @JsonIgnoreProperties} ignore le reste.
+ * {@code CustomsInvoiceGeneratorService.generateInvoice()} et
+ * {@code OrchestrationExecutor} ont besoin. Mappé directement depuis la
+ * réponse JSON de {@code GET /api/internal/shipments/{id}} de fleet-hub
+ * (en-tête -- qui sérialise l'entité ShipmentOrder complète) et de
+ * {@code .../items} (lignes) -- les noms de champs correspondent exactement
+ * à ceux de ShipmentOrder/ShipmentItem de fleet-hub, {@code @JsonIgnoreProperties}
+ * ignore le reste de ce qui est effectivement renvoyé.
  */
 @Data
 @Builder
@@ -42,6 +44,18 @@ public class ShipmentSummary {
     private Double weightKg;
     private Integer packagesCount;
     private String incotermCode;
+
+    /** UUID du transporteur fleet-hub (carrierId dans sa réponse JSON) -- null
+     *  si l'expédition est livrée en interne (flotte propre, pas de carrier).
+     *  Nécessaire à OrchestrationExecutor pour le contrôle de gouvernance
+     *  allowedCarrierIds (voir NotificationRule). */
+    private java.util.UUID carrierId;
+    private String carrierName;
+
+    /** Coûts de l'expédition -- nécessaires au contrôle de gouvernance
+     *  maxBudgetAmount (voir OrchestrationExecutor). */
+    private Double quotedCost;
+    private Double finalCost;
 
     @Builder.Default
     private List<Item> items = List.of();

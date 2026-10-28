@@ -84,6 +84,12 @@ public class OrchestrationSuggestion {
         APPROVED,
         REJECTED,
         EXECUTED,
-        FAILED
+        FAILED,
+        /** Expédition réelle + gouvernance vérifiées avec succès, mais aucun
+         *  connecteur d'export automatique vers l'ERP n'existe encore (voir
+         *  OrchestrationExecutor) -- l'ajustement décrit dans executionResult
+         *  doit être fait à la main. Jamais EXECUTED : ce serait prétendre
+         *  qu'un appel ERP a eu lieu alors qu'aucun n'a été fait. */
+        NEEDS_MANUAL_EXPORT
     }
 }
