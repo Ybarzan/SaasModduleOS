@@ -13,4 +13,5 @@ public interface CompanyRepository extends JpaRepository<Company, UUID> {
     boolean existsBySlug(String slug);
     Optional<Company> findByReferralCode(String referralCode);
     boolean existsByReferralCode(String referralCode);
+    Optional<Company> findByFleethubWebhookKeyHashAndFleethubWebhookEnabledTrue(String fleethubWebhookKeyHash);
 }

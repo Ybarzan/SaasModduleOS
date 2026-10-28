@@ -1,5 +1,8 @@
 package com.incokalk.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.incokalk.dto.integration.fleethub.FleetHubShipmentEventRequest;
+import com.incokalk.dto.notification.SendNotificationDTO;
 import com.incokalk.model.EventOutbox;
 import com.incokalk.repository.EventOutboxRepository;
 import com.incokalk.scheduling.DistributedJobLock;
@@ -12,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Livre les evenements ecrits dans event_outbox (V63) par EventPublisher.
@@ -33,6 +38,8 @@ public class EventOutboxProcessor {
 
     private final EventOutboxRepository eventOutboxRepo;
     private final DistributedJobLock jobLock;
+    private final NotificationService notificationService;
+    private final ObjectMapper objectMapper;
 
     @Scheduled(fixedDelay = 30000)
     public void processPendingEvents() {
@@ -71,15 +78,58 @@ public class EventOutboxProcessor {
     }
 
     /**
-     * Les deux seuls types d'evenement outbox existants (SHIPMENT_STATUS_CHANGE,
-     * SHIPMENT_CREATED) etaient ecrits par EventPublisher, appele depuis
-     * ShipmentService -- les deux retires avec le domaine Transport. Aucun type
-     * d'evenement n'est donc actuellement produit ; cette methode rejette tout ce
-     * qu'elle recoit, en attendant qu'un futur type d'evenement (hors Transport)
-     * soit branche.
+     * SHIPMENT_STATUS_CHANGE/SHIPMENT_CREATED etaient ecrits par EventPublisher,
+     * appele depuis ShipmentService -- retire avec le domaine Transport (V75).
+     * FLEETHUB_* restaure un producteur reel (hors Transport) : fleet-hub, qui
+     * possede desormais ShipmentOrder/TrackingEvent, pousse ces evenements via
+     * webhook (voir FleetHubEventWebhookController/FleetHubWebhookService). Le
+     * eventType passe a processEvent() reste "SHIPMENT_STATUS_CHANGE"/
+     * "SHIPMENT_CREATED" (sans prefixe) : toute NotificationRule configuree avec
+     * ces valeurs avant le retrait du domaine Transport redevient donc
+     * fonctionnelle sans que l'utilisateur ait quoi que ce soit a reconfigurer.
      */
     private void dispatch(EventOutbox event) throws Exception {
-        throw new IllegalArgumentException("Type d'evenement outbox inconnu: " + event.getEventType());
+        switch (event.getEventType()) {
+            case "FLEETHUB_SHIPMENT_STATUS_CHANGE" -> handleShipmentStatusChange(event);
+            case "FLEETHUB_SHIPMENT_CREATED" -> handleShipmentCreated(event);
+            default -> throw new IllegalArgumentException("Type d'evenement outbox inconnu: " + event.getEventType());
+        }
+    }
+
+    private void handleShipmentStatusChange(EventOutbox event) throws Exception {
+        FleetHubShipmentEventRequest payload = objectMapper.readValue(
+                event.getPayload(), FleetHubShipmentEventRequest.class);
+
+        Map<String, String> templateData = new HashMap<>();
+        templateData.put("orderNumber", payload.orderNumber());
+        templateData.put("oldStatus", payload.oldStatus());
+        templateData.put("newStatus", payload.newStatus());
+        templateData.put("dataSource", payload.dataSource());
+
+        notificationService.processEvent(SendNotificationDTO.builder()
+                .eventType("SHIPMENT_STATUS_CHANGE")
+                .companyId(event.getCompanyId())
+                .entityType("SHIPMENT")
+                .entityId(payload.shipmentId())
+                .title("Expédition " + payload.orderNumber() + " — changement de statut")
+                .message(payload.oldStatus() + " → " + payload.newStatus())
+                .templateData(templateData)
+                .build());
+    }
+
+    private void handleShipmentCreated(EventOutbox event) throws Exception {
+        FleetHubShipmentEventRequest payload = objectMapper.readValue(
+                event.getPayload(), FleetHubShipmentEventRequest.class);
+
+        notificationService.processEvent(SendNotificationDTO.builder()
+                .eventType("SHIPMENT_CREATED")
+                .companyId(event.getCompanyId())
+                .entityType("SHIPMENT")
+                .entityId(payload.shipmentId())
+                .title("Nouvelle expédition " + payload.orderNumber())
+                .message("Expédition " + payload.orderNumber() + " créée sur fleet-hub")
+                .templateData(Map.of("orderNumber", payload.orderNumber()))
+                .build());
     }
 
     private String truncate(String s, int max) {
