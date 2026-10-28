@@ -4,8 +4,12 @@ import com.fleethub.config.EtaMlConfig;
 import com.fleethub.config.ResourceNotFoundException;
 import com.fleethub.model.Company;
 import com.fleethub.model.EtaPrediction;
+import com.fleethub.model.EtaSourceReliability;
+import com.fleethub.model.ShipmentOrder;
 import com.fleethub.repository.CompanyRepository;
 import com.fleethub.repository.EtaPredictionRepository;
+import com.fleethub.repository.EtaSourceReliabilityRepository;
+import com.fleethub.repository.ShipmentOrderRepository;
 import com.fleethub.security.TenantContext;
 import com.fleethub.service.ml.EtaMlClient;
 import com.fleethub.service.ml.EtaRegressionModel;
@@ -32,6 +36,15 @@ public class EtaPredictionService {
     private final EtaTrainingService etaTrainingService;
     private final EtaMlClient etaMlClient;
     private final EtaMlConfig etaMlConfig;
+    private final ShipmentOrderRepository shipmentRepo;
+    private final EtaSourceReliabilityRepository reliabilityRepo;
+
+    /** Nombre minimal d'observations réelles avant de faire confiance à une
+     *  fiabilité mesurée plutôt qu'à l'heuristique seule -- voir
+     *  applyReliabilityWeighting(). Proxy simple pour "au moins 4 semaines de
+     *  données" (docs/03-plan-migration.md Phase 2 J3-J4) : ce service ne
+     *  connaît pas l'âge des observations, seulement leur nombre. */
+    private static final int MIN_RELIABILITY_SAMPLES = 20;
 
     private static final Map<String, Integer> BASE_TRANSIT_DAYS = Map.ofEntries(
             Map.entry("SEA_DEFAULT", 30),
@@ -84,11 +97,21 @@ public class EtaPredictionService {
 
     @Transactional
     public EtaPrediction predict(EtaPrediction prediction) {
+        return predict(prediction, null);
+    }
+
+    /** @param shipmentId si renseigné, rattache la prédiction à une expédition réelle
+     *  -- seul cas où applyReliabilityWeighting() peut s'appliquer (voir son javadoc). */
+    @Transactional
+    public EtaPrediction predict(EtaPrediction prediction, UUID shipmentId) {
         Long companyId = TenantContext.companyId();
         Company company = companyRepo.findById(companyId)
                 .orElseThrow(() -> new ResourceNotFoundException("Entreprise non trouvée"));
 
         prediction.setCompany(company);
+        if (shipmentId != null) {
+            shipmentRepo.findByIdAndCompanyId(shipmentId, companyId).ifPresent(prediction::setShipment);
+        }
 
         String mode = prediction.getMode() != null ? prediction.getMode() : "SEA";
         int baseDays = calculateLaneBaseDays(prediction.getOrigin(), prediction.getDestination(), mode);
@@ -111,7 +134,7 @@ public class EtaPredictionService {
             prediction.setVarianceDays(predictedDays - prediction.getCarrierEstimateDays());
         }
 
-        BigDecimal confidence = calculateConfidence(prediction);
+        BigDecimal confidence = calculateConfidence(companyId, prediction);
         prediction.setConfidencePercent(confidence);
 
         if (confidence.compareTo(BigDecimal.valueOf(80)) > 0) {
@@ -369,7 +392,7 @@ public class EtaPredictionService {
         return 1;
     }
 
-    private BigDecimal calculateConfidence(EtaPrediction prediction) {
+    private BigDecimal calculateConfidence(Long companyId, EtaPrediction prediction) {
         BigDecimal confidence = BigDecimal.valueOf(85);
 
         if (prediction.getCarrierEstimateDays() != null && prediction.getVarianceDays() != null) {
@@ -395,6 +418,62 @@ public class EtaPredictionService {
         }
 
         confidence = confidence.max(BigDecimal.valueOf(20)).min(BigDecimal.valueOf(98));
+        confidence = applyReliabilityWeighting(companyId, prediction, confidence);
         return confidence.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Pondère la confiance heuristique par la fiabilité réelle mesurée
+     * (EtaSourceReliabilityService), quand il y a assez d'historique --
+     * jamais sinon (voir MIN_RELIABILITY_SAMPLES), pour ne jamais prétendre
+     * un score mesuré alors que la donnée est insuffisante.
+     * <p>
+     * Ne s'applique qu'aux prédictions rattachées à une expédition réelle
+     * (prediction.getShipment() != null) : c'est la seule façon d'obtenir un
+     * transporteur et une lane dans le même vocabulaire que ce que
+     * EtaSourceReliabilityService a mesuré (pays libres saisis côté
+     * ShipmentOrder, sans rapport garanti avec les codes UN/LOCODE
+     * origin/destination utilisés par ce service pour l'heuristique de base).
+     * Une prédiction ad hoc (lane hypothétique, sans expédition réelle) n'a
+     * pas de repère fiable à comparer et reste sur l'heuristique seule.
+     * <p>
+     * La formule ci-dessous est un point de départ raisonnable et borné
+     * comme l'heuristique existante -- pas calibrée par l'A/B interne prévu
+     * par le plan (docs/03-plan-migration.md Phase 2 J5 : comparer l'ancien
+     * score au nouveau sur 90 jours réels de production, MAE mesurée --
+     * données indisponibles dans cet environnement).
+     */
+    private BigDecimal applyReliabilityWeighting(Long companyId, EtaPrediction prediction, BigDecimal heuristicConfidence) {
+        ShipmentOrder shipment = prediction.getShipment();
+        if (shipment == null || shipment.getCarrier() == null
+                || shipment.getShipperCountry() == null || shipment.getConsigneeCountry() == null) {
+            return heuristicConfidence;
+        }
+
+        Optional<EtaSourceReliability> reliability = reliabilityRepo
+                .findByCompanyIdAndCarrierIdAndOriginCountryAndDestinationCountryAndTransportMode(
+                        companyId, shipment.getCarrier().getId(),
+                        shipment.getShipperCountry(), shipment.getConsigneeCountry(), shipment.getTransportMode());
+        if (reliability.isEmpty()) {
+            return heuristicConfidence;
+        }
+
+        EtaSourceReliability r = reliability.get();
+        if (r.getSampleCount() == null || r.getSampleCount() < MIN_RELIABILITY_SAMPLES) {
+            return heuristicConfidence;
+        }
+
+        BigDecimal mad = r.getMeanAbsoluteDeviationDays() != null ? r.getMeanAbsoluteDeviationDays() : BigDecimal.ZERO;
+        BigDecimal measuredConfidence = BigDecimal.valueOf(95)
+                .subtract(mad.multiply(BigDecimal.valueOf(4)))
+                .max(BigDecimal.valueOf(20)).min(BigDecimal.valueOf(98));
+
+        // Poids croissant avec le nombre d'échantillons, plein poids à partir de 5x le seuil minimal.
+        double weight = Math.min(1.0,
+                (r.getSampleCount() - MIN_RELIABILITY_SAMPLES) / (double) (MIN_RELIABILITY_SAMPLES * 4));
+        BigDecimal blended = heuristicConfidence.multiply(BigDecimal.valueOf(1 - weight))
+                .add(measuredConfidence.multiply(BigDecimal.valueOf(weight)));
+
+        return blended.max(BigDecimal.valueOf(20)).min(BigDecimal.valueOf(98));
     }
 }
