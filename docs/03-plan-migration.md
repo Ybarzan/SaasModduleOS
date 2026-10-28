@@ -32,7 +32,7 @@ gantt
 |---|---|---|
 | J1 | Schéma `ShipmentEvent` défini + table event store (partitionnée `company_id`) | Migration Flyway V60 revue, ADR (Architecture Decision Record) validé |
 | J2 | Les 5 `CarrierAdapter` + 2 `ErpProvider` + `ShopifyAdapter` publient dans l'event store en plus de leur comportement actuel (double écriture) | Tests de non-régression backend verts, aucun endpoint existant modifié |
-| J3 | Flag `dataSource: LIVE\|SIMULATED` propagé jusqu'au frontend | Le badge est visible sur `ShipTracker.tsx` et toute vue tracking |
+| J3 | Flag `dataSource: LIVE\|SIMULATED` propagé jusqu'au frontend | Le badge est visible sur `ShipTracker.tsx` et toute vue tracking — **fait, mais côté fleet-hub** : le domaine transport (réservations transporteur, tracking) a été déplacé de compliance-engine vers fleet-hub (migration `V75__drop_transport_domain.sql`) après l'écriture de ce plan, ce qui explique l'absence de `ShipTracker.tsx` dans compliance-engine aujourd'hui. `CarrierBookingRequest.simulated` et `TrackingEvent.dataSource` sont correctement remplis côté backend fleet-hub et affichés (`CarrierBookings.jsx`, `Shipments.jsx`, `ClientShipmentDetail.jsx`) |
 | J4 | `ECommerceAdapter.pushOrderStatus/pushEta` implémenté pour Shopify | Un changement de statut IncoKalk se reflète dans Shopify sous 5 min |
 | J5-J6 | Bascule des lectures existantes (dashboard, portail client) de la lecture directe des tables vers des projections issues de l'event store | Dashboard et portail client passent aux nouvelles projections, ancien chemin de lecture retiré |
 
