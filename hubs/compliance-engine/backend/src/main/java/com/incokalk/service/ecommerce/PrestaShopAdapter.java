@@ -173,4 +173,19 @@ public class PrestaShopAdapter implements ECommerceAdapter {
             return 0.0;
         }
     }
+
+    // markOrderShipped/pushEta (Phase 1 J4) non implémentées pour PrestaShop
+    // -- voir ECommerceAdapter.markOrderShipped pour le pourquoi (vérifié
+    // uniquement pour Shopify dans cette passe). Échec explicite plutôt
+    // qu'un faux succès.
+    @Override
+    public PushResult markOrderShipped(ECommerceIntegration integration, String externalOrderId,
+                                        String trackingNumber, String carrierName, boolean notifyCustomer) {
+        return PushResult.fail("markOrderShipped non implémenté pour PrestaShop");
+    }
+
+    @Override
+    public PushResult pushEta(ECommerceIntegration integration, String externalOrderId, LocalDateTime estimatedDeliveryDate) {
+        return PushResult.fail("pushEta non implémenté pour PrestaShop");
+    }
 }

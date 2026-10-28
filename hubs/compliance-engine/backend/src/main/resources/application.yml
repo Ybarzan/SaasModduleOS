@@ -176,6 +176,12 @@ incokalk:
     email:
       from-address: noreply@incokalk.com
 
+  rules:
+    nl-translation:
+      api-key: ${RULE_TRANSLATION_API_KEY:}
+      base-url: ${RULE_TRANSLATION_BASE_URL:https://api.anthropic.com}
+      model: ${RULE_TRANSLATION_MODEL:}
+
   stripe:
     secret-key: ${STRIPE_SECRET_KEY:}
     webhook-secret: ${STRIPE_WEBHOOK_SECRET:}

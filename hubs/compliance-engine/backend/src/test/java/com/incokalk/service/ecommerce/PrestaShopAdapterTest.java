@@ -241,4 +241,12 @@ class PrestaShopAdapterTest {
         adapter.syncOrders(integration);
         verify(restTemplate).exchange(contains("shop.example.com/api/orders"), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class));
     }
+
+    @Test
+    @DisplayName("markOrderShipped/pushEta → échec explicite, non implémenté pour PrestaShop")
+    void markOrderShippedAndPushEta_notImplemented() {
+        var integration = integration("https://shop.example.com/", "key");
+        assertThat(adapter.markOrderShipped(integration, "1001", "TRACK", "DHL", true).success()).isFalse();
+        assertThat(adapter.pushEta(integration, "1001", java.time.LocalDateTime.now()).success()).isFalse();
+    }
 }

@@ -6,6 +6,7 @@ import com.incokalk.repository.CompanyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -175,5 +176,110 @@ class ShopifyAdapterTest {
 
         adapter.syncOrders(integration);
         verify(restTemplate).exchange(contains("my-store.myshopify.com/admin/api/2024-01"), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class));
+    }
+
+    @Test
+    @DisplayName("markOrderShipped → crée un fulfillment pour chaque fulfillment_order ouvert, avec tracking")
+    void markOrderShipped_success() {
+        var integration = integration("https://my-store.myshopify.com/", "token123");
+        Map<String, Object> fo1 = Map.of("id", 111L, "status", "open");
+        Map<String, Object> fo2 = Map.of("id", 222L, "status", "in_progress");
+        Map<String, Object> fo3 = Map.of("id", 333L, "status", "closed"); // déjà traité, à ignorer
+        ResponseEntity<Map> foResponse = new ResponseEntity<>(Map.of("fulfillment_orders", List.of(fo1, fo2, fo3)), HttpStatus.OK);
+        when(restTemplate.exchange(contains("fulfillment_orders.json"), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(foResponse);
+
+        ResponseEntity<Map> fulfillResponse = new ResponseEntity<>(Map.of("fulfillment", Map.of("id", 999L)), HttpStatus.CREATED);
+        when(restTemplate.exchange(contains("/fulfillments.json"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(fulfillResponse);
+
+        ECommerceAdapter.PushResult result = adapter.markOrderShipped(integration, "1001", "TRACK123", "DHL", true);
+
+        assertThat(result.success()).isTrue();
+
+        ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate).exchange(contains("/fulfillments.json"), eq(HttpMethod.POST), captor.capture(), eq(Map.class));
+        Map<String, Object> body = (Map<String, Object>) captor.getValue().getBody();
+        Map<String, Object> fulfillment = (Map<String, Object>) body.get("fulfillment");
+        List<Map<String, Object>> lineItems = (List<Map<String, Object>>) fulfillment.get("line_items_by_fulfillment_order");
+        assertThat(lineItems).hasSize(2); // fo1 + fo2, pas fo3 (closed)
+        Map<String, Object> trackingInfo = (Map<String, Object>) fulfillment.get("tracking_info");
+        assertThat(trackingInfo).containsEntry("number", "TRACK123").containsEntry("company", "DHL");
+        assertThat(fulfillment.get("notify_customer")).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("markOrderShipped → échec explicite quand aucun fulfillment_order n'est ouvert")
+    void markOrderShipped_noOpenFulfillmentOrders() {
+        var integration = integration("https://my-store.myshopify.com/", "token123");
+        ResponseEntity<Map> foResponse = new ResponseEntity<>(
+                Map.of("fulfillment_orders", List.of(Map.of("id", 111L, "status", "closed"))), HttpStatus.OK);
+        when(restTemplate.exchange(contains("fulfillment_orders.json"), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(foResponse);
+
+        ECommerceAdapter.PushResult result = adapter.markOrderShipped(integration, "1001", "TRACK123", "DHL", true);
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("fulfillable");
+        verify(restTemplate, never()).exchange(contains("/fulfillments.json"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class));
+    }
+
+    @Test
+    @DisplayName("markOrderShipped → échec explicite quand la commande n'a aucun fulfillment_order")
+    void markOrderShipped_noFulfillmentOrdersAtAll() {
+        var integration = integration("https://my-store.myshopify.com/", "token123");
+        ResponseEntity<Map> foResponse = new ResponseEntity<>(Map.of("fulfillment_orders", List.of()), HttpStatus.OK);
+        when(restTemplate.exchange(contains("fulfillment_orders.json"), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(foResponse);
+
+        ECommerceAdapter.PushResult result = adapter.markOrderShipped(integration, "1001", null, null, false);
+
+        assertThat(result.success()).isFalse();
+    }
+
+    @Test
+    @DisplayName("markOrderShipped → échec explicite sur exception, jamais de succès fictif")
+    void markOrderShipped_exception() {
+        var integration = integration("https://my-store.myshopify.com/", "token123");
+        when(restTemplate.exchange(contains("fulfillment_orders.json"), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenThrow(new RuntimeException("timeout"));
+
+        ECommerceAdapter.PushResult result = adapter.markOrderShipped(integration, "1001", "TRACK123", "DHL", true);
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("timeout");
+    }
+
+    @Test
+    @DisplayName("pushEta → écrit un metafield namespace incokalk/key eta sur la commande")
+    void pushEta_success() {
+        var integration = integration("https://my-store.myshopify.com/", "token123");
+        ResponseEntity<Map> response = new ResponseEntity<>(Map.of("metafield", Map.of("id", 1L)), HttpStatus.CREATED);
+        when(restTemplate.exchange(contains("/metafields.json"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(response);
+
+        LocalDateTime eta = LocalDateTime.of(2026, 11, 15, 0, 0);
+        ECommerceAdapter.PushResult result = adapter.pushEta(integration, "1001", eta);
+
+        assertThat(result.success()).isTrue();
+        ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate).exchange(contains("/orders/1001/metafields.json"), eq(HttpMethod.POST), captor.capture(), eq(Map.class));
+        Map<String, Object> body = (Map<String, Object>) captor.getValue().getBody();
+        Map<String, Object> metafield = (Map<String, Object>) body.get("metafield");
+        assertThat(metafield).containsEntry("namespace", "incokalk").containsEntry("key", "eta")
+                .containsEntry("type", "single_line_text_field");
+        assertThat(metafield.get("value")).asString().contains("2026-11-15");
+    }
+
+    @Test
+    @DisplayName("pushEta → échec explicite sur exception")
+    void pushEta_exception() {
+        var integration = integration("https://my-store.myshopify.com/", "token123");
+        when(restTemplate.exchange(contains("/metafields.json"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class)))
+                .thenThrow(new RuntimeException("API error"));
+
+        ECommerceAdapter.PushResult result = adapter.pushEta(integration, "1001", LocalDateTime.now());
+
+        assertThat(result.success()).isFalse();
     }
 }

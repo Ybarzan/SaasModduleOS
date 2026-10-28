@@ -1,10 +1,13 @@
 package com.incokalk.controller.notification;
 
+import com.incokalk.dto.notification.NaturalLanguageRuleRequest;
+import com.incokalk.dto.notification.NaturalLanguageRuleTranslationResult;
 import com.incokalk.dto.notification.NotificationRuleDTO;
 import com.incokalk.model.CompanyRole;
 import com.incokalk.model.NotificationRule;
 import com.incokalk.security.RolesAllowed;
 import com.incokalk.service.NotificationService;
+import com.incokalk.service.rules.NlRuleTranslationService;
 import com.incokalk.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,6 +29,7 @@ import java.util.UUID;
 public class NotificationRuleController {
 
     private final NotificationService notificationService;
+    private final NlRuleTranslationService nlRuleTranslationService;
 
     @GetMapping
     @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
@@ -74,6 +78,18 @@ public class NotificationRuleController {
         UUID companyId = TenantContext.get();
         notificationService.deleteRule(id, companyId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/translate")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
+    @Operation(summary = "Traduire une description en langage naturel en règle de notification (brouillon, "
+            + "toujours inactif -- relecture humaine obligatoire avant activation, voir Phase 3 J9-J10)")
+    public ResponseEntity<NaturalLanguageRuleTranslationResult> translateRule(
+            @Valid @RequestBody NaturalLanguageRuleRequest request,
+            HttpServletRequest httpReq) {
+        UUID companyId = TenantContext.get();
+        UUID userId = (UUID) httpReq.getAttribute("userId");
+        return ResponseEntity.ok(nlRuleTranslationService.translate(request.description(), companyId, userId));
     }
 
     @PostMapping("/test")

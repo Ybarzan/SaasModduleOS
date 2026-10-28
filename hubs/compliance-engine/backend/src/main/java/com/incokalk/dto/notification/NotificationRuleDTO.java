@@ -39,6 +39,7 @@ public class NotificationRuleDTO {
     private String actionType;
     private Boolean requiresApproval;
     private java.math.BigDecimal maxBudgetAmount;
-    /** Vestige depuis le retrait du domaine Transport : voir NotificationRule.allowedCarrierIds. */
+    /** Voir NotificationRule.allowedCarrierIds -- de nouveau reellement verifie
+     * depuis la restauration d'OrchestrationExecutor (2026-10-28). */
     private String allowedCarrierIds;
 }
