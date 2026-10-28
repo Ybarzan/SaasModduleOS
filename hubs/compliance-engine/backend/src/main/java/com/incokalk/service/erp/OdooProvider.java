@@ -138,6 +138,55 @@ public class OdooProvider implements ErpProvider {
     // exportShipments/exportOrders ont ete retirees avec le domaine Transport
     // (List<ShipmentOrder>). Voir ErpProvider / ErpSyncService.
 
+    /**
+     * Cherche une commande fournisseur (purchase.order) dont le champ origin
+     * correspond à la référence donnée, puis y poste une note (chatter,
+     * mail.message) -- jamais de création de purchase.order de zéro (voir
+     * javadoc ErpProvider.exportAdjustmentNote).
+     */
+    @Override
+    public ErpExportResult exportAdjustmentNote(ErpConfig config, ErpAdjustmentNote note) {
+        try {
+            int uid = authenticate(config);
+            String url = buildXmlRpcUrl(config, "object");
+
+            String searchXml = buildXmlRpcCall("execute_kw",
+                    List.of(config.getDatabaseName(), uid, config.getApiKey(),
+                            "purchase.order", "search_read",
+                            List.of(List.of(List.of("origin", "=", note.reference()))),
+                            Map.of("fields", List.of("id", "name"), "limit", 1)));
+            ResponseEntity<String> searchResponse = postXmlRpc(url, searchXml);
+            List<Map<String, Object>> matches = parseXmlRpcArray(searchResponse.getBody());
+            if (matches.isEmpty()) {
+                return ErpExportResult.fail(
+                        "Aucune commande fournisseur Odoo trouvée avec origin=" + note.reference());
+            }
+
+            Map<String, Object> order = matches.get(0);
+            Object orderId = order.get("id");
+            String orderName = String.valueOf(order.get("name"));
+
+            Map<String, Object> messageVals = new LinkedHashMap<>();
+            messageVals.put("model", "purchase.order");
+            messageVals.put("res_id", orderId);
+            messageVals.put("body", note.body());
+            messageVals.put("message_type", "comment");
+            String createXml = buildXmlRpcCall("execute_kw",
+                    List.of(config.getDatabaseName(), uid, config.getApiKey(),
+                            "mail.message", "create", List.of(messageVals)));
+            ResponseEntity<String> createResponse = postXmlRpc(url, createXml);
+            if (!createResponse.getStatusCode().is2xxSuccessful()) {
+                return ErpExportResult.fail("Échec de la création de la note Odoo sur " + orderName);
+            }
+
+            log.info("[Odoo] Note d'ajustement ajoutée à la commande fournisseur {}", orderName);
+            return ErpExportResult.ok(orderName, "Note ajoutée à la commande fournisseur Odoo " + orderName);
+        } catch (Exception e) {
+            log.error("[Odoo] Erreur export ajustement: {}", e.getMessage());
+            return ErpExportResult.fail("Erreur Odoo: " + e.getMessage());
+        }
+    }
+
     @Override
     public List<Map<String, Object>> getProducts(ErpConfig config) {
         try {

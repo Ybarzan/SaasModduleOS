@@ -409,4 +409,15 @@ class SapProviderTest {
         verify(restTemplate).exchange(eq("https://sap.example.com/b1s/v1/Items"), eq(HttpMethod.GET),
                 any(HttpEntity.class), eq(Map.class));
     }
+
+    @Test
+    @DisplayName("exportAdjustmentNote → échec explicite, non implémenté, jamais d'appel réseau")
+    void exportAdjustmentNote_notImplemented() {
+        ErpExportResult result = provider.exportAdjustmentNote(
+                config("https://sap.example.com/"), new ErpAdjustmentNote("SHP-001", "note"));
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("non implémenté");
+        verifyNoInteractions(restTemplate);
+    }
 }
