@@ -4,6 +4,7 @@ import com.incokalk.model.ErpConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
@@ -480,5 +482,85 @@ class OdooProviderTest {
         Map<String, Object> result = (Map<String, Object>) m.invoke(provider, xml);
         assertThat(result).containsEntry("ok", "fine");
         assertThat(result).hasSize(1);
+    }
+
+    // ── exportAdjustmentNote ─────────────────────────────────────────────────
+
+    private static final String PURCHASE_ORDER_MATCH_XML = """
+            <?xml version="1.0"?>
+            <methodResponse><params><param><value><array><data>
+              <value><struct>
+                <member><name>id</name><value><int>42</int></value></member>
+                <member><name>name</name><value><string>PO-42</string></value></member>
+              </struct></value>
+            </data></array></value></param></params></methodResponse>
+            """;
+
+    private static final String CREATE_OK_XML = """
+            <?xml version="1.0"?>
+            <methodResponse><params><param><value><int>777</int></value></param></params></methodResponse>
+            """;
+
+    @Test
+    @DisplayName("exportAdjustmentNote → commande fournisseur trouvée → note postée, EXECUTED")
+    void exportAdjustmentNote_found_postsNote() {
+        stubAuthOk();
+        when(restTemplate.exchange(contains("2/object"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ok(PURCHASE_ORDER_MATCH_XML))
+                .thenReturn(ok(CREATE_OK_XML));
+
+        ErpExportResult result = provider.exportAdjustmentNote(config(), new ErpAdjustmentNote("SHP-001", "Ajustement: ETA dégradé"));
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.externalReference()).isEqualTo("PO-42");
+        assertThat(result.message()).contains("PO-42");
+
+        ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate, times(2)).exchange(contains("2/object"), eq(HttpMethod.POST), captor.capture(), eq(String.class));
+        String createCallXml = (String) captor.getAllValues().get(1).getBody();
+        assertThat(createCallXml).contains("mail.message").contains("create").contains("Ajustement: ETA dégradé");
+
+        String searchCallXml = (String) captor.getAllValues().get(0).getBody();
+        assertThat(searchCallXml).contains("purchase.order").contains("search_read").contains("SHP-001");
+    }
+
+    @Test
+    @DisplayName("exportAdjustmentNote → aucune commande fournisseur correspondante → échec explicite, jamais de note postée")
+    void exportAdjustmentNote_noMatch_failsWithoutPostingNote() {
+        stubAuthOk();
+        when(restTemplate.exchange(contains("2/object"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ok(EMPTY_RECORDS_XML));
+
+        ErpExportResult result = provider.exportAdjustmentNote(config(), new ErpAdjustmentNote("SHP-404", "note"));
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("Aucune commande fournisseur Odoo trouvée").contains("SHP-404");
+        verify(restTemplate, times(1)).exchange(contains("2/object"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
+    }
+
+    @Test
+    @DisplayName("exportAdjustmentNote → échec HTTP lors de la création de la note → échec explicite")
+    void exportAdjustmentNote_createFails() {
+        stubAuthOk();
+        when(restTemplate.exchange(contains("2/object"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ok(PURCHASE_ORDER_MATCH_XML))
+                .thenReturn(new ResponseEntity<>(CREATE_OK_XML, HttpStatus.INTERNAL_SERVER_ERROR));
+
+        ErpExportResult result = provider.exportAdjustmentNote(config(), new ErpAdjustmentNote("SHP-001", "note"));
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("Échec de la création de la note Odoo");
+    }
+
+    @Test
+    @DisplayName("exportAdjustmentNote → authentification échouée → échec explicite, jamais d'exception propagée")
+    void exportAdjustmentNote_authFails() {
+        when(restTemplate.exchange(contains("2/common"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ok(AUTH_INVALID));
+
+        ErpExportResult result = provider.exportAdjustmentNote(config(), new ErpAdjustmentNote("SHP-001", "note"));
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("Erreur Odoo");
     }
 }

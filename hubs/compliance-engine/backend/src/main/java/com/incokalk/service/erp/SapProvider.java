@@ -121,6 +121,22 @@ public class SapProvider implements ErpProvider {
     // exportShipments/exportOrders ont ete retirees avec le domaine Transport
     // (List<ShipmentOrder>). Voir ErpProvider / ErpSyncService.
 
+    /**
+     * Non implémenté, délibérément. L'authentification déjà utilisée par ce
+     * connecteur pour les imports (Basic Auth direct sur chaque requête, sans
+     * session {@code POST /b1s/v1/Login} préalable) n'a elle-même jamais été
+     * vérifiée contre un vrai SAP Business One Service Layer -- construire un
+     * export dessus imiterait un mécanisme déjà incertain plutôt qu'une
+     * fondation prouvée (contrairement à Odoo/QuickBooks, voir leurs
+     * implémentations). Échec explicite, jamais un faux succès.
+     */
+    @Override
+    public ErpExportResult exportAdjustmentNote(ErpConfig config, ErpAdjustmentNote note) {
+        return ErpExportResult.fail(
+                "Export SAP non implémenté : l'authentification Service Layer utilisée par ce connecteur "
+                        + "n'a jamais été vérifiée contre un vrai SAP B1, même pour les imports -- voir le javadoc");
+    }
+
     @Override
     public List<Map<String, Object>> getProducts(ErpConfig config) {
         try {

@@ -26,6 +26,11 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ShipmentSummary {
 
+    /** Référence lisible par un humain (ex. "SHP-2026-001") -- nécessaire à
+     *  OrchestrationExecutor pour retrouver une commande fournisseur existante
+     *  dans l'ERP (recherchée par référence, voir ErpProvider.exportAdjustmentNote). */
+    private String orderNumber;
+
     private String shipperName;
     private String shipperAddress;
     private String shipperCity;

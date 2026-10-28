@@ -85,11 +85,13 @@ public class OrchestrationSuggestion {
         REJECTED,
         EXECUTED,
         FAILED,
-        /** Expédition réelle + gouvernance vérifiées avec succès, mais aucun
-         *  connecteur d'export automatique vers l'ERP n'existe encore (voir
-         *  OrchestrationExecutor) -- l'ajustement décrit dans executionResult
-         *  doit être fait à la main. Jamais EXECUTED : ce serait prétendre
-         *  qu'un appel ERP a eu lieu alors qu'aucun n'a été fait. */
+        /** Expédition réelle + gouvernance vérifiées avec succès, mais l'export
+         *  automatique vers l'ERP a échoué ou n'est pas disponible pour ce
+         *  provider/cette expédition (voir OrchestrationExecutor.exportAdjustmentNote
+         *  -- aucune commande fournisseur correspondante trouvée, provider SAP non
+         *  implémenté, etc.) -- l'ajustement décrit dans executionResult doit alors
+         *  être fait à la main. Jamais EXECUTED dans ce cas précis : ce serait
+         *  prétendre qu'un appel ERP a eu lieu alors qu'aucun n'a réussi. */
         NEEDS_MANUAL_EXPORT
     }
 }

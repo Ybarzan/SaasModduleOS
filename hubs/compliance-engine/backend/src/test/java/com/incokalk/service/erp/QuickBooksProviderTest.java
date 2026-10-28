@@ -4,6 +4,7 @@ import com.incokalk.model.ErpConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -18,8 +19,10 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @DisplayName("QuickBooksProvider — Tests unitaires")
@@ -407,5 +410,104 @@ class QuickBooksProviderTest {
 
         assertThat(result.isSuccess()).isTrue();
         assertThat(result.getRecordsTotal()).isEqualTo(1);
+    }
+
+    // ── exportAdjustmentNote ─────────────────────────────────────────────────
+
+    private Map<String, Object> purchaseOrderSearchBody(String id, String syncToken, String existingPrivateNote) {
+        Map<String, Object> po = new java.util.LinkedHashMap<>();
+        po.put("Id", id);
+        po.put("SyncToken", syncToken);
+        if (existingPrivateNote != null) po.put("PrivateNote", existingPrivateNote);
+        return Map.of("QueryResponse", Map.of("PurchaseOrder", List.of(po)));
+    }
+
+    @Test
+    @DisplayName("exportAdjustmentNote → commande trouvée, aucune note existante → PrivateNote mise à jour (sparse)")
+    void exportAdjustmentNote_found_updatesPrivateNote() {
+        when(restTemplate.exchange(contains("/query?query="), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(new ResponseEntity<>(purchaseOrderSearchBody("99", "0", null), HttpStatus.OK));
+        when(restTemplate.exchange(contains("/purchaseorder"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(new ResponseEntity<>(Map.of("PurchaseOrder", Map.of("Id", "99")), HttpStatus.OK));
+
+        ErpExportResult result = provider.exportAdjustmentNote(configWithCompanyId(), new ErpAdjustmentNote("SHP-001", "Ajustement: ETA dégradé"));
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.externalReference()).isEqualTo("SHP-001");
+
+        ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate).exchange(contains("/purchaseorder"), eq(HttpMethod.POST), captor.capture(), eq(Map.class));
+        Map<String, Object> body = (Map<String, Object>) captor.getValue().getBody();
+        assertThat(body.get("Id")).isEqualTo("99");
+        assertThat(body.get("SyncToken")).isEqualTo("0");
+        assertThat(body.get("sparse")).isEqualTo(true);
+        assertThat(body.get("PrivateNote")).isEqualTo("Ajustement: ETA dégradé");
+    }
+
+    @Test
+    @DisplayName("exportAdjustmentNote → note existante conservée, nouvelle note ajoutée à la suite")
+    void exportAdjustmentNote_appendsToExistingPrivateNote() {
+        when(restTemplate.exchange(contains("/query?query="), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(new ResponseEntity<>(purchaseOrderSearchBody("99", "3", "Note existante de l'opérateur"), HttpStatus.OK));
+        when(restTemplate.exchange(contains("/purchaseorder"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(new ResponseEntity<>(Map.of(), HttpStatus.OK));
+
+        provider.exportAdjustmentNote(configWithCompanyId(), new ErpAdjustmentNote("SHP-001", "Nouvelle note"));
+
+        ArgumentCaptor<HttpEntity> captor = ArgumentCaptor.forClass(HttpEntity.class);
+        verify(restTemplate).exchange(contains("/purchaseorder"), eq(HttpMethod.POST), captor.capture(), eq(Map.class));
+        Map<String, Object> body = (Map<String, Object>) captor.getValue().getBody();
+        assertThat((String) body.get("PrivateNote")).contains("Note existante de l'opérateur").contains("Nouvelle note");
+    }
+
+    @Test
+    @DisplayName("exportAdjustmentNote → aucune commande fournisseur trouvée → échec explicite, jamais de mise à jour")
+    void exportAdjustmentNote_noMatch_failsWithoutUpdate() {
+        when(restTemplate.exchange(contains("/query?query="), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(new ResponseEntity<>(Map.of("QueryResponse", Map.of()), HttpStatus.OK));
+
+        ErpExportResult result = provider.exportAdjustmentNote(configWithCompanyId(), new ErpAdjustmentNote("SHP-404", "note"));
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("Aucune commande fournisseur QuickBooks trouvée").contains("SHP-404");
+        verify(restTemplate, org.mockito.Mockito.never())
+                .exchange(contains("/purchaseorder"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class));
+    }
+
+    @Test
+    @DisplayName("exportAdjustmentNote → échec HTTP sur la mise à jour → échec explicite")
+    void exportAdjustmentNote_updateFails() {
+        when(restTemplate.exchange(contains("/query?query="), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(new ResponseEntity<>(purchaseOrderSearchBody("99", "0", null), HttpStatus.OK));
+        when(restTemplate.exchange(contains("/purchaseorder"), eq(HttpMethod.POST), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(new ResponseEntity<>(Map.of(), HttpStatus.INTERNAL_SERVER_ERROR));
+
+        ErpExportResult result = provider.exportAdjustmentNote(configWithCompanyId(), new ErpAdjustmentNote("SHP-001", "note"));
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("Échec de la mise à jour QuickBooks");
+    }
+
+    @Test
+    @DisplayName("exportAdjustmentNote → exception réseau → échec explicite, jamais de succès fictif")
+    void exportAdjustmentNote_exception_fails() {
+        when(restTemplate.exchange(contains("/query?query="), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenThrow(new RestClientException("timeout"));
+
+        ErpExportResult result = provider.exportAdjustmentNote(configWithCompanyId(), new ErpAdjustmentNote("SHP-001", "note"));
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("timeout");
+    }
+
+    @Test
+    @DisplayName("exportAdjustmentNote → une apostrophe dans la référence est échappée dans la requête QBO")
+    void exportAdjustmentNote_escapesSingleQuoteInReference() {
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(new ResponseEntity<>(Map.of("QueryResponse", Map.of()), HttpStatus.OK));
+
+        provider.exportAdjustmentNote(configWithCompanyId(), new ErpAdjustmentNote("SHP-O'BRIEN", "note"));
+
+        verify(restTemplate).exchange(contains("SHP-O''BRIEN"), eq(HttpMethod.GET), any(HttpEntity.class), eq(Map.class));
     }
 }

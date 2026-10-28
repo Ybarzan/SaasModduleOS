@@ -5,6 +5,10 @@ import com.incokalk.model.ErpConfig;
 import com.incokalk.model.NotificationRule;
 import com.incokalk.model.OrchestrationSuggestion;
 import com.incokalk.repository.ErpConfigRepository;
+import com.incokalk.service.erp.ErpAdjustmentNote;
+import com.incokalk.service.erp.ErpExportResult;
+import com.incokalk.service.erp.ErpProvider;
+import com.incokalk.service.erp.ErpProviderRegistry;
 import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import com.incokalk.service.integration.fleethub.ShipmentSummary;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,31 +17,32 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * SUGGEST_ERP_ORDER_ADJUSTMENT appelait ErpProvider.exportOrders(config,
  * List.of(shipment)) avec un ShipmentOrder lu localement, avant le retrait du
- * domaine Transport. exportOrders n'existe plus du tout dans ErpProvider et
- * aucun connecteur d'export vers l'ERP n'a été reconstruit (voir
- * ErpSyncService) -- restaurer un appel ERP réel reste un chantier séparé, non
- * testable contre un vrai système depuis cet environnement.
- *
- * Ce qui est restauré ici et testé en conditions réelles : recharger
- * l'expédition depuis fleet-hub (FleetHubIntegrationClient), revalider la
- * gouvernance de la règle (transporteurs autorisés, budget), et si tout passe,
- * décrire l'ajustement à faire plutôt que de mentir sur un appel ERP qui n'a
- * pas eu lieu -- NEEDS_MANUAL_EXPORT, jamais EXECUTED.
+ * domaine Transport. Restauré via ErpProvider.exportAdjustmentNote (2026-10-28,
+ * voir ErpProvider/OdooProvider/QuickBooksProvider) : recharge l'expédition
+ * depuis fleet-hub, revalide la gouvernance, puis cherche une commande
+ * fournisseur EXISTANTE par référence pour y poster une note -- EXECUTED si
+ * trouvée, NEEDS_MANUAL_EXPORT (jamais EXECUTED) sinon, avec la raison exacte
+ * dans executionResult.
  */
 @DisplayName("OrchestrationExecutor — Tests unitaires")
 class OrchestrationExecutorTest {
 
     private FleetHubIntegrationClient fleetHubIntegrationClient;
     private ErpConfigRepository erpConfigRepo;
+    private ErpProviderRegistry erpProviderRegistry;
+    private ErpProvider erpProvider;
     private OrchestrationExecutor executor;
 
     private UUID companyId, shipmentId, ruleId;
@@ -48,7 +53,9 @@ class OrchestrationExecutorTest {
     void setUp() {
         fleetHubIntegrationClient = mock(FleetHubIntegrationClient.class);
         erpConfigRepo = mock(ErpConfigRepository.class);
-        executor = new OrchestrationExecutor(fleetHubIntegrationClient, erpConfigRepo);
+        erpProviderRegistry = mock(ErpProviderRegistry.class);
+        erpProvider = mock(ErpProvider.class);
+        executor = new OrchestrationExecutor(fleetHubIntegrationClient, erpConfigRepo, erpProviderRegistry);
 
         companyId = UUID.randomUUID();
         shipmentId = UUID.randomUUID();
@@ -70,6 +77,7 @@ class OrchestrationExecutorTest {
 
     private ShipmentSummary.ShipmentSummaryBuilder shipment() {
         return ShipmentSummary.builder()
+                .orderNumber("SHP-001")
                 .goodsDescription("Pièces détachées")
                 .consigneeName("Client X").consigneeCountry("DE")
                 .goodsValue(5000.0).currency("EUR")
@@ -83,17 +91,67 @@ class OrchestrationExecutorTest {
     }
 
     @Test
-    @DisplayName("SUGGEST_ERP_ORDER_ADJUSTMENT, expédition + gouvernance OK, ERP configuré → NEEDS_MANUAL_EXPORT avec description")
-    void execute_erpOrderAdjustment_validatesAndNeedsManualExport() {
+    @DisplayName("export réussi (commande fournisseur trouvée) → EXECUTED avec la référence ERP")
+    void execute_exportSucceeds_marksExecuted() {
         when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment().build());
         when(erpConfigRepo.findByCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of(erpConfig()));
+        when(erpProviderRegistry.getProvider("ODOO")).thenReturn(Optional.of(erpProvider));
+        when(erpProvider.exportAdjustmentNote(any(), eq(new ErpAdjustmentNote("SHP-001",
+                "Ajustement (ODOO / Odoo Prod) : Pièces détachées vers Client X (DE), valeur 5000.0 EUR, transporteur DHL"))))
+                .thenReturn(ErpExportResult.ok("PO-42", "Note ajoutée à la commande fournisseur Odoo PO-42"));
+
+        OrchestrationSuggestion s = suggestion();
+        executor.execute(s);
+
+        assertThat(s.getStatus()).isEqualTo(OrchestrationSuggestion.Status.EXECUTED);
+        assertThat(s.getExecutionResult()).contains("PO-42").contains("Pièces détachées");
+    }
+
+    @Test
+    @DisplayName("aucune commande fournisseur correspondante trouvée → NEEDS_MANUAL_EXPORT, jamais EXECUTED")
+    void execute_exportFindsNoMatch_needsManualExport() {
+        when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment().build());
+        when(erpConfigRepo.findByCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of(erpConfig()));
+        when(erpProviderRegistry.getProvider("ODOO")).thenReturn(Optional.of(erpProvider));
+        when(erpProvider.exportAdjustmentNote(any(), any()))
+                .thenReturn(ErpExportResult.fail("Aucune commande fournisseur Odoo trouvée avec origin=SHP-001"));
 
         OrchestrationSuggestion s = suggestion();
         executor.execute(s);
 
         assertThat(s.getStatus()).isEqualTo(OrchestrationSuggestion.Status.NEEDS_MANUAL_EXPORT);
-        assertThat(s.getExecutionResult()).contains("ODOO").contains("Pièces détachées").contains("Client X")
-                .contains("DHL").contains("export automatique non disponible");
+        assertThat(s.getExecutionResult()).contains("Aucune commande fournisseur Odoo trouvée")
+                .contains("Pièces détachées");
+    }
+
+    @Test
+    @DisplayName("aucun connecteur enregistré pour le type ERP → NEEDS_MANUAL_EXPORT, jamais consulté le provider")
+    void execute_noProviderForErpType_needsManualExport() {
+        when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId)).thenReturn(shipment().build());
+        when(erpConfigRepo.findByCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of(erpConfig()));
+        when(erpProviderRegistry.getProvider("ODOO")).thenReturn(Optional.empty());
+
+        OrchestrationSuggestion s = suggestion();
+        executor.execute(s);
+
+        assertThat(s.getStatus()).isEqualTo(OrchestrationSuggestion.Status.NEEDS_MANUAL_EXPORT);
+        assertThat(s.getExecutionResult()).contains("Aucun connecteur disponible pour le type ERP ODOO");
+    }
+
+    @Test
+    @DisplayName("expédition sans référence (orderNumber) → NEEDS_MANUAL_EXPORT, jamais consulté le provider")
+    void execute_shipmentWithoutOrderNumber_needsManualExport() {
+        when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId))
+                .thenReturn(shipment().orderNumber(null).build());
+        when(erpConfigRepo.findByCompanyIdAndIsActiveTrue(companyId)).thenReturn(List.of(erpConfig()));
+        when(erpProviderRegistry.getProvider("ODOO")).thenReturn(Optional.of(erpProvider));
+
+        OrchestrationSuggestion s = suggestion();
+        executor.execute(s);
+
+        assertThat(s.getStatus()).isEqualTo(OrchestrationSuggestion.Status.NEEDS_MANUAL_EXPORT);
+        assertThat(s.getExecutionResult()).contains("sans référence");
+        org.mockito.Mockito.verifyNoInteractions(erpProvider);
     }
 
     @Test
@@ -137,6 +195,8 @@ class OrchestrationExecutorTest {
         OrchestrationSuggestion s = suggestion();
         executor.execute(s);
 
+        // Aucun provider ODOO enregistré dans ce test (registry non stubbé -> Optional.empty())
+        // -> repli NEEDS_MANUAL_EXPORT, mais la gouvernance a bien été franchie (pas FAILED).
         assertThat(s.getStatus()).isEqualTo(OrchestrationSuggestion.Status.NEEDS_MANUAL_EXPORT);
     }
 
