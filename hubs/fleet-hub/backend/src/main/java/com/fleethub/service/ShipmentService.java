@@ -230,6 +230,26 @@ public class ShipmentService {
         return shipmentRepo.save(shipment);
     }
 
+    /** Lie (ou délie si mmsi est null/vide) cette expédition à un navire suivi
+     *  par MMSI -- saisie manuelle, voir ShipmentOrder.trackedVesselMmsi. */
+    @Transactional
+    public ShipmentOrder assignVessel(UUID shipmentId, String mmsi, Long companyId) {
+        ShipmentOrder shipment = shipmentRepo.findById(shipmentId)
+                .filter(s -> s.getCompany() != null && s.getCompany().getId().equals(companyId))
+                .orElseThrow(() -> new ResourceNotFoundException("Commande non trouvée"));
+
+        if (mmsi == null || mmsi.isBlank()) {
+            shipment.setTrackedVesselMmsi(null);
+        } else {
+            String trimmed = mmsi.trim();
+            if (!trimmed.matches("\\d{9}")) {
+                throw new IllegalArgumentException("MMSI invalide (attendu : 9 chiffres)");
+            }
+            shipment.setTrackedVesselMmsi(trimmed);
+        }
+        return shipmentRepo.save(shipment);
+    }
+
     private static final java.util.Map<ShipmentOrder.Status, java.util.Set<ShipmentOrder.Status>> ALLOWED_TRANSITIONS =
         java.util.Map.of(
             ShipmentOrder.Status.DRAFT, java.util.Set.of(ShipmentOrder.Status.QUOTED, ShipmentOrder.Status.BOOKED, ShipmentOrder.Status.CANCELLED),

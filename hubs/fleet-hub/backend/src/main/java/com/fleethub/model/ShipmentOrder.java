@@ -250,6 +250,13 @@ public class ShipmentOrder {
     @Column(name = "shipped_at")
     private LocalDateTime shippedAt;
 
+    /** MMSI du navire suivi transportant cette expédition, saisi à la main par
+     *  un opérateur -- rien ne permet de le déduire automatiquement. Utilisé
+     *  pour capter l'ETA diffusée par ce navire lui-même via AIS (voir
+     *  AisStreamService.getBroadcastEta, EtaReportedSource.Source.AIS_BROADCAST). */
+    @Column(name = "tracked_vessel_mmsi", length = 20)
+    private String trackedVesselMmsi;
+
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<TrackingEvent> trackingEvents = List.of();

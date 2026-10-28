@@ -71,9 +71,16 @@ public class EtaReportedSource {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    /** Seule source alimentée aujourd'hui -- voir le javadoc de classe pour
-     *  pourquoi l'ETA dérivé AIS prévu par le plan n'est pas encore là. */
     public enum Source {
-        CARRIER_BOOKING
+        /** ETA annoncée par le transporteur au moment de la réservation --
+         *  voir CarrierBookingService.submitBooking(). */
+        CARRIER_BOOKING,
+        /** ETA diffusée par le navire lui-même via AIS (message type 5,
+         *  ShipStaticData -- voir AisStreamService.getBroadcastEta() et
+         *  AisEtaCaptureService). Jamais une ETA calculée par distance/vitesse
+         *  depuis la position AIS : ce système n'a aucune table de
+         *  coordonnées de port pour faire ce calcul honnêtement -- c'est
+         *  l'ETA que le navire rapporte lui-même, telle que diffusée. */
+        AIS_BROADCAST
     }
 }

@@ -44,6 +44,10 @@ public interface ShipmentOrderRepository extends JpaRepository<ShipmentOrder, UU
 
     java.util.Optional<ShipmentOrder> findByOrderNumber(String orderNumber);
 
+    /** Expéditions liées à un navire suivi (MMSI renseigné) et encore en cours
+     *  -- base de AisEtaCaptureService.captureBroadcastEtas(). */
+    List<ShipmentOrder> findByTrackedVesselMmsiIsNotNullAndStatusIn(List<ShipmentOrder.Status> statuses);
+
     @Query("SELECT s.status, COUNT(s) FROM ShipmentOrder s WHERE s.company.id = :companyId GROUP BY s.status")
     List<Object[]> countByStatusGrouped(Long companyId);
 
