@@ -98,6 +98,16 @@ public class Company {
     @Column(length = 64)
     private String internalIntegrationApiKey;
 
+    /** Clé webhook compliance-engine (en-tête X-FleetHub-Webhook-Key) -- générée
+     *  côté compliance-engine quand cette société y active la réception
+     *  d'événements d'expédition, puis collée ici par un admin. Stockée
+     *  chiffrée (réversible, voir ApiKeyCrypto -- même mécanisme que les clés
+     *  API fournisseurs de la page "Intégrations", pas de nouveau système de
+     *  chiffrement dédié) : jamais recherchée par égalité ici, seulement
+     *  déchiffrée pour l'en-tête sortant (voir ShipmentEventPublisher). */
+    @Column(name = "compliance_engine_webhook_key", length = 255)
+    private String complianceEngineWebhookKey;
+
     public enum SubscriptionPlan {
         TRIAL(10, 5),
         STARTER(25, 10),

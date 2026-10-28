@@ -70,6 +70,9 @@ public class SecurityConfig {
                 // pas ici -- ces hubs n'ont pas de JWT fleet-hub.
                 .requestMatchers("/api/internal/**").permitAll()
                 .requestMatchers("/api/internal-integrations/**").hasRole("ADMIN")
+                // Collage de la clé webhook compliance-engine (voir ComplianceEngineWebhookService) --
+                // appelé par un admin fleet-hub, jamais par compliance-engine lui-même.
+                .requestMatchers("/api/compliance-engine-webhook/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("SAAS_ADMIN")
                 .requestMatchers("/api/users/**", "/api/integrations/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/kpis/**", "/api/drivers/**", "/api/trucks/**", "/api/dashboard/**", "/api/map/**").hasAnyRole("ADMIN", "GESTIONNAIRE")

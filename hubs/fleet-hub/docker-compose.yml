@@ -85,6 +85,7 @@ services:
       STRIPE_PORTAL_RETURN_URL: ${STRIPE_PORTAL_RETURN_URL:-https://localhost/billing}
       INTEGRATION_WEBHOOK_API_KEY: ${INTEGRATION_WEBHOOK_API_KEY:-}
       INTEGRATION_SECRET_KEY: ${INTEGRATION_SECRET_KEY:?Set INTEGRATION_SECRET_KEY (voir .env.example)}
+      COMPLIANCE_ENGINE_URL: ${COMPLIANCE_ENGINE_URL:-http://host.docker.internal:8081}
       SENTRY_DSN: ${SENTRY_DSN:-}
       APP_ENV: ${APP_ENV:-production}
       REDIS_HOST: redis

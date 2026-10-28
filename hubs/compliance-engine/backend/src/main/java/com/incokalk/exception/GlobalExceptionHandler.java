@@ -10,6 +10,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
@@ -84,6 +85,19 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
             .body(new ErrorResponse("METHOD_NOT_ALLOWED",
                 "Méthode HTTP non supportée : " + ex.getMethod(), null));
+    }
+
+    /**
+     * Jamais utilisée avant FleetHubWebhookService.resolveCompanyId() (voir
+     * FleetHubEventWebhookController) : sans ce handler, le statut porté par
+     * l'exception (401 ici) retombait dans handleGeneric() ci-dessous et
+     * ressortait en 500 -- aucun des autres handlers de cette classe ne
+     * couvrant un code générique, seulement des types métier dédiés.
+     */
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatus(ResponseStatusException ex) {
+        return ResponseEntity.status(ex.getStatusCode())
+            .body(new ErrorResponse(ex.getStatusCode().toString(), ex.getReason(), null));
     }
 
     @ExceptionHandler(Exception.class)
