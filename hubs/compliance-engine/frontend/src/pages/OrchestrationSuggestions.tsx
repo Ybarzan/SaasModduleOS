@@ -19,7 +19,7 @@ interface OrchestrationSuggestion {
   ruleName: string | null;
   shipmentId: string | null;
   actionType: string;
-  status: 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'EXECUTED' | 'FAILED';
+  status: 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'EXECUTED' | 'FAILED' | 'NEEDS_MANUAL_EXPORT';
   contextJson: string | null;
   createdAt: string;
   decidedAt: string | null;
@@ -38,6 +38,11 @@ const STATUS_CONFIG: Record<OrchestrationSuggestion['status'], { label: string; 
   REJECTED: { label: 'REJETÉ', className: 'text-ink-soft border-line' },
   EXECUTED: { label: 'EXÉCUTÉ', className: 'text-success border-success/40' },
   FAILED: { label: 'ÉCHOUÉ', className: 'text-danger border-danger/40' },
+  // Expédition + gouvernance validées, mais aucun connecteur d'export
+  // automatique vers l'ERP n'existe encore -- voir executionResult pour le
+  // détail de l'ajustement à reporter à la main (docs/03-plan-migration.md
+  // Phase 3 J6-J8).
+  NEEDS_MANUAL_EXPORT: { label: 'ACTION MANUELLE REQUISE', className: 'text-accent-2 border-accent-2/40' },
 };
 
 function StatusTag({ status }: { status: OrchestrationSuggestion['status'] }) {
