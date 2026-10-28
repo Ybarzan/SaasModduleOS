@@ -137,13 +137,13 @@ jobs:
       - name: Build l'image frontend
         run: docker build -t fleethub-frontend:${{ github.sha }} hubs/fleet-hub/frontend
 
-      - uses: aquasecurity/trivy-action@0.28.0
+      - uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: fleethub-backend:${{ github.sha }}
           format: sarif
           output: trivy-backend.sarif
           severity: CRITICAL,HIGH
-      - uses: aquasecurity/trivy-action@0.28.0
+      - uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: fleethub-frontend:${{ github.sha }}
           format: sarif
