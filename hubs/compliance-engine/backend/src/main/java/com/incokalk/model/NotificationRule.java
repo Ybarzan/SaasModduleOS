@@ -102,12 +102,13 @@ public class NotificationRule {
     @Column(name = "max_budget_amount", precision = 15, scale = 2)
     private java.math.BigDecimal maxBudgetAmount;
 
-    /** UUID de transporteurs autorises, separes par des virgules, ou null (tous
-     * autorises). Vestige depuis le retrait du domaine Transport : OrchestrationExecutor
-     * ne verifie plus ce champ, son seul type d'action (SUGGEST_ERP_ORDER_ADJUSTMENT,
-     * dont checkGovernance() etait le garde-fou, V66) ayant ete retire avec le
-     * domaine Transport. Champ plain (pas de FK) -- pas de changement de schema
-     * necessaire. */
+    /** UUID de transporteurs autorises (cote fleet-hub), separes par des virgules,
+     * ou null (tous autorises). Avait cesse d'etre verifie au retrait du domaine
+     * Transport (SUGGEST_ERP_ORDER_ADJUSTMENT echouait alors systematiquement, voir
+     * OrchestrationExecutor) -- reellement verifie de nouveau depuis la restauration
+     * de l'executeur contre FleetHubIntegrationClient (2026-10-28, voir
+     * docs/03-plan-migration.md Phase 3 J6-J8). Champ plain (pas de FK) -- pas de
+     * changement de schema necessaire. */
     @Column(name = "allowed_carrier_ids", columnDefinition = "TEXT")
     private String allowedCarrierIds;
 
