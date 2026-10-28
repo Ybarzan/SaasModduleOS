@@ -6,10 +6,12 @@ import com.fleethub.dto.CarrierBookingRequestDTO;
 import com.fleethub.model.AppUser;
 import com.fleethub.model.Carrier;
 import com.fleethub.model.CarrierBookingRequest;
+import com.fleethub.model.EtaReportedSource;
 import com.fleethub.model.ShipmentOrder;
 import com.fleethub.repository.AppUserRepository;
 import com.fleethub.repository.CarrierBookingRequestRepository;
 import com.fleethub.repository.CarrierRepository;
+import com.fleethub.repository.EtaReportedSourceRepository;
 import com.fleethub.repository.ShipmentOrderRepository;
 import com.fleethub.security.TenantContext;
 import com.fleethub.service.carrier.CarrierAdapter;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,6 +40,7 @@ public class CarrierBookingService {
     private final AppUserRepository userRepo;
     private final List<CarrierAdapter> adapters;
     private final ObjectMapper objectMapper;
+    private final EtaReportedSourceRepository etaReportedSourceRepo;
 
     public CarrierBookingService(
             CarrierBookingRequestRepository bookingRepo,
@@ -44,13 +48,15 @@ public class CarrierBookingService {
             ShipmentOrderRepository shipmentRepo,
             AppUserRepository userRepo,
             List<CarrierAdapter> adapters,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            EtaReportedSourceRepository etaReportedSourceRepo) {
         this.bookingRepo = bookingRepo;
         this.carrierRepo = carrierRepo;
         this.shipmentRepo = shipmentRepo;
         this.userRepo = userRepo;
         this.adapters = adapters;
         this.objectMapper = objectMapper;
+        this.etaReportedSourceRepo = etaReportedSourceRepo;
     }
 
     public CarrierAdapter findAdapter(String carrierCode) {
@@ -126,6 +132,7 @@ public class CarrierBookingService {
                 }
 
                 booking.setCarrierResponseJson(objectMapper.writeValueAsString(response));
+                recordEtaReportedSource(booking);
             } else {
                 booking.setCarrierBookingStatus(CarrierBookingRequest.BookingStatus.REJECTED);
                 booking.setErrorMessage(response.getErrorMessage());
@@ -138,6 +145,34 @@ public class CarrierBookingService {
         }
 
         return bookingRepo.save(booking);
+    }
+
+    /** Capture l'ETA annoncée par le transporteur au moment de la réservation,
+     *  figée telle qu'émise -- voir EtaReportedSource et docs/03-plan-migration.md
+     *  Phase 2 J1-J2. Ne bloque jamais la réservation elle-même : un échec ici
+     *  (lane/mode absents, par ex. tarif non renseigné) est journalisé et ignoré. */
+    private void recordEtaReportedSource(CarrierBookingRequest booking) {
+        try {
+            ShipmentOrder shipment = booking.getShipmentOrder();
+            LocalDateTime reportedArrival = booking.getEstimatedDeliveryDate() != null
+                    ? booking.getEstimatedDeliveryDate().atStartOfDay()
+                    : null;
+
+            EtaReportedSource source = EtaReportedSource.builder()
+                    .company(booking.getCompany())
+                    .shipment(shipment)
+                    .carrier(booking.getCarrier())
+                    .source(EtaReportedSource.Source.CARRIER_BOOKING)
+                    .reportedDays(booking.getEstimatedTransitDays())
+                    .reportedArrival(reportedArrival)
+                    .originCountry(shipment.getShipperCountry())
+                    .destinationCountry(shipment.getConsigneeCountry())
+                    .transportMode(shipment.getTransportMode())
+                    .build();
+            etaReportedSourceRepo.save(source);
+        } catch (Exception e) {
+            log.warn("Échec de capture EtaReportedSource pour la réservation {}: {}", booking.getId(), e.getMessage());
+        }
     }
 
     @Transactional

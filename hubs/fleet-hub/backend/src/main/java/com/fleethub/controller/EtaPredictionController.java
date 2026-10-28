@@ -49,7 +49,10 @@ public class EtaPredictionController {
                 .mode(request.mode())
                 .carrierName(request.carrierName())
                 .build();
-        return ResponseEntity.ok(etaPredictionService.predict(prediction));
+        UUID shipmentId = request.shipmentId() != null && !request.shipmentId().isBlank()
+                ? UUID.fromString(request.shipmentId())
+                : null;
+        return ResponseEntity.ok(etaPredictionService.predict(prediction, shipmentId));
     }
 
     @PutMapping("/{id}/actual")
