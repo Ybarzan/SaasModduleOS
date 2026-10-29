@@ -28,10 +28,11 @@ public class ReceivingOrder {
     private UUID warehouseId;
 
     /**
-     * Reference logique et optionnelle (pas de FK) vers une expedition qui
-     * vivra dans le futur hub "Transport" (pas encore construit). Aucune
-     * derivation automatique des lignes depuis une expedition n'est faite
-     * ici : voir ReceivingService pour le detail (TODO de suivi).
+     * Reference logique et optionnelle (pas de FK) vers une expedition
+     * fleet-hub (domaine Transport, fusionne dans fleet-hub depuis -- voir
+     * docs/07-integration-fleet-hub.md). La derivation automatique des
+     * lignes depuis cette expedition, via l'API REST interne de fleet-hub,
+     * est implementee dans ReceivingService.deriveLinesFromShipment.
      */
     @Column(name = "shipment_id")
     private UUID shipmentId;

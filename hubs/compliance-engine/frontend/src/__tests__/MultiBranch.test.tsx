@@ -89,7 +89,7 @@ describe("MultiBranch page", () => {
 
   it("generates a consolidated report", async () => {
     vi.mocked(incokalkAPI.branches.consolidatedReport).mockResolvedValue({
-      data: { totalRevenue: 100000, totalCost: 60000, totalMargin: 40000, branchCount: 2, period: "2026" },
+      data: { totalRevenue: 100000, totalCost: 60000, totalMargin: 40000, branchCount: 2, period: "2026", totalActiveShipments: 17 },
     } as never);
     renderPage();
     await waitFor(() => screen.getByText("Filiale Maroc"));
@@ -98,5 +98,7 @@ describe("MultiBranch page", () => {
     await waitFor(() => {
       expect(screen.getByText("2")).toBeInTheDocument();
     });
+    expect(screen.getByText("17")).toBeInTheDocument();
+    expect(screen.getByText("Expéditions actives")).toBeInTheDocument();
   });
 });

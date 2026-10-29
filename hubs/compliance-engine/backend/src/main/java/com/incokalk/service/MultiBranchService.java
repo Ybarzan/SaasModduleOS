@@ -4,6 +4,7 @@ import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.*;
 import com.incokalk.repository.*;
 import com.incokalk.service.integration.finance.FinanceIntegrationClient;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import com.incokalk.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,7 @@ public class MultiBranchService {
     private final InterBranchTransferRepository transferRepo;
     private final CompanyRepository companyRepo;
     private final FinanceIntegrationClient financeIntegrationClient;
+    private final FleetHubIntegrationClient fleetHubIntegrationClient;
     private final Executor taskExecutor;
 
     @Transactional
@@ -79,8 +81,13 @@ public class MultiBranchService {
 
     // consolidateShipments() a ete retiree avec le domaine Transport : elle
     // bouclait sur les filiales via ShipmentOrderRepository.countByCompanyId /
-    // findByCompanyIdOrderByCreatedAtDesc. Une agregation inter-societes future
-    // necessiterait un appel REST batch vers fleet-hub, hors scope de cette passe.
+    // findByCompanyIdOrderByCreatedAtDesc (total toutes expeditions, tous
+    // statuts confondus). L'agregation ci-dessous utilise l'endpoint cross-hub
+    // deja expose par fleet-hub (GET /api/internal/dashboard-summary, meme
+    // principe que financialTotalsOrZero), qui ne donne que le compte
+    // d'expeditions ACTIVES (BOOKED/IN_TRANSIT) -- pas un equivalent exact de
+    // l'ancien total, mais le seul agregat cross-hub reellement disponible
+    // aujourd'hui sans construire un nouvel endpoint cote fleet-hub.
 
     public Map<String, Object> getConsolidatedReport() {
         List<UUID> companyIds = getConsolidationCompanyIds();
@@ -113,6 +120,9 @@ public class MultiBranchService {
         List<CompletableFuture<FinanceIntegrationClient.CarbonTotals>> carbonFutures = companyIds.stream()
                 .map(cid -> CompletableFuture.supplyAsync(() -> carbonTotalsOrZero(cid), taskExecutor))
                 .toList();
+        List<CompletableFuture<FleetHubIntegrationClient.FleetHubDashboardSummary>> shipmentFutures = companyIds.stream()
+                .map(cid -> CompletableFuture.supplyAsync(() -> shipmentTotalsOrZero(cid), taskExecutor))
+                .toList();
 
         BigDecimal totalRevenue = BigDecimal.ZERO;
         BigDecimal totalCost = BigDecimal.ZERO;
@@ -127,10 +137,15 @@ public class MultiBranchService {
         for (CompletableFuture<FinanceIntegrationClient.CarbonTotals> future : carbonFutures) {
             totalEmissions = totalEmissions.add(future.join().co2EmissionsKg());
         }
+        long totalActiveShipments = 0;
+        for (CompletableFuture<FleetHubIntegrationClient.FleetHubDashboardSummary> future : shipmentFutures) {
+            totalActiveShipments += future.join().activeShipments();
+        }
         report.put("totalRevenue", totalRevenue);
         report.put("totalCost", totalCost);
         report.put("totalMargin", totalMargin);
         report.put("totalCo2EmissionsKg", totalEmissions);
+        report.put("totalActiveShipments", totalActiveShipments);
 
         UUID currentId = TenantContext.get();
         long activeBranches = branchRepo.countByParentCompanyId(currentId);
@@ -186,6 +201,15 @@ public class MultiBranchService {
         } catch (FinanceIntegrationClient.FinanceIntegrationException e) {
             log.debug("[Finance] Agrégats carbone indisponibles pour {} : {}", companyId, e.getMessage());
             return new FinanceIntegrationClient.CarbonTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        }
+    }
+
+    private FleetHubIntegrationClient.FleetHubDashboardSummary shipmentTotalsOrZero(UUID companyId) {
+        try {
+            return fleetHubIntegrationClient.getDashboardSummary(companyId);
+        } catch (FleetHubIntegrationClient.FleetHubIntegrationException e) {
+            log.debug("[FleetHub] Résumé d'activité indisponible pour {} : {}", companyId, e.getMessage());
+            return new FleetHubIntegrationClient.FleetHubDashboardSummary(0, 0, 0);
         }
     }
 }

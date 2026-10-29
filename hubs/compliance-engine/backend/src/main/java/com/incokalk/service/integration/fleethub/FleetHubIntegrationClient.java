@@ -65,6 +65,9 @@ public class FleetHubIntegrationClient {
 
     public record FreightEstimate(double cost, int days) {}
 
+    /** Pour MultiBranchService (consolidation inter-sociétés). */
+    public record FleetHubDashboardSummary(long activeShipments, long availableTrucks, long openCarrierBookings) {}
+
     /**
      * Remplace FreightRateService.estimate(...) : devine le mode de transport
      * côté compliance-engine quand il n'est pas fourni (même logique qu'avant le
@@ -140,6 +143,35 @@ public class FleetHubIntegrationClient {
             throw e;
         } catch (Exception e) {
             throw new FleetHubIntegrationException("Erreur d'appel à fleet-hub (/api/logistics/packaging) : " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Pour MultiBranchService.getConsolidatedReport() (consolidation
+     * inter-sociétés -- voir docs/03, retrait du domaine Transport) : appelle
+     * {@code GET /api/internal/dashboard-summary} sur fleet-hub, le même
+     * endpoint que celui déjà consommé côté Finance/Portal pour le tableau de
+     * bord cross-hub Praxio.
+     */
+    public FleetHubDashboardSummary getDashboardSummary(UUID companyId) {
+        HttpHeaders headers = jsonHeaders();
+        headers.set("X-Internal-Integration-Key", resolveApiKey(companyId));
+
+        String url = trimTrailingSlash(baseUrl) + "/api/internal/dashboard-summary";
+        try {
+            ResponseEntity<FleetHubDashboardSummary> response = restTemplate.exchange(
+                    url, HttpMethod.GET, new HttpEntity<>(headers), FleetHubDashboardSummary.class);
+            FleetHubDashboardSummary body = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful() || body == null) {
+                throw new FleetHubIntegrationException(
+                        "Échec de l'appel résumé fleet-hub (statut " + response.getStatusCode() + ")");
+            }
+            return body;
+        } catch (FleetHubIntegrationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new FleetHubIntegrationException(
+                    "Erreur d'appel à fleet-hub (/api/internal/dashboard-summary) : " + e.getMessage(), e);
         }
     }
 

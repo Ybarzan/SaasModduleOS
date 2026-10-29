@@ -29,6 +29,7 @@ interface ConsolidatedReport {
   totalMargin: number;
   branchCount: number;
   period: string;
+  totalActiveShipments: number;
 }
 
 interface Transfer {
@@ -280,7 +281,7 @@ const MultiBranch = () => {
           </div>
         )}
         {consolidated && !consLoading && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
             <div className="p-4 bg-surface-2 rounded-lg">
               <p className="text-sm text-ink-soft">Revenu total</p>
               <p className="text-lg font-bold text-ink">{formatEUR(consolidated.totalRevenue)}</p>
@@ -296,6 +297,12 @@ const MultiBranch = () => {
             <div className="p-4 bg-surface-2 rounded-lg">
               <p className="text-sm text-ink-soft">Nb filiales</p>
               <p className="text-lg font-bold text-ink">{consolidated.branchCount}</p>
+            </div>
+            <div className="p-4 bg-surface-2 rounded-lg">
+              <p className="text-sm text-ink-soft flex items-center gap-1">
+                <Package size={14} /> Expéditions actives
+              </p>
+              <p className="text-lg font-bold text-ink">{consolidated.totalActiveShipments}</p>
             </div>
           </div>
         )}

@@ -5,6 +5,7 @@ import com.incokalk.model.CompanyBranch;
 import com.incokalk.model.InterBranchTransfer;
 import com.incokalk.repository.*;
 import com.incokalk.service.integration.finance.FinanceIntegrationClient;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import com.incokalk.tenant.TenantContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,6 +26,7 @@ class MultiBranchServiceTest {
     InterBranchTransferRepository transferRepo;
     CompanyRepository companyRepo;
     FinanceIntegrationClient financeIntegrationClient;
+    FleetHubIntegrationClient fleetHubIntegrationClient;
 
     @BeforeEach
     void setUp() {
@@ -32,10 +34,12 @@ class MultiBranchServiceTest {
         transferRepo = mock(InterBranchTransferRepository.class);
         companyRepo = mock(CompanyRepository.class);
         financeIntegrationClient = mock(FinanceIntegrationClient.class);
+        fleetHubIntegrationClient = mock(FleetHubIntegrationClient.class);
         // Exécuteur synchrone (plutôt que le taskExecutor réel, async) : les
         // assertions sur le rapport retourné doivent rester déterministes.
         Executor synchronousExecutor = Runnable::run;
-        service = new MultiBranchService(branchRepo, transferRepo, companyRepo, financeIntegrationClient, synchronousExecutor);
+        service = new MultiBranchService(branchRepo, transferRepo, companyRepo, financeIntegrationClient,
+                fleetHubIntegrationClient, synchronousExecutor);
         TenantContext.set(UUID.randomUUID());
     }
 
@@ -134,12 +138,15 @@ class MultiBranchServiceTest {
                 new FinanceIntegrationClient.FinancialTotals(new BigDecimal("10000"), new BigDecimal("6000"), new BigDecimal("4000")));
         when(financeIntegrationClient.getCarbonTotals(companyId)).thenReturn(
                 new FinanceIntegrationClient.CarbonTotals(new BigDecimal("50.5"), BigDecimal.ZERO, BigDecimal.ZERO));
+        when(fleetHubIntegrationClient.getDashboardSummary(companyId)).thenReturn(
+                new FleetHubIntegrationClient.FleetHubDashboardSummary(7, 3, 2));
 
         Map<String, Object> report = service.getConsolidatedReport();
 
         assertThat(report.get("totalRevenue")).isEqualTo(new BigDecimal("10000"));
         assertThat(report.get("totalMargin")).isEqualTo(new BigDecimal("4000"));
         assertThat(report.get("totalCo2EmissionsKg")).isEqualTo(new BigDecimal("50.5"));
+        assertThat(report.get("totalActiveShipments")).isEqualTo(7L);
     }
 
     @Test
@@ -154,11 +161,65 @@ class MultiBranchServiceTest {
                 .thenThrow(new FinanceIntegrationClient.FinanceIntegrationException("non configurée"));
         when(financeIntegrationClient.getCarbonTotals(companyId))
                 .thenThrow(new FinanceIntegrationClient.FinanceIntegrationException("non configurée"));
+        when(fleetHubIntegrationClient.getDashboardSummary(companyId))
+                .thenThrow(new FleetHubIntegrationClient.FleetHubIntegrationException("non configurée"));
 
         Map<String, Object> report = service.getConsolidatedReport();
 
         assertThat(report.get("totalRevenue")).isEqualTo(BigDecimal.ZERO);
         assertThat(report.get("totalCo2EmissionsKg")).isEqualTo(BigDecimal.ZERO);
+        assertThat(report.get("totalActiveShipments")).isEqualTo(0L);
+    }
+
+    @Test
+    @DisplayName("getConsolidatedReport → agrège les expéditions actives fleet-hub de plusieurs filiales")
+    void getConsolidatedReport_aggregatesFleetHubShipmentsAcrossBranches() {
+        UUID parentId = TenantContext.get();
+        UUID branchId = UUID.randomUUID();
+        when(branchRepo.findByBranchCompanyIdAndIsActiveTrue(parentId)).thenReturn(List.of());
+        when(branchRepo.findByParentCompanyIdAndIsActiveTrue(parentId)).thenReturn(List.of(
+                CompanyBranch.builder().parentCompanyId(parentId).branchCompanyId(branchId).build()));
+        when(branchRepo.countByParentCompanyId(parentId)).thenReturn(1L);
+        when(companyRepo.findAllById(any())).thenReturn(List.of());
+        stubZeroFinance(parentId);
+        stubZeroFinance(branchId);
+        when(fleetHubIntegrationClient.getDashboardSummary(parentId)).thenReturn(
+                new FleetHubIntegrationClient.FleetHubDashboardSummary(4, 0, 0));
+        when(fleetHubIntegrationClient.getDashboardSummary(branchId)).thenReturn(
+                new FleetHubIntegrationClient.FleetHubDashboardSummary(9, 0, 0));
+
+        Map<String, Object> report = service.getConsolidatedReport();
+
+        assertThat(report.get("totalActiveShipments")).isEqualTo(13L);
+    }
+
+    @Test
+    @DisplayName("getConsolidatedReport → fleet-hub indisponible pour une filiale → dégradation gracieuse (zéro pour celle-là, pas d'exception)")
+    void getConsolidatedReport_fleetHubUnavailableForOneBranch_gracefulDegradation() {
+        UUID parentId = TenantContext.get();
+        UUID branchId = UUID.randomUUID();
+        when(branchRepo.findByBranchCompanyIdAndIsActiveTrue(parentId)).thenReturn(List.of());
+        when(branchRepo.findByParentCompanyIdAndIsActiveTrue(parentId)).thenReturn(List.of(
+                CompanyBranch.builder().parentCompanyId(parentId).branchCompanyId(branchId).build()));
+        when(branchRepo.countByParentCompanyId(parentId)).thenReturn(1L);
+        when(companyRepo.findAllById(any())).thenReturn(List.of());
+        stubZeroFinance(parentId);
+        stubZeroFinance(branchId);
+        when(fleetHubIntegrationClient.getDashboardSummary(parentId)).thenReturn(
+                new FleetHubIntegrationClient.FleetHubDashboardSummary(4, 0, 0));
+        when(fleetHubIntegrationClient.getDashboardSummary(branchId))
+                .thenThrow(new FleetHubIntegrationClient.FleetHubIntegrationException("intégration non configurée"));
+
+        Map<String, Object> report = service.getConsolidatedReport();
+
+        assertThat(report.get("totalActiveShipments")).isEqualTo(4L);
+    }
+
+    private void stubZeroFinance(UUID companyId) {
+        when(financeIntegrationClient.getFinancialTotals(companyId)).thenReturn(
+                new FinanceIntegrationClient.FinancialTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+        when(financeIntegrationClient.getCarbonTotals(companyId)).thenReturn(
+                new FinanceIntegrationClient.CarbonTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
     }
 
     @Test
