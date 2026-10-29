@@ -7,6 +7,7 @@ import com.incokalk.repository.ApprovalRequestRepository;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.UserRepository;
 import com.incokalk.service.integration.finance.FinanceIntegrationClient;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,12 @@ import java.util.UUID;
  * carbon_offset_month vient desormais de hubs/finance via FinanceIntegrationClient
  * (degradation gracieuse si l'integration n'est pas configuree) ;
  * getUserProfile/getCompanyProfile sont inchangees.
+ * <p>
+ * active_shipments restaure 2026-10-29 via FleetHubIntegrationClient.getDashboardSummary()
+ * (meme endpoint cross-hub deja utilise par MultiBranchService), meme degradation
+ * gracieuse. total_shipments/total_cost_month restent non restaures : aucun
+ * endpoint fleet-hub existant n'expose un compte total (tous statuts) ni un cout
+ * mensuel agrege -- en construire un serait hors scope de cette passe, pas devine.
  */
 @Slf4j
 @Service
@@ -33,6 +40,7 @@ public class MobileDashboardService {
 
     private final ApprovalRequestRepository approvalRequestRepo;
     private final FinanceIntegrationClient financeIntegrationClient;
+    private final FleetHubIntegrationClient fleetHubIntegrationClient;
     private final UserRepository userRepo;
     private final CompanyRepository companyRepo;
 
@@ -46,6 +54,8 @@ public class MobileDashboardService {
 
         BigDecimal carbonOffsetMonth = carbonTotalsOrZero(companyId).co2EmissionsKg();
         result.put("carbon_offset_month", carbonOffsetMonth != null ? carbonOffsetMonth.doubleValue() : 0.0);
+
+        result.put("active_shipments", activeShipmentsOrZero(companyId));
 
         return result;
     }
@@ -68,6 +78,16 @@ public class MobileDashboardService {
         } catch (FinanceIntegrationClient.FinanceIntegrationException e) {
             log.debug("[Finance] Agrégats carbone indisponibles pour {} : {}", companyId, e.getMessage());
             return new FinanceIntegrationClient.CarbonTotals(BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+        }
+    }
+
+    /** Même dégradation gracieuse que carbonTotalsOrZero, voir ce commentaire. */
+    private long activeShipmentsOrZero(UUID companyId) {
+        try {
+            return fleetHubIntegrationClient.getDashboardSummary(companyId).activeShipments();
+        } catch (FleetHubIntegrationClient.FleetHubIntegrationException e) {
+            log.debug("[FleetHub] Résumé d'activité indisponible pour {} : {}", companyId, e.getMessage());
+            return 0;
         }
     }
 }

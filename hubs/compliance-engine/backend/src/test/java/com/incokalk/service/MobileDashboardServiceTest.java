@@ -6,6 +6,7 @@ import com.incokalk.repository.ApprovalRequestRepository;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.UserRepository;
 import com.incokalk.service.integration.finance.FinanceIntegrationClient;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,8 @@ import static org.mockito.Mockito.when;
  * ont été retirées avec le domaine Transport (ShipmentOrderRepository) — voir
  * MobileDashboardService. pending_approvals reste local ; carbon_offset_month
  * vient désormais de hubs/finance via FinanceIntegrationClient ;
+ * active_shipments restauré via FleetHubIntegrationClient (2026-10-29) ;
+ * total_shipments/total_cost_month/recent_activity restent non restaurés ;
  * getUserProfile/getCompanyProfile sont inchangées.
  */
 @DisplayName("MobileDashboardService — Tests unitaires")
@@ -34,6 +37,7 @@ class MobileDashboardServiceTest {
 
     @Mock ApprovalRequestRepository approvalRequestRepo;
     @Mock FinanceIntegrationClient financeIntegrationClient;
+    @Mock FleetHubIntegrationClient fleetHubIntegrationClient;
     @Mock UserRepository userRepo;
     @Mock CompanyRepository companyRepo;
 
@@ -48,32 +52,37 @@ class MobileDashboardServiceTest {
     }
 
     @Test
-    @DisplayName("getDashboard : renvoie pending_approvals et carbon_offset_month (via Finance)")
+    @DisplayName("getDashboard : renvoie pending_approvals, carbon_offset_month (Finance) et active_shipments (fleet-hub)")
     void getDashboard_returnsSurvivingFields() {
         when(approvalRequestRepo.countByCompanyIdAndStatus(any(), any())).thenReturn(4L);
         when(financeIntegrationClient.getCarbonTotals(companyId)).thenReturn(
                 new FinanceIntegrationClient.CarbonTotals(new BigDecimal("123.45"), BigDecimal.ZERO, BigDecimal.ZERO));
+        when(fleetHubIntegrationClient.getDashboardSummary(companyId)).thenReturn(
+                new FleetHubIntegrationClient.FleetHubDashboardSummary(9, 0, 0));
 
         Map<String, Object> result = service.getDashboard(companyId);
 
         assertThat(result.get("pending_approvals")).isEqualTo(4L);
         assertThat(result.get("carbon_offset_month")).isEqualTo(123.45);
+        assertThat(result.get("active_shipments")).isEqualTo(9L);
         assertThat(result).doesNotContainKey("total_shipments");
-        assertThat(result).doesNotContainKey("active_shipments");
         assertThat(result).doesNotContainKey("total_cost_month");
         assertThat(result).doesNotContainKey("recent_activity");
     }
 
     @Test
-    @DisplayName("getDashboard : Finance non configurée → dégradation gracieuse (0.0, pas d'exception)")
-    void getDashboard_financeUnavailable_gracefulDegradation() {
+    @DisplayName("getDashboard : Finance et fleet-hub non configurés → dégradation gracieuse (0, pas d'exception)")
+    void getDashboard_integrationsUnavailable_gracefulDegradation() {
         when(approvalRequestRepo.countByCompanyIdAndStatus(any(), any())).thenReturn(0L);
         when(financeIntegrationClient.getCarbonTotals(companyId))
                 .thenThrow(new FinanceIntegrationClient.FinanceIntegrationException("non configurée"));
+        when(fleetHubIntegrationClient.getDashboardSummary(companyId))
+                .thenThrow(new FleetHubIntegrationClient.FleetHubIntegrationException("non configurée"));
 
         Map<String, Object> result = service.getDashboard(companyId);
 
         assertThat(result.get("carbon_offset_month")).isEqualTo(0.0);
+        assertThat(result.get("active_shipments")).isEqualTo(0L);
     }
 
     @Test
