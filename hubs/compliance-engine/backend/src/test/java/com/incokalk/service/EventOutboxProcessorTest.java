@@ -2,9 +2,13 @@ package com.incokalk.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.incokalk.dto.notification.SendNotificationDTO;
+import com.incokalk.model.Company;
+import com.incokalk.model.ECommerceIntegration;
+import com.incokalk.model.EcommerceShipmentLink;
 import com.incokalk.model.EventOutbox;
 import com.incokalk.repository.EventOutboxRepository;
 import com.incokalk.scheduling.DistributedJobLock;
+import com.incokalk.service.ecommerce.ECommerceAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,6 +42,8 @@ class EventOutboxProcessorTest {
 
     @Mock EventOutboxRepository eventOutboxRepo;
     @Mock NotificationService notificationService;
+    @Mock EcommerceShipmentLinkService ecommerceShipmentLinkService;
+    @Mock ECommerceSyncService ecommerceSyncService;
 
     private EventOutboxProcessor processor;
 
@@ -48,7 +54,7 @@ class EventOutboxProcessorTest {
         MockitoAnnotations.openMocks(this);
         // Pas de Redis en test -> DistributedJobLock.runExclusively execute directement le job.
         processor = new EventOutboxProcessor(eventOutboxRepo, new DistributedJobLock(Optional.empty()),
-                notificationService, new ObjectMapper());
+                notificationService, new ObjectMapper(), ecommerceShipmentLinkService, ecommerceSyncService);
         companyId = UUID.randomUUID();
     }
 
@@ -64,9 +70,13 @@ class EventOutboxProcessorTest {
     }
 
     private String shipmentStatusChangePayload() {
+        return shipmentStatusChangePayload(UUID.randomUUID(), "DELIVERED");
+    }
+
+    private String shipmentStatusChangePayload(UUID shipmentId, String newStatus) {
         return """
-                {"eventType":"SHIPMENT_STATUS_CHANGE","shipmentId":"%s","orderNumber":"FH-1001","oldStatus":"EN_TRANSIT","newStatus":"DELIVERED","dataSource":"LIVE"}
-                """.formatted(UUID.randomUUID()).trim();
+                {"eventType":"SHIPMENT_STATUS_CHANGE","shipmentId":"%s","orderNumber":"FH-1001","oldStatus":"EN_TRANSIT","newStatus":"%s","dataSource":"LIVE"}
+                """.formatted(shipmentId, newStatus).trim();
     }
 
     private String shipmentCreatedPayload() {
@@ -92,6 +102,78 @@ class EventOutboxProcessorTest {
         ArgumentCaptor<EventOutbox> captor = ArgumentCaptor.forClass(EventOutbox.class);
         verify(eventOutboxRepo).save(captor.capture());
         assertThat(captor.getValue().getStatus()).isEqualTo(EventOutbox.Status.PROCESSED);
+        verifyNoInteractions(ecommerceShipmentLinkService);
+    }
+
+    @Test
+    @DisplayName("processOne : passage à IN_TRANSIT avec un lien e-commerce -> markOrderShipped appelé automatiquement")
+    void processOne_statusChangeToInTransit_withLink_pushesShippedAutomatically() {
+        UUID shipmentId = UUID.randomUUID();
+        EventOutbox eventEntity = pendingEvent("FLEETHUB_SHIPMENT_STATUS_CHANGE",
+                shipmentStatusChangePayload(shipmentId, "IN_TRANSIT"), 0);
+
+        ECommerceIntegration integration = ECommerceIntegration.builder()
+                .id(UUID.randomUUID()).platform(ECommerceIntegration.Platform.SHOPIFY).build();
+        EcommerceShipmentLink link = EcommerceShipmentLink.builder()
+                .id(UUID.randomUUID()).company(new Company()).integration(integration)
+                .externalOrderId("EXT-42").fleethubShipmentId(shipmentId).build();
+
+        when(ecommerceShipmentLinkService.findForShipment(companyId, shipmentId)).thenReturn(Optional.of(link));
+        ECommerceAdapter adapter = mock(ECommerceAdapter.class);
+        when(ecommerceSyncService.resolveAdapter(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(adapter);
+        when(adapter.markOrderShipped(integration, "EXT-42", null, null, true))
+                .thenReturn(ECommerceAdapter.PushResult.ok("ok"));
+
+        processor.processOne(eventEntity);
+
+        verify(adapter).markOrderShipped(integration, "EXT-42", null, null, true);
+        ArgumentCaptor<EventOutbox> captor = ArgumentCaptor.forClass(EventOutbox.class);
+        verify(eventOutboxRepo).save(captor.capture());
+        assertThat(captor.getValue().getStatus()).isEqualTo(EventOutbox.Status.PROCESSED);
+    }
+
+    @Test
+    @DisplayName("processOne : passage à IN_TRANSIT sans lien e-commerce -> aucun appel adaptateur")
+    void processOne_statusChangeToInTransit_withoutLink_doesNotPush() {
+        UUID shipmentId = UUID.randomUUID();
+        EventOutbox eventEntity = pendingEvent("FLEETHUB_SHIPMENT_STATUS_CHANGE",
+                shipmentStatusChangePayload(shipmentId, "IN_TRANSIT"), 0);
+        when(ecommerceShipmentLinkService.findForShipment(companyId, shipmentId)).thenReturn(Optional.empty());
+
+        processor.processOne(eventEntity);
+
+        verifyNoInteractions(ecommerceSyncService);
+        verify(notificationService).processEvent(any());
+    }
+
+    @Test
+    @DisplayName("processOne : passage à DELIVERED (pas IN_TRANSIT) avec un lien -> aucun push-back")
+    void processOne_statusChangeToDelivered_withLink_doesNotPush() {
+        UUID shipmentId = UUID.randomUUID();
+        EventOutbox eventEntity = pendingEvent("FLEETHUB_SHIPMENT_STATUS_CHANGE",
+                shipmentStatusChangePayload(shipmentId, "DELIVERED"), 0);
+
+        processor.processOne(eventEntity);
+
+        verifyNoInteractions(ecommerceShipmentLinkService, ecommerceSyncService);
+        verify(notificationService).processEvent(any());
+    }
+
+    @Test
+    @DisplayName("processOne : échec du push-back automatique -> journalisé, jamais propagé, événement toujours PROCESSED")
+    void processOne_pushBackThrows_doesNotFailEvent() {
+        UUID shipmentId = UUID.randomUUID();
+        EventOutbox eventEntity = pendingEvent("FLEETHUB_SHIPMENT_STATUS_CHANGE",
+                shipmentStatusChangePayload(shipmentId, "IN_TRANSIT"), 0);
+        when(ecommerceShipmentLinkService.findForShipment(companyId, shipmentId))
+                .thenThrow(new RuntimeException("DB down"));
+
+        processor.processOne(eventEntity);
+
+        ArgumentCaptor<EventOutbox> captor = ArgumentCaptor.forClass(EventOutbox.class);
+        verify(eventOutboxRepo).save(captor.capture());
+        assertThat(captor.getValue().getStatus()).isEqualTo(EventOutbox.Status.PROCESSED);
+        verify(notificationService).processEvent(any());
     }
 
     @Test

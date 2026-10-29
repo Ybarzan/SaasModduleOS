@@ -2,8 +2,10 @@ package com.incokalk.controller.config;
 
 import com.incokalk.model.ECommerceIntegration;
 import com.incokalk.model.ECommerceSyncLog;
+import com.incokalk.model.EcommerceShipmentLink;
 import com.incokalk.security.RolesAllowed;
 import com.incokalk.service.ECommerceSyncService;
+import com.incokalk.service.EcommerceShipmentLinkService;
 import com.incokalk.service.ecommerce.ECommerceAdapter;
 import com.incokalk.tenant.TenantContext;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,6 +26,7 @@ import java.util.*;
 public class ECommerceController {
 
     private final ECommerceSyncService syncService;
+    private final EcommerceShipmentLinkService linkService;
     private final List<ECommerceAdapter> adapters;
 
     @PostMapping("/integrations")
@@ -144,6 +147,33 @@ public class ECommerceController {
         return ResponseEntity.ok(adapter.pushEta(integration, externalOrderId, request.getEstimatedDeliveryDate()));
     }
 
+    @PostMapping("/integrations/{id}/orders/{externalOrderId}/link")
+    @RolesAllowed({com.incokalk.model.CompanyRole.Role.OWNER, com.incokalk.model.CompanyRole.Role.ADMIN, com.incokalk.model.CompanyRole.Role.MANAGER})
+    @Operation(summary = "Lier une expédition fleet-hub à sa commande d'origine (Phase 1 J4) -- "
+            + "permet le déclenchement automatique du push-back (markOrderShipped) au passage en IN_TRANSIT, "
+            + "sans résoudre externalOrderId à chaque fois")
+    public ResponseEntity<EcommerceShipmentLink> linkShipment(
+            @PathVariable UUID id,
+            @PathVariable String externalOrderId,
+            @Valid @RequestBody LinkShipmentRequest request,
+            HttpServletRequest httpReq) {
+        UUID companyId = TenantContext.get();
+        EcommerceShipmentLink saved = linkService.link(id, externalOrderId, request.getShipmentId(), companyId);
+        return ResponseEntity.ok(saved);
+    }
+
+    @DeleteMapping("/integrations/{id}/orders/{externalOrderId}/link")
+    @RolesAllowed({com.incokalk.model.CompanyRole.Role.OWNER, com.incokalk.model.CompanyRole.Role.ADMIN, com.incokalk.model.CompanyRole.Role.MANAGER})
+    @Operation(summary = "Supprimer la corrélation expédition <-> commande (Phase 1 J4)")
+    public ResponseEntity<Void> unlinkShipment(
+            @PathVariable UUID id,
+            @PathVariable String externalOrderId,
+            HttpServletRequest httpReq) {
+        UUID companyId = TenantContext.get();
+        linkService.unlink(id, externalOrderId, companyId);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/sync-log")
     @RolesAllowed({com.incokalk.model.CompanyRole.Role.OWNER, com.incokalk.model.CompanyRole.Role.ADMIN, com.incokalk.model.CompanyRole.Role.MANAGER})
     @Operation(summary = "Historique des synchronisations")
@@ -184,5 +214,11 @@ public class ECommerceController {
     public static class PushEtaRequest {
         @jakarta.validation.constraints.NotNull
         private java.time.LocalDateTime estimatedDeliveryDate;
+    }
+
+    @Data
+    public static class LinkShipmentRequest {
+        @jakarta.validation.constraints.NotNull
+        private UUID shipmentId;
     }
 }
