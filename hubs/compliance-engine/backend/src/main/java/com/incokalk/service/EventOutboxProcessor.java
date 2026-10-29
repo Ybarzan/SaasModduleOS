@@ -3,9 +3,12 @@ package com.incokalk.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.incokalk.dto.integration.fleethub.FleetHubShipmentEventRequest;
 import com.incokalk.dto.notification.SendNotificationDTO;
+import com.incokalk.model.ECommerceIntegration;
+import com.incokalk.model.EcommerceShipmentLink;
 import com.incokalk.model.EventOutbox;
 import com.incokalk.repository.EventOutboxRepository;
 import com.incokalk.scheduling.DistributedJobLock;
+import com.incokalk.service.ecommerce.ECommerceAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Livre les evenements ecrits dans event_outbox (V63) par EventPublisher.
@@ -40,6 +44,8 @@ public class EventOutboxProcessor {
     private final DistributedJobLock jobLock;
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
+    private final EcommerceShipmentLinkService ecommerceShipmentLinkService;
+    private final ECommerceSyncService ecommerceSyncService;
 
     @Scheduled(fixedDelay = 30000)
     public void processPendingEvents() {
@@ -115,6 +121,50 @@ public class EventOutboxProcessor {
                 .message(payload.oldStatus() + " → " + payload.newStatus())
                 .templateData(templateData)
                 .build());
+
+        pushEcommerceShippedIfLinked(event.getCompanyId(), payload);
+    }
+
+    /**
+     * Phase 1 J4 complément (docs/03-plan-migration.md) : si cette expédition
+     * est liée à une commande e-commerce (EcommerceShipmentLink, saisie
+     * manuelle par l'opérateur) et que son statut vient de passer à
+     * IN_TRANSIT -- premier signal réel de départ -- notifie automatiquement
+     * le marchand (markOrderShipped), sans attendre un appel manuel. Aucun
+     * numéro de tracking/transporteur connu à ce stade (pas porté par ce
+     * webhook) -- ShopifyAdapter gère déjà l'absence de l'un ou l'autre.
+     * Un échec ici est journalisé et jamais propagé : il ne doit pas faire
+     * rejouer tout l'événement (qui re-enverrait la notification déjà
+     * traitée ci-dessus).
+     */
+    private void pushEcommerceShippedIfLinked(java.util.UUID companyId, FleetHubShipmentEventRequest payload) {
+        if (!"IN_TRANSIT".equals(payload.newStatus())) return;
+        try {
+            Optional<EcommerceShipmentLink> link =
+                    ecommerceShipmentLinkService.findForShipment(companyId, payload.shipmentId());
+            if (link.isEmpty()) return;
+
+            ECommerceIntegration integration = link.get().getIntegration();
+            ECommerceAdapter adapter = ecommerceSyncService.resolveAdapter(integration.getPlatform());
+            if (adapter == null) {
+                log.warn("[EventOutbox] Aucun adaptateur e-commerce pour la plateforme {} (lien expédition {})",
+                        integration.getPlatform(), payload.shipmentId());
+                return;
+            }
+
+            ECommerceAdapter.PushResult result = adapter.markOrderShipped(
+                    integration, link.get().getExternalOrderId(), null, null, true);
+            if (!result.success()) {
+                log.warn("[EventOutbox] Push-back automatique échoué pour l'expédition {} (commande {}): {}",
+                        payload.shipmentId(), link.get().getExternalOrderId(), result.message());
+            } else {
+                log.info("[EventOutbox] Commande {} marquée expédiée automatiquement (expédition {})",
+                        link.get().getExternalOrderId(), payload.shipmentId());
+            }
+        } catch (Exception e) {
+            log.warn("[EventOutbox] Échec du push-back e-commerce automatique pour l'expédition {}: {}",
+                    payload.shipmentId(), e.getMessage());
+        }
     }
 
     private void handleShipmentCreated(EventOutbox event) throws Exception {

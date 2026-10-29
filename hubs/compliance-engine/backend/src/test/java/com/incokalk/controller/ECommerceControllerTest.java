@@ -2,7 +2,9 @@ package com.incokalk.controller;
 
 import com.incokalk.model.ECommerceIntegration;
 import com.incokalk.model.ECommerceSyncLog;
+import com.incokalk.model.EcommerceShipmentLink;
 import com.incokalk.service.ECommerceSyncService;
+import com.incokalk.service.EcommerceShipmentLinkService;
 import com.incokalk.service.ecommerce.ECommerceAdapter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,6 +33,9 @@ class ECommerceControllerTest extends ControllerTestBase {
 
     @MockBean
     private ECommerceSyncService syncService;
+
+    @MockBean
+    private EcommerceShipmentLinkService linkService;
 
     @Test
     @DisplayName("POST /v1/ecommerce/integrations → créer une intégration")
@@ -229,5 +234,36 @@ class ECommerceControllerTest extends ControllerTestBase {
                         .content("{\"estimatedDeliveryDate\":\"2026-11-15T00:00:00\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
+    }
+
+    @Test
+    @DisplayName("POST /v1/ecommerce/integrations/{id}/orders/{externalOrderId}/link → crée la corrélation")
+    void linkShipment() throws Exception {
+        UUID integrationId = UUID.randomUUID();
+        UUID shipmentId = UUID.randomUUID();
+        EcommerceShipmentLink link = EcommerceShipmentLink.builder()
+                .id(UUID.randomUUID()).externalOrderId("1001").fleethubShipmentId(shipmentId).build();
+
+        when(linkService.link(eq(integrationId), eq("1001"), eq(shipmentId), any())).thenReturn(link);
+
+        mockMvc.perform(post("/v1/ecommerce/integrations/" + integrationId + "/orders/1001/link")
+                        .header("Authorization", authHeader())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"shipmentId\":\"" + shipmentId + "\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.externalOrderId").value("1001"))
+                .andExpect(jsonPath("$.fleethubShipmentId").value(shipmentId.toString()));
+    }
+
+    @Test
+    @DisplayName("DELETE /v1/ecommerce/integrations/{id}/orders/{externalOrderId}/link → supprime la corrélation")
+    void unlinkShipment() throws Exception {
+        UUID integrationId = UUID.randomUUID();
+
+        mockMvc.perform(delete("/v1/ecommerce/integrations/" + integrationId + "/orders/1001/link")
+                        .header("Authorization", authHeader()))
+                .andExpect(status().isNoContent());
+
+        org.mockito.Mockito.verify(linkService).unlink(eq(integrationId), eq("1001"), any());
     }
 }
