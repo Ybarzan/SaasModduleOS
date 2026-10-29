@@ -2,6 +2,7 @@ package com.incokalk.service.ecommerce;
 
 import com.incokalk.model.ECommerceIntegration;
 import com.incokalk.repository.CompanyRepository;
+import com.incokalk.service.integration.fleethub.ExternalShipmentCreationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -83,8 +84,28 @@ public class WooCommerceAdapter implements ECommerceAdapter {
         return Collections.emptyMap();
     }
 
-    // mapOrderToShipment a ete retiree avec le domaine Transport
-    // (ShipmentOrderRepository). Voir ECommerceAdapter / ECommerceSyncService.
+    @Override
+    public String extractExternalOrderId(Map<String, Object> rawOrder) {
+        Object id = rawOrder.get("id");
+        return id != null ? String.valueOf(id) : null;
+    }
+
+    /**
+     * Non implémenté (contrairement à {@code ShopifyAdapter}) : contrairement
+     * au champ {@code id} ci-dessus (identique dans toute version documentée
+     * de l'API REST WooCommerce v3), la forme exacte de l'adresse de
+     * livraison ({@code shipping}, pas {@code shipping_address}) n'a pas été
+     * vérifiée depuis cet environnement -- jamais de champ deviné (même
+     * principe que {@code markOrderShipped}/{@code pushEta}, non implémentés
+     * pour cette plateforme).
+     */
+    @Override
+    public Optional<ExternalShipmentCreationRequest> mapOrderToShipment(
+            ECommerceIntegration integration, Map<String, Object> rawOrder) {
+        log.debug("[WooCommerce] mapOrderToShipment non implémenté pour cette plateforme (commande {})",
+                rawOrder.get("id"));
+        return Optional.empty();
+    }
 
     private HttpHeaders createAuthHeaders(ECommerceIntegration integration) {
         String auth = integration.getApiKey() + ":" + integration.getApiSecret();

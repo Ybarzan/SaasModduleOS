@@ -282,4 +282,85 @@ class ShopifyAdapterTest {
 
         assertThat(result.success()).isFalse();
     }
+
+    @Test
+    @DisplayName("extractExternalOrderId → id Shopify converti en String")
+    void extractExternalOrderId_returnsIdAsString() {
+        assertThat(adapter.extractExternalOrderId(Map.of("id", 4821))).isEqualTo("4821");
+    }
+
+    @Test
+    @DisplayName("extractExternalOrderId → absent → null")
+    void extractExternalOrderId_missing_returnsNull() {
+        assertThat(adapter.extractExternalOrderId(Map.of())).isNull();
+    }
+
+    @Test
+    @DisplayName("mapOrderToShipment → shipping_address complet → requête construite")
+    void mapOrderToShipment_fullShippingAddress_buildsRequest() {
+        var integration = integration("https://my-store.myshopify.com/", "token123");
+        integration.getCompany().setName("Boutique SARL");
+        Map<String, Object> rawOrder = new LinkedHashMap<>();
+        rawOrder.put("id", 4821);
+        rawOrder.put("currency", "EUR");
+        rawOrder.put("total_price", "49.90");
+        rawOrder.put("total_weight", 1500);
+        rawOrder.put("shipping_address", Map.of(
+                "name", "Jean Client",
+                "address1", "12 rue des Lilas",
+                "city", "Bruxelles",
+                "country_code", "BE",
+                "zip", "1000"));
+        rawOrder.put("line_items", List.of(Map.of("title", "Widget", "quantity", 2)));
+
+        var result = adapter.mapOrderToShipment(integration, rawOrder);
+
+        assertThat(result).isPresent();
+        var request = result.get();
+        assertThat(request.getShipperName()).isEqualTo("Boutique SARL");
+        assertThat(request.getConsigneeName()).isEqualTo("Jean Client");
+        assertThat(request.getConsigneeAddress()).isEqualTo("12 rue des Lilas");
+        assertThat(request.getConsigneeCity()).isEqualTo("Bruxelles");
+        assertThat(request.getConsigneeCountry()).isEqualTo("BE");
+        assertThat(request.getConsigneePostalCode()).isEqualTo("1000");
+        assertThat(request.getGoodsDescription()).isEqualTo("2x Widget");
+        assertThat(request.getGoodsValue()).isEqualTo(49.90);
+        assertThat(request.getCurrency()).isEqualTo("EUR");
+        assertThat(request.getWeightKg()).isEqualTo(1.5);
+    }
+
+    @Test
+    @DisplayName("mapOrderToShipment → sans shipping_address → Optional vide (pas d'expédition physique)")
+    void mapOrderToShipment_noShippingAddress_returnsEmpty() {
+        var integration = integration("https://my-store.myshopify.com/", "token123");
+        Map<String, Object> rawOrder = Map.of("id", 4821);
+
+        assertThat(adapter.mapOrderToShipment(integration, rawOrder)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("mapOrderToShipment → shipping_address sans nom → Optional vide (pas de mapping fiable)")
+    void mapOrderToShipment_shippingAddressWithoutName_returnsEmpty() {
+        var integration = integration("https://my-store.myshopify.com/", "token123");
+        Map<String, Object> rawOrder = Map.of(
+                "id", 4821,
+                "shipping_address", Map.of("city", "Bruxelles"));
+
+        assertThat(adapter.mapOrderToShipment(integration, rawOrder)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("mapOrderToShipment → pays absent de country_code → repli sur country")
+    void mapOrderToShipment_fallsBackToCountryWhenCountryCodeMissing() {
+        var integration = integration("https://my-store.myshopify.com/", "token123");
+        integration.getCompany().setName("Boutique SARL");
+        Map<String, Object> rawOrder = Map.of(
+                "id", 4821,
+                "shipping_address", Map.of("name", "Jean Client", "country", "Belgium"));
+
+        var result = adapter.mapOrderToShipment(integration, rawOrder);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getConsigneeCountry()).isEqualTo("Belgium");
+    }
 }
