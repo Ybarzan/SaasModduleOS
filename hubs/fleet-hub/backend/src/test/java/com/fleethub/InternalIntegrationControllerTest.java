@@ -101,4 +101,32 @@ class InternalIntegrationControllerTest {
                         .header("X-Internal-Integration-Key", key))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void shipmentCreationSettings_defaultsToDisabled() throws Exception {
+        mvc.perform(get("/api/internal-integrations/shipment-creation/settings").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allowExternalShipmentCreation").value(false));
+    }
+
+    @Test
+    void enableShipmentCreation_thenSettingsReflectsIt() throws Exception {
+        mvc.perform(post("/api/internal-integrations/shipment-creation/enable").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allowExternalShipmentCreation").value(true));
+
+        mvc.perform(get("/api/internal-integrations/shipment-creation/settings").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allowExternalShipmentCreation").value(true));
+    }
+
+    @Test
+    void disableShipmentCreation_afterEnable_thenSettingsReflectsIt() throws Exception {
+        mvc.perform(post("/api/internal-integrations/shipment-creation/enable").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+
+        mvc.perform(post("/api/internal-integrations/shipment-creation/disable").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allowExternalShipmentCreation").value(false));
+    }
 }

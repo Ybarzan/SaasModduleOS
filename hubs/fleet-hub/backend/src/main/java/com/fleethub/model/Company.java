@@ -98,6 +98,21 @@ public class Company {
     @Column(length = 64)
     private String internalIntegrationApiKey;
 
+    /** Opt-in SÉPARÉ de internalIntegrationEnabled ci-dessus (ADR-0002,
+     *  docs/adr/0002-creation-expedition-externe.md) : autorise en plus la
+     *  CRÉATION d'expéditions brouillon (POST /api/internal/shipments) par
+     *  compliance-engine, pas seulement leur lecture. Une société qui a déjà
+     *  activé le partage en lecture (ex. pour MultiBranchService) ne doit pas
+     *  se retrouver, sans l'avoir demandé explicitement, à faire créer des
+     *  expéditions automatiquement -- même principe que
+     *  fleethub.tracking.auto-sync.enabled. Sans effet si
+     *  internalIntegrationEnabled est resté désactivé : la clé elle-même
+     *  reste rejetée avant que ce flag ne soit jamais consulté (voir
+     *  InternalIntegrationService.resolveCompanyId). Désactivé par défaut. */
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean allowExternalShipmentCreation = false;
+
     /** Clé webhook compliance-engine (en-tête X-FleetHub-Webhook-Key) -- générée
      *  côté compliance-engine quand cette société y active la réception
      *  d'événements d'expédition, puis collée ici par un admin. Stockée
