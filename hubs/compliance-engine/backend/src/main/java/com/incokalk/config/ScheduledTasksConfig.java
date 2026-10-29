@@ -43,5 +43,6 @@ public class ScheduledTasksConfig {
 
     // autoSyncInTransitShipments() a ete retiree avec le domaine Transport :
     // elle lisait ShipmentOrderRepository et appelait LiveTrackingService, tous
-    // deux retires vers fleet-hub.
+    // deux retires vers fleet-hub -- restauree cote fleet-hub (meme capacite,
+    // nouveau proprietaire des donnees), voir AutoTrackingSyncService.
 }

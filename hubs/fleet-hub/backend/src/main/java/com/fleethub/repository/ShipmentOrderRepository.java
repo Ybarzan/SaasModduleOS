@@ -48,6 +48,11 @@ public interface ShipmentOrderRepository extends JpaRepository<ShipmentOrder, UU
      *  -- base de AisEtaCaptureService.captureBroadcastEtas(). */
     List<ShipmentOrder> findByTrackedVesselMmsiIsNotNullAndStatusIn(List<ShipmentOrder.Status> statuses);
 
+    /** Toutes sociétés confondues -- base de AutoTrackingSyncService, un job
+     *  de fond qui boucle sur toutes les expéditions encore en cours, pas une
+     *  requête scopée à une société comme le reste de ce repository. */
+    List<ShipmentOrder> findByStatusIn(List<ShipmentOrder.Status> statuses);
+
     @Query("SELECT s.status, COUNT(s) FROM ShipmentOrder s WHERE s.company.id = :companyId GROUP BY s.status")
     List<Object[]> countByStatusGrouped(Long companyId);
 
