@@ -2,6 +2,7 @@ package com.incokalk.service.ecommerce;
 
 import com.incokalk.model.ECommerceIntegration;
 import com.incokalk.repository.CompanyRepository;
+import com.incokalk.service.integration.fleethub.ExternalShipmentCreationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -12,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * markOrderShipped()/pushEta() (Phase 1 J4) sont volontairement restreintes à
@@ -113,8 +115,95 @@ public class ShopifyAdapter implements ECommerceAdapter {
         return Collections.emptyMap();
     }
 
-    // mapOrderToShipment a ete retiree avec le domaine Transport
-    // (ShipmentOrderRepository). Voir ECommerceAdapter / ECommerceSyncService.
+    @Override
+    public String extractExternalOrderId(Map<String, Object> rawOrder) {
+        Object id = rawOrder.get("id");
+        return id != null ? String.valueOf(id) : null;
+    }
+
+    /**
+     * Champs {@code shipping_address} (name/address1/city/country_code/country/zip),
+     * {@code line_items} (title/quantity), {@code total_price}/{@code currency} et
+     * {@code total_weight} (grammes) -- noms de champs stables de l'Order resource
+     * Shopify depuis de nombreuses années, corroborés par des exemples de réponses
+     * réelles (communauté Shopify) faute d'accès direct à shopify.dev depuis cet
+     * environnement au moment de l'écriture (contrairement à markOrderShipped,
+     * vérifié directement sur shopify.dev plus haut dans ce fichier). shipperName
+     * vient de la société locale (compliance-engine n'a pas d'adresse légale
+     * enregistrée, voir Company) -- jamais une adresse shipper devinée.
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public Optional<ExternalShipmentCreationRequest> mapOrderToShipment(
+            ECommerceIntegration integration, Map<String, Object> rawOrder) {
+        Map<String, Object> shippingAddress = (Map<String, Object>) rawOrder.get("shipping_address");
+        if (shippingAddress == null) {
+            log.debug("[Shopify] Commande {} sans shipping_address (pas d'expédition physique) -- ignorée",
+                    rawOrder.get("id"));
+            return Optional.empty();
+        }
+
+        String consigneeName = asString(shippingAddress.get("name"));
+        if (consigneeName == null || consigneeName.isBlank()) {
+            log.debug("[Shopify] Commande {} : shipping_address sans nom destinataire -- pas de mapping fiable",
+                    rawOrder.get("id"));
+            return Optional.empty();
+        }
+
+        String shipperName = integration.getCompany() != null ? integration.getCompany().getName() : null;
+        if (shipperName == null || shipperName.isBlank()) {
+            return Optional.empty();
+        }
+
+        Double totalWeightGrams = asDouble(rawOrder.get("total_weight"));
+        Double weightKg = (totalWeightGrams != null && totalWeightGrams > 0) ? totalWeightGrams / 1000.0 : null;
+
+        return Optional.of(ExternalShipmentCreationRequest.builder()
+                .shipperName(shipperName)
+                .consigneeName(consigneeName)
+                .consigneeAddress(asString(shippingAddress.get("address1")))
+                .consigneeCity(asString(shippingAddress.get("city")))
+                .consigneeCountry(firstNonBlank(
+                        asString(shippingAddress.get("country_code")), asString(shippingAddress.get("country"))))
+                .consigneePostalCode(asString(shippingAddress.get("zip")))
+                .goodsDescription(describeLineItems(rawOrder))
+                .goodsValue(asDouble(rawOrder.get("total_price")))
+                .currency(asString(rawOrder.get("currency")))
+                .weightKg(weightKg)
+                .build());
+    }
+
+    @SuppressWarnings("unchecked")
+    private String describeLineItems(Map<String, Object> rawOrder) {
+        List<Map<String, Object>> items = (List<Map<String, Object>>) rawOrder.get("line_items");
+        if (items == null || items.isEmpty()) return null;
+        return items.stream()
+                .map(item -> {
+                    Object qty = item.get("quantity");
+                    Object title = item.get("title");
+                    return (qty != null ? qty + "x " : "") + (title != null ? title : "Article");
+                })
+                .collect(Collectors.joining(", "));
+    }
+
+    private String asString(Object value) {
+        return value != null ? String.valueOf(value) : null;
+    }
+
+    private Double asDouble(Object value) {
+        if (value == null) return null;
+        try {
+            return Double.parseDouble(String.valueOf(value));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private String firstNonBlank(String a, String b) {
+        if (a != null && !a.isBlank()) return a;
+        if (b != null && !b.isBlank()) return b;
+        return null;
+    }
 
     @Override
     public PushResult markOrderShipped(ECommerceIntegration integration, String externalOrderId,

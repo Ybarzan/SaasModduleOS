@@ -4,11 +4,15 @@ import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.Company;
 import com.incokalk.model.ECommerceIntegration;
 import com.incokalk.model.ECommerceSyncLog;
+import com.incokalk.model.EcommerceShipmentLink;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.ECommerceIntegrationRepository;
 import com.incokalk.repository.ECommerceSyncLogRepository;
+import com.incokalk.repository.EcommerceShipmentLinkRepository;
 import com.incokalk.scheduling.DistributedJobLock;
 import com.incokalk.service.ecommerce.ECommerceAdapter;
+import com.incokalk.service.integration.fleethub.ExternalShipmentCreationRequest;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +38,10 @@ public class ECommerceSyncService {
     private final CompanyRepository companyRepository;
     private final ECommerceIntegrationRepository integrationRepository;
     private final ECommerceSyncLogRepository syncLogRepository;
+    private final EcommerceShipmentLinkRepository shipmentLinkRepository;
     private final List<ECommerceAdapter> adapters;
     private final DistributedJobLock jobLock;
+    private final FleetHubIntegrationClient fleetHubIntegrationClient;
 
     @PostConstruct
     public void init() {
@@ -80,15 +86,52 @@ public class ECommerceSyncService {
 
         try {
             // La boucle commande -> expedition (adapter.mapOrderToShipment) a ete
-            // retiree avec le domaine Transport : elle creait un ShipmentOrder
-            // directement. En attendant un appel REST vers fleet-hub pour creer ces
-            // expeditions (suivi documente, pas fait dans cette passe), la synchronisation
-            // est un no-op journalise plutot que d'appeler l'adaptateur pour rien.
-            log.info("[ECommerceSync] Synchronisation des commandes en attente de l'intégration fleet-hub " +
-                "pour l'intégration {}", integration.getId());
-            syncLog.setOrdersProcessed(0);
-            syncLog.setOrdersCreated(0);
-            syncLog.setOrdersFailed(0);
+            // retiree avec le domaine Transport, restauree 2026-10-29 (ADR-0002,
+            // docs/adr/0002-creation-expedition-externe.md) : chaque commande non
+            // deja liee (idempotence via EcommerceShipmentLink, cle integrationId +
+            // externalOrderId) est mappee par l'adaptateur (Optional vide si la
+            // commande ne peut pas etre mappee de facon fiable ou si la plateforme
+            // ne l'implemente pas encore -- jamais de champ devine) puis creee sur
+            // fleet-hub via POST /api/internal/shipments. Une societe n'ayant pas
+            // active l'opt-in d'ecriture dedie (ADR-0002) voit simplement chaque
+            // tentative echouer proprement (403, journalise), sans jamais bloquer
+            // les autres commandes ni faire echouer tout le cycle de synchronisation.
+            List<Map<String, Object>> orders = adapter.syncOrders(integration);
+            int processed = 0;
+            int created = 0;
+            int failed = 0;
+            for (Map<String, Object> rawOrder : orders) {
+                processed++;
+                String externalOrderId = adapter.extractExternalOrderId(rawOrder);
+                if (externalOrderId == null) {
+                    continue;
+                }
+                if (shipmentLinkRepository.findByIntegrationIdAndExternalOrderId(integration.getId(), externalOrderId).isPresent()) {
+                    continue;
+                }
+                Optional<ExternalShipmentCreationRequest> mapped = adapter.mapOrderToShipment(integration, rawOrder);
+                if (mapped.isEmpty()) {
+                    continue;
+                }
+                try {
+                    UUID shipmentId = fleetHubIntegrationClient.createShipmentFromExternalSource(
+                            mapped.get(), integration.getCompany().getId());
+                    shipmentLinkRepository.save(EcommerceShipmentLink.builder()
+                            .company(integration.getCompany())
+                            .integration(integration)
+                            .externalOrderId(externalOrderId)
+                            .fleethubShipmentId(shipmentId)
+                            .build());
+                    created++;
+                } catch (FleetHubIntegrationClient.FleetHubIntegrationException e) {
+                    log.debug("[ECommerceSync] Création d'expédition impossible pour la commande {} (intégration {}) : {}",
+                            externalOrderId, integration.getId(), e.getMessage());
+                    failed++;
+                }
+            }
+            syncLog.setOrdersProcessed(processed);
+            syncLog.setOrdersCreated(created);
+            syncLog.setOrdersFailed(failed);
 
             integration.setLastSyncAt(LocalDateTime.now());
             integrationRepository.save(integration);
