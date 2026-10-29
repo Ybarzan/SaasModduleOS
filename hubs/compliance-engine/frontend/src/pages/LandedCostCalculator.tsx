@@ -113,6 +113,7 @@ const LandedCostCalculator = () => {
   const [comparisonResults, setComparisonResults] = useState<LandedCost[] | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [shipmentIdInput, setShipmentIdInput] = useState('');
   const user = useAuthStore((state) => state.user);
 
   const { data: calculations, isLoading } = useQuery({
@@ -143,6 +144,25 @@ const LandedCostCalculator = () => {
     },
     onError: (err: AxiosError<{ message?: string; details?: unknown }>) => {
       toast.error(err.response?.data?.message || 'Erreur lors du calcul');
+    },
+  });
+
+  // Préremplit le formulaire depuis une expédition fleet-hub -- jamais soumis
+  // automatiquement : l'utilisateur garde le contrôle pour vérifier/corriger
+  // (le backend laisse volontairement vide tout champ qu'il ne peut pas
+  // dériver de façon fiable, notamment les codes pays).
+  const fromShipmentMutation = useMutation({
+    mutationFn: (shipmentId: string) => incokalkAPI.landedCosts.fromShipment(shipmentId),
+    onSuccess: (res) => {
+      const prefill = res.data as Partial<LandedCostInput>;
+      setForm((f) => ({
+        ...f,
+        ...Object.fromEntries(Object.entries(prefill).filter(([, v]) => v !== null && v !== undefined)),
+      }));
+      toast.success('Formulaire prérempli depuis l\'expédition -- vérifiez les champs avant de calculer');
+    },
+    onError: (err: AxiosError<{ message?: string }>) => {
+      toast.error(err.response?.data?.message || "Impossible d'importer cette expédition");
     },
   });
 
@@ -269,6 +289,33 @@ const LandedCostCalculator = () => {
           <div className="lg:sticky lg:top-8">
             <div className="bg-surface rounded-lg border border-line p-6">
               <h2 className="text-lg font-semibold text-ink mb-4">Nouveau calcul</h2>
+
+              <div className="mb-4 p-3 bg-surface-2 rounded-lg">
+                <label className="block text-sm font-medium text-ink-soft mb-1">
+                  Importer depuis une expédition fleet-hub
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={shipmentIdInput}
+                    onChange={(e) => setShipmentIdInput(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm"
+                    placeholder="ID de l'expédition"
+                  />
+                  <button
+                    type="button"
+                    disabled={!shipmentIdInput.trim() || fromShipmentMutation.isPending}
+                    onClick={() => fromShipmentMutation.mutate(shipmentIdInput.trim())}
+                    className="px-3 py-2 text-sm bg-surface text-ink border border-line rounded-lg hover:bg-line disabled:opacity-50"
+                  >
+                    {fromShipmentMutation.isPending ? <Loader2 size={16} className="animate-spin" /> : 'Importer'}
+                  </button>
+                </div>
+                <p className="text-xs text-ink-soft mt-1">
+                  Préremplit ce formulaire -- vérifiez les champs (notamment les pays) avant de calculer.
+                </p>
+              </div>
+
               <form onSubmit={handleCalculate} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-ink-soft mb-1">Nom du calcul</label>

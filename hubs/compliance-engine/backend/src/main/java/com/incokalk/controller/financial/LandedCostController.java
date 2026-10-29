@@ -85,6 +85,18 @@ public class LandedCostController {
         }
     }
 
+    @GetMapping("/from-shipment/{shipmentId}")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
+    @RequiresPlan(Company.Plan.STARTER)
+    @Operation(summary = "Préremplir un coût débarqué depuis une expédition fleet-hub (jamais calculé ni sauvegardé)")
+    public ResponseEntity<?> fromShipment(@PathVariable UUID shipmentId) {
+        try {
+            return ResponseEntity.ok(landedCostService.createFromShipment(shipmentId));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @PostMapping("/what-if")
     @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER})
     @RequiresPlan(Company.Plan.STARTER)
