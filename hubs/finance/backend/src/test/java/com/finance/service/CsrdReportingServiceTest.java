@@ -3,6 +3,8 @@ package com.finance.service;
 import com.finance.model.CarbonOffset;
 import com.finance.repository.CarbonOffsetRepository;
 import com.finance.security.TenantContext;
+import com.finance.service.integration.fleethub.FleetHubIntegrationClient;
+import com.finance.service.integration.fleethub.ShipmentLaneSummary;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,11 +22,13 @@ class CsrdReportingServiceTest {
 
     CsrdReportingService service;
     CarbonOffsetRepository carbonOffsetRepo;
+    FleetHubIntegrationClient fleetHubIntegrationClient;
 
     @BeforeEach
     void setUp() {
         carbonOffsetRepo = mock(CarbonOffsetRepository.class);
-        service = new CsrdReportingService(carbonOffsetRepo);
+        fleetHubIntegrationClient = mock(FleetHubIntegrationClient.class);
+        service = new CsrdReportingService(carbonOffsetRepo, fleetHubIntegrationClient);
         TenantContext.set(UUID.randomUUID());
     }
 
@@ -79,8 +83,8 @@ class CsrdReportingServiceTest {
     }
 
     @Test
-    @DisplayName("getCsrdReport → émissions regroupées sous 'Unknown' (relation shipment retirée avec le domaine Transport)")
-    void getCsrdReport_withLaneData() {
+    @DisplayName("getCsrdReport → société sans clé fleet-hub : 'Unknown', aucun appel réseau")
+    void getCsrdReport_fleetHubNotConfigured_groupedUnknown_noNetworkCall() {
         UUID companyId = TenantContext.get();
 
         CarbonOffset offset = CarbonOffset.builder()
@@ -96,6 +100,7 @@ class CsrdReportingServiceTest {
                 .thenReturn(BigDecimal.ZERO);
         when(carbonOffsetRepo.sumOffsetCreditsRetiredByCompanyId(companyId))
                 .thenReturn(BigDecimal.ZERO);
+        when(fleetHubIntegrationClient.isConfigured(companyId)).thenReturn(false);
 
         Map<String, Object> report = service.getCsrdReport();
 
@@ -104,6 +109,87 @@ class CsrdReportingServiceTest {
         assertThat(lanes).hasSize(1);
         assertThat(lanes.get(0).get("lane")).isEqualTo("Unknown");
         assertThat(lanes.get(0).get("co2Tonnes")).isEqualTo(new BigDecimal("1.00"));
+        verify(fleetHubIntegrationClient, never()).getShipmentSummary(any(), any());
+    }
+
+    @Test
+    @DisplayName("getCsrdReport → clé configurée, expédition résolue : lane = ville shipper -> ville consignee")
+    void getCsrdReport_fleetHubConfigured_resolvesLaneFromShipment() {
+        UUID companyId = TenantContext.get();
+        UUID shipmentId = UUID.randomUUID();
+
+        CarbonOffset offset = CarbonOffset.builder()
+                .co2EmissionsKg(new BigDecimal("1000"))
+                .shipmentId(shipmentId)
+                .build();
+
+        when(carbonOffsetRepo.sumCo2EmissionsKgByCompanyId(companyId)).thenReturn(new BigDecimal("1000"));
+        when(carbonOffsetRepo.findByCompanyIdOrderByCreatedAtDesc(companyId)).thenReturn(List.of(offset));
+        when(carbonOffsetRepo.sumOffsetCreditsPurchasedByCompanyId(companyId)).thenReturn(BigDecimal.ZERO);
+        when(carbonOffsetRepo.sumOffsetCreditsRetiredByCompanyId(companyId)).thenReturn(BigDecimal.ZERO);
+        when(fleetHubIntegrationClient.isConfigured(companyId)).thenReturn(true);
+        when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId)).thenReturn(
+                ShipmentLaneSummary.builder().shipperCity("Marseille").consigneeCity("Casablanca").build());
+
+        Map<String, Object> report = service.getCsrdReport();
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> lanes = (List<Map<String, Object>>) report.get("emissionsByLane");
+        assertThat(lanes).hasSize(1);
+        assertThat(lanes.get(0).get("lane")).isEqualTo("Marseille → Casablanca");
+    }
+
+    @Test
+    @DisplayName("getCsrdReport → clé configurée mais expédition indisponible : seule cette ligne tombe sous 'Unknown'")
+    void getCsrdReport_fleetHubConfigured_shipmentUnavailable_thatLaneFallsBackToUnknown() {
+        UUID companyId = TenantContext.get();
+        UUID shipmentId = UUID.randomUUID();
+
+        CarbonOffset offset = CarbonOffset.builder()
+                .co2EmissionsKg(new BigDecimal("1000"))
+                .shipmentId(shipmentId)
+                .build();
+
+        when(carbonOffsetRepo.sumCo2EmissionsKgByCompanyId(companyId)).thenReturn(new BigDecimal("1000"));
+        when(carbonOffsetRepo.findByCompanyIdOrderByCreatedAtDesc(companyId)).thenReturn(List.of(offset));
+        when(carbonOffsetRepo.sumOffsetCreditsPurchasedByCompanyId(companyId)).thenReturn(BigDecimal.ZERO);
+        when(carbonOffsetRepo.sumOffsetCreditsRetiredByCompanyId(companyId)).thenReturn(BigDecimal.ZERO);
+        when(fleetHubIntegrationClient.isConfigured(companyId)).thenReturn(true);
+        when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId))
+                .thenThrow(new FleetHubIntegrationClient.FleetHubIntegrationException("introuvable"));
+
+        Map<String, Object> report = service.getCsrdReport();
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> lanes = (List<Map<String, Object>>) report.get("emissionsByLane");
+        assertThat(lanes).hasSize(1);
+        assertThat(lanes.get(0).get("lane")).isEqualTo("Unknown");
+    }
+
+    @Test
+    @DisplayName("getCsrdReport → deux offsets sur la même expédition : un seul appel fleet-hub (mémoïsation)")
+    void getCsrdReport_sameShipmentTwice_callsFleetHubOnce() {
+        UUID companyId = TenantContext.get();
+        UUID shipmentId = UUID.randomUUID();
+
+        CarbonOffset offset1 = CarbonOffset.builder().co2EmissionsKg(new BigDecimal("500")).shipmentId(shipmentId).build();
+        CarbonOffset offset2 = CarbonOffset.builder().co2EmissionsKg(new BigDecimal("500")).shipmentId(shipmentId).build();
+
+        when(carbonOffsetRepo.sumCo2EmissionsKgByCompanyId(companyId)).thenReturn(new BigDecimal("1000"));
+        when(carbonOffsetRepo.findByCompanyIdOrderByCreatedAtDesc(companyId)).thenReturn(List.of(offset1, offset2));
+        when(carbonOffsetRepo.sumOffsetCreditsPurchasedByCompanyId(companyId)).thenReturn(BigDecimal.ZERO);
+        when(carbonOffsetRepo.sumOffsetCreditsRetiredByCompanyId(companyId)).thenReturn(BigDecimal.ZERO);
+        when(fleetHubIntegrationClient.isConfigured(companyId)).thenReturn(true);
+        when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId)).thenReturn(
+                ShipmentLaneSummary.builder().shipperCity("Marseille").consigneeCity("Casablanca").build());
+
+        Map<String, Object> report = service.getCsrdReport();
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> lanes = (List<Map<String, Object>>) report.get("emissionsByLane");
+        assertThat(lanes).hasSize(1);
+        assertThat(lanes.get(0).get("co2Tonnes")).isEqualTo(new BigDecimal("1.00"));
+        verify(fleetHubIntegrationClient, times(1)).getShipmentSummary(shipmentId, companyId);
     }
 
     @Test
