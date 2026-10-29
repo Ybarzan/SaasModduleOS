@@ -4,11 +4,15 @@ import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.model.Company;
 import com.incokalk.model.ECommerceIntegration;
 import com.incokalk.model.ECommerceSyncLog;
+import com.incokalk.model.EcommerceShipmentLink;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.ECommerceIntegrationRepository;
 import com.incokalk.repository.ECommerceSyncLogRepository;
+import com.incokalk.repository.EcommerceShipmentLinkRepository;
 import com.incokalk.scheduling.DistributedJobLock;
 import com.incokalk.service.ecommerce.ECommerceAdapter;
+import com.incokalk.service.integration.fleethub.ExternalShipmentCreationRequest;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,20 +33,25 @@ class ECommerceSyncServiceTest {
     CompanyRepository companyRepository;
     ECommerceIntegrationRepository integrationRepository;
     ECommerceSyncLogRepository syncLogRepository;
+    EcommerceShipmentLinkRepository shipmentLinkRepository;
     ECommerceAdapter adapter;
+    FleetHubIntegrationClient fleetHubIntegrationClient;
 
     @BeforeEach
     void setUp() {
         companyRepository = mock(CompanyRepository.class);
         integrationRepository = mock(ECommerceIntegrationRepository.class);
         syncLogRepository = mock(ECommerceSyncLogRepository.class);
+        shipmentLinkRepository = mock(EcommerceShipmentLinkRepository.class);
         adapter = mock(ECommerceAdapter.class);
+        fleetHubIntegrationClient = mock(FleetHubIntegrationClient.class);
+        when(adapter.syncOrders(any())).thenReturn(List.of());
         service = new ECommerceSyncService(companyRepository, integrationRepository, syncLogRepository,
-            List.of(adapter), new DistributedJobLock(Optional.empty()));
+            shipmentLinkRepository, List.of(adapter), new DistributedJobLock(Optional.empty()), fleetHubIntegrationClient);
     }
 
     @Test
-    @DisplayName("syncSingleIntegration → adaptateur trouvé → no-op en attente de l'intégration fleet-hub")
+    @DisplayName("syncSingleIntegration → adaptateur trouvé, aucune commande → rien créé")
     void syncSingleIntegration_success() {
         ECommerceIntegration integration = ECommerceIntegration.builder()
                 .id(UUID.randomUUID())
@@ -60,14 +69,131 @@ class ECommerceSyncServiceTest {
         assertThat(syncLog.getOrdersCreated()).isEqualTo(0);
         assertThat(syncLog.getOrdersFailed()).isEqualTo(0);
         assertThat(integration.getLastSyncAt()).isNotNull();
-        verify(adapter, never()).syncOrders(any());
+    }
+
+    @Test
+    @DisplayName("syncSingleIntegration → commande déjà liée → ignorée (idempotence)")
+    void syncSingleIntegration_orderAlreadyLinked_skipped() {
+        UUID integrationId = UUID.randomUUID();
+        ECommerceIntegration integration = ECommerceIntegration.builder()
+                .id(integrationId)
+                .company(Company.builder().id(UUID.randomUUID()).build())
+                .platform(ECommerceIntegration.Platform.SHOPIFY)
+                .build();
+        Map<String, Object> order = Map.of("id", 4821);
+
+        when(adapter.supports(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(true);
+        when(adapter.syncOrders(integration)).thenReturn(List.of(order));
+        when(adapter.extractExternalOrderId(order)).thenReturn("4821");
+        when(shipmentLinkRepository.findByIntegrationIdAndExternalOrderId(integrationId, "4821"))
+                .thenReturn(Optional.of(mock(EcommerceShipmentLink.class)));
+        when(syncLogRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        ECommerceSyncLog syncLog = service.syncSingleIntegration(integration);
+
+        assertThat(syncLog.getOrdersProcessed()).isEqualTo(1);
+        assertThat(syncLog.getOrdersCreated()).isEqualTo(0);
+        verify(adapter, never()).mapOrderToShipment(any(), any());
+        verify(fleetHubIntegrationClient, never()).createShipmentFromExternalSource(any(), any());
+    }
+
+    @Test
+    @DisplayName("syncSingleIntegration → commande non mappable (Optional vide) → ignorée, pas d'appel fleet-hub")
+    void syncSingleIntegration_notMappable_skipped() {
+        UUID integrationId = UUID.randomUUID();
+        ECommerceIntegration integration = ECommerceIntegration.builder()
+                .id(integrationId)
+                .company(Company.builder().id(UUID.randomUUID()).build())
+                .platform(ECommerceIntegration.Platform.WOOCOMMERCE)
+                .build();
+        Map<String, Object> order = Map.of("id", 99);
+
+        when(adapter.supports(ECommerceIntegration.Platform.WOOCOMMERCE)).thenReturn(true);
+        when(adapter.syncOrders(integration)).thenReturn(List.of(order));
+        when(adapter.extractExternalOrderId(order)).thenReturn("99");
+        when(shipmentLinkRepository.findByIntegrationIdAndExternalOrderId(integrationId, "99"))
+                .thenReturn(Optional.empty());
+        when(adapter.mapOrderToShipment(integration, order)).thenReturn(Optional.empty());
+        when(syncLogRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        ECommerceSyncLog syncLog = service.syncSingleIntegration(integration);
+
+        assertThat(syncLog.getOrdersCreated()).isEqualTo(0);
+        assertThat(syncLog.getOrdersFailed()).isEqualTo(0);
+        verify(fleetHubIntegrationClient, never()).createShipmentFromExternalSource(any(), any());
+    }
+
+    @Test
+    @DisplayName("syncSingleIntegration → commande mappable, fleet-hub accepte → expédition créée et liée")
+    void syncSingleIntegration_mappable_createsShipmentAndLink() {
+        UUID integrationId = UUID.randomUUID();
+        UUID companyId = UUID.randomUUID();
+        UUID shipmentId = UUID.randomUUID();
+        Company company = Company.builder().id(companyId).build();
+        ECommerceIntegration integration = ECommerceIntegration.builder()
+                .id(integrationId)
+                .company(company)
+                .platform(ECommerceIntegration.Platform.SHOPIFY)
+                .build();
+        Map<String, Object> order = Map.of("id", 777);
+        ExternalShipmentCreationRequest mapped = ExternalShipmentCreationRequest.builder()
+                .shipperName("Boutique SARL").consigneeName("Client Final").build();
+
+        when(adapter.supports(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(true);
+        when(adapter.syncOrders(integration)).thenReturn(List.of(order));
+        when(adapter.extractExternalOrderId(order)).thenReturn("777");
+        when(shipmentLinkRepository.findByIntegrationIdAndExternalOrderId(integrationId, "777"))
+                .thenReturn(Optional.empty());
+        when(adapter.mapOrderToShipment(integration, order)).thenReturn(Optional.of(mapped));
+        when(fleetHubIntegrationClient.createShipmentFromExternalSource(mapped, companyId)).thenReturn(shipmentId);
+        when(syncLogRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        ECommerceSyncLog syncLog = service.syncSingleIntegration(integration);
+
+        assertThat(syncLog.getOrdersCreated()).isEqualTo(1);
+        assertThat(syncLog.getOrdersFailed()).isEqualTo(0);
+        verify(shipmentLinkRepository).save(argThat(link ->
+                link.getExternalOrderId().equals("777") && link.getFleethubShipmentId().equals(shipmentId)));
+    }
+
+    @Test
+    @DisplayName("syncSingleIntegration → fleet-hub refuse la création (opt-in absent) → échec journalisé, pas de lien créé")
+    void syncSingleIntegration_fleetHubRejects_failedCountIncrements() {
+        UUID integrationId = UUID.randomUUID();
+        UUID companyId = UUID.randomUUID();
+        Company company = Company.builder().id(companyId).build();
+        ECommerceIntegration integration = ECommerceIntegration.builder()
+                .id(integrationId)
+                .company(company)
+                .platform(ECommerceIntegration.Platform.SHOPIFY)
+                .build();
+        Map<String, Object> order = Map.of("id", 888);
+        ExternalShipmentCreationRequest mapped = ExternalShipmentCreationRequest.builder()
+                .shipperName("Boutique SARL").consigneeName("Client Final").build();
+
+        when(adapter.supports(ECommerceIntegration.Platform.SHOPIFY)).thenReturn(true);
+        when(adapter.syncOrders(integration)).thenReturn(List.of(order));
+        when(adapter.extractExternalOrderId(order)).thenReturn("888");
+        when(shipmentLinkRepository.findByIntegrationIdAndExternalOrderId(integrationId, "888"))
+                .thenReturn(Optional.empty());
+        when(adapter.mapOrderToShipment(integration, order)).thenReturn(Optional.of(mapped));
+        when(fleetHubIntegrationClient.createShipmentFromExternalSource(mapped, companyId))
+                .thenThrow(new FleetHubIntegrationClient.FleetHubIntegrationException("non activé"));
+        when(syncLogRepository.save(any())).thenAnswer(i -> i.getArgument(0));
+
+        ECommerceSyncLog syncLog = service.syncSingleIntegration(integration);
+
+        assertThat(syncLog.getStatus()).isEqualTo(ECommerceSyncLog.SyncStatus.SUCCESS);
+        assertThat(syncLog.getOrdersCreated()).isEqualTo(0);
+        assertThat(syncLog.getOrdersFailed()).isEqualTo(1);
+        verify(shipmentLinkRepository, never()).save(any());
     }
 
     @Test
     @DisplayName("syncSingleIntegration → aucun adaptateur → FAILED")
     void syncSingleIntegration_noAdapter() {
         service = new ECommerceSyncService(companyRepository, integrationRepository, syncLogRepository,
-            List.of(), new DistributedJobLock(Optional.empty()));
+            shipmentLinkRepository, List.of(), new DistributedJobLock(Optional.empty()), fleetHubIntegrationClient);
         ECommerceIntegration integration = ECommerceIntegration.builder()
                 .id(UUID.randomUUID())
                 .platform(ECommerceIntegration.Platform.WOOCOMMERCE)

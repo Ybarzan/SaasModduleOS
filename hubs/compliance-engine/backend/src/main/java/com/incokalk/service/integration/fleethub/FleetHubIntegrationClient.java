@@ -219,6 +219,42 @@ public class FleetHubIntegrationClient {
         return summary;
     }
 
+    /**
+     * Appelle {@code POST /api/internal/shipments} sur fleet-hub (ADR-0002) pour
+     * créer une expédition brouillon (toujours DRAFT côté fleet-hub). Nécessite
+     * en plus que la société ait activé l'opt-in dédié "création externe" côté
+     * fleet-hub (403 explicite sinon, voir FleetHubIntegrationException) --
+     * séparé du partage en lecture dont {@link #getShipmentSummary} dépend.
+     *
+     * @return l'UUID fleet-hub de l'expédition créée.
+     */
+    public UUID createShipmentFromExternalSource(ExternalShipmentCreationRequest request, UUID companyId) {
+        HttpHeaders headers = jsonHeaders();
+        headers.set("X-Internal-Integration-Key", resolveApiKey(companyId));
+
+        String url = trimTrailingSlash(baseUrl) + "/api/internal/shipments";
+        try {
+            ResponseEntity<CreatedShipmentRef> response = restTemplate.exchange(
+                    url, HttpMethod.POST, new HttpEntity<>(request, headers), CreatedShipmentRef.class);
+            CreatedShipmentRef body = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful() || body == null || body.id() == null) {
+                throw new FleetHubIntegrationException(
+                        "Échec de la création d'expédition sur fleet-hub (statut " + response.getStatusCode() + ")");
+            }
+            return body.id();
+        } catch (FleetHubIntegrationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new FleetHubIntegrationException(
+                    "Erreur d'appel à fleet-hub (POST /api/internal/shipments) : " + e.getMessage(), e);
+        }
+    }
+
+    /** Vue minimale de la réponse de création -- fleet-hub renvoie le
+     * ShipmentOrder complet, seul l'id nous intéresse ici. */
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
+    private record CreatedShipmentRef(UUID id) {}
+
     /** Résout la clé d'intégration fleet-hub de cette société -- jamais un
      * identifiant de société transmis tel quel : fleet-hub ne fait confiance
      * qu'à la clé elle-même pour déterminer qui appelle. */

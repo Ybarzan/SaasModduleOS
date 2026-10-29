@@ -249,4 +249,17 @@ class PrestaShopAdapterTest {
         assertThat(adapter.markOrderShipped(integration, "1001", "TRACK", "DHL", true).success()).isFalse();
         assertThat(adapter.pushEta(integration, "1001", java.time.LocalDateTime.now()).success()).isFalse();
     }
+
+    @Test
+    @DisplayName("extractExternalOrderId → id converti en String")
+    void extractExternalOrderId_returnsIdAsString() {
+        assertThat(adapter.extractExternalOrderId(Map.of("id", "42"))).isEqualTo("42");
+    }
+
+    @Test
+    @DisplayName("mapOrderToShipment → non implémenté pour cette plateforme → Optional vide")
+    void mapOrderToShipment_notImplemented_returnsEmpty() {
+        var integration = integration("https://shop.example.com/", "key");
+        assertThat(adapter.mapOrderToShipment(integration, Map.of("id", "42"))).isEmpty();
+    }
 }

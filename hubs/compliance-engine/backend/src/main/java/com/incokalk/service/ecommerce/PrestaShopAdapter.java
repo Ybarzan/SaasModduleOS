@@ -2,6 +2,7 @@ package com.incokalk.service.ecommerce;
 
 import com.incokalk.model.ECommerceIntegration;
 import com.incokalk.repository.CompanyRepository;
+import com.incokalk.service.integration.fleethub.ExternalShipmentCreationRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -93,8 +94,28 @@ public class PrestaShopAdapter implements ECommerceAdapter {
         return Collections.emptyMap();
     }
 
-    // mapOrderToShipment a ete retiree avec le domaine Transport
-    // (ShipmentOrderRepository). Voir ECommerceAdapter / ECommerceSyncService.
+    @Override
+    public String extractExternalOrderId(Map<String, Object> rawOrder) {
+        Object id = rawOrder.get("id");
+        return id != null ? String.valueOf(id) : null;
+    }
+
+    /**
+     * Non implémenté : contrairement au champ {@code id} ci-dessus (normalisé
+     * par cet adaptateur lui-même depuis le XML, voir syncOrders), l'adresse
+     * de livraison PrestaShop (ressource {@code addresses}, liée par
+     * {@code id_address_delivery}, pas directement incluse dans la commande)
+     * n'a pas été vérifiée depuis cet environnement -- jamais de champ
+     * deviné (même principe que markOrderShipped/pushEta, non implémentés
+     * pour cette plateforme).
+     */
+    @Override
+    public Optional<ExternalShipmentCreationRequest> mapOrderToShipment(
+            ECommerceIntegration integration, Map<String, Object> rawOrder) {
+        log.debug("[PrestaShop] mapOrderToShipment non implémenté pour cette plateforme (commande {})",
+                rawOrder.get("id"));
+        return Optional.empty();
+    }
 
     private HttpHeaders createAuthHeaders(String apiKey) {
         String encoded = Base64.getEncoder().encodeToString((apiKey + ":").getBytes(java.nio.charset.StandardCharsets.UTF_8));
