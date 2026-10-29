@@ -4,6 +4,8 @@ import com.incokalk.model.Company;
 import com.incokalk.model.LandedCost;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.LandedCostRepository;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
+import com.incokalk.service.integration.fleethub.ShipmentSummary;
 import com.incokalk.tenant.TenantContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +32,7 @@ class LandedCostServiceTest {
     @Mock CompanyRepository companyRepo;
     @Mock CustomsDutyService customsDutyService;
     @Mock VatService vatService;
+    @Mock FleetHubIntegrationClient fleetHubIntegrationClient;
     @InjectMocks LandedCostService service;
 
     private UUID companyId;
@@ -227,5 +230,78 @@ class LandedCostServiceTest {
         assertThat(stats.get("total")).isEqualTo(1);
         assertThat(stats.get("avgTotalLandedCost")).isNotNull();
         assertThat(stats.get("avgMargin")).isNotNull();
+    }
+
+    private ShipmentSummary.Item item(String hsCode) {
+        return ShipmentSummary.Item.builder().hsCode(hsCode).build();
+    }
+
+    @Test
+    @DisplayName("createFromShipment — codes pays ISO-2 valides → préremplis, jamais calculé ni sauvegardé")
+    void createFromShipment_validIso2Codes_prefillsWithoutCalculating() {
+        UUID shipmentId = UUID.randomUUID();
+        ShipmentSummary summary = ShipmentSummary.builder()
+                .orderNumber("SHP-42")
+                .shipperCountry("cn").consigneeCountry(" FR ")
+                .incotermCode("CIF").currency("USD").transportMode("AIR")
+                .goodsValue(5000.0)
+                .items(List.of(item("620443")))
+                .build();
+        when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId)).thenReturn(summary);
+
+        LandedCost result = service.createFromShipment(shipmentId);
+
+        assertThat(result.getShipmentId()).isEqualTo(shipmentId);
+        assertThat(result.getCalculationName()).isEqualTo("Expédition SHP-42");
+        assertThat(result.getOriginCountry()).isEqualTo("CN");
+        assertThat(result.getDestinationCountry()).isEqualTo("FR");
+        assertThat(result.getIncoterm()).isEqualTo("CIF");
+        assertThat(result.getCurrency()).isEqualTo("USD");
+        assertThat(result.getTransportMode()).isEqualTo("AIR");
+        assertThat(result.getProductValue()).isEqualByComparingTo(new BigDecimal("5000.0"));
+        assertThat(result.getHsCode()).isEqualTo("620443");
+        verifyNoInteractions(landedCostRepo, customsDutyService, vatService);
+    }
+
+    @Test
+    @DisplayName("createFromShipment — pays en texte libre (pas un code ISO-2) → laissé vide, jamais deviné")
+    void createFromShipment_freeTextCountry_leftBlank() {
+        UUID shipmentId = UUID.randomUUID();
+        ShipmentSummary summary = ShipmentSummary.builder()
+                .shipperCountry("Chine").consigneeCountry("France")
+                .build();
+        when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId)).thenReturn(summary);
+
+        LandedCost result = service.createFromShipment(shipmentId);
+
+        assertThat(result.getOriginCountry()).isNull();
+        assertThat(result.getDestinationCountry()).isNull();
+    }
+
+    @Test
+    @DisplayName("createFromShipment — plusieurs articles → hsCode ambigu, laissé vide")
+    void createFromShipment_multipleItems_hsCodeLeftBlank() {
+        UUID shipmentId = UUID.randomUUID();
+        ShipmentSummary summary = ShipmentSummary.builder()
+                .shipperCountry("CN").consigneeCountry("FR")
+                .items(List.of(item("620443"), item("640411")))
+                .build();
+        when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId)).thenReturn(summary);
+
+        LandedCost result = service.createFromShipment(shipmentId);
+
+        assertThat(result.getHsCode()).isNull();
+    }
+
+    @Test
+    @DisplayName("createFromShipment — expédition introuvable côté fleet-hub → erreur explicite")
+    void createFromShipment_fleetHubUnavailable_throws() {
+        UUID shipmentId = UUID.randomUUID();
+        when(fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId))
+                .thenThrow(new FleetHubIntegrationClient.FleetHubIntegrationException("introuvable"));
+
+        assertThatThrownBy(() -> service.createFromShipment(shipmentId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("introuvable");
     }
 }

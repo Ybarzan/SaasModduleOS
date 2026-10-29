@@ -78,6 +78,31 @@ class LandedCostControllerTest extends ControllerTestBase {
             .andExpect(jsonPath("$.message").value("Coût débarqué introuvable"));
     }
 
+    // ── GET /from-shipment/{shipmentId} ───────────────────────────────────
+
+    @Test
+    @DisplayName("GET /v1/landed-costs/from-shipment/{shipmentId} → 200, préremplissage non sauvegardé")
+    void fromShipment_success() throws Exception {
+        UUID shipmentId = UUID.randomUUID();
+        when(landedCostService.createFromShipment(shipmentId)).thenReturn(sample());
+
+        mockMvc.perform(get("/v1/landed-costs/from-shipment/" + shipmentId).header("Authorization", authHeader()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.originCountry").value("CN"));
+    }
+
+    @Test
+    @DisplayName("GET /v1/landed-costs/from-shipment/{shipmentId} → 400 si fleet-hub indisponible")
+    void fromShipment_fleetHubUnavailable() throws Exception {
+        UUID shipmentId = UUID.randomUUID();
+        when(landedCostService.createFromShipment(shipmentId))
+                .thenThrow(new IllegalArgumentException("Impossible de récupérer cette expédition depuis fleet-hub"));
+
+        mockMvc.perform(get("/v1/landed-costs/from-shipment/" + shipmentId).header("Authorization", authHeader()))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.message").value("Impossible de récupérer cette expédition depuis fleet-hub"));
+    }
+
     // ── POST /calculate ─────────────────────────────────────────────────
 
     @Test

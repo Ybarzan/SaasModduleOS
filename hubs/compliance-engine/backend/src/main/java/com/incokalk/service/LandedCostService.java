@@ -4,6 +4,8 @@ import com.incokalk.model.Company;
 import com.incokalk.model.LandedCost;
 import com.incokalk.repository.CompanyRepository;
 import com.incokalk.repository.LandedCostRepository;
+import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
+import com.incokalk.service.integration.fleethub.ShipmentSummary;
 import com.incokalk.tenant.TenantContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,10 +28,13 @@ public class LandedCostService {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
+    private static final java.util.regex.Pattern ISO2_COUNTRY_CODE = java.util.regex.Pattern.compile("^[A-Z]{2}$");
+
     private final LandedCostRepository landedCostRepo;
     private final CompanyRepository companyRepo;
     private final CustomsDutyService customsDutyService;
     private final VatService vatService;
+    private final FleetHubIntegrationClient fleetHubIntegrationClient;
 
     public List<LandedCost> getAll() {
         UUID companyId = TenantContext.get();
@@ -143,11 +148,76 @@ public class LandedCostService {
         log.info("LandedCost {} supprimée pour company {}", id, companyId);
     }
 
-    // createFromShipment(UUID shipmentId) a ete retiree avec le domaine Transport :
-    // elle lisait ShipmentOrderRepository directement. Reconstruction en suivi :
-    // appeler le futur endpoint de resume d'expedition de fleet-hub (voir
-    // integration.fleethub.FleetHubIntegrationClient) et construire le LandedCost
-    // a partir de la reponse, pas fait dans cette passe.
+    /**
+     * Préremplit un coût débarqué depuis une expédition fleet-hub, via
+     * {@link FleetHubIntegrationClient#getShipmentSummary} (déjà utilisé par
+     * CustomsInvoiceGeneratorService/OrchestrationExecutor). Ne sauvegarde
+     * JAMAIS et n'appelle JAMAIS {@link #calculate}, volontairement : le
+     * champ pays libre de fleet-hub (ShipmentOrder.shipperCountry/
+     * consigneeCountry, simple texte, aucun format imposé) n'est pas la même
+     * chose qu'un code ISO-2 fiable -- le calcul de droits de douane
+     * (CustomsDutyService) compare ce code exactement (appartenance à l'UE,
+     * recherche TARIC), et un mauvais code n'y produit pas d'erreur visible
+     * mais un résultat silencieusement faux (repli sur un taux générique).
+     * Mieux vaut laisser le champ vide pour que l'utilisateur le corrige
+     * dans le formulaire existant que de deviner. originCountry/
+     * destinationCountry ne sont donc préremplis que si la valeur libre
+     * ressemble déjà à un vrai code ISO-2 (2 lettres après trim+majuscule) ;
+     * hsCode seulement si l'expédition a exactement un article (ambigu
+     * sinon) ; les autres champs (incoterm, devise, mode de transport,
+     * valeur marchandise) ne portent pas ce risque et sont copiés tels quels
+     * quand connus.
+     */
+    public LandedCost createFromShipment(UUID shipmentId) {
+        UUID companyId = TenantContext.get();
+        ShipmentSummary summary;
+        try {
+            summary = fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId);
+        } catch (FleetHubIntegrationClient.FleetHubIntegrationException e) {
+            throw new IllegalArgumentException(
+                    "Impossible de récupérer cette expédition depuis fleet-hub : " + e.getMessage());
+        }
+
+        LandedCost.LandedCostBuilder builder = LandedCost.builder()
+                .shipmentId(shipmentId)
+                .calculationName(summary.getOrderNumber() != null
+                        ? "Expédition " + summary.getOrderNumber() : null);
+
+        String origin = normalizeIso2CountryCode(summary.getShipperCountry());
+        if (origin != null) builder.originCountry(origin);
+        String destination = normalizeIso2CountryCode(summary.getConsigneeCountry());
+        if (destination != null) builder.destinationCountry(destination);
+
+        if (summary.getIncotermCode() != null && !summary.getIncotermCode().isBlank()) {
+            builder.incoterm(summary.getIncotermCode());
+        }
+        if (summary.getCurrency() != null && !summary.getCurrency().isBlank()) {
+            builder.currency(summary.getCurrency());
+        }
+        if (summary.getTransportMode() != null && !summary.getTransportMode().isBlank()) {
+            builder.transportMode(summary.getTransportMode());
+        }
+        if (summary.getGoodsValue() != null) {
+            builder.productValue(BigDecimal.valueOf(summary.getGoodsValue()));
+        }
+        if (summary.getItems() != null && summary.getItems().size() == 1) {
+            String hsCode = summary.getItems().get(0).getHsCode();
+            if (hsCode != null && !hsCode.isBlank()) {
+                builder.hsCode(hsCode);
+            }
+        }
+
+        return builder.build();
+    }
+
+    /** null si la valeur n'est pas déjà sous la forme exacte d'un code ISO-2
+     *  (2 lettres) -- jamais de conversion nom-de-pays -> code (voir
+     *  {@link #createFromShipment}). */
+    private String normalizeIso2CountryCode(String rawCountry) {
+        if (rawCountry == null) return null;
+        String candidate = rawCountry.trim().toUpperCase();
+        return ISO2_COUNTRY_CODE.matcher(candidate).matches() ? candidate : null;
+    }
 
     public LandedCost whatIf(LandedCost scenario) {
         computeCosts(scenario);

@@ -28,9 +28,9 @@ public class LandedCost {
     @JsonIgnore
     private Company company;
 
-    /** UUID brut (plus de relation JPA) depuis le retrait du domaine Transport.
-     * createFromShipment() a ete retiree de LandedCostService ; une reconstruction
-     * REST contre fleet-hub est un suivi documente, pas fait dans cette passe. */
+    /** UUID brut (plus de relation JPA) depuis le retrait du domaine Transport --
+     * voir LandedCostService.createFromShipment, qui le préremplit via
+     * FleetHubIntegrationClient.getShipmentSummary. */
     @Column(name = "shipment_id")
     private UUID shipmentId;
 

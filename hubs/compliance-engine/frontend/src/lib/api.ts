@@ -522,6 +522,7 @@ export const incokalkAPI = {
     delete: (id: string) => api.delete(`/v1/landed-costs/${id}`),
     stats: () => api.get('/v1/landed-costs/stats'),
     whatIf: (scenarios: unknown[]) => api.post('/v1/landed-costs/what-if', scenarios),
+    fromShipment: (shipmentId: string) => api.get(`/v1/landed-costs/from-shipment/${shipmentId}`),
     share: (id: string) => api.post(`/v1/landed-costs/${id}/share`),
     getPublic: (token: string) => api.get(`/v1/landed-costs/public/${token}`),
   },

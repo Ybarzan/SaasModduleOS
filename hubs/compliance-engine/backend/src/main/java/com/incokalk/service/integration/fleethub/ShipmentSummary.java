@@ -50,6 +50,11 @@ public class ShipmentSummary {
     private Integer packagesCount;
     private String incotermCode;
 
+    /** SEA/AIR/ROAD/RAIL -- nécessaire à LandedCostService.createFromShipment
+     *  pour préremplir le mode de transport (champ non utilisé dans le calcul
+     *  douane/TVA lui-même, donc sans risque de résultat faux). */
+    private String transportMode;
+
     /** UUID du transporteur fleet-hub (carrierId dans sa réponse JSON) -- null
      *  si l'expédition est livrée en interne (flotte propre, pas de carrier).
      *  Nécessaire à OrchestrationExecutor pour le contrôle de gouvernance

@@ -8,7 +8,15 @@ import { useAuthStore } from "../stores/auth";
 
 vi.mock("../lib/api", () => ({
   incokalkAPI: {
-    landedCosts: { list: vi.fn(), stats: vi.fn(), calculate: vi.fn(), delete: vi.fn(), whatIf: vi.fn(), share: vi.fn() },
+    landedCosts: {
+      list: vi.fn(),
+      stats: vi.fn(),
+      calculate: vi.fn(),
+      delete: vi.fn(),
+      whatIf: vi.fn(),
+      share: vi.fn(),
+      fromShipment: vi.fn(),
+    },
   },
 }));
 
@@ -133,6 +141,24 @@ describe("LandedCostCalculator page", () => {
     await waitFor(() => {
       expect(incokalkAPI.landedCosts.delete).toHaveBeenCalledWith("lc1");
     });
+  });
+
+  it("prefills the form from a shipment without submitting it", async () => {
+    vi.mocked(incokalkAPI.landedCosts.fromShipment).mockResolvedValue({
+      data: { originCountry: "CN", destinationCountry: null, incoterm: "CIF", productValue: 7500 },
+    } as never);
+    renderPage();
+    await waitFor(() => screen.getByText("Calculs précédents"));
+
+    fireEvent.change(screen.getByPlaceholderText("ID de l'expédition"), {
+      target: { value: "shp-123" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Importer" }));
+
+    await waitFor(() => {
+      expect(incokalkAPI.landedCosts.fromShipment).toHaveBeenCalledWith("shp-123");
+    });
+    expect(incokalkAPI.landedCosts.calculate).not.toHaveBeenCalled();
   });
 
   it("compares what-if scenarios", async () => {
