@@ -82,8 +82,8 @@ const reliabilityNote = (pred) =>
     </p>
   ) : (
     <p className="muted" style={{ marginTop: 10 }}>
-      ℹ️ Estimation heuristique — pas encore assez d'historique réel pour ce transporteur sur
-      cette liaison.
+      ℹ️ Estimation heuristique — pas encore assez d'historique réel pour ce transporteur sur cette
+      liaison.
     </p>
   )
 
