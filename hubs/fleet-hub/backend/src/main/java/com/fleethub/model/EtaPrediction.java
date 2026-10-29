@@ -89,6 +89,19 @@ public class EtaPrediction {
     @Builder.Default
     private Integer weatherDelayDays = 0;
 
+    /** true seulement quand EtaPredictionService.applyReliabilityWeighting() a
+     * réellement mélangé un score de fiabilité mesuré (EtaSourceReliabilityService) --
+     * jamais sur un repli heuristique, même si confidencePercent est identique
+     * dans les deux cas. Transparence du score, docs/03-plan-migration.md Phase 2. */
+    @Column(name = "reliability_weighted", nullable = false)
+    @Builder.Default
+    private boolean reliabilityWeighted = false;
+
+    /** Nombre d'observations réelles ayant backé le blend -- renseigné
+     * uniquement quand reliabilityWeighted est true. */
+    @Column(name = "reliability_sample_count")
+    private Integer reliabilitySampleCount;
+
     @Column(name = "is_on_time")
     private Boolean isOnTime;
 

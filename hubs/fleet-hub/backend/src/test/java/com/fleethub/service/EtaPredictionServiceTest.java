@@ -89,9 +89,11 @@ class EtaPredictionServiceTest {
     @Test
     @DisplayName("prédiction ad hoc (sans expédition réelle) → confiance heuristique inchangée, jamais de requête de fiabilité")
     void predict_withoutShipment_neverQueriesReliability() {
-        service.predict(baselinePrediction());
+        EtaPrediction result = service.predict(baselinePrediction());
 
         verifyNoInteractions(reliabilityRepo);
+        assertThat(result.isReliabilityWeighted()).isFalse();
+        assertThat(result.getReliabilitySampleCount()).isNull();
     }
 
     /** Confiance heuristique "pure" pour la lane/mode/date du test courant,
@@ -113,6 +115,8 @@ class EtaPredictionServiceTest {
         EtaPrediction result = service.predict(baselinePrediction(), shipment.getId());
 
         assertThat(result.getConfidencePercent()).isEqualByComparingTo(baseline);
+        assertThat(result.isReliabilityWeighted()).isFalse();
+        assertThat(result.getReliabilitySampleCount()).isNull();
     }
 
     @Test
@@ -128,6 +132,8 @@ class EtaPredictionServiceTest {
         EtaPrediction result = service.predict(baselinePrediction(), shipment.getId());
 
         assertThat(result.getConfidencePercent()).isEqualByComparingTo(baseline);
+        assertThat(result.isReliabilityWeighted()).isFalse();
+        assertThat(result.getReliabilitySampleCount()).isNull();
     }
 
     @Test
@@ -143,6 +149,8 @@ class EtaPredictionServiceTest {
         EtaPrediction result = service.predict(baselinePrediction(), shipment.getId());
 
         assertThat(result.getConfidencePercent()).isGreaterThan(BigDecimal.valueOf(85));
+        assertThat(result.isReliabilityWeighted()).isTrue();
+        assertThat(result.getReliabilitySampleCount()).isEqualTo(100);
     }
 
     @Test
@@ -158,6 +166,8 @@ class EtaPredictionServiceTest {
         EtaPrediction result = service.predict(baselinePrediction(), shipment.getId());
 
         assertThat(result.getConfidencePercent()).isLessThan(BigDecimal.valueOf(85));
+        assertThat(result.isReliabilityWeighted()).isTrue();
+        assertThat(result.getReliabilitySampleCount()).isEqualTo(100);
     }
 
     @Test
