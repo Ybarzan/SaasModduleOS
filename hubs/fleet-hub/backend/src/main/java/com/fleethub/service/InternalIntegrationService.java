@@ -1,5 +1,6 @@
 package com.fleethub.service;
 
+import com.fleethub.dto.ExternalShipmentCreationSettingsDto;
 import com.fleethub.dto.InternalIntegrationSettingsDto;
 import com.fleethub.model.Company;
 import com.fleethub.repository.CompanyRepository;
@@ -75,5 +76,36 @@ public class InternalIntegrationService {
         return companyRepository.findByInternalIntegrationApiKeyAndInternalIntegrationEnabledTrue(ApiKeyHasher.hash(apiKey))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé invalide ou intégration désactivée"))
                 .getId();
+    }
+
+    /**
+     * Même résolution que {@link #resolveCompanyId}, plus l'opt-in SÉPARÉ
+     * {@code allowExternalShipmentCreation} (ADR-0002) -- une clé valide avec
+     * le partage en lecture activé ne suffit pas à elle seule à autoriser la
+     * création d'expéditions.
+     */
+    @Transactional(readOnly = true)
+    public Long resolveCompanyIdForShipmentCreation(String apiKey) {
+        Long companyId = resolveCompanyId(apiKey);
+        Company company = companyRepository.findById(companyId).orElseThrow();
+        if (!company.isAllowExternalShipmentCreation()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Création d'expédition externe non activée pour cette société (voir Paramètres > Intégrations)");
+        }
+        return companyId;
+    }
+
+    @Transactional(readOnly = true)
+    public ExternalShipmentCreationSettingsDto shipmentCreationSettings(Long companyId) {
+        Company company = companyRepository.findById(companyId).orElseThrow();
+        return new ExternalShipmentCreationSettingsDto(company.isAllowExternalShipmentCreation());
+    }
+
+    @Transactional
+    public ExternalShipmentCreationSettingsDto setShipmentCreationEnabled(Long companyId, boolean enabled) {
+        Company company = companyRepository.findById(companyId).orElseThrow();
+        company.setAllowExternalShipmentCreation(enabled);
+        companyRepository.save(company);
+        return new ExternalShipmentCreationSettingsDto(enabled);
     }
 }

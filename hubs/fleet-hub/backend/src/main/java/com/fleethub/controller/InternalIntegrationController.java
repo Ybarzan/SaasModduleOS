@@ -1,5 +1,6 @@
 package com.fleethub.controller;
 
+import com.fleethub.dto.ExternalShipmentCreationSettingsDto;
 import com.fleethub.dto.InternalIntegrationSettingsDto;
 import com.fleethub.security.TenantContext;
 import com.fleethub.service.InternalIntegrationService;
@@ -39,5 +40,25 @@ public class InternalIntegrationController {
     public InternalIntegrationSettingsDto disable() {
         internalIntegrationService.disable(TenantContext.companyId());
         return internalIntegrationService.settings(TenantContext.companyId());
+    }
+
+    @GetMapping("/shipment-creation/settings")
+    @Operation(summary = "Statut de la création d'expédition externe",
+            description = "Opt-in SÉPARÉ de /settings ci-dessus (ADR-0002) : la lecture seule ne suffit pas, voir docs/adr/0002-creation-expedition-externe.md")
+    public ExternalShipmentCreationSettingsDto shipmentCreationSettings() {
+        return internalIntegrationService.shipmentCreationSettings(TenantContext.companyId());
+    }
+
+    @PostMapping("/shipment-creation/enable")
+    @Operation(summary = "Activer la création d'expédition externe",
+            description = "Autorise en plus compliance-engine à créer des expéditions brouillon (toujours DRAFT) via POST /api/internal/shipments -- sans effet si le partage en lecture (/enable ci-dessus) n'est pas déjà activé")
+    public ExternalShipmentCreationSettingsDto enableShipmentCreation() {
+        return internalIntegrationService.setShipmentCreationEnabled(TenantContext.companyId(), true);
+    }
+
+    @PostMapping("/shipment-creation/disable")
+    @Operation(summary = "Désactiver la création d'expédition externe")
+    public ExternalShipmentCreationSettingsDto disableShipmentCreation() {
+        return internalIntegrationService.setShipmentCreationEnabled(TenantContext.companyId(), false);
     }
 }

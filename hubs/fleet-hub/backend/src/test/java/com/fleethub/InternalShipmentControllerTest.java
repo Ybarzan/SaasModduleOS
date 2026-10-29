@@ -53,6 +53,11 @@ class InternalShipmentControllerTest {
         return objectMapper.readTree(res.getResponse().getContentAsString()).get("internalIntegrationApiKey").asText();
     }
 
+    private void enableShipmentCreation(String token) throws Exception {
+        mvc.perform(post("/api/internal-integrations/shipment-creation/enable").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
+
     private String createShipment(String token) throws Exception {
         MvcResult res = mvc.perform(post("/api/shipments")
                         .header("Authorization", "Bearer " + token)
@@ -122,5 +127,92 @@ class InternalShipmentControllerTest {
         mvc.perform(get("/api/internal/shipments/" + shipmentId)
                         .header("X-Internal-Integration-Key", otherKey))
                 .andExpect(status().isNotFound());
+    }
+
+    private static final String VALID_CREATION_BODY =
+            "{\"shipperName\":\"Boutique SARL\",\"shipperCity\":\"Lyon\",\"shipperCountry\":\"FR\","
+                    + "\"consigneeName\":\"Client Final\",\"consigneeAddress\":\"12 rue des Lilas\","
+                    + "\"consigneeCity\":\"Bruxelles\",\"consigneeCountry\":\"BE\","
+                    + "\"goodsDescription\":\"Commande e-commerce\",\"weightKg\":2.5}";
+
+    @Test
+    void createFromExternalSource_withoutKeyHeader_returns401() throws Exception {
+        mvc.perform(post("/api/internal/shipments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_CREATION_BODY))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void createFromExternalSource_readOnlyKey_withoutShipmentCreationOptIn_returns403() throws Exception {
+        String token = registerAndGetToken("Read Only Co");
+        String key = enableIntegrationAndGetKey(token);
+
+        mvc.perform(post("/api/internal/shipments")
+                        .header("X-Internal-Integration-Key", key)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_CREATION_BODY))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void createFromExternalSource_bothOptInsEnabled_createsDraftShipmentWithoutInternalForeignKeys() throws Exception {
+        String token = registerAndGetToken("Writer Co");
+        String key = enableIntegrationAndGetKey(token);
+        enableShipmentCreation(token);
+
+        MvcResult res = mvc.perform(post("/api/internal/shipments")
+                        .header("X-Internal-Integration-Key", key)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_CREATION_BODY))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status").value("DRAFT"))
+                .andExpect(jsonPath("$.shipperName").value("Boutique SARL"))
+                .andExpect(jsonPath("$.consigneeName").value("Client Final"))
+                .andExpect(jsonPath("$.carrier").doesNotExist())
+                .andExpect(jsonPath("$.truck").doesNotExist())
+                .andReturn();
+
+        // Visible par le propriétaire via la même lecture M2M que les expéditions créées depuis l'UI.
+        String shipmentId = objectMapper.readTree(res.getResponse().getContentAsString()).get("id").asText();
+        mvc.perform(get("/api/internal/shipments/" + shipmentId)
+                        .header("X-Internal-Integration-Key", key))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("DRAFT"));
+    }
+
+    @Test
+    void createFromExternalSource_missingConsigneeName_returns400() throws Exception {
+        String token = registerAndGetToken("Invalid Body Co");
+        String key = enableIntegrationAndGetKey(token);
+        enableShipmentCreation(token);
+
+        mvc.perform(post("/api/internal/shipments")
+                        .header("X-Internal-Integration-Key", key)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"shipperName\":\"Boutique SARL\"}"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createFromExternalSource_disablingShipmentCreationOnly_keepsReadAccessButBlocksCreation() throws Exception {
+        String token = registerAndGetToken("Toggle Co");
+        String key = enableIntegrationAndGetKey(token);
+        enableShipmentCreation(token);
+
+        mvc.perform(post("/api/internal-integrations/shipment-creation/disable").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
+        mvc.perform(post("/api/internal/shipments")
+                        .header("X-Internal-Integration-Key", key)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(VALID_CREATION_BODY))
+                .andExpect(status().isForbidden());
+
+        // La lecture, elle, reste fonctionnelle : seule la création a été désactivée.
+        String shipmentId = createShipment(token);
+        mvc.perform(get("/api/internal/shipments/" + shipmentId)
+                        .header("X-Internal-Integration-Key", key))
+                .andExpect(status().isOk());
     }
 }
