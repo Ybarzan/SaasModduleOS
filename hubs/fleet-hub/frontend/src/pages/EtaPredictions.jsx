@@ -69,6 +69,24 @@ const fmtDate = (s) =>
     ? new Date(s).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
     : '—'
 
+// Transparence du score (docs/03-plan-migration.md Phase 2) : distingue un
+// score réellement mesuré contre l'historique de livraison (transporteur ×
+// lane × mode) d'un simple repli heuristique -- deux prédictions peuvent
+// afficher le même confidencePercent sans que l'une ou l'autre le précise.
+const reliabilityNote = (pred) =>
+  pred.reliabilityWeighted ? (
+    <p className="muted" style={{ marginTop: 10 }}>
+      📊 Fiabilité mesurée sur <strong>{pred.reliabilitySampleCount}</strong> livraison
+      {pred.reliabilitySampleCount === 1 ? '' : 's'} réelle
+      {pred.reliabilitySampleCount === 1 ? '' : 's'} pour ce transporteur sur cette liaison.
+    </p>
+  ) : (
+    <p className="muted" style={{ marginTop: 10 }}>
+      ℹ️ Estimation heuristique — pas encore assez d'historique réel pour ce transporteur sur cette
+      liaison.
+    </p>
+  )
+
 const CONFIDENCE_COUNT_ORDER = [
   { level: 'HIGH', label: 'Fiable', color: 'green' },
   { level: 'MEDIUM', label: 'Correcte', color: 'orange' },
@@ -329,34 +347,37 @@ export default function EtaPredictions() {
           </button>
 
           {showLatestDetail && (
-            <div className="truck-card-grid" style={{ marginTop: 12 }}>
-              <div className="couple-stat">
-                <span>Baseline</span>
-                <b>{latest.baselineDays} jours</b>
+            <>
+              <div className="truck-card-grid" style={{ marginTop: 12 }}>
+                <div className="couple-stat">
+                  <span>Baseline</span>
+                  <b>{latest.baselineDays} jours</b>
+                </div>
+                <div className="couple-stat">
+                  <span>Saisonnier</span>
+                  <b>
+                    {latest.seasonalFactor > 0 ? '+' : ''}
+                    {latest.seasonalFactor}%
+                  </b>
+                </div>
+                <div className="couple-stat">
+                  <span>Congestion</span>
+                  <b>
+                    {latest.congestionFactor > 0 ? '+' : ''}
+                    {latest.congestionFactor}%
+                  </b>
+                </div>
+                <div className="couple-stat">
+                  <span>Douane</span>
+                  <b>+{latest.customsDelayDays} jours</b>
+                </div>
+                <div className="couple-stat">
+                  <span>Météo</span>
+                  <b>+{latest.weatherDelayDays} jours</b>
+                </div>
               </div>
-              <div className="couple-stat">
-                <span>Saisonnier</span>
-                <b>
-                  {latest.seasonalFactor > 0 ? '+' : ''}
-                  {latest.seasonalFactor}%
-                </b>
-              </div>
-              <div className="couple-stat">
-                <span>Congestion</span>
-                <b>
-                  {latest.congestionFactor > 0 ? '+' : ''}
-                  {latest.congestionFactor}%
-                </b>
-              </div>
-              <div className="couple-stat">
-                <span>Douane</span>
-                <b>+{latest.customsDelayDays} jours</b>
-              </div>
-              <div className="couple-stat">
-                <span>Météo</span>
-                <b>+{latest.weatherDelayDays} jours</b>
-              </div>
-            </div>
+              {reliabilityNote(latest)}
+            </>
           )}
         </div>
       )}
@@ -488,34 +509,37 @@ export default function EtaPredictions() {
                               : '↓ Voir le détail technique'}
                           </button>
                           {technicalDetailRowId === pred.id && (
-                            <div className="truck-card-grid" style={{ marginTop: 10 }}>
-                              <div className="couple-stat">
-                                <span>Jours baseline</span>
-                                <b>{pred.baselineDays} jours</b>
+                            <>
+                              <div className="truck-card-grid" style={{ marginTop: 10 }}>
+                                <div className="couple-stat">
+                                  <span>Jours baseline</span>
+                                  <b>{pred.baselineDays} jours</b>
+                                </div>
+                                <div className="couple-stat">
+                                  <span>Saisonnier</span>
+                                  <b>
+                                    {pred.seasonalFactor > 0 ? '+' : ''}
+                                    {pred.seasonalFactor}%
+                                  </b>
+                                </div>
+                                <div className="couple-stat">
+                                  <span>Congestion</span>
+                                  <b>
+                                    {pred.congestionFactor > 0 ? '+' : ''}
+                                    {pred.congestionFactor}%
+                                  </b>
+                                </div>
+                                <div className="couple-stat">
+                                  <span>Douane</span>
+                                  <b>+{pred.customsDelayDays} jours</b>
+                                </div>
+                                <div className="couple-stat">
+                                  <span>Météo</span>
+                                  <b>+{pred.weatherDelayDays} jours</b>
+                                </div>
                               </div>
-                              <div className="couple-stat">
-                                <span>Saisonnier</span>
-                                <b>
-                                  {pred.seasonalFactor > 0 ? '+' : ''}
-                                  {pred.seasonalFactor}%
-                                </b>
-                              </div>
-                              <div className="couple-stat">
-                                <span>Congestion</span>
-                                <b>
-                                  {pred.congestionFactor > 0 ? '+' : ''}
-                                  {pred.congestionFactor}%
-                                </b>
-                              </div>
-                              <div className="couple-stat">
-                                <span>Douane</span>
-                                <b>+{pred.customsDelayDays} jours</b>
-                              </div>
-                              <div className="couple-stat">
-                                <span>Météo</span>
-                                <b>+{pred.weatherDelayDays} jours</b>
-                              </div>
-                            </div>
+                              {reliabilityNote(pred)}
+                            </>
                           )}
                           {pred.actualArrival ? (
                             <p className="muted" style={{ marginTop: 10 }}>

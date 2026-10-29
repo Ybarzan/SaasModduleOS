@@ -474,6 +474,9 @@ public class EtaPredictionService {
         BigDecimal blended = heuristicConfidence.multiply(BigDecimal.valueOf(1 - weight))
                 .add(measuredConfidence.multiply(BigDecimal.valueOf(weight)));
 
+        prediction.setReliabilityWeighted(true);
+        prediction.setReliabilitySampleCount(r.getSampleCount());
+
         return blended.max(BigDecimal.valueOf(20)).min(BigDecimal.valueOf(98));
     }
 }
