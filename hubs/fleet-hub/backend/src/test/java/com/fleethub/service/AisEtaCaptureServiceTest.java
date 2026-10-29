@@ -3,6 +3,7 @@ package com.fleethub.service;
 import com.fleethub.model.Carrier;
 import com.fleethub.model.Company;
 import com.fleethub.model.EtaReportedSource;
+import com.fleethub.model.ShipmentEvent;
 import com.fleethub.model.ShipmentOrder;
 import com.fleethub.repository.EtaReportedSourceRepository;
 import com.fleethub.repository.ShipmentOrderRepository;
@@ -28,6 +29,7 @@ class AisEtaCaptureServiceTest {
     private ShipmentOrderRepository shipmentRepo;
     private EtaReportedSourceRepository reportedSourceRepo;
     private AisStreamService aisStreamService;
+    private ShipmentEventRecorder eventRecorder;
     private AisEtaCaptureService service;
 
     private Company company;
@@ -38,7 +40,8 @@ class AisEtaCaptureServiceTest {
         shipmentRepo = mock(ShipmentOrderRepository.class);
         reportedSourceRepo = mock(EtaReportedSourceRepository.class);
         aisStreamService = mock(AisStreamService.class);
-        service = new AisEtaCaptureService(shipmentRepo, reportedSourceRepo, aisStreamService);
+        eventRecorder = mock(ShipmentEventRecorder.class);
+        service = new AisEtaCaptureService(shipmentRepo, reportedSourceRepo, aisStreamService, eventRecorder);
 
         company = new Company();
         company.setId(7L);
@@ -89,6 +92,8 @@ class AisEtaCaptureServiceTest {
         assertThat(saved.getDestinationCountry()).isEqualTo("DEU");
         assertThat(saved.getShipment()).isEqualTo(shipment);
         assertThat(saved.getCarrier()).isEqualTo(carrier);
+
+        verify(eventRecorder).record(eq(shipment), eq(ShipmentEvent.EventType.ETA_CAPTURED), any());
     }
 
     @Test

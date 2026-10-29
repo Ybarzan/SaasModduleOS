@@ -1,8 +1,8 @@
 # ADR-0001 : Où (et si) introduire un event store canonique
 
-- **Statut** : proposé — en attente de revue
+- **Statut** : accepté — Option C validée par l'utilisateur 2026-10-29 ; Phase 1 (double écriture, fleet-hub seul) implémentée le même jour. Phases 2 (parité) et 3 (bascule des lectures) restent à faire, voir plan de déploiement ci-dessous.
 - **Date** : 2026-10-29
-- **Contexte du plan** : `docs/03-plan-migration.md`, Phase 2/3 (observabilité cross-hub, historique des événements)
+- **Contexte du plan** : `docs/03-plan-migration.md`, Phase 1 J1-J2 (event store), Phase 2/3 (observabilité cross-hub, historique des événements)
 
 ## Contexte
 
@@ -212,3 +212,46 @@ repository Spring Data JPA habituel.
    hypothétique pour l'instant ? (Détermine si Option C doit rester la
    décision finale ou si c'est une étape vers autre chose à anticiper
    davantage dans le schéma.)
+
+## Note de mise en œuvre (Phase 1, 2026-10-29)
+
+Validé par l'utilisateur : Option C, scope fleet-hub seul. Deux corrections
+par rapport au contexte rédigé ci-dessus, découvertes en lisant le code
+pendant l'implémentation (pas avant, d'où leur place ici plutôt que dans le
+contexte d'origine) :
+
+- **`DashboardService` (fleet-hub) ne concerne pas les expéditions** : c'est
+  le tableau de bord camions/tachographe (`Truck`, conformité temps de
+  conduite), un domaine entièrement différent. Le véritable consommateur
+  identifié dans le contexte ci-dessus est `InternalDashboardSummaryService`
+  — mais celui-ci ne fait que des **comptages sur l'état courant** (expéditions
+  actives, camions disponibles, réservations ouvertes), pas de lecture
+  d'historique. Aucun consommateur réel n'a donc aujourd'hui besoin de lire
+  `shipment_events` : la Phase 1 reste purement une fondation d'écriture,
+  sans Phase 2/3 pressante.
+- **`TrackingEvent` existe déjà et est lui-même un journal append-only** des
+  changements de statut/position (jamais mis à jour, toujours une nouvelle
+  ligne). `shipment_events` ne le remplace pas et ne le remplacera pas : il le
+  **complète**, pour les événements qui n'y ont pas leur place (création,
+  assignation de navire, capture d'ETA) et pour offrir, à terme, une seule
+  table listant tous les types d'événements d'une expédition. Conséquence
+  assumée : les changements de statut sont désormais journalisés aux deux
+  endroits (`TrackingEvent` ET `shipment_events`) — redondance délibérée et
+  temporaire, cohérente avec l'esprit "double écriture" de la Phase 1.
+
+**Réalisé** : migration `V18__shipment_events.sql` (fleet-hub) ; entité
+`ShipmentEvent` (`EventType` : `SHIPMENT_CREATED`, `STATUS_CHANGED`,
+`VESSEL_ASSIGNED`, `ETA_CAPTURED` — pas de JSONB typé, `payload` en `TEXT`
+sérialisé via l'`ObjectMapper` Spring existant, pour éviter une dépendance
+nouvelle comme recommandé) ; service `ShipmentEventRecorder` (écriture
+non bloquante, échec journalisé et jamais propagé) ; branché sur
+`ShipmentService.createShipment/updateStatus/processWebhookEvent/assignVessel`,
+`CarrierBookingService.recordEtaReportedSource` et
+`AisEtaCaptureService.upsert`. Aucun comportement existant modifié, aucune
+lecture ajoutée — suite de tests backend fleet-hub complète toujours verte.
+
+**Reste à faire** (hors scope de cette passe, dépend d'un vrai besoin de
+projection qui n'existe pas encore) : Phase 2 (projection + comparaison de
+parité) et Phase 3 (bascule d'une lecture existante) telles que décrites dans
+le plan de déploiement ci-dessus, le jour où un consommateur réel en aura
+besoin.

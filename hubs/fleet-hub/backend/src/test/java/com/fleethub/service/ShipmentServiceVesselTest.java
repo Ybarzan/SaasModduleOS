@@ -2,6 +2,7 @@ package com.fleethub.service;
 
 import com.fleethub.config.ResourceNotFoundException;
 import com.fleethub.model.Company;
+import com.fleethub.model.ShipmentEvent;
 import com.fleethub.model.ShipmentOrder;
 import com.fleethub.repository.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,7 +15,10 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /** Couvre uniquement assignVessel() -- le reste de ShipmentService n'avait
@@ -23,6 +27,7 @@ import static org.mockito.Mockito.when;
 class ShipmentServiceVesselTest {
 
     private ShipmentOrderRepository shipmentRepo;
+    private ShipmentEventRecorder eventRecorder;
     private ShipmentService service;
 
     private Long companyId;
@@ -32,11 +37,12 @@ class ShipmentServiceVesselTest {
     @BeforeEach
     void setUp() {
         shipmentRepo = mock(ShipmentOrderRepository.class);
+        eventRecorder = mock(ShipmentEventRecorder.class);
         service = new ShipmentService(
                 shipmentRepo, mock(TrackingEventRepository.class), mock(CarrierRepository.class),
                 mock(ShippingRateRepository.class), mock(CompanyRepository.class), mock(AppUserRepository.class),
                 mock(TruckRepository.class), mock(ShipmentEventPublisher.class), mock(ShipmentItemRepository.class),
-                mock(ClientUserRepository.class));
+                mock(ClientUserRepository.class), eventRecorder);
 
         companyId = 7L;
         shipmentId = UUID.randomUUID();
@@ -52,6 +58,8 @@ class ShipmentServiceVesselTest {
         ShipmentOrder result = service.assignVessel(shipmentId, "235012345", companyId);
 
         assertThat(result.getTrackedVesselMmsi()).isEqualTo("235012345");
+        verify(eventRecorder).record(eq(shipment), eq(ShipmentEvent.EventType.VESSEL_ASSIGNED),
+                eq(java.util.Map.of("mmsi", "235012345")));
     }
 
     @Test
@@ -70,6 +78,8 @@ class ShipmentServiceVesselTest {
         ShipmentOrder result = service.assignVessel(shipmentId, null, companyId);
 
         assertThat(result.getTrackedVesselMmsi()).isNull();
+        verify(eventRecorder).record(eq(shipment), eq(ShipmentEvent.EventType.VESSEL_ASSIGNED),
+                eq(java.util.Map.of("cleared", true)));
     }
 
     @Test
@@ -88,6 +98,8 @@ class ShipmentServiceVesselTest {
         assertThatThrownBy(() -> service.assignVessel(shipmentId, "12345", companyId))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("MMSI invalide");
+
+        verifyNoInteractions(eventRecorder);
     }
 
     @Test

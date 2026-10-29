@@ -19,6 +19,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -48,6 +49,7 @@ public class ShipmentService {
     private final ShipmentEventPublisher eventPublisher;
     private final ShipmentItemRepository shipmentItemRepo;
     private final ClientUserRepository clientUserRepo;
+    private final ShipmentEventRecorder eventRecorder;
 
     @Transactional
     public ShipmentOrder createShipment(ShipmentOrderDTO dto, Long userId, Long companyId) {
@@ -148,6 +150,8 @@ public class ShipmentService {
             }
         }
         eventPublisher.shipmentCreated(saved.getId(), orderNumber, companyId);
+        eventRecorder.record(saved, ShipmentEvent.EventType.SHIPMENT_CREATED,
+                Map.of("orderNumber", orderNumber));
         return saved;
     }
 
@@ -207,6 +211,9 @@ public class ShipmentService {
                 shipment.getUser() != null ? shipment.getUser().getId() : null,
                 TrackingEvent.DataSource.MANUAL);
 
+        eventRecorder.record(shipment, ShipmentEvent.EventType.STATUS_CHANGED,
+                Map.of("oldStatus", oldStatus, "newStatus", dto.getStatus(), "dataSource", "MANUAL"));
+
         return shipment;
     }
 
@@ -240,14 +247,19 @@ public class ShipmentService {
 
         if (mmsi == null || mmsi.isBlank()) {
             shipment.setTrackedVesselMmsi(null);
-        } else {
-            String trimmed = mmsi.trim();
-            if (!trimmed.matches("\\d{9}")) {
-                throw new IllegalArgumentException("MMSI invalide (attendu : 9 chiffres)");
-            }
-            shipment.setTrackedVesselMmsi(trimmed);
+            ShipmentOrder saved = shipmentRepo.save(shipment);
+            eventRecorder.record(saved, ShipmentEvent.EventType.VESSEL_ASSIGNED, Map.of("cleared", true));
+            return saved;
         }
-        return shipmentRepo.save(shipment);
+
+        String trimmed = mmsi.trim();
+        if (!trimmed.matches("\\d{9}")) {
+            throw new IllegalArgumentException("MMSI invalide (attendu : 9 chiffres)");
+        }
+        shipment.setTrackedVesselMmsi(trimmed);
+        ShipmentOrder saved = shipmentRepo.save(shipment);
+        eventRecorder.record(saved, ShipmentEvent.EventType.VESSEL_ASSIGNED, Map.of("mmsi", trimmed));
+        return saved;
     }
 
     private static final java.util.Map<ShipmentOrder.Status, java.util.Set<ShipmentOrder.Status>> ALLOWED_TRANSITIONS =
@@ -336,6 +348,8 @@ public class ShipmentService {
                         oldStatus, newStatus.name(), companyId,
                         shipment.getUser() != null ? shipment.getUser().getId() : null,
                         TrackingEvent.DataSource.LIVE);
+                    eventRecorder.record(shipment, ShipmentEvent.EventType.STATUS_CHANGED,
+                            Map.of("oldStatus", oldStatus, "newStatus", newStatus.name(), "dataSource", "LIVE"));
                 }
 
                 log.info("Webhook {}: {} -> status '{}'", source, trackingNumber, status);
