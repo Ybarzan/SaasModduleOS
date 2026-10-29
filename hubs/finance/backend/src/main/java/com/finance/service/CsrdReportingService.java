@@ -3,6 +3,8 @@ package com.finance.service;
 import com.finance.model.CarbonOffset;
 import com.finance.repository.CarbonOffsetRepository;
 import com.finance.security.TenantContext;
+import com.finance.service.integration.fleethub.FleetHubIntegrationClient;
+import com.finance.service.integration.fleethub.ShipmentLaneSummary;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.*;
 public class CsrdReportingService {
 
     private final CarbonOffsetRepository carbonOffsetRepo;
+    private final FleetHubIntegrationClient fleetHubIntegrationClient;
 
     public Map<String, Object> getCsrdReport() {
         UUID companyId = TenantContext.get();
@@ -42,15 +45,24 @@ public class CsrdReportingService {
         // Le regroupement par "lane" (origine -> destination) lisait la ville du
         // shipper/consignee via la relation JPA CarbonOffset.shipment -- retirée avec
         // le domaine Transport (CarbonOffset.shipmentId est maintenant un UUID brut,
-        // et l'expédition elle-même vit côté fleet-hub). Toutes les émissions sont
-        // donc regroupées sous "Unknown" en attendant un appel REST vers fleet-hub
-        // (résumé d'expédition) pour résoudre les villes par ligne -- suivi
-        // documenté, pas fait dans cette passe (gap préexistant, hérité tel quel
-        // de compliance-engine lors de l'extraction Finance & Trésorerie).
+        // et l'expédition elle-même vit côté fleet-hub). Résolu depuis 2026-10-29 via
+        // FleetHubIntegrationClient.getShipmentSummary (GET /api/internal/shipments/{id}),
+        // même principe que compliance-engine/Logistix. Dégradation gracieuse à deux
+        // niveaux : (1) société sans clé fleet-hub configurée -> aucun appel, tout sous
+        // "Unknown" (comportement préexistant inchangé, pas de coût réseau ajouté pour
+        // qui n'a rien activé) ; (2) clé configurée mais une expédition précise
+        // indisponible (introuvable, fleet-hub en panne) -> seule cette ligne tombe à
+        // "Unknown", jamais tout le rapport. mémoïsée par shipmentId : plusieurs offsets
+        // de la même expédition ne déclenchent qu'un seul appel.
         List<CarbonOffset> allOffsets = carbonOffsetRepo.findByCompanyIdOrderByCreatedAtDesc(companyId);
+        boolean fleetHubConfigured = fleetHubIntegrationClient.isConfigured(companyId);
+        Map<UUID, String> laneByShipmentId = new HashMap<>();
         Map<String, BigDecimal> laneEmissionsKg = new LinkedHashMap<>();
         for (CarbonOffset offset : allOffsets) {
-            String lane = "Unknown";
+            UUID shipmentId = offset.getShipmentId();
+            String lane = (fleetHubConfigured && shipmentId != null)
+                    ? laneByShipmentId.computeIfAbsent(shipmentId, id -> resolveLaneOrUnknown(id, companyId))
+                    : "Unknown";
             BigDecimal co2Kg = offset.getCo2EmissionsKg();
             if (co2Kg != null) {
                 laneEmissionsKg.merge(lane, co2Kg, BigDecimal::add);
@@ -105,5 +117,26 @@ public class CsrdReportingService {
 
         log.info("CSRD report generated for company {} period 2026-Q3", companyId);
         return report;
+    }
+
+    /** Dégradation gracieuse par expédition : une expédition introuvable ou un
+     * fleet-hub indisponible ne fait tomber que cette ligne sous "Unknown",
+     * jamais tout le rapport -- voir le commentaire dans getCsrdReport(). */
+    private String resolveLaneOrUnknown(UUID shipmentId, UUID companyId) {
+        try {
+            ShipmentLaneSummary summary = fleetHubIntegrationClient.getShipmentSummary(shipmentId, companyId);
+            String origin = firstNonBlank(summary.getShipperCity(), summary.getShipperCountry());
+            String destination = firstNonBlank(summary.getConsigneeCity(), summary.getConsigneeCountry());
+            return (origin != null && destination != null) ? origin + " → " + destination : "Unknown";
+        } catch (FleetHubIntegrationClient.FleetHubIntegrationException e) {
+            log.debug("[FleetHub] Résumé d'expédition {} indisponible (lane CSRD) : {}", shipmentId, e.getMessage());
+            return "Unknown";
+        }
+    }
+
+    private String firstNonBlank(String primary, String fallback) {
+        if (primary != null && !primary.isBlank()) return primary;
+        if (fallback != null && !fallback.isBlank()) return fallback;
+        return null;
     }
 }

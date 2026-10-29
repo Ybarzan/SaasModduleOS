@@ -45,6 +45,18 @@ public class Company {
     @Column(name = "internal_integration_api_key", length = 64)
     private String internalIntegrationApiKey;
 
+    // ---- Intégration SORTANTE vers fleet-hub (opt-in) ----
+    /** Clé d'intégration fleet-hub (en-tête X-Internal-Integration-Key) --
+     *  générée côté fleet-hub quand cette société y active le partage, puis
+     *  collée ici par un admin (voir CompanySettingsController). Voir
+     *  service/integration/fleethub/FleetHubIntegrationClient. Chiffrée au
+     *  repos (voir EncryptedApiKeyConverter) : jamais recherchée par égalité
+     *  ici, seulement relue en clair pour l'en-tête sortant -- contrairement
+     *  à internalIntegrationApiKey ci-dessus (clé ENTRANTE, hashée). */
+    @Column(name = "fleethub_api_key", length = 255)
+    @Convert(converter = com.finance.security.EncryptedApiKeyConverter.class)
+    private String fleetHubApiKey;
+
     private static final SecureRandom API_KEY_RANDOM = new SecureRandom();
 
     /** Génère une clé API machine-à-machine (32 caractères hexadécimaux). */
