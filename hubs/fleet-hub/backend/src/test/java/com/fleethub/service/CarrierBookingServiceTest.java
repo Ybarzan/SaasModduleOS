@@ -34,6 +34,7 @@ class CarrierBookingServiceTest {
     ShipmentOrderRepository shipmentRepo;
     AppUserRepository userRepo;
     EtaReportedSourceRepository etaReportedSourceRepo;
+    ShipmentEventRecorder eventRecorder;
     CarrierAdapter adapter;
     CarrierBookingService service;
 
@@ -50,12 +51,13 @@ class CarrierBookingServiceTest {
         shipmentRepo = mock(ShipmentOrderRepository.class);
         userRepo = mock(AppUserRepository.class);
         etaReportedSourceRepo = mock(EtaReportedSourceRepository.class);
+        eventRecorder = mock(ShipmentEventRecorder.class);
         adapter = mock(CarrierAdapter.class);
         when(adapter.supports("DHL")).thenReturn(true);
 
         service = new CarrierBookingService(
                 bookingRepo, carrierRepo, shipmentRepo, userRepo,
-                List.of(adapter), new ObjectMapper(), etaReportedSourceRepo);
+                List.of(adapter), new ObjectMapper(), etaReportedSourceRepo, eventRecorder);
 
         company = new Company();
         company.setId(7L);
@@ -104,6 +106,8 @@ class CarrierBookingServiceTest {
         assertThat(saved.getTransportMode()).isEqualTo("SEA");
         assertThat(saved.getCarrier()).isEqualTo(carrier);
         assertThat(saved.getShipment()).isEqualTo(shipment);
+
+        verify(eventRecorder).record(eq(shipment), eq(ShipmentEvent.EventType.ETA_CAPTURED), any());
     }
 
     @Test

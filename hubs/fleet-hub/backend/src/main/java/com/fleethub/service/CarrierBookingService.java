@@ -7,6 +7,7 @@ import com.fleethub.model.AppUser;
 import com.fleethub.model.Carrier;
 import com.fleethub.model.CarrierBookingRequest;
 import com.fleethub.model.EtaReportedSource;
+import com.fleethub.model.ShipmentEvent;
 import com.fleethub.model.ShipmentOrder;
 import com.fleethub.repository.AppUserRepository;
 import com.fleethub.repository.CarrierBookingRequestRepository;
@@ -41,6 +42,7 @@ public class CarrierBookingService {
     private final List<CarrierAdapter> adapters;
     private final ObjectMapper objectMapper;
     private final EtaReportedSourceRepository etaReportedSourceRepo;
+    private final ShipmentEventRecorder eventRecorder;
 
     public CarrierBookingService(
             CarrierBookingRequestRepository bookingRepo,
@@ -49,7 +51,8 @@ public class CarrierBookingService {
             AppUserRepository userRepo,
             List<CarrierAdapter> adapters,
             ObjectMapper objectMapper,
-            EtaReportedSourceRepository etaReportedSourceRepo) {
+            EtaReportedSourceRepository etaReportedSourceRepo,
+            ShipmentEventRecorder eventRecorder) {
         this.bookingRepo = bookingRepo;
         this.carrierRepo = carrierRepo;
         this.shipmentRepo = shipmentRepo;
@@ -57,6 +60,7 @@ public class CarrierBookingService {
         this.adapters = adapters;
         this.objectMapper = objectMapper;
         this.etaReportedSourceRepo = etaReportedSourceRepo;
+        this.eventRecorder = eventRecorder;
     }
 
     public CarrierAdapter findAdapter(String carrierCode) {
@@ -170,6 +174,9 @@ public class CarrierBookingService {
                     .transportMode(shipment.getTransportMode())
                     .build();
             etaReportedSourceRepo.save(source);
+            eventRecorder.record(shipment, ShipmentEvent.EventType.ETA_CAPTURED,
+                    Map.of("source", EtaReportedSource.Source.CARRIER_BOOKING.name(),
+                            "reportedArrival", String.valueOf(reportedArrival)));
         } catch (Exception e) {
             log.warn("Échec de capture EtaReportedSource pour la réservation {}: {}", booking.getId(), e.getMessage());
         }

@@ -1,6 +1,7 @@
 package com.fleethub.service;
 
 import com.fleethub.model.EtaReportedSource;
+import com.fleethub.model.ShipmentEvent;
 import com.fleethub.model.ShipmentOrder;
 import com.fleethub.repository.EtaReportedSourceRepository;
 import com.fleethub.repository.ShipmentOrderRepository;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -37,6 +39,7 @@ public class AisEtaCaptureService {
     private final ShipmentOrderRepository shipmentRepo;
     private final EtaReportedSourceRepository reportedSourceRepo;
     private final AisStreamService aisStreamService;
+    private final ShipmentEventRecorder eventRecorder;
 
     @Scheduled(fixedDelay = 900000)
     public void captureBroadcastEtas() {
@@ -76,5 +79,9 @@ public class AisEtaCaptureService {
         source.setDestinationCountry(shipment.getConsigneeCountry());
         source.setTransportMode(shipment.getTransportMode());
         reportedSourceRepo.save(source);
+
+        eventRecorder.record(shipment, ShipmentEvent.EventType.ETA_CAPTURED,
+                Map.of("source", EtaReportedSource.Source.AIS_BROADCAST.name(),
+                        "reportedArrival", String.valueOf(broadcastEta)));
     }
 }
