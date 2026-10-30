@@ -120,6 +120,20 @@ public class ReceivingService {
         }
     }
 
+    /**
+     * Recherche en direct d'expéditions fleet-hub par texte (autocomplétion,
+     * voir Receiving.tsx) -- résout le TODO qui forçait jusqu'ici une saisie
+     * manuelle d'UUID. Contrairement à {@link #deriveLinesFromShipment}, pas
+     * de repli silencieux sur une liste vide en cas de panne fleet-hub : une
+     * liste vide serait indistinguable d'une recherche sans résultat, donc
+     * l'exception se propage (même raisonnement que le chantier équivalent
+     * côté compliance-engine, MobileDashboardService.getRecentShipments).
+     */
+    public List<com.logistix.service.integration.fleethub.ShipmentSearchResult> searchShipments(String query) {
+        UUID companyId = TenantContext.get();
+        return fleetHubClient.searchShipments(companyId, query);
+    }
+
     public List<ReceivingOrder> listOrders(ReceivingOrder.Status status, UUID warehouseId, UUID shipmentId) {
         UUID companyId = TenantContext.get();
         if (shipmentId != null) {

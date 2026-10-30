@@ -74,6 +74,32 @@ public class FleetHubIntegrationClient {
         }
     }
 
+    /**
+     * Recherche en direct d'expéditions par texte (numéro de commande ou nom du
+     * destinataire) -- appelle {@code GET /api/internal/shipments?q=...} sur
+     * fleet-hub, pour l'autocomplétion (Receiving.tsx, qui n'avait jusque-là
+     * qu'une saisie manuelle d'UUID -- même endpoint que celui ajouté côté
+     * compliance-engine pour CustomsInvoices.tsx).
+     */
+    public List<ShipmentSearchResult> searchShipments(UUID companyId, String query) {
+        HttpHeaders headers = jsonHeaders();
+        headers.set("X-Internal-Integration-Key", resolveApiKey(companyId));
+
+        String url = org.springframework.web.util.UriComponentsBuilder
+                .fromHttpUrl(trimTrailingSlash(baseUrl) + "/api/internal/shipments")
+                .queryParam("q", query)
+                .toUriString();
+        try {
+            ResponseEntity<ShipmentSearchResult[]> response = restTemplate.exchange(
+                    url, HttpMethod.GET, new HttpEntity<>(headers), ShipmentSearchResult[].class);
+            ShipmentSearchResult[] body = response.getBody();
+            return body != null ? List.of(body) : List.of();
+        } catch (Exception e) {
+            throw new FleetHubIntegrationException(
+                    "Erreur d'appel à fleet-hub (/api/internal/shipments?q=) : " + e.getMessage(), e);
+        }
+    }
+
     /** Résout la clé d'intégration fleet-hub de cette société -- jamais un
      * identifiant de société transmis tel quel : fleet-hub ne fait confiance
      * qu'à la clé elle-même pour déterminer qui appelle. */

@@ -1,10 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ClipboardList, Plus, Loader2, ScanLine, Trash2, CheckCircle, TriangleAlert, PackageX, Package } from 'lucide-react';
+import { ClipboardList, Plus, Loader2, ScanLine, Trash2, CheckCircle, TriangleAlert, PackageX, Package, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { logistixAPI } from '../lib/api';
 import { useAuthStore } from '../stores/auth';
+
+// Une valeur qui ressemble déjà à un UUID complet : pas la peine d'interroger
+// la recherche (le texte ne matchera ni un numéro de commande ni un nom).
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+interface ShipmentSearchResult {
+  id: string;
+  orderNumber?: string;
+  consigneeCity?: string;
+  consigneeCountry?: string;
+  goodsDescription?: string;
+}
 
 interface Warehouse {
   id: string;
@@ -117,6 +129,27 @@ const Receiving = () => {
     shipmentId: searchParams.get('shipmentId') ?? '',
     reference: '',
     lines: [{ itemId: '', quantityExpected: 1 }],
+  });
+  const [debouncedShipmentTerm, setDebouncedShipmentTerm] = useState('');
+  const [showShipmentResults, setShowShipmentResults] = useState(false);
+  const shipmentDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (shipmentDebounceRef.current) clearTimeout(shipmentDebounceRef.current);
+    shipmentDebounceRef.current = setTimeout(() => setDebouncedShipmentTerm(createForm.shipmentId.trim()), 400);
+    return () => {
+      if (shipmentDebounceRef.current) clearTimeout(shipmentDebounceRef.current);
+    };
+  }, [createForm.shipmentId]);
+
+  const shipmentSearchEnabled = showCreate && debouncedShipmentTerm.length >= 2 && !UUID_RE.test(debouncedShipmentTerm);
+  const { data: shipmentResults, isFetching: isSearchingShipments, isError: shipmentSearchFailed } = useQuery({
+    queryKey: ['shipment-search', debouncedShipmentTerm],
+    queryFn: async () => {
+      const res = await logistixAPI.receivings.searchShipments(debouncedShipmentTerm);
+      return (res.data as ShipmentSearchResult[]) || [];
+    },
+    enabled: shipmentSearchEnabled,
   });
   const [scanForm, setScanForm] = useState<{ itemId: string; barcode: string; quantity: number; lotNumber: string; expiryDate: string; serialNumber: string }>({
     itemId: '',
@@ -679,18 +712,52 @@ const Receiving = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-ink mb-1">ID Expédition (optionnel)</label>
-                <input
-                  type="text"
-                  value={createForm.shipmentId}
-                  onChange={(e) => setCreateForm({ ...createForm, shipmentId: e.target.value })}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
-                  placeholder="UUID de l'expédition (saisie manuelle)"
-                />
-                {/* TODO(transport-hub): remplacer par une recherche en direct dans les expéditions, et dériver
-                    automatiquement les lignes attendues, une fois le hub Transport disponible — voir le backlog. */}
+                <label className="block text-sm font-medium text-ink mb-1">Expédition (optionnel)</label>
+                <div className="relative">
+                  <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
+                  <input
+                    type="text"
+                    value={createForm.shipmentId}
+                    onChange={(e) => { setCreateForm({ ...createForm, shipmentId: e.target.value }); setShowShipmentResults(true); }}
+                    onFocus={() => setShowShipmentResults(true)}
+                    className="w-full pl-9 pr-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
+                    placeholder="Numéro de commande, destinataire, ou UUID de l'expédition (saisie manuelle)"
+                    autoComplete="off"
+                  />
+                  {showShipmentResults && createForm.shipmentId.trim().length >= 2 && !UUID_RE.test(createForm.shipmentId.trim()) && (
+                    <div className="absolute z-10 top-full mt-1 w-full bg-surface border border-line rounded-lg shadow-lg max-h-56 overflow-y-auto">
+                      {isSearchingShipments && (
+                        <div className="px-3 py-2 text-xs text-ink-soft flex items-center gap-2">
+                          <Loader2 size={12} className="animate-spin" /> Recherche…
+                        </div>
+                      )}
+                      {!isSearchingShipments && shipmentSearchFailed && (
+                        <div className="px-3 py-2 text-xs text-red-600">
+                          Recherche indisponible (fleet-hub) — vous pouvez coller l'UUID directement.
+                        </div>
+                      )}
+                      {!isSearchingShipments && !shipmentSearchFailed && shipmentResults?.length === 0 && (
+                        <div className="px-3 py-2 text-xs text-ink-soft">Aucune expédition trouvée.</div>
+                      )}
+                      {!isSearchingShipments && !shipmentSearchFailed && shipmentResults?.map((s) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => { setCreateForm({ ...createForm, shipmentId: s.id }); setShowShipmentResults(false); }}
+                          className="w-full text-left px-3 py-2 text-sm hover:bg-surface-2 transition-colors border-b border-line last:border-b-0"
+                        >
+                          <div className="font-medium text-ink">{s.orderNumber || s.id}</div>
+                          <div className="text-xs text-ink-soft">
+                            {[s.consigneeCity, s.consigneeCountry].filter(Boolean).join(', ') || '—'}
+                            {s.goodsDescription ? ` · ${s.goodsDescription}` : ''}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <p className="text-xs text-ink-soft mt-1">
-                  Saisie manuelle pour le moment : pas de recherche d'expédition tant que le hub Transport n'existe pas.
+                  Les lignes attendues sont dérivées automatiquement des articles de l'expédition choisie.
                 </p>
               </div>
               <div>

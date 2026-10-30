@@ -108,6 +108,7 @@ export const logistixAPI = {
     discrepancies: () => api.get("/v1/receivings/discrepancies"),
     resolveDiscrepancy: (id: string, notes?: string) =>
       api.post(`/v1/receivings/discrepancies/${id}/resolve`, { notes }),
+    searchShipments: (q: string) => api.get("/v1/receivings/shipments/search", { params: { q } }),
   },
 
   // Paramètres société (intégration fleet-hub)

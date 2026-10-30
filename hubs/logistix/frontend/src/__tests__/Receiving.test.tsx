@@ -7,9 +7,6 @@ import Receiving from "../pages/Receiving";
 import { logistixAPI } from "../lib/api";
 import { useAuthStore } from "../stores/auth";
 
-// Pas de `shipments.getAll()` ici (contrairement à compliance-engine) : le hub
-// Transport n'existe pas encore, donc le champ "ID Expédition" du formulaire
-// de création est une saisie manuelle, sans source de données à mocker.
 vi.mock("../lib/api", () => ({
   logistixAPI: {
     warehouses: { list: vi.fn() },
@@ -24,6 +21,7 @@ vi.mock("../lib/api", () => ({
       complete: vi.fn(),
       cancel: vi.fn(),
       resolveDiscrepancy: vi.fn(),
+      searchShipments: vi.fn(),
     },
   },
 }));
@@ -54,6 +52,7 @@ function mockDefaults() {
   vi.mocked(logistixAPI.receivings.list).mockResolvedValue({ data: orders } as never);
   vi.mocked(logistixAPI.receivings.discrepancies).mockResolvedValue({ data: [] } as never);
   vi.mocked(logistixAPI.receivings.get).mockResolvedValue({ data: orderDetail } as never);
+  vi.mocked(logistixAPI.receivings.searchShipments).mockResolvedValue({ data: [] } as never);
 }
 
 function renderPage() {
@@ -122,7 +121,7 @@ describe("Receiving page", () => {
     fireEvent.click(screen.getByText("Nouveau bon"));
     const modal = screen.getByText("Nouveau bon de réception").closest("div.relative") as HTMLElement;
     fireEvent.change(within(modal).getAllByRole("combobox")[0], { target: { value: "w1" } });
-    fireEvent.change(within(modal).getByPlaceholderText("UUID de l'expédition (saisie manuelle)"), {
+    fireEvent.change(within(modal).getByPlaceholderText(/UUID de l'expédition/), {
       target: { value: "ship-123" },
     });
     fireEvent.click(within(modal).getByRole("button", { name: "Créer" }));
@@ -133,6 +132,51 @@ describe("Receiving page", () => {
       );
     });
     expect(toast.success).toHaveBeenCalledWith("Bon de réception créé");
+  });
+
+  it("searches shipments live and fills the field with the picked one's real UUID", async () => {
+    loginAsManager();
+    vi.mocked(logistixAPI.receivings.searchShipments).mockResolvedValue({
+      data: [
+        {
+          id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+          orderNumber: "SHP-2026-042",
+          consigneeCity: "Bruxelles",
+          consigneeCountry: "BE",
+        },
+      ],
+    } as never);
+    renderPage();
+    await waitFor(() => screen.getByText("REC-001"));
+
+    fireEvent.click(screen.getByText("Nouveau bon"));
+    const modal = screen.getByText("Nouveau bon de réception").closest("div.relative") as HTMLElement;
+    const input = within(modal).getByPlaceholderText(/UUID de l'expédition/);
+    fireEvent.change(input, { target: { value: "acme" } });
+
+    await waitFor(() => {
+      expect(logistixAPI.receivings.searchShipments).toHaveBeenCalledWith("acme");
+    });
+    await waitFor(() => screen.getByText("SHP-2026-042"));
+
+    fireEvent.click(screen.getByText("SHP-2026-042"));
+    expect((within(modal).getByPlaceholderText(/UUID de l'expédition/) as HTMLInputElement).value)
+      .toBe("f47ac10b-58cc-4372-a567-0e02b2c3d479");
+  });
+
+  it("does not query search for a value that already looks like a full UUID", async () => {
+    loginAsManager();
+    renderPage();
+    await waitFor(() => screen.getByText("REC-001"));
+
+    fireEvent.click(screen.getByText("Nouveau bon"));
+    const modal = screen.getByText("Nouveau bon de réception").closest("div.relative") as HTMLElement;
+    fireEvent.change(within(modal).getByPlaceholderText(/UUID de l'expédition/), {
+      target: { value: "f47ac10b-58cc-4372-a567-0e02b2c3d479" },
+    });
+
+    await new Promise((r) => setTimeout(r, 450));
+    expect(logistixAPI.receivings.searchShipments).not.toHaveBeenCalled();
   });
 
   it("completes a receiving order", async () => {

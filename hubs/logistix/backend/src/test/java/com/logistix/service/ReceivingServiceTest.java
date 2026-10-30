@@ -326,4 +326,35 @@ class ReceivingServiceTest {
                     .isInstanceOf(IllegalArgumentException.class);
         }
     }
+
+    @Test
+    @DisplayName("searchShipments → délègue au client fleet-hub avec le companyId courant")
+    void searchShipments_delegatesToClient() {
+        try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
+            ctx.when(TenantContext::get).thenReturn(companyId);
+            com.logistix.service.integration.fleethub.ShipmentSearchResult match =
+                    new com.logistix.service.integration.fleethub.ShipmentSearchResult();
+            match.setOrderNumber("SHP-2026-042");
+            when(fleetHubClient.searchShipments(companyId, "acme")).thenReturn(List.of(match));
+
+            List<com.logistix.service.integration.fleethub.ShipmentSearchResult> result =
+                    service.searchShipments("acme");
+
+            assertThat(result).hasSize(1);
+            assertThat(result.get(0).getOrderNumber()).isEqualTo("SHP-2026-042");
+        }
+    }
+
+    @Test
+    @DisplayName("searchShipments → panne fleet-hub propage l'exception (jamais de liste vide trompeuse)")
+    void searchShipments_fleetHubFailure_propagatesException() {
+        try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
+            ctx.when(TenantContext::get).thenReturn(companyId);
+            when(fleetHubClient.searchShipments(companyId, "acme"))
+                    .thenThrow(new FleetHubIntegrationClient.FleetHubIntegrationException("indisponible"));
+
+            assertThatThrownBy(() -> service.searchShipments("acme"))
+                    .isInstanceOf(FleetHubIntegrationClient.FleetHubIntegrationException.class);
+        }
+    }
 }
