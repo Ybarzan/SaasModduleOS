@@ -429,8 +429,11 @@ export const incokalkAPI = {
   },
 
   // Import
+  // carriers() a été retirée (POST /v1/import/carriers n'existe plus côté backend
+  // depuis le retrait du domaine Transport, voir ImportController/ImportService) --
+  // jamais appelée par aucune page (compliance-engine n'a plus de vue Carrier,
+  // ce domaine vit désormais dans fleet-hub).
   import: {
-    carriers: (formData: FormData) => api.post('/v1/import/carriers', formData),
     preview: (formData: FormData) => api.post('/v1/import/preview', formData),
   },
 

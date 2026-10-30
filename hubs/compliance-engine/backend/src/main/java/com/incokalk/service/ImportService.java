@@ -14,8 +14,6 @@ import java.util.*;
 @Slf4j
 public class ImportService {
 
-    // importCarriersCsv a ete retiree avec le domaine Transport (CarrierRepository).
-
     // ── CSV Preview (first 5 rows) ───────────────────────────────────────
 
     public Map<String, Object> previewCsv(MultipartFile file) throws Exception {

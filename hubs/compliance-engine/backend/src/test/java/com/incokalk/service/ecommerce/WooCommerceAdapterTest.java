@@ -154,9 +154,6 @@ class WooCommerceAdapterTest {
         assertThat(result).isEmpty();
     }
 
-    // mapOrderToShipment a été retirée avec le domaine Transport
-    // (voir ECommerceAdapter / ECommerceSyncService) — ses tests partaient avec elle.
-
     @Test
     @DisplayName("markOrderShipped/pushEta → échec explicite, non implémenté pour WooCommerce")
     void markOrderShippedAndPushEta_notImplemented() {
@@ -172,9 +169,60 @@ class WooCommerceAdapterTest {
     }
 
     @Test
-    @DisplayName("mapOrderToShipment → non implémenté pour cette plateforme → Optional vide")
-    void mapOrderToShipment_notImplemented_returnsEmpty() {
+    @DisplayName("mapOrderToShipment → objet shipping complet → requête construite")
+    void mapOrderToShipment_fullShipping_buildsRequest() {
+        var integration = integration("https://shop.example.com/", "key", "secret");
+        integration.getCompany().setName("Boutique SARL");
+        Map<String, Object> rawOrder = new LinkedHashMap<>();
+        rawOrder.put("id", 42);
+        rawOrder.put("currency", "EUR");
+        rawOrder.put("total", "29.90");
+        rawOrder.put("shipping", Map.of(
+                "first_name", "Jean", "last_name", "Client",
+                "address_1", "5 avenue de la Gare", "city", "Lyon", "country", "FR", "postcode", "69000"));
+        rawOrder.put("line_items", List.of(Map.of("name", "Gadget", "quantity", 3)));
+
+        var result = adapter.mapOrderToShipment(integration, rawOrder);
+
+        assertThat(result).isPresent();
+        var request = result.get();
+        assertThat(request.getShipperName()).isEqualTo("Boutique SARL");
+        assertThat(request.getConsigneeName()).isEqualTo("Jean Client");
+        assertThat(request.getConsigneeAddress()).isEqualTo("5 avenue de la Gare");
+        assertThat(request.getConsigneeCity()).isEqualTo("Lyon");
+        assertThat(request.getConsigneeCountry()).isEqualTo("FR");
+        assertThat(request.getConsigneePostalCode()).isEqualTo("69000");
+        assertThat(request.getGoodsDescription()).isEqualTo("3x Gadget");
+        assertThat(request.getGoodsValue()).isEqualTo(29.90);
+        assertThat(request.getCurrency()).isEqualTo("EUR");
+    }
+
+    @Test
+    @DisplayName("mapOrderToShipment → sans objet shipping → Optional vide")
+    void mapOrderToShipment_noShipping_returnsEmpty() {
         var integration = integration("https://shop.example.com/", "key", "secret");
         assertThat(adapter.mapOrderToShipment(integration, Map.of("id", 42))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("mapOrderToShipment → shipping sans nom ni société → Optional vide")
+    void mapOrderToShipment_shippingWithoutNameOrCompany_returnsEmpty() {
+        var integration = integration("https://shop.example.com/", "key", "secret");
+        Map<String, Object> rawOrder = Map.of("id", 42, "shipping", Map.of("city", "Lyon"));
+
+        assertThat(adapter.mapOrderToShipment(integration, rawOrder)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("mapOrderToShipment → prénom/nom absents → repli sur le nom de société shipping")
+    void mapOrderToShipment_fallsBackToShippingCompanyName() {
+        var integration = integration("https://shop.example.com/", "key", "secret");
+        integration.getCompany().setName("Boutique SARL");
+        Map<String, Object> rawOrder = Map.of("id", 42, "shipping", Map.of("company", "Acme Corp"));
+
+        var result = adapter.mapOrderToShipment(integration, rawOrder);
+
+        assertThat(result).isPresent();
+        assertThat(result.get().getConsigneeName()).isEqualTo("Acme Corp");
     }
 }
