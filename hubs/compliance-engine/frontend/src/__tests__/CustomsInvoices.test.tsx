@@ -8,6 +8,7 @@ import { incokalkAPI } from "../lib/api";
 vi.mock("../lib/api", () => ({
   incokalkAPI: {
     customsInvoices: { list: vi.fn(), get: vi.fn(), getByShipment: vi.fn(), generate: vi.fn() },
+    shipments: { search: vi.fn() },
   },
 }));
 
@@ -69,6 +70,7 @@ function renderPage() {
 describe("CustomsInvoices page", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(incokalkAPI.shipments.search).mockResolvedValue({ data: [] } as never);
   });
 
   it("lists invoices with their number, recipient and total", async () => {
@@ -150,5 +152,53 @@ describe("CustomsInvoices page", () => {
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith("Expédition non trouvée");
     });
+  });
+
+  it("searches shipments live and fills the field with the picked one's real UUID", async () => {
+    vi.mocked(incokalkAPI.customsInvoices.list).mockResolvedValue({ data: [] } as never);
+    vi.mocked(incokalkAPI.customsInvoices.generate).mockResolvedValue({} as never);
+    vi.mocked(incokalkAPI.shipments.search).mockResolvedValue({
+      data: [
+        {
+          id: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+          orderNumber: "SHP-2026-042",
+          consigneeCity: "Bruxelles",
+          consigneeCountry: "BE",
+        },
+      ],
+    } as never);
+    renderPage();
+    await waitFor(() => screen.getByText("Aucune facture douanière"));
+
+    fireEvent.click(screen.getByRole("button", { name: /Générer une facture/ }));
+    const input = screen.getByPlaceholderText(/UUID de l'expédition/);
+    fireEvent.change(input, { target: { value: "acme" } });
+
+    await waitFor(() => {
+      expect(incokalkAPI.shipments.search).toHaveBeenCalledWith("acme");
+    });
+    await waitFor(() => screen.getByText("SHP-2026-042"));
+
+    fireEvent.click(screen.getByText("SHP-2026-042"));
+    expect((screen.getByPlaceholderText(/UUID de l'expédition/) as HTMLInputElement).value)
+      .toBe("f47ac10b-58cc-4372-a567-0e02b2c3d479");
+
+    fireEvent.click(screen.getByRole("button", { name: "Générer" }));
+    await waitFor(() => {
+      expect(incokalkAPI.customsInvoices.generate).toHaveBeenCalledWith("f47ac10b-58cc-4372-a567-0e02b2c3d479");
+    });
+  });
+
+  it("does not query search for a value that already looks like a full UUID", async () => {
+    vi.mocked(incokalkAPI.customsInvoices.list).mockResolvedValue({ data: [] } as never);
+    renderPage();
+    await waitFor(() => screen.getByText("Aucune facture douanière"));
+
+    fireEvent.click(screen.getByRole("button", { name: /Générer une facture/ }));
+    const input = screen.getByPlaceholderText(/UUID de l'expédition/);
+    fireEvent.change(input, { target: { value: "f47ac10b-58cc-4372-a567-0e02b2c3d479" } });
+
+    await new Promise((r) => setTimeout(r, 450));
+    expect(incokalkAPI.shipments.search).not.toHaveBeenCalled();
   });
 });

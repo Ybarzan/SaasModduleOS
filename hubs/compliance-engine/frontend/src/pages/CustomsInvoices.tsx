@@ -1,5 +1,5 @@
 import type { AxiosError } from 'axios';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   FileText,
@@ -9,10 +9,15 @@ import {
   ChevronUp,
   X,
   Printer,
+  Search,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { incokalkAPI } from '../lib/api';
-import type { CustomsInvoice } from '../types';
+import type { CustomsInvoice, ShipmentSearchResult } from '../types';
+
+// Une valeur qui ressemble déjà à un UUID complet : pas la peine d'interroger
+// la recherche (le texte ne matchera ni un numéro de commande ni un nom).
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function formatMoney(amount: number | undefined, currency: string | undefined) {
   if (amount == null) return '—';
@@ -27,8 +32,43 @@ function formatDate(d?: string) {
 const CustomsInvoices = () => {
   const queryClient = useQueryClient();
   const [showModal, setShowModal] = useState(false);
+  // Valeur brute du champ -- exactement ce qui est envoyé à generateMutation,
+  // qu'elle vienne d'une saisie manuelle (UUID collé, comportement historique)
+  // ou d'un clic sur un résultat de recherche (qui y écrit l'UUID réel).
   const [selectedShipmentId, setSelectedShipmentId] = useState('');
+  const [debouncedTerm, setDebouncedTerm] = useState('');
+  const [showResults, setShowResults] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedTerm(selectedShipmentId.trim()), 400);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [selectedShipmentId]);
+
+  const searchEnabled = showModal && debouncedTerm.length >= 2 && !UUID_RE.test(debouncedTerm);
+  const { data: searchResults, isFetching: isSearching, isError: searchFailed } = useQuery({
+    queryKey: ['shipment-search', debouncedTerm],
+    queryFn: async () => {
+      const res = await incokalkAPI.shipments.search(debouncedTerm);
+      return (res.data as ShipmentSearchResult[]) || [];
+    },
+    enabled: searchEnabled,
+  });
+
+  const resetShipmentPicker = () => {
+    setSelectedShipmentId('');
+    setDebouncedTerm('');
+    setShowResults(false);
+  };
+
+  const handlePickResult = (result: ShipmentSearchResult) => {
+    setSelectedShipmentId(result.id);
+    setShowResults(false);
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['customs-invoices'],
@@ -46,7 +86,7 @@ const CustomsInvoices = () => {
       queryClient.invalidateQueries({ queryKey: ['customs-invoices'] });
       toast.success('Facture douanière générée');
       setShowModal(false);
-      setSelectedShipmentId('');
+      resetShipmentPicker();
     },
     onError: (err: AxiosError<{ message?: string }>) => {
       toast.error(err.response?.data?.message || 'Erreur lors de la génération');
@@ -65,7 +105,7 @@ const CustomsInvoices = () => {
           </p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => { resetShipmentPicker(); setShowModal(true); }}
           className="flex items-center gap-2 bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent-strong transition-colors"
         >
           <Plus size={18} />
@@ -235,18 +275,52 @@ const CustomsInvoices = () => {
                 <X size={18} />
               </button>
             </div>
-            <label className="block text-sm font-medium text-ink mb-1">ID d'expédition</label>
-            <input
-              type="text"
-              value={selectedShipmentId}
-              onChange={(e) => setSelectedShipmentId(e.target.value)}
-              className="w-full px-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono mb-1"
-              placeholder="UUID de l'expédition (saisie manuelle)"
-            />
-            {/* TODO(fleet-hub): remplacer par une recherche en direct des expéditions une fois
-                le lookup de résumé d'expédition exposé côté fleet-hub — voir le backlog. */}
+            <label className="block text-sm font-medium text-ink mb-1">Expédition</label>
+            <div className="relative mb-1">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft/60" />
+              <input
+                type="text"
+                value={selectedShipmentId}
+                onChange={(e) => { setSelectedShipmentId(e.target.value); setShowResults(true); }}
+                onFocus={() => setShowResults(true)}
+                className="w-full pl-9 pr-3 py-2 border border-line rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent text-sm font-mono"
+                placeholder="Numéro de commande, destinataire, ou UUID de l'expédition (saisie manuelle)"
+                autoComplete="off"
+              />
+              {showResults && selectedShipmentId.trim().length >= 2 && !UUID_RE.test(selectedShipmentId.trim()) && (
+                <div className="absolute z-10 top-full mt-1 w-full bg-surface border border-line rounded-lg shadow-lg max-h-56 overflow-y-auto">
+                  {isSearching && (
+                    <div className="px-3 py-2 text-xs text-ink-soft flex items-center gap-2">
+                      <Loader2 size={12} className="animate-spin" /> Recherche…
+                    </div>
+                  )}
+                  {!isSearching && searchFailed && (
+                    <div className="px-3 py-2 text-xs text-red-600">
+                      Recherche indisponible (fleet-hub) — vous pouvez coller l'UUID directement.
+                    </div>
+                  )}
+                  {!isSearching && !searchFailed && searchResults?.length === 0 && (
+                    <div className="px-3 py-2 text-xs text-ink-soft">Aucune expédition trouvée.</div>
+                  )}
+                  {!isSearching && !searchFailed && searchResults?.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => handlePickResult(s)}
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-surface-2 transition-colors border-b border-line last:border-b-0"
+                    >
+                      <div className="font-medium text-ink">{s.orderNumber || s.id}</div>
+                      <div className="text-xs text-ink-soft">
+                        {[s.consigneeCity, s.consigneeCountry].filter(Boolean).join(', ') || '—'}
+                        {s.goodsDescription ? ` · ${s.goodsDescription}` : ''}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
             <p className="text-xs text-ink-soft mb-4">
-              Saisie manuelle pour le moment : les expéditions sont gérées par fleet-hub, pas de recherche locale.
+              Tapez au moins 2 caractères pour rechercher une expédition, ou collez directement son UUID.
             </p>
             <div className="flex gap-3">
               <button

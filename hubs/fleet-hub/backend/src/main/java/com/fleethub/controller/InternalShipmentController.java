@@ -39,14 +39,20 @@ public class InternalShipmentController {
     private final ShipmentService shipmentService;
 
     @GetMapping
-    @Operation(summary = "Expéditions récentes de cette société (compliance-engine / Logistix)",
+    @Operation(summary = "Expéditions récentes, ou recherche par texte (compliance-engine / Logistix)",
             description = "Appel machine-à-machine, authentifié par X-Internal-Integration-Key -- "
-                    + "les 50 plus récentes, triées par date de création descendante")
-    @ApiResponse(responseCode = "200", description = "Expéditions retournées (jusqu'à 50)")
+                    + "sans paramètre q, les 50 plus récentes (date de création descendante) ; "
+                    + "avec q, recherche sur le numéro de commande ou le nom du destinataire "
+                    + "(jusqu'à 20 résultats, pour l'autocomplétion -- pas de pagination ici)")
+    @ApiResponse(responseCode = "200", description = "Expéditions retournées")
     @ApiResponse(responseCode = "401", description = "Clé manquante, invalide, ou partage désactivé")
     public List<ShipmentOrder> listRecentShipments(
+            @RequestParam(value = "q", required = false) String query,
             @RequestHeader(value = "X-Internal-Integration-Key", required = false) String apiKey) {
         Long companyId = internalIntegrationService.resolveCompanyId(apiKey);
+        if (query != null && !query.isBlank()) {
+            return shipmentService.searchShipments(companyId, query.trim(), PageRequest.of(0, 20)).getContent();
+        }
         return shipmentService.listShipments(companyId, PageRequest.of(0, 50)).getContent();
     }
 

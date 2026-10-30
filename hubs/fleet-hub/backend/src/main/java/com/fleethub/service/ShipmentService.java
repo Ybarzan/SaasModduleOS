@@ -173,6 +173,15 @@ public class ShipmentService {
         return page;
     }
 
+    /** Même raison que listShipments(companyId, pageable) pour le vidage de
+     *  trackingEvents : vue liste, jamais besoin de l'historique de suivi. */
+    @Transactional(readOnly = true)
+    public Page<ShipmentOrder> searchShipments(Long companyId, String query, Pageable pageable) {
+        Page<ShipmentOrder> page = shipmentRepo.searchByCompanyIdAndQuery(companyId, query, pageable);
+        page.getContent().forEach(s -> s.setTrackingEvents(List.of()));
+        return page;
+    }
+
     public List<ShipmentOrder> listUserShipments(Long userId) {
         return shipmentRepo.findByUserIdOrderByCreatedAtDesc(userId);
     }

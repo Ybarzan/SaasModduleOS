@@ -215,13 +215,15 @@ export const incokalkAPI = {
     get: (data: unknown) => api.post('/v1/quotes', data),
   },
 
-  // Shipments : ce client CRUD complet (getAll/create/updateStatus/assignClient/
-  // delete/addItem/...) n'a jamais eu de page web l'appelant -- vestige d'avant le
-  // retrait du domaine Transport. GET /v1/shipments/{id} et .../items existent de
-  // nouveau côté backend (restaurés 2026-10-30 pour l'app MOBILE, voir
-  // ShipmentDetailController), mais aucune page web n'en a besoin aujourd'hui --
-  // pas de client orphelin reconstruit ici tant qu'aucune page web ne l'utilise
-  // réellement.
+  // Shipments : seule la recherche est exposée ici (CustomsInvoices.tsx,
+  // autocomplétion -- voir ShipmentDetailController côté backend, ajouté
+  // 2026-10-30). Le reste de l'ancien client CRUD complet (getAll/create/
+  // updateStatus/assignClient/delete/addItem/...) n'a jamais eu de page web
+  // l'appelant (vestige d'avant le retrait du domaine Transport) et n'est pas
+  // reconstruit tant qu'aucune page web n'en a réellement besoin.
+  shipments: {
+    search: (q: string) => api.get('/v1/shipments/search', { params: { q } }),
+  },
 
   // Provider configs
   providers: {

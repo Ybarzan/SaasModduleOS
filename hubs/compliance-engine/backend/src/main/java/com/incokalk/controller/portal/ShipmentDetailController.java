@@ -3,6 +3,7 @@ package com.incokalk.controller.portal;
 import com.incokalk.model.CompanyRole;
 import com.incokalk.security.RolesAllowed;
 import com.incokalk.service.ShipmentDetailService;
+import com.incokalk.service.integration.fleethub.RecentShipmentDto;
 import com.incokalk.service.integration.fleethub.ShipmentDetailDto;
 import com.incokalk.service.integration.fleethub.ShipmentItemDetailDto;
 import com.incokalk.tenant.TenantContext;
@@ -24,6 +25,9 @@ import java.util.UUID;
  * fleet-hub depuis compliance-engine est une action d'écriture cross-hub qui
  * mérite sa propre décision (même discipline que la création externe,
  * ADR-0002), pas une extrapolation du chemin de lecture.
+ *
+ * <p>GET /search sert l'autocomplétion web (CustomsInvoices.tsx) -- résout le
+ * TODO(fleet-hub) qui y forçait jusqu'ici une saisie manuelle d'UUID.</p>
  */
 @RestController
 @RequestMapping("/v1/shipments")
@@ -47,5 +51,13 @@ public class ShipmentDetailController {
     public ResponseEntity<List<ShipmentItemDetailDto>> getShipmentItems(@PathVariable UUID id) {
         UUID companyId = TenantContext.get();
         return ResponseEntity.ok(shipmentDetailService.getItems(id, companyId));
+    }
+
+    @GetMapping("/search")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER, CompanyRole.Role.USER})
+    @Operation(summary = "Recherche d'expéditions par texte (numéro de commande ou destinataire)")
+    public ResponseEntity<List<RecentShipmentDto>> search(@RequestParam("q") String q) {
+        UUID companyId = TenantContext.get();
+        return ResponseEntity.ok(shipmentDetailService.search(companyId, q));
     }
 }

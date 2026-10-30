@@ -2,6 +2,7 @@ package com.incokalk.service;
 
 import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
+import com.incokalk.service.integration.fleethub.RecentShipmentDto;
 import com.incokalk.service.integration.fleethub.ShipmentDetailDto;
 import com.incokalk.service.integration.fleethub.ShipmentItemDetailDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -69,5 +70,26 @@ class ShipmentDetailServiceTest {
 
         assertThatThrownBy(() -> service.getItems(shipmentId, companyId))
                 .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("search → délègue au client et renvoie la liste")
+    void search_delegatesToClient() {
+        RecentShipmentDto match = new RecentShipmentDto();
+        match.setOrderNumber("SHP-2026-042");
+        when(fleetHubIntegrationClient.searchShipments(companyId, "acme")).thenReturn(List.of(match));
+
+        assertThat(service.search(companyId, "acme")).hasSize(1);
+        assertThat(service.search(companyId, "acme").get(0).getOrderNumber()).isEqualTo("SHP-2026-042");
+    }
+
+    @Test
+    @DisplayName("search → panne fleet-hub propage l'exception (jamais de liste vide trompeuse)")
+    void search_fleetHubFailure_propagatesException() {
+        when(fleetHubIntegrationClient.searchShipments(companyId, "acme"))
+                .thenThrow(new FleetHubIntegrationClient.FleetHubIntegrationException("indisponible"));
+
+        assertThatThrownBy(() -> service.search(companyId, "acme"))
+                .isInstanceOf(FleetHubIntegrationClient.FleetHubIntegrationException.class);
     }
 }

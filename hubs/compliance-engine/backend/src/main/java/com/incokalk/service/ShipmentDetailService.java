@@ -2,6 +2,7 @@ package com.incokalk.service;
 
 import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.service.integration.fleethub.FleetHubIntegrationClient;
+import com.incokalk.service.integration.fleethub.RecentShipmentDto;
 import com.incokalk.service.integration.fleethub.ShipmentDetailDto;
 import com.incokalk.service.integration.fleethub.ShipmentItemDetailDto;
 import lombok.RequiredArgsConstructor;
@@ -39,5 +40,16 @@ public class ShipmentDetailService {
         } catch (FleetHubIntegrationClient.FleetHubIntegrationException e) {
             throw new ResourceNotFoundException("Expédition introuvable : " + e.getMessage());
         }
+    }
+
+    /**
+     * Recherche en direct (autocomplétion web, voir CustomsInvoices.tsx). Pas de
+     * repli sur une liste vide en cas de panne fleet-hub -- même raisonnement que
+     * MobileDashboardService.getRecentShipments : une liste vide serait
+     * indistinguable d'une recherche sans résultat. L'exception se propage
+     * jusqu'au handler générique (500).
+     */
+    public List<RecentShipmentDto> search(UUID companyId, String query) {
+        return fleetHubIntegrationClient.searchShipments(companyId, query);
     }
 }

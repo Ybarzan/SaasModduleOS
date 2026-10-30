@@ -2,6 +2,7 @@ package com.incokalk.controller;
 
 import com.incokalk.exception.ResourceNotFoundException;
 import com.incokalk.service.ShipmentDetailService;
+import com.incokalk.service.integration.fleethub.RecentShipmentDto;
 import com.incokalk.service.integration.fleethub.ShipmentDetailDto;
 import com.incokalk.service.integration.fleethub.ShipmentItemDetailDto;
 import org.junit.jupiter.api.DisplayName;
@@ -75,6 +76,27 @@ class ShipmentDetailControllerTest extends ControllerTestBase {
     @DisplayName("GET /v1/shipments/{id} sans authentification → 401")
     void getShipment_withoutAuth_returns401() throws Exception {
         mockMvc.perform(get("/v1/shipments/" + UUID.randomUUID()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("GET /v1/shipments/search?q= → 200, résultats retournés")
+    void search_success() throws Exception {
+        RecentShipmentDto match = new RecentShipmentDto();
+        match.setOrderNumber("SHP-2026-042");
+        match.setConsigneeCity("Bruxelles");
+        when(shipmentDetailService.search(eq(companyId), eq("acme"))).thenReturn(List.of(match));
+
+        mockMvc.perform(get("/v1/shipments/search").param("q", "acme").header("Authorization", authHeader()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].orderNumber").value("SHP-2026-042"))
+                .andExpect(jsonPath("$[0].consigneeCity").value("Bruxelles"));
+    }
+
+    @Test
+    @DisplayName("GET /v1/shipments/search sans authentification → 401")
+    void search_withoutAuth_returns401() throws Exception {
+        mockMvc.perform(get("/v1/shipments/search").param("q", "acme"))
                 .andExpect(status().isUnauthorized());
     }
 }
