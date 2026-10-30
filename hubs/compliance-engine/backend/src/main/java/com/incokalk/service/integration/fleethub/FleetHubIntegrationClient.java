@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -254,6 +255,75 @@ public class FleetHubIntegrationClient {
      * ShipmentOrder complet, seul l'id nous intéresse ici. */
     @com.fasterxml.jackson.annotation.JsonIgnoreProperties(ignoreUnknown = true)
     private record CreatedShipmentRef(UUID id) {}
+
+    /**
+     * Restaure l'app mobile (GET /v1/shipments/{id}, voir ShipmentDetailController) :
+     * appelle le même {@code GET /api/internal/shipments/{id}} que {@link #getShipmentSummary},
+     * mais mappé vers {@link ShipmentDetailDto} (plus riche : coûts, douane, suivi --
+     * nécessaires à l'écran de détail mobile, pas à la génération de facture douanière).
+     */
+    public ShipmentDetailDto getShipmentDetail(UUID shipmentId, UUID companyId) {
+        HttpHeaders headers = jsonHeaders();
+        headers.set("X-Internal-Integration-Key", resolveApiKey(companyId));
+
+        String url = trimTrailingSlash(baseUrl) + "/api/internal/shipments/" + shipmentId;
+        try {
+            ResponseEntity<ShipmentDetailDto> response = restTemplate.exchange(
+                    url, HttpMethod.GET, new HttpEntity<>(headers), ShipmentDetailDto.class);
+            ShipmentDetailDto body = response.getBody();
+            if (!response.getStatusCode().is2xxSuccessful() || body == null) {
+                throw new FleetHubIntegrationException(
+                        "Expédition introuvable sur fleet-hub (statut " + response.getStatusCode() + ")");
+            }
+            return body;
+        } catch (FleetHubIntegrationException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new FleetHubIntegrationException(
+                    "Erreur d'appel à fleet-hub (/api/internal/shipments/" + shipmentId + ") : " + e.getMessage(), e);
+        }
+    }
+
+    /** Restaure l'app mobile (GET /v1/shipments/{id}/items) -- même endpoint que
+     * {@link #getShipmentSummary} utilise pour ses lignes, mappé vers {@link ShipmentItemDetailDto}
+     * (id/name/description/originCountry en plus). */
+    public List<ShipmentItemDetailDto> getShipmentItemsDetailed(UUID shipmentId, UUID companyId) {
+        HttpHeaders headers = jsonHeaders();
+        headers.set("X-Internal-Integration-Key", resolveApiKey(companyId));
+
+        String url = trimTrailingSlash(baseUrl) + "/api/internal/shipments/" + shipmentId + "/items";
+        try {
+            ResponseEntity<ShipmentItemDetailDto[]> response = restTemplate.exchange(
+                    url, HttpMethod.GET, new HttpEntity<>(headers), ShipmentItemDetailDto[].class);
+            ShipmentItemDetailDto[] body = response.getBody();
+            return body != null ? List.of(body) : List.of();
+        } catch (Exception e) {
+            throw new FleetHubIntegrationException(
+                    "Erreur d'appel à fleet-hub (/api/internal/shipments/" + shipmentId + "/items) : " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Restaure l'app mobile (GET /v1/mobile/recent-shipments, voir
+     * MobileDashboardService.getRecentShipments) : appelle le nouvel endpoint de liste
+     * {@code GET /api/internal/shipments} (ADR-0002/chantier mobile, jusqu'à 50 expéditions
+     * les plus récentes de cette société).
+     */
+    public List<RecentShipmentDto> listRecentShipments(UUID companyId) {
+        HttpHeaders headers = jsonHeaders();
+        headers.set("X-Internal-Integration-Key", resolveApiKey(companyId));
+
+        String url = trimTrailingSlash(baseUrl) + "/api/internal/shipments";
+        try {
+            ResponseEntity<RecentShipmentDto[]> response = restTemplate.exchange(
+                    url, HttpMethod.GET, new HttpEntity<>(headers), RecentShipmentDto[].class);
+            RecentShipmentDto[] body = response.getBody();
+            return body != null ? List.of(body) : List.of();
+        } catch (Exception e) {
+            throw new FleetHubIntegrationException(
+                    "Erreur d'appel à fleet-hub (/api/internal/shipments) : " + e.getMessage(), e);
+        }
+    }
 
     /** Résout la clé d'intégration fleet-hub de cette société -- jamais un
      * identifiant de société transmis tel quel : fleet-hub ne fait confiance

@@ -162,9 +162,13 @@ public class MobileApiController {
         return ResponseEntity.ok(result);
     }
 
-    // /v1/mobile/recent-shipments a ete retiree avec le domaine Transport :
-    // MobileDashboardService.getRecentShipments lisait ShipmentOrderRepository
-    // directement (voir MobileDashboardService).
+    @GetMapping("/recent-shipments")
+    @RolesAllowed({CompanyRole.Role.OWNER, CompanyRole.Role.ADMIN, CompanyRole.Role.MANAGER, CompanyRole.Role.USER})
+    @Operation(summary = "Expéditions récentes (restauré via fleet-hub, voir MobileDashboardService)")
+    public ResponseEntity<List<Map<String, Object>>> recentShipments() {
+        UUID companyId = TenantContext.get();
+        return ResponseEntity.ok(dashboardService.getRecentShipments(companyId));
+    }
 
     // ─── DTOs ─────────────────────────────────────────────────────────────────
 

@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,18 @@ public class InternalShipmentController {
 
     private final InternalIntegrationService internalIntegrationService;
     private final ShipmentService shipmentService;
+
+    @GetMapping
+    @Operation(summary = "Expéditions récentes de cette société (compliance-engine / Logistix)",
+            description = "Appel machine-à-machine, authentifié par X-Internal-Integration-Key -- "
+                    + "les 50 plus récentes, triées par date de création descendante")
+    @ApiResponse(responseCode = "200", description = "Expéditions retournées (jusqu'à 50)")
+    @ApiResponse(responseCode = "401", description = "Clé manquante, invalide, ou partage désactivé")
+    public List<ShipmentOrder> listRecentShipments(
+            @RequestHeader(value = "X-Internal-Integration-Key", required = false) String apiKey) {
+        Long companyId = internalIntegrationService.resolveCompanyId(apiKey);
+        return shipmentService.listShipments(companyId, PageRequest.of(0, 50)).getContent();
+    }
 
     @GetMapping("/{id}")
     @Operation(summary = "Détail d'une expédition (compliance-engine / Logistix)",

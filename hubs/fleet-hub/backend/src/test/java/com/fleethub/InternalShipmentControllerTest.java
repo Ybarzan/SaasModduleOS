@@ -74,6 +74,30 @@ class InternalShipmentControllerTest {
     }
 
     @Test
+    void listRecentShipments_withoutKeyHeader_returns401() throws Exception {
+        mvc.perform(get("/api/internal/shipments"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void listRecentShipments_withValidKey_returnsOwnShipmentsOnly() throws Exception {
+        String ownerToken = registerAndGetToken("List Owner Co");
+        String ownerKey = enableIntegrationAndGetKey(ownerToken);
+        createShipment(ownerToken);
+        createShipment(ownerToken);
+
+        String otherToken = registerAndGetToken("List Other Co");
+        enableIntegrationAndGetKey(otherToken);
+        createShipment(otherToken);
+
+        mvc.perform(get("/api/internal/shipments").header("X-Internal-Integration-Key", ownerKey))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].shipperName").value("Shipper SARL"))
+                .andExpect(jsonPath("$[0].consigneeName").value("Consignee Ltd"));
+    }
+
+    @Test
     void getShipment_withoutKeyHeader_returns401() throws Exception {
         mvc.perform(get("/api/internal/shipments/" + UUID.randomUUID()))
                 .andExpect(status().isUnauthorized());

@@ -215,19 +215,13 @@ export const incokalkAPI = {
     get: (data: unknown) => api.post('/v1/quotes', data),
   },
 
-   // Shipments
-   shipments: {
-     getAll: () => api.get('/v1/shipments'),
-     getPage: (page: number, size: number) => api.get(`/v1/shipments?page=${page}&size=${size}`),
-     create: (data: unknown) => api.post('/v1/shipments', data),
-     get: (id: string) => api.get(`/v1/shipments/${id}`),
-     updateStatus: (id: string, data: unknown) => api.patch(`/v1/shipments/${id}/status`, data),
-     assignClient: (id: string, clientId: string | null) => api.patch(`/v1/shipments/${id}/client`, { clientId }),
-     delete: (id: string) => api.delete(`/v1/shipments/${id}`),
-     listItems: (id: string) => api.get(`/v1/shipments/${id}/items`),
-     addItem: (id: string, data: unknown) => api.post(`/v1/shipments/${id}/items`, data),
-     deleteItems: (id: string) => api.delete(`/v1/shipments/${id}/items`),
-   },
+  // Shipments : ce client CRUD complet (getAll/create/updateStatus/assignClient/
+  // delete/addItem/...) n'a jamais eu de page web l'appelant -- vestige d'avant le
+  // retrait du domaine Transport. GET /v1/shipments/{id} et .../items existent de
+  // nouveau côté backend (restaurés 2026-10-30 pour l'app MOBILE, voir
+  // ShipmentDetailController), mais aucune page web n'en a besoin aujourd'hui --
+  // pas de client orphelin reconstruit ici tant qu'aucune page web ne l'utilise
+  // réellement.
 
   // Provider configs
   providers: {
