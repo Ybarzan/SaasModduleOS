@@ -53,6 +53,15 @@ public interface ShipmentOrderRepository extends JpaRepository<ShipmentOrder, UU
      *  requête scopée à une société comme le reste de ce repository. */
     List<ShipmentOrder> findByStatusIn(List<ShipmentOrder.Status> statuses);
 
+    /** Recherche en direct (numéro de commande ou nom du destinataire) --
+     *  base de la recherche d'expédition exposée aux autres hubs (logistix,
+     *  compliance-engine) qui n'ont pas de table expéditions en propre. */
+    @Query("SELECT s FROM ShipmentOrder s WHERE s.company.id = :companyId AND "
+            + "(LOWER(s.orderNumber) LIKE LOWER(CONCAT('%', :q, '%')) "
+            + "OR LOWER(s.consigneeName) LIKE LOWER(CONCAT('%', :q, '%'))) "
+            + "ORDER BY s.createdAt DESC")
+    Page<ShipmentOrder> searchByCompanyIdAndQuery(Long companyId, String q, Pageable pageable);
+
     @Query("SELECT s.status, COUNT(s) FROM ShipmentOrder s WHERE s.company.id = :companyId GROUP BY s.status")
     List<Object[]> countByStatusGrouped(Long companyId);
 

@@ -50,6 +50,11 @@ describe("incokalkAPI", () => {
     expect(typeof incokalkAPI.user.updateProfile).toBe("function");
   });
 
+  it("has shipments search endpoint", () => {
+    expect(incokalkAPI.shipments).toBeDefined();
+    expect(typeof incokalkAPI.shipments.search).toBe("function");
+  });
+
   it("has carriers endpoints", () => {
     expect(incokalkAPI.carriers).toBeDefined();
     expect(typeof incokalkAPI.carriers.getAll).toBe("function");

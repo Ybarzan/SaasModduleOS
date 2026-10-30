@@ -73,6 +73,18 @@ class InternalShipmentControllerTest {
         return body.get("id").asText();
     }
 
+    private JsonNode createShipmentWithConsignee(String token, String consigneeName) throws Exception {
+        MvcResult res = mvc.perform(post("/api/shipments")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"shipperName\":\"Shipper SARL\",\"shipperCountry\":\"FR\","
+                                + "\"consigneeName\":\"" + consigneeName + "\",\"consigneeCountry\":\"GB\","
+                                + "\"goodsDescription\":\"Textiles\",\"currency\":\"EUR\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+        return objectMapper.readTree(res.getResponse().getContentAsString());
+    }
+
     @Test
     void listRecentShipments_withoutKeyHeader_returns401() throws Exception {
         mvc.perform(get("/api/internal/shipments"))
@@ -95,6 +107,55 @@ class InternalShipmentControllerTest {
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].shipperName").value("Shipper SARL"))
                 .andExpect(jsonPath("$[0].consigneeName").value("Consignee Ltd"));
+    }
+
+    @Test
+    void listRecentShipments_withQuery_searchesByConsigneeNameCaseInsensitive() throws Exception {
+        String token = registerAndGetToken("Search Consignee Co");
+        String key = enableIntegrationAndGetKey(token);
+        createShipmentWithConsignee(token, "Acme Logistics Belgium");
+        createShipmentWithConsignee(token, "Other Recipient SARL");
+
+        mvc.perform(get("/api/internal/shipments").param("q", "acme logistics")
+                        .header("X-Internal-Integration-Key", key))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].consigneeName").value("Acme Logistics Belgium"));
+    }
+
+    @Test
+    void listRecentShipments_withQuery_searchesByOrderNumber() throws Exception {
+        String token = registerAndGetToken("Search OrderNum Co");
+        String key = enableIntegrationAndGetKey(token);
+        JsonNode created = createShipmentWithConsignee(token, "Whoever Ltd");
+        String orderNumber = created.get("orderNumber").asText();
+
+        mvc.perform(get("/api/internal/shipments").param("q", orderNumber)
+                        .header("X-Internal-Integration-Key", key))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].orderNumber").value(orderNumber));
+    }
+
+    @Test
+    void listRecentShipments_withQuery_doesNotLeakOtherCompanysShipments() throws Exception {
+        String ownerToken = registerAndGetToken("Search Owner Co");
+        String ownerKey = enableIntegrationAndGetKey(ownerToken);
+        createShipmentWithConsignee(ownerToken, "Shared Pattern Corp");
+
+        String otherToken = registerAndGetToken("Search Other Co");
+        String otherKey = enableIntegrationAndGetKey(otherToken);
+        createShipmentWithConsignee(otherToken, "Shared Pattern Corp");
+
+        mvc.perform(get("/api/internal/shipments").param("q", "shared pattern")
+                        .header("X-Internal-Integration-Key", ownerKey))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+
+        mvc.perform(get("/api/internal/shipments").param("q", "shared pattern")
+                        .header("X-Internal-Integration-Key", otherKey))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
     }
 
     @Test

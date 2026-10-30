@@ -594,6 +594,18 @@ export interface CustomsInvoiceItem {
   vatAmount: number;
 }
 
+// Résultat de recherche d'expédition (voir incokalkAPI.shipments.search,
+// backend ShipmentDetailController.search / RecentShipmentDto) -- autocomplétion
+// uniquement, pas les champs coûts/douane/suivi (voir ShipmentDetailDto, non exposé ici).
+export interface ShipmentSearchResult {
+  id: string;
+  orderNumber?: string;
+  status?: string;
+  consigneeCity?: string;
+  consigneeCountry?: string;
+  goodsDescription?: string;
+}
+
 export interface CustomsInvoice {
   id: string;
   companyId: string;
