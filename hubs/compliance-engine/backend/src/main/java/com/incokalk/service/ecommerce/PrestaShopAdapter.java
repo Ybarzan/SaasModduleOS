@@ -102,12 +102,19 @@ public class PrestaShopAdapter implements ECommerceAdapter {
 
     /**
      * Non implémenté : contrairement au champ {@code id} ci-dessus (normalisé
-     * par cet adaptateur lui-même depuis le XML, voir syncOrders), l'adresse
-     * de livraison PrestaShop (ressource {@code addresses}, liée par
-     * {@code id_address_delivery}, pas directement incluse dans la commande)
-     * n'a pas été vérifiée depuis cet environnement -- jamais de champ
-     * deviné (même principe que markOrderShipped/pushEta, non implémentés
-     * pour cette plateforme).
+     * par cet adaptateur lui-même depuis le XML, voir syncOrders), deux
+     * obstacles distincts empêchent un mapping fiable aujourd'hui. (1) L'adresse
+     * de livraison PrestaShop vit dans une ressource séparée ({@code addresses},
+     * liée par {@code id_address_delivery}), jamais incluse directement dans la
+     * commande -- il faudrait un second appel HTTP que cet adaptateur ne fait pas
+     * encore. (2) La doc officielle PrestaShop documente elle-même que le schéma
+     * exact d'une ressource (webservice) peut varier selon la version installée,
+     * et recommande d'interroger {@code /api/addresses?schema=synopsis} sur
+     * l'instance cible plutôt que de se fier à une liste de champs figée --
+     * contrairement à Shopify/WooCommerce (schéma stable, corroboré par
+     * recherche web), rien ici ne peut être vérifié une fois pour toutes
+     * depuis cet environnement. Jamais de champ deviné (même principe que
+     * markOrderShipped/pushEta, non implémentés pour cette plateforme).
      */
     @Override
     public Optional<ExternalShipmentCreationRequest> mapOrderToShipment(

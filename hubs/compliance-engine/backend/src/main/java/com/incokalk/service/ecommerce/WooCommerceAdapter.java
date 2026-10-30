@@ -13,6 +13,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -91,20 +93,86 @@ public class WooCommerceAdapter implements ECommerceAdapter {
     }
 
     /**
-     * Non implémenté (contrairement à {@code ShopifyAdapter}) : contrairement
-     * au champ {@code id} ci-dessus (identique dans toute version documentée
-     * de l'API REST WooCommerce v3), la forme exacte de l'adresse de
-     * livraison ({@code shipping}, pas {@code shipping_address}) n'a pas été
-     * vérifiée depuis cet environnement -- jamais de champ deviné (même
-     * principe que {@code markOrderShipped}/{@code pushEta}, non implémentés
-     * pour cette plateforme).
+     * Champs {@code shipping} (first_name/last_name/company/address_1/city/country/postcode)
+     * et {@code line_items} (name/quantity), {@code total}/{@code currency} -- noms de
+     * champs corroborés par le wiki officiel de données de commande de l'organisation
+     * GitHub woocommerce/woocommerce et par un exemple d'intégration tierce indépendant
+     * (recherche web), faute d'accès direct à developer.woocommerce.com depuis cet
+     * environnement au moment de l'écriture. Note : {@code address_1} avec underscore,
+     * contrairement à {@code address1} chez Shopify -- vérifié dans les deux sources, pas
+     * une coquille. Aucun champ de poids/volume WooCommerce corroboré -- weightKg/volumeM3
+     * volontairement non renseignés plutôt que devinés (contrairement à Shopify
+     * total_weight, confirmé par ailleurs).
      */
     @Override
+    @SuppressWarnings("unchecked")
     public Optional<ExternalShipmentCreationRequest> mapOrderToShipment(
             ECommerceIntegration integration, Map<String, Object> rawOrder) {
-        log.debug("[WooCommerce] mapOrderToShipment non implémenté pour cette plateforme (commande {})",
-                rawOrder.get("id"));
-        return Optional.empty();
+        Map<String, Object> shipping = (Map<String, Object>) rawOrder.get("shipping");
+        if (shipping == null) {
+            log.debug("[WooCommerce] Commande {} sans objet shipping -- ignorée", rawOrder.get("id"));
+            return Optional.empty();
+        }
+
+        String consigneeName = buildConsigneeName(shipping);
+        if (consigneeName == null) {
+            log.debug("[WooCommerce] Commande {} : shipping sans nom ni société -- pas de mapping fiable",
+                    rawOrder.get("id"));
+            return Optional.empty();
+        }
+
+        String shipperName = integration.getCompany() != null ? integration.getCompany().getName() : null;
+        if (shipperName == null || shipperName.isBlank()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(ExternalShipmentCreationRequest.builder()
+                .shipperName(shipperName)
+                .consigneeName(consigneeName)
+                .consigneeAddress(asString(shipping.get("address_1")))
+                .consigneeCity(asString(shipping.get("city")))
+                .consigneeCountry(asString(shipping.get("country")))
+                .consigneePostalCode(asString(shipping.get("postcode")))
+                .goodsDescription(describeLineItems(rawOrder))
+                .goodsValue(asDouble(rawOrder.get("total")))
+                .currency(asString(rawOrder.get("currency")))
+                .build());
+    }
+
+    private String buildConsigneeName(Map<String, Object> shipping) {
+        String first = asString(shipping.get("first_name"));
+        String last = asString(shipping.get("last_name"));
+        String personName = Stream.of(first, last).filter(s -> s != null && !s.isBlank())
+                .collect(Collectors.joining(" "));
+        if (!personName.isBlank()) return personName;
+        String company = asString(shipping.get("company"));
+        return (company != null && !company.isBlank()) ? company : null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private String describeLineItems(Map<String, Object> rawOrder) {
+        List<Map<String, Object>> items = (List<Map<String, Object>>) rawOrder.get("line_items");
+        if (items == null || items.isEmpty()) return null;
+        return items.stream()
+                .map(item -> {
+                    Object qty = item.get("quantity");
+                    Object name = item.get("name");
+                    return (qty != null ? qty + "x " : "") + (name != null ? name : "Article");
+                })
+                .collect(Collectors.joining(", "));
+    }
+
+    private String asString(Object value) {
+        return value != null ? String.valueOf(value) : null;
+    }
+
+    private Double asDouble(Object value) {
+        if (value == null) return null;
+        try {
+            return Double.parseDouble(String.valueOf(value));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private HttpHeaders createAuthHeaders(ECommerceIntegration integration) {

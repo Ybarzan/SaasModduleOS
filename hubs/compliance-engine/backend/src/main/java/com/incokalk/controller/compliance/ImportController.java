@@ -18,9 +18,6 @@ public class ImportController {
 
     private final ImportService importService;
 
-    // /v1/import/carriers a ete retiree avec le domaine Transport
-    // (ImportService.importCarriersCsv lisait CarrierRepository directement).
-
     @PostMapping("/preview")
     @Operation(summary = "Prévisualiser les premières lignes d'un CSV")
     public ResponseEntity<Map<String, Object>> previewCsv(

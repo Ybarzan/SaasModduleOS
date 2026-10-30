@@ -217,7 +217,6 @@ describe("incokalkAPI", () => {
 
   it("has import endpoints", () => {
     expect(incokalkAPI.import).toBeDefined();
-    expect(typeof incokalkAPI.import.carriers).toBe("function");
     expect(typeof incokalkAPI.import.preview).toBe("function");
   });
 
