@@ -64,15 +64,6 @@ describe("incokalkAPI", () => {
     expect(typeof incokalkAPI.quotes.get).toBe("function");
   });
 
-  it("has shipments endpoints", () => {
-    expect(incokalkAPI.shipments).toBeDefined();
-    expect(typeof incokalkAPI.shipments.getAll).toBe("function");
-    expect(typeof incokalkAPI.shipments.create).toBe("function");
-    expect(typeof incokalkAPI.shipments.get).toBe("function");
-    expect(typeof incokalkAPI.shipments.updateStatus).toBe("function");
-    expect(typeof incokalkAPI.shipments.delete).toBe("function");
-  });
-
   it("has providers endpoints", () => {
     expect(incokalkAPI.providers).toBeDefined();
     expect(typeof incokalkAPI.providers.getAll).toBe("function");

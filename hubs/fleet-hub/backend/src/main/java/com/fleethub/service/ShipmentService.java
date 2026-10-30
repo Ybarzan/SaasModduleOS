@@ -159,8 +159,18 @@ public class ShipmentService {
         return shipmentRepo.findByCompanyIdOrderByCreatedAtDesc(companyId);
     }
 
+    /**
+     * {@code trackingEvents} (OneToMany LAZY) n'est jamais nécessaire pour une
+     * vue liste (voir getShipmentWithTracking pour le détail d'une expédition
+     * précise, qui l'initialise explicitement) -- open-in-view désactivé
+     * (voir application.yml) : sans ce vidage explicite dans la transaction,
+     * la sérialisation JSON hors transaction échoue (LazyInitializationException).
+     */
+    @Transactional(readOnly = true)
     public Page<ShipmentOrder> listShipments(Long companyId, Pageable pageable) {
-        return shipmentRepo.findByCompanyIdOrderByCreatedAtDesc(companyId, pageable);
+        Page<ShipmentOrder> page = shipmentRepo.findByCompanyIdOrderByCreatedAtDesc(companyId, pageable);
+        page.getContent().forEach(s -> s.setTrackingEvents(List.of()));
+        return page;
     }
 
     public List<ShipmentOrder> listUserShipments(Long userId) {
