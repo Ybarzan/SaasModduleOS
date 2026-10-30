@@ -6,6 +6,7 @@ import com.logistix.model.ReceivingOrderLine;
 import com.logistix.model.ReceivingScan;
 import com.logistix.security.UserPrincipal;
 import com.logistix.service.ReceivingService;
+import com.logistix.service.integration.fleethub.ShipmentSearchResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -44,6 +45,13 @@ public class ReceivingController {
     @Operation(summary = "Détail d'un bon de réception (lignes, scans, écarts)")
     public ResponseEntity<ReceivingService.OrderDetail> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(receivingService.getOrder(id));
+    }
+
+    @GetMapping("/shipments/search")
+    @PreAuthorize("hasAnyRole('ADMIN','MANAGER','USER')")
+    @Operation(summary = "Recherche d'expéditions fleet-hub par texte (numéro de commande ou destinataire)")
+    public ResponseEntity<List<ShipmentSearchResult>> searchShipments(@RequestParam("q") String q) {
+        return ResponseEntity.ok(receivingService.searchShipments(q));
     }
 
     @PostMapping
