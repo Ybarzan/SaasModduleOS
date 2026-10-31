@@ -79,6 +79,11 @@ export interface SimulationResponse {
   isWhatIf?: boolean;
   params?: SimulationParams;
   logistics?: LogisticsInfo;
+  // false si aucun taux de droit fiable n'a été trouvé pour ce code HS/cette destination -- dans
+  // ce cas importDuties vaut 0 par construction mais ne signifie PAS "exonéré de droits", voir
+  // dutiesNote. Jamais de taux moyen ou inventé affiché à la place (voir DutyUnavailable.tsx).
+  dutiesAvailable?: boolean;
+  dutiesNote?: string;
 }
 
 export interface LogisticsInfo {

@@ -62,4 +62,14 @@ public class HsCodeSuggestion {
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    /**
+     * true = aucune proposition n'atteint le seuil de confiance : aucun code n'est suggéré, le
+     * classement doit être fait manuellement (non persisté, calculé à la suggestion).
+     */
+    @Transient
+    private boolean manualClassificationRequired;
+
+    @Transient
+    private String message;
 }

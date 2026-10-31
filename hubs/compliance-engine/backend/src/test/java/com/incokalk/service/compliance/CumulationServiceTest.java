@@ -216,4 +216,32 @@ class CumulationServiceTest {
         assertThat(result.criterionUsed()).isEqualTo(RulesOfOriginService.OriginCriterion.WO);
         verify(groupRepo, never()).findByCode(anyString());
     }
+
+    @Test
+    @DisplayName("Export depuis l'UE (FR→VN) : l'accord est trouvé par la destination (avant : « aucun accord »)")
+    void euExporter_agreementFoundViaDestination() {
+        when(agreementRepo.findByPartnerCountryAndIsActiveTrue("FR")).thenReturn(List.of());
+        when(agreementRepo.findByPartnerCountryAndIsActiveTrue("VN")).thenReturn(List.of(bilateral));
+        when(groupRepo.findByCode(anyString())).thenReturn(Optional.empty());
+
+        CumulationResult result = service.assess(HS, "FR", "VN", 20, 100, List.of(
+                new Material(HS, "DE", 10, false, "fil allemand"),       // UE = partie exportatrice
+                new Material(HS, "VN", 20, false, "tissu vietnamien"),   // autre partie → cumul bilatéral
+                new Material(HS, "CN", 50, false, "composants chinois")));
+
+        assertThat(result.agreementCode()).isEqualTo("EVFTA");
+        assertThat(result.materials()).extracting(m -> m.status())
+                .containsExactly(MaterialStatus.LOCAL, MaterialStatus.CUMULATED_BILATERAL, MaterialStatus.NON_ORIGINATING);
+        assertThat(result.originatingContentPct()).isEqualTo(50.0); // (20 + 10 + 20) / 100
+        assertThat(result.qualifies()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Aucun accord dans aucun sens → message nomme les deux pays")
+    void noAgreementEitherWay() {
+        when(agreementRepo.findByPartnerCountryAndIsActiveTrue(anyString())).thenReturn(List.of());
+        CumulationResult result = service.assess(HS, "FR", "US", 20, 100, List.of());
+        assertThat(result.qualifies()).isFalse();
+        assertThat(result.explanation()).contains("FR").contains("US");
+    }
 }

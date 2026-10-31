@@ -30,6 +30,9 @@ public class HsCodeSuggestionService {
 
     public record HsSuggestion(String code, String description, double confidence, String source) {}
 
+    /** Seuil sous lequel aucune suggestion n'est renvoyée (classement manuel requis). */
+    static final double MIN_CONFIDENCE = 0.7;
+
     // hsMlService.recordCorrection() alimente un modele GLOBAL, partage par toutes les
     // entreprises (pas de scoping par companyId). Un code invalide/non-numerique saisi
     // par une seule entreprise polluerait donc les suggestions de tous les autres locataires.
@@ -352,28 +355,24 @@ public class HsCodeSuggestionService {
                 }
             }
 
-            if (codeScores.isEmpty()) {
-                codeScores.put("4819", 0.3);
-                codeDescriptions.put("4819", "Cartonnage — code generique par defaut");
-                codeScores.put("3926", 0.25);
-                codeDescriptions.put("3926", "Articles divers en matieres plastiques");
-                codeScores.put("7326", 0.2);
-                codeDescriptions.put("7326", "Articles divers en fer ou acier");
-            }
-
-            double maxScore = codeScores.values().stream().mapToDouble(Double::doubleValue).max().orElse(1.0);
-
+            // Pas de code « générique par défaut » inventé quand aucun mot-clé ne correspond, et pas de
+            // normalisation par le meilleur score (qui faisait passer un 0,3 à 1,0 de confiance).
             results = codeScores.entrySet().stream()
                 .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
                 .limit(3)
                 .map(e -> new HsSuggestion(
                     e.getKey(),
                     codeDescriptions.get(e.getKey()),
-                    Math.min(e.getValue() / maxScore, 1.0),
+                    Math.min(e.getValue(), 1.0),
                     "keyword"
                 ))
                 .collect(Collectors.toList());
         }
+
+        // Un code HS erroné engage la responsabilité du déclarant : sous le seuil, on ne propose rien.
+        results = results.stream()
+            .filter(s -> s.confidence() >= MIN_CONFIDENCE)
+            .collect(Collectors.toList());
 
         HsCodeSuggestion record = HsCodeSuggestion.builder()
             .company(company)
@@ -397,6 +396,13 @@ public class HsCodeSuggestionService {
         }
 
         suggestionRepo.save(record);
+
+        if (results.isEmpty()) {
+            record.setManualClassificationRequired(true);
+            record.setMessage("Aucune proposition n'atteint " + (int) (MIN_CONFIDENCE * 100)
+                + " % de confiance : classement manuel requis (en cas de doute, demande de "
+                + "renseignement tarifaire contraignant — RTC — auprès de la douane).");
+        }
 
         log.info("HS suggestions pour '{}': {} resultats (top: {}, source: {})",
             productDescription, results.size(),

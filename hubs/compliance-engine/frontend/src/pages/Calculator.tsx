@@ -27,6 +27,8 @@ interface SimulationApiData {
   buyerRisks?: string[];
   complianceAlerts?: ComplianceAlert[];
   comparison?: unknown[];
+  dutiesAvailable?: boolean;
+  dutiesNote?: string;
   logistics?: {
     totalBoxes?: number;
     totalVolumeM3?: number;
@@ -43,7 +45,7 @@ interface TruckingOption {
   label: string;
   description: string;
   recommended?: boolean;
-  transitDays: number;
+  transitDays: number | null;
   costPerPallet: number;
   co2Kg: number;
   costEur: number;
@@ -194,6 +196,8 @@ const Calculator = () => {
     buyerRisks: data.buyerRisks || [],
     complianceAlerts: data.complianceAlerts || [],
     comparison: data.comparison || [],
+    dutiesAvailable: data.dutiesAvailable,
+    dutiesNote: data.dutiesNote,
     logistics: data.logistics ? {
       totalBoxes: data.logistics.totalBoxes || 0,
       totalVolumeM3: data.logistics.totalVolumeM3 || 0,
@@ -579,6 +583,12 @@ const Calculator = () => {
                         <button onClick={() => unpinResult(index)} className="absolute top-2 right-2 text-ink-soft hover:text-danger" title="Retirer"><span className="text-xs font-bold">✕</span></button>
                         <div className="text-[10px] font-bold text-accent uppercase tracking-widest mb-2">{pinned.incoterm}{pinned.isWhatIf && <span className="ml-1 bg-warning/10 text-warning px-1 rounded">WHAT-IF</span>}</div>
                         <div className="text-2xl font-bold text-ink mb-3">{formatEur(pinned.totalBuyerCost, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                        {pinned.dutiesAvailable === false && (
+                          <div className="flex items-center gap-1 text-[10px] text-warning mb-2" title={pinned.dutiesNote}>
+                            <AlertTriangle size={10} className="flex-shrink-0" />
+                            <span>Droits de douane non inclus — comparaison partielle</span>
+                          </div>
+                        )}
                         <CostChart data={[
                           { name: 'Douanes Export', value: pinned.buyerCosts.exportCustoms },
                           { name: 'Manutention Origine', value: pinned.buyerCosts.originHandling },
@@ -691,7 +701,13 @@ const Calculator = () => {
                     ].map(([label, value]) => (
                       <div key={label as string} className="flex justify-between text-xs py-1">
                         <span className="text-ink-soft">{label}</span>
-                        <span className="font-medium text-ink">{(value as number).toFixed(2)} €</span>
+                        {label === 'Droits de douane import' && result.dutiesAvailable === false ? (
+                          <span className="font-medium text-warning" title={result.dutiesNote || 'Taux de droit non disponible pour ce code HS/cette destination'}>
+                            Non disponible
+                          </span>
+                        ) : (
+                          <span className="font-medium text-ink">{(value as number).toFixed(2)} €</span>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -699,6 +715,12 @@ const Calculator = () => {
                     <span className="text-sm font-bold text-ink">Coût total</span>
                     <span className="text-xl font-bold text-accent">{result.totalBuyerCost.toFixed(2)} €</span>
                   </div>
+                  {result.dutiesAvailable === false && (
+                    <div className="flex items-start gap-1.5 mt-2 text-[11px] text-warning">
+                      <AlertTriangle size={12} className="flex-shrink-0 mt-0.5" />
+                      <span>Droits de douane non inclus dans ce total — {result.dutiesNote || 'taux non disponible pour ce code HS/cette destination'}.</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Logistique */}
@@ -746,7 +768,7 @@ const Calculator = () => {
                               </div>
                               <p className="text-[11px] text-ink-soft mt-0.5">{opt.description}</p>
                               <div className="flex gap-3 mt-1 text-[11px] text-ink-soft">
-                                <span>⏱ {opt.transitDays}j</span><span>💰 {opt.costPerPallet} €/pal</span><span>🌱 {opt.co2Kg} kg CO₂</span>
+                                <span>⏱ {opt.transitDays != null ? `${opt.transitDays}j` : '—'}</span><span>💰 {opt.costPerPallet} €/pal</span><span>🌱 {opt.co2Kg} kg CO₂</span>
                               </div>
                             </div>
                             <div className="text-right ml-4">

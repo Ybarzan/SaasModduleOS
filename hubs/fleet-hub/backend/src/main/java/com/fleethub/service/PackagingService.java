@@ -51,6 +51,7 @@ public class PackagingService {
         List<BoxSlot> boxSlots = new ArrayList<>();
         List<ItemEntry> unpacked = new ArrayList<>();
 
+        double remainingVolume = itemEntries.stream().mapToDouble(ItemEntry::volume).sum();
         for (ItemEntry item : itemEntries) {
             boolean placed = false;
             for (BoxSlot slot : boxSlots) {
@@ -61,7 +62,7 @@ public class PackagingService {
                 }
             }
             if (!placed) {
-                DefaultBox bestBox = findBestBox(boxes, item);
+                DefaultBox bestBox = findBestBox(boxes, item, remainingVolume);
                 if (bestBox != null) {
                     BoxSlot newSlot = new BoxSlot(bestBox);
                     newSlot.add(item);
@@ -72,6 +73,7 @@ public class PackagingService {
             if (!placed) {
                 unpacked.add(item);
             }
+            remainingVolume -= item.volume();
         }
 
         double totalVol = boxSlots.stream().mapToDouble(BoxSlot::totalVolumeM3).sum();
@@ -121,6 +123,15 @@ public class PackagingService {
             })
             .collect(Collectors.toList());
 
+        List<String> warnings = new ArrayList<>();
+        for (BoxInfo b : boxInfos) {
+            if (b.getUtilizationPercent() < MIN_FILL_PERCENT) {
+                warnings.add(String.format(Locale.FRENCH,
+                    "⚠️ %s rempli à %.0f %% (< %.0f %%) : contenant surdimensionné — envisager un format plus petit",
+                    b.getBoxRef(), b.getUtilizationPercent(), MIN_FILL_PERCENT));
+            }
+        }
+
         return PackagingResult.builder()
             .totalBoxes(boxSlots.size())
             .totalVolumeM3(totalVol)
@@ -129,15 +140,29 @@ public class PackagingService {
             .totalPackageVolumeM3(usedVol)
             .boxes(boxInfos)
             .unpackedItems(unpackedInfos)
+            .warnings(warnings)
             .build();
     }
 
-    private DefaultBox findBestBox(List<DefaultBox> boxes, ItemEntry item) {
-        return boxes.stream()
+    /** Remplissage sous lequel un contenant est signalé comme surdimensionné. */
+    static final double MIN_FILL_PERCENT = 60.0;
+
+    /**
+     * Plus petite boîte compatible (dimensions, poids) capable d'absorber le volume restant à
+     * emballer ; à défaut, la plus grande compatible. Avant : toujours la plus grande (liste triée
+     * par volume décroissant + findFirst) → une palette de 0,96 m³ pour un seul portable.
+     */
+    private DefaultBox findBestBox(List<DefaultBox> boxes, ItemEntry item, double remainingVolume) {
+        List<DefaultBox> fitting = boxes.stream()
             .filter(b -> b.lengthCm >= item.length && b.widthCm >= item.width && b.heightCm >= item.height)
             .filter(b -> b.maxWeightKg >= item.weight)
+            .sorted(Comparator.comparingDouble(DefaultBox::volume))
+            .toList();
+        if (fitting.isEmpty()) return null;
+        return fitting.stream()
+            .filter(b -> b.volume() * 0.95 >= remainingVolume)
             .findFirst()
-            .orElse(null);
+            .orElse(fitting.get(fitting.size() - 1));
     }
 
     private DefaultBox toDefaultBox(PackagingRequest.AvailableBox b) {

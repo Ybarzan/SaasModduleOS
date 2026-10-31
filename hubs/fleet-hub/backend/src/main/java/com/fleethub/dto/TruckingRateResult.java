@@ -30,7 +30,7 @@ public class TruckingRateResult {
         private String mode;
         private String label;
         private double costEur;
-        private int transitDays;
+        private Integer transitDays;
         private double co2Kg;
         private String description;
         private double costPerPallet;

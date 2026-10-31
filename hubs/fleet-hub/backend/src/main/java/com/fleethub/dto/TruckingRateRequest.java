@@ -21,4 +21,5 @@ public class TruckingRateRequest {
     private Integer palletCount;
     private Double goodsValue;
     private String currency;
+    private Double distanceKm;
 }
