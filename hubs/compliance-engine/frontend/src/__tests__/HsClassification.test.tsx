@@ -129,4 +129,29 @@ describe("HsClassification page", () => {
     expect(screen.getByText("Cliquez pour sélectionner une image ou un PDF")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Classifier/ })).toBeDisabled();
   });
+
+  it("shows 'Classement manuel requis' and no empty cards when nothing reaches the confidence threshold", async () => {
+    vi.mocked(incokalkAPI.hsSuggestions.suggest).mockResolvedValue({
+      data: {
+        id: "s-low", productDescription: "Ordinateur portable 14 pouces",
+        suggestedCode1: null, suggestedDescription1: null, confidence1: null,
+        suggestedCode2: null, suggestedDescription2: null, confidence2: null,
+        suggestedCode3: null, suggestedDescription3: null, confidence3: null,
+        userSelection: null, createdAt: "2026-09-29T10:00:00",
+        manualClassificationRequired: true,
+        message: "Aucune proposition n'atteint 70 % de confiance : classement manuel requis.",
+      },
+    } as never);
+    renderPage();
+    await waitFor(() => screen.getByText("Chaussures de sport en cuir"));
+
+    fireEvent.change(screen.getByPlaceholderText(/Décrivez votre produit/), {
+      target: { value: "Ordinateur portable 14 pouces" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Classifier/ }));
+
+    expect(await screen.findByText("Classement manuel requis")).toBeInTheDocument();
+    expect(screen.getByText(/70 % de confiance/)).toBeInTheDocument();
+    expect(screen.queryByText("Meilleure suggestion")).not.toBeInTheDocument();
+  });
 });

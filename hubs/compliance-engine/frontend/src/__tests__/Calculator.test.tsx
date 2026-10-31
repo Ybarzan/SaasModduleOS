@@ -98,6 +98,26 @@ describe("Calculator page", () => {
     expect(toast.success).toHaveBeenCalledWith("Calcul effectué avec succès !");
   });
 
+  it("shows duties as unavailable instead of a misleading 0€ when the backend found no reliable rate", async () => {
+    vi.mocked(incokalkAPI.simulation.calculate).mockResolvedValue({
+      data: {
+        ...simulationResponse,
+        buyerCosts: { ...simulationResponse.buyerCosts, importDuties: 0 },
+        dutiesAvailable: false,
+        dutiesNote: "Aucun taux fiable trouvé pour ce code HS vers cette destination",
+      },
+    } as never);
+
+    renderCalculator();
+    await waitFor(() => screen.getByText("EXW — Ex Works"));
+    fireEvent.change(screen.getByDisplayValue("Sélectionner un Incoterm"), { target: { value: "2" } });
+
+    await waitFor(() => screen.getByText("1 234,56 €"));
+
+    expect(screen.getByText("Non disponible")).toBeInTheDocument();
+    expect(screen.getByText(/Droits de douane non inclus dans ce total/)).toBeInTheDocument();
+  });
+
   it("shows an error toast when the calculation fails", async () => {
     vi.mocked(incokalkAPI.simulation.calculate).mockRejectedValue({
       response: { data: { message: "Paramètres invalides" } },

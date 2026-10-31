@@ -96,6 +96,23 @@ class EtaPredictionServiceTest {
         assertThat(result.getReliabilitySampleCount()).isNull();
     }
 
+    @Test
+    @DisplayName("predict → une predictedArrival fournie par le client est ignorée, l'invariant now + predictedDays prévaut")
+    void predict_predictedArrival_clientValueIgnored_invariantHolds() {
+        java.time.LocalDateTime clientSuppliedArrival = java.time.LocalDateTime.of(2030, 1, 1, 0, 0);
+        EtaPrediction prediction = baselinePrediction();
+        prediction.setPredictedArrival(clientSuppliedArrival);
+
+        java.time.LocalDateTime before = java.time.LocalDateTime.now();
+        EtaPrediction result = service.predict(prediction);
+        java.time.LocalDateTime after = java.time.LocalDateTime.now();
+
+        assertThat(result.getPredictedArrival()).isNotEqualTo(clientSuppliedArrival);
+        java.time.LocalDateTime expectedFloor = before.plusDays(result.getPredictedDays());
+        java.time.LocalDateTime expectedCeiling = after.plusDays(result.getPredictedDays());
+        assertThat(result.getPredictedArrival()).isBetween(expectedFloor, expectedCeiling);
+    }
+
     /** Confiance heuristique "pure" pour la lane/mode/date du test courant,
      *  recalculée à chaque fois plutôt que figée en dur : seasonalFactor
      *  dépend du mois réel d'exécution (calculateSeasonalFactor), une valeur

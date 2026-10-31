@@ -48,14 +48,19 @@ public class CustomsController {
         CustomsDutyService.DutyResult result = dutyService.calculateDetailed(
             hsCode, origin, dest, goodsValue, freight, insurance);
 
+        boolean ok = result.rateAvailable();
         Map<String, Object> response = new LinkedHashMap<>();
-        response.put("dutyAmount", result.dutyAmount());
-        response.put("dutyRate", result.dutyRate());
+        // Taux indisponible → null (jamais 0 ni une moyenne de chapitre) + rateAvailable=false.
+        response.put("rateAvailable", ok);
+        response.put("dutyAmount", ok ? result.dutyAmount() : null);
+        response.put("dutyRate", ok ? result.dutyRate() : null);
+        response.put("currency", result.currency());
+        response.put("basisType", result.basisType());
         response.put("dutyType", result.dutyType());
         response.put("isPrefential", result.isPrefential());
         response.put("agreementCode", result.agreementCode());
         response.put("agreementName", result.agreementName());
-        response.put("mfnRate", result.mfnRate());
+        response.put("mfnRate", ok ? result.mfnRate() : null);
         response.put("savings", result.savings());
         response.put("notes", result.notes());
         response.put("hsCode", hsCode);

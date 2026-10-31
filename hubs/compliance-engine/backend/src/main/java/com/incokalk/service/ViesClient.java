@@ -24,7 +24,9 @@ public class ViesClient {
     @Value("${incokalk.vies.online-validation:false}")
     private boolean onlineValidation;
 
-    public record ViesCheck(boolean valid, String name, String address, String message) {}
+    /** Serializable : mis en cache Redis (sérialisation JDK), même panne que EoriOnlineService.EoriCheck. */
+    public record ViesCheck(boolean valid, String name, String address, String message)
+        implements java.io.Serializable {}
 
     @Cacheable(value = "vies-check", key = "#vatNumber")
     public ViesCheck checkVat(String vatNumber) {

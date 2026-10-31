@@ -77,17 +77,19 @@ class HsCodeSuggestionServiceTest {
 
             when(hsMlService.getTotalCorrections()).thenReturn(5); // modelTrained = true
             when(hsMlService.predict(anyString(), eq(3))).thenReturn(
-                List.of(new HsMlService.HsPrediction("1234", "D1", 0.9, "ml"))
+                List.of(new HsMlService.HsPrediction("1234", "D1", 1.0, "ml"))
             );
             when(taricClassification.classify(anyString(), eq(3))).thenReturn(
-                List.of(new TaricClassificationService.ClassificationResult("1234", "D2", 0.5))
+                List.of(new TaricClassificationService.ClassificationResult("1234", "D2", 1.0))
             );
 
             HsCodeSuggestion result = service.suggest("un produit");
 
+            // (1.0 + 1.0 × 0.4) / 2 = 0.70 : exactement au seuil, conservé
             assertThat(result.getSuggestedCode1()).isEqualTo("1234");
             assertThat(result.getSuggestedDescription1()).isEqualTo("D1");
-            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.55));
+            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.70));
+            assertThat(result.isManualClassificationRequired()).isFalse();
             assertThat(result.getSuggestedCode2()).isNull();
             assertThat(result.getSuggestedCode3()).isNull();
             assertThat(result.getCompany()).isEqualTo(company);
@@ -98,7 +100,7 @@ class HsCodeSuggestionServiceTest {
     }
 
     @Test
-    @DisplayName("suggest → modèle non entrainé, ML et TARIC distincts, TARIC faible ignoré")
+    @DisplayName("suggest → toutes les propositions sous 0,7 (0,50 / 0,45) → aucune suggestion, classement manuel")
     void suggest_modelNotTrained_distinctCodesAndLowConfidenceSkipped() {
         try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
             ctx.when(TenantContext::get).thenReturn(companyId);
@@ -117,16 +119,12 @@ class HsCodeSuggestionServiceTest {
 
             HsCodeSuggestion result = service.suggest("un autre produit");
 
-            // B002 (0.50) ranks above A001 (0.45); C003 dropped (tConfidence 0.1 < 0.15)
-            assertThat(result.getSuggestedCode1()).isEqualTo("B002");
-            assertThat(result.getSuggestedDescription1()).isEqualTo("DescB");
-            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.50));
-
-            assertThat(result.getSuggestedCode2()).isEqualTo("A001");
-            assertThat(result.getSuggestedDescription2()).isEqualTo("DescA");
-            assertThat(result.getConfidence2()).isEqualByComparingTo(BigDecimal.valueOf(0.45));
-
+            // Avant : B002 à 0,50 proposé en premier (cas du portable classé 8537 à 0,5 dans l'audit).
+            assertThat(result.getSuggestedCode1()).isNull();
+            assertThat(result.getSuggestedCode2()).isNull();
             assertThat(result.getSuggestedCode3()).isNull();
+            assertThat(result.isManualClassificationRequired()).isTrue();
+            assertThat(result.getMessage()).contains("classement manuel requis");
         }
     }
 
@@ -143,18 +141,18 @@ class HsCodeSuggestionServiceTest {
 
             HsCodeSuggestion result = service.suggest("Achat d'une voiture rouge");
 
+            // Scores bruts (plus de normalisation par le meilleur score) ; 8711 à 0,4 écarté.
             assertThat(result.getSuggestedCode1()).isEqualTo("8703");
-            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(1.00));
+            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.90));
             assertThat(result.getSuggestedCode2()).isEqualTo("8708");
-            assertThat(result.getConfidence2()).isEqualByComparingTo(BigDecimal.valueOf(0.78));
-            assertThat(result.getSuggestedCode3()).isEqualTo("8711");
-            assertThat(result.getConfidence3()).isEqualByComparingTo(BigDecimal.valueOf(0.44));
+            assertThat(result.getConfidence2()).isEqualByComparingTo(BigDecimal.valueOf(0.70));
+            assertThat(result.getSuggestedCode3()).isNull();
         }
     }
 
     @Test
-    @DisplayName("suggest → aucune prédiction, aucun mot-clé, codes génériques par défaut")
-    void suggest_emptyMlAndTaric_noKeywordMatch_defaultCodes() {
+    @DisplayName("suggest → aucune prédiction, aucun mot-clé : aucun code inventé (avant : 4819 « cartonnage » à 1,0)")
+    void suggest_emptyMlAndTaric_noKeywordMatch_noInventedCodes() {
         try (MockedStatic<TenantContext> ctx = mockStatic(TenantContext.class)) {
             ctx.when(TenantContext::get).thenReturn(companyId);
             when(companyRepo.findById(companyId)).thenReturn(Optional.of(company));
@@ -165,12 +163,9 @@ class HsCodeSuggestionServiceTest {
 
             HsCodeSuggestion result = service.suggest("abcdefgh ijklmnop qrstuvwx yz123456");
 
-            assertThat(result.getSuggestedCode1()).isEqualTo("4819");
-            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(1.00));
-            assertThat(result.getSuggestedCode2()).isEqualTo("3926");
-            assertThat(result.getConfidence2()).isEqualByComparingTo(BigDecimal.valueOf(0.83));
-            assertThat(result.getSuggestedCode3()).isEqualTo("7326");
-            assertThat(result.getConfidence3()).isEqualByComparingTo(BigDecimal.valueOf(0.67));
+            assertThat(result.getSuggestedCode1()).isNull();
+            assertThat(result.getConfidence1()).isNull();
+            assertThat(result.isManualClassificationRequired()).isTrue();
         }
     }
 
@@ -250,7 +245,7 @@ class HsCodeSuggestionServiceTest {
             when(hsMlService.getTotalCorrections()).thenReturn(0);
             when(hsMlService.predict(anyString(), eq(3))).thenReturn(List.of());
             when(taricClassification.classify(anyString(), eq(3))).thenReturn(
-                List.of(new TaricClassificationService.ClassificationResult("8517", "Appareils télécom", 0.4))
+                List.of(new TaricClassificationService.ClassificationResult("8517", "Appareils télécom", 1.0))
             );
             when(semanticClassification.classify(anyString(), eq(3))).thenReturn(
                 List.of(new SemanticClassificationService.ClassificationResult("8517", "Téléphonie", 0.8))
@@ -259,7 +254,7 @@ class HsCodeSuggestionServiceTest {
             HsCodeSuggestion result = service.suggest("GSM dernier cri");
 
             assertThat(result.getSuggestedCode1()).isEqualTo("8517");
-            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.60));
+            assertThat(result.getConfidence1()).isEqualByComparingTo(BigDecimal.valueOf(0.90));
         }
     }
 

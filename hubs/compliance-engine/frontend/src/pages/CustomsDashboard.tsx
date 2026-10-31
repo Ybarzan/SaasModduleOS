@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { incokalkAPI } from '../lib/api';
 import { ORIGIN_COUNTRIES, DEST_COUNTRIES } from '../lib/countries';
 import { formatEur } from '../lib/formatNumber';
+import DutyUnavailable from '../components/customs/DutyUnavailable';
 
 interface TariffInfo {
   hsCode: string;
@@ -20,6 +21,10 @@ interface TariffInfo {
 }
 
 interface DutyResult {
+  /** false = aucun taux fiable : dutyAmount/dutyRate/mfnRate absents de la réponse. */
+  rateAvailable?: boolean;
+  currency?: string;
+  basisType?: string;
   dutyAmount: number;
   dutyRate: number;
   dutyType: string;
@@ -298,7 +303,9 @@ const CustomsDashboard = () => {
           </div>
 
           <div className="space-y-4">
-            {dutyResult ? (
+            {dutyResult && dutyResult.rateAvailable === false ? (
+              <DutyUnavailable notes={dutyResult.notes} />
+            ) : dutyResult ? (
               <>
                 <div className="relative bg-surface rounded-lg border border-line p-6">
                   <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-4">Résultat</h2>

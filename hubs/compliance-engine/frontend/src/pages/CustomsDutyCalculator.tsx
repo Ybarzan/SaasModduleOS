@@ -5,6 +5,7 @@ import { incokalkAPI } from '../lib/api';
 import { ORIGIN_COUNTRIES, DEST_COUNTRIES } from '../lib/countries';
 import toast from 'react-hot-toast';
 import { formatEur } from '../lib/formatNumber';
+import DutyUnavailable from '../components/customs/DutyUnavailable';
 
 interface SearchResult {
   hsCode: string;
@@ -25,6 +26,10 @@ interface SearchResponse {
 }
 
 interface DutyCalculation {
+  /** false = aucun taux fiable : dutyAmount/dutyRate/mfnRate absents de la réponse. */
+  rateAvailable?: boolean;
+  currency?: string;
+  basisType?: string;
   hsCode: string;
   origin: string;
   destination: string;
@@ -246,7 +251,9 @@ const CustomsDutyCalculator = () => {
           </div>
 
           <div className="space-y-4">
-            {result ? (
+            {result && result.rateAvailable === false ? (
+              <DutyUnavailable notes={result.notes} />
+            ) : result ? (
               <>
                 <div className="relative bg-surface rounded-lg shadow-sm border border-line p-6">
                   <h2 className="text-sm font-semibold text-ink-soft uppercase tracking-wider mb-4">Résultat</h2>

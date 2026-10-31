@@ -21,6 +21,7 @@ public class PackagingResult {
 
     private List<BoxInfo> boxes;
     private List<ItemInfo> unpackedItems;
+    private List<String> warnings;
 
     @Data
     @Builder

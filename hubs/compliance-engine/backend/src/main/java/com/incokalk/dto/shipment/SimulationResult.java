@@ -36,6 +36,24 @@ public class SimulationResult {
 
     private LogisticsInfo logistics;
 
+    // ── Devise et base de calcul (tous les montants ci-dessus sont dans `currency`) ──
+    /** Devise de tous les montants de la réponse (conversion faite à la saisie). */
+    private String currency;
+    /** Devise saisie par l'utilisateur pour goodsValue. */
+    private String inputCurrency;
+    /** Montant en `currency` pour 1 unité de `inputCurrency`. */
+    private double fxRate;
+    /** STATIC_FALLBACK (taux codé en dur, non daté), LIVE ou IDENTITY. */
+    private String fxSource;
+    /** Base de calcul des droits (CIF_EU), null si les droits sont indisponibles. */
+    private String dutyBasisType;
+    /**
+     * false = aucun taux de droit fiable pour ce code/cette lane : importDuties vaut 0 et
+     * totalBuyerCost N'INCLUT PAS les droits. À afficher comme « non disponible », jamais comme 0.
+     */
+    private boolean dutiesAvailable;
+    private String dutiesNote;
+
     @Data
     @Builder
     @NoArgsConstructor
