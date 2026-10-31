@@ -72,7 +72,8 @@ public class GlobalExceptionHandler {
     /** Paramètre de chemin/requête non convertible (ex. UUID "1") : erreur client, pas 500. */
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        String expected = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "valeur";
+        Class<?> requiredType = ex.getRequiredType();
+        String expected = requiredType != null ? requiredType.getSimpleName() : "valeur";
         return ResponseEntity.badRequest()
             .body(new ErrorResponse("INVALID_PARAMETER",
                 "Paramètre '" + ex.getName() + "' invalide : " + expected + " attendu", null));
