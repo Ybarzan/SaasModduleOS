@@ -70,6 +70,7 @@ public class ShipmentOrder {
      * vivent dans la même application (voir LiveTrackingService). */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "truck_id")
+    @JsonIgnore // exposé via truckId / truckRegistration ; l'objet complet embarquait l'entité Company
     private Truck truck;
 
     @com.fasterxml.jackson.annotation.JsonProperty("carrierId")

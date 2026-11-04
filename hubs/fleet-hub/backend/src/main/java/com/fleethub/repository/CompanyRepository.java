@@ -14,8 +14,6 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
 
     Optional<Company> findByMarketplaceApiKeyAndMarketplaceOptInTrue(String marketplaceApiKey);
 
-    Optional<Company> findByInternalIntegrationApiKeyAndInternalIntegrationEnabledTrue(String internalIntegrationApiKey);
-
     Optional<Company> findBySubscriptionId(String subscriptionId);
 
     List<Company> findAllByOrderByCreatedAtDesc();

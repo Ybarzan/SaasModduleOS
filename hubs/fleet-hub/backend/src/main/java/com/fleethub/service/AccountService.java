@@ -48,6 +48,7 @@ public class AccountService {
     private final IntegrationConfigRepository integrationConfigRepository;
     private final SiteRepository siteRepository;
     private final TourRepository tourRepository;
+    private final IntegrationApiKeyRepository integrationApiKeyRepository;
     private final PasswordEncoder passwordEncoder;
     private final StripeService stripeService;
 
@@ -134,6 +135,7 @@ public class AccountService {
         notificationRepository.deleteByCompany_Id(companyId);
         notificationRuleRepository.deleteByCompany_Id(companyId);
         integrationConfigRepository.deleteByCompany_Id(companyId);
+        integrationApiKeyRepository.deleteByCompany_Id(companyId);
         auditLogRepository.deleteByCompany_Id(companyId);
         companyRepository.delete(company);
         log.info("Compte supprimé (RGPD) : société {} par {}", companyId, requesterUsername);

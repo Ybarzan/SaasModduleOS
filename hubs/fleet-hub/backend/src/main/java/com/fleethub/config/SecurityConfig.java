@@ -2,6 +2,7 @@ package com.fleethub.config;
 
 import com.fleethub.security.AdminIpFilter;
 import com.fleethub.security.ClientAuthFilter;
+import com.fleethub.security.InternalApiKeyFilter;
 import com.fleethub.security.JwtAuthFilter;
 import com.fleethub.security.LoginRateLimitFilter;
 import com.fleethub.security.SubscriptionGuardFilter;
@@ -37,6 +38,7 @@ public class SecurityConfig {
     private final TenantFilter tenantFilter;
     private final SubscriptionGuardFilter subscriptionGuardFilter;
     private final AdminIpFilter adminIpFilter;
+    private final InternalApiKeyFilter internalApiKeyFilter;
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
@@ -65,10 +67,10 @@ public class SecurityConfig {
                 // (pas un JWT) dans MarketplaceService, pas ici.
                 .requestMatchers(HttpMethod.GET, "/api/marketplace/availability", "/api/marketplace/vehicle-position").permitAll()
                 .requestMatchers("/api/marketplace/**").hasRole("ADMIN")
-                // Appel machine-à-machine de compliance-engine / Logistix, authentifié par
-                // X-Internal-Integration-Key (pas un JWT) dans InternalIntegrationService,
-                // pas ici -- ces hubs n'ont pas de JWT fleet-hub.
-                .requestMatchers("/api/internal/**").permitAll()
+                // Appel machine-à-machine des autres hubs (compliance-engine, Logistix, Finance,
+                // portail), authentifié par X-Internal-Integration-Key dans InternalApiKeyFilter
+                // -- seul à accorder ce rôle. Ces hubs n'ont pas de JWT fleet-hub.
+                .requestMatchers("/api/internal/**").hasRole("INTEGRATION")
                 .requestMatchers("/api/internal-integrations/**").hasRole("ADMIN")
                 // Collage de la clé webhook compliance-engine (voir ComplianceEngineWebhookService) --
                 // appelé par un admin fleet-hub, jamais par compliance-engine lui-même.
@@ -124,7 +126,10 @@ public class SecurityConfig {
             // n'alimente jamais TenantContext, voir ClientAuthFilter.
             .addFilterBefore(clientAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(tenantFilter, UsernamePasswordAuthenticationFilter.class)
-            .addFilterAfter(subscriptionGuardFilter, TenantFilter.class);
+            // Après TenantFilter (qui nettoie TenantContext en fin de requête) et avant le
+            // gel d'abonnement, qui s'applique donc aussi aux appels des autres hubs.
+            .addFilterAfter(internalApiKeyFilter, TenantFilter.class)
+            .addFilterAfter(subscriptionGuardFilter, InternalApiKeyFilter.class);
         return http.build();
     }
 

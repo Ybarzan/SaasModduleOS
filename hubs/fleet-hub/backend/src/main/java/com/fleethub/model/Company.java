@@ -1,5 +1,6 @@
 package com.fleethub.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -87,6 +88,7 @@ public class Company {
     /** Clé d'authentification machine-à-machine pour FleetMarket (présentée via
      *  l'en-tête X-Marketplace-Key), générée à l'activation de l'opt-in. */
     @Column(length = 64)
+    @JsonIgnore // secret : jamais sérialisé, même si l'entité l'est par erreur
     private String marketplaceApiKey;
 
     // ---- Intégration entrante compliance-engine / Logistix (opt-in) ----
@@ -97,12 +99,8 @@ public class Company {
     @Builder.Default
     private boolean internalIntegrationEnabled = false;
 
-    /** Clé d'authentification machine-à-machine pour cette intégration
-     *  (présentée via l'en-tête X-Internal-Integration-Key), générée à
-     *  l'activation. fleet-hub résout la société depuis cette clé -- jamais
-     *  depuis un identifiant fourni par l'appelant. */
-    @Column(length = 64)
-    private String internalIntegrationApiKey;
+    // Les clés machine-à-machine (en-tête X-Internal-Integration-Key) sont portées
+    // par IntegrationApiKey, une par hub consommateur (V24).
 
     /** Opt-in SÉPARÉ de internalIntegrationEnabled ci-dessus (ADR-0002,
      *  docs/adr/0002-creation-expedition-externe.md) : autorise en plus la
@@ -114,7 +112,7 @@ public class Company {
      *  fleethub.tracking.auto-sync.enabled. Sans effet si
      *  internalIntegrationEnabled est resté désactivé : la clé elle-même
      *  reste rejetée avant que ce flag ne soit jamais consulté (voir
-     *  InternalIntegrationService.resolveCompanyId). Désactivé par défaut. */
+     *  InternalApiKeyFilter). Désactivé par défaut. */
     @Column(nullable = false)
     @Builder.Default
     private boolean allowExternalShipmentCreation = false;
@@ -127,6 +125,7 @@ public class Company {
      *  chiffrement dédié) : jamais recherchée par égalité ici, seulement
      *  déchiffrée pour l'en-tête sortant (voir ShipmentEventPublisher). */
     @Column(name = "compliance_engine_webhook_key", length = 255)
+    @JsonIgnore // secret : jamais sérialisé, même si l'entité l'est par erreur
     private String complianceEngineWebhookKey;
 
     public enum SubscriptionPlan {
@@ -210,8 +209,8 @@ public class Company {
         return generateHexApiKey();
     }
 
-    /** Génère une clé API machine-à-machine pour l'intégration entrante
-     *  compliance-engine / Logistix (32 caractères hexadécimaux). */
+    /** Génère une clé API machine-à-machine pour un hub consommateur
+     *  (voir IntegrationApiKey, 32 caractères hexadécimaux). */
     public static String generateInternalIntegrationApiKey() {
         return generateHexApiKey();
     }

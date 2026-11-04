@@ -114,6 +114,10 @@ class AccountRgpdTest {
         mvc.perform(get("/api/account/export").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
 
+        // Une clé d'intégration vers un autre hub ne doit pas bloquer l'effacement.
+        mvc.perform(post("/api/internal-integrations/keys/LOGISTIX").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+
         // Mot de passe incorrect → refus.
         mvc.perform(post("/api/account/delete")
                         .header("Authorization", "Bearer " + token)
