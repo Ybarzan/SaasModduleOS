@@ -89,6 +89,9 @@ public class AuthService {
         company.setCreatedAt(LocalDateTime.now());
         company.setCountry("FR");
         company.setAccessCode(Company.generateAccessCode());
+        company.setFleetProfile(request.fleetProfile() != null
+                ? Company.FleetProfile.valueOf(request.fleetProfile())
+                : Company.FleetProfile.POIDS_LOURD);
         companyRepository.save(company);
 
         AppUser owner = new AppUser();
@@ -172,7 +175,9 @@ public class AuthService {
                 user.getCompany() != null ? user.getCompany().getStatus().name() : null,
                 user.getCompany() == null || user.getCompany().hasActiveSubscription(),
                 false,
-                user.isTotpEnabled());
+                user.isTotpEnabled(),
+                user.getCompany() != null && user.getCompany().getFleetProfile() != null
+                        ? user.getCompany().getFleetProfile().name() : null);
     }
 
     /**
@@ -188,6 +193,7 @@ public class AuthService {
                 user.getEmail(),
                 null, null, null, null, null, false,
                 true,
-                user.isTotpEnabled());
+                user.isTotpEnabled(),
+                null);
     }
 }

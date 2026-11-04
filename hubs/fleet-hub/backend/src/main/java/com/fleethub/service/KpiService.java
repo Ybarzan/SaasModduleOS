@@ -128,7 +128,7 @@ public class KpiService {
         double truckUptimeRate = round(Math.max(0, 100 - unplannedDowntimeRate));
 
         double consumptionPer100 = computeConsumption(t, km, fuels);
-        double expected = t.getExpectedConsumptionL100Km() != null ? t.getExpectedConsumptionL100Km() : 32;
+        double expected = t.referenceConsumption();
         double consumptionDeltaPct = consumptionPer100 > 0 ? round((consumptionPer100 - expected) / expected * 100) : 0;
 
         double loadedKm = trips.stream().filter(Trip::isLoaded).mapToDouble(Trip::getDistanceKm).sum();
@@ -324,7 +324,11 @@ public class KpiService {
         List<DrivingEvent> events = eventRepository.findByDriverAndTimestampBetween(d, range.from(), range.to());
         List<DrivingEvent> riskEvents = events.stream()
                 .filter(e -> e.getType() != DrivingEvent.EventType.RALENTI).toList();
-        List<TachographDay> tachoDays = tachoRepository.findByDriverAndDateBetween(d, range.fromDate(), range.toDate());
+        // Le 561/2006 ne s'applique qu'aux véhicules équipés d'un tachygraphe (PL, VUL international)
+        boolean tachographApplicable = t.requiresTachograph();
+        List<TachographDay> tachoDays = tachographApplicable
+                ? tachoRepository.findByDriverAndDateBetween(d, range.fromDate(), range.toDate())
+                : List.of();
         List<MaintenanceRecord> maintenance = maintenanceRepository.findByTruckAndScheduledDateBetween(t, range.fromDate(), range.toDate());
         List<FuelRecord> fuels = fuelRepository.findByTruckAndDateBetween(t, range.fromDate(), range.toDate());
         List<CostRecord> costs = costRepository.findByTruckAndDriver(t, d).stream()
@@ -374,7 +378,7 @@ public class KpiService {
 
         // ---- Camion ----
         double consumptionPer100 = computeConsumption(t, kmTruck, fuels);
-        double expected = t.getExpectedConsumptionL100Km() != null ? t.getExpectedConsumptionL100Km() : 32;
+        double expected = t.referenceConsumption();
         double consumptionDeltaPct = consumptionPer100 > 0
                 ? round((consumptionPer100 - expected) / expected * 100)
                 : 0;
@@ -385,12 +389,13 @@ public class KpiService {
         double loadedKm = trips.stream().filter(Trip::isLoaded).mapToDouble(Trip::getDistanceKm).sum();
         double loadedRunRate = kmMax > 0 ? round(loadedKm / kmMax * 100) : 0;
 
-        double performanceScore = round(Math.max(0, Math.min(100,
-                ecoScore * 0.30 +
-                drivingCompliance * 0.25 +
-                onTimeRate * 0.15 +
-                maintenanceCompliance * 0.20 +
-                loadedRunRate * 0.10)));
+        // Sans tachygraphe, le poids de la conformité 561/2006 est redistribué
+        // sur l'éco-conduite et la ponctualité (critère clé des tournées).
+        double performanceScore = round(Math.max(0, Math.min(100, tachographApplicable
+                ? ecoScore * 0.30 + drivingCompliance * 0.25 + onTimeRate * 0.15
+                        + maintenanceCompliance * 0.20 + loadedRunRate * 0.10
+                : ecoScore * 0.35 + onTimeRate * 0.35
+                        + maintenanceCompliance * 0.20 + loadedRunRate * 0.10)));
 
         List<String> alerts = buildAlerts(d, t, drivingCompliance, unplannedDowntimeRate, maintenanceCompliance, tachoDays);
 
@@ -404,12 +409,12 @@ public class KpiService {
                 onTimeRate, drivingCompliance,
                 consumptionPer100, consumptionDeltaPct, truckUptimeRate, round(unplannedDowntimeHours),
                 round(kmMax), round(drivingHours), round(totalCost), loadedRunRate,
-                performanceScore, alerts);
+                performanceScore, alerts, tachographApplicable);
     }
 
     private double computeEcoScore(Truck t, double km, List<FuelRecord> fuels, int riskCount) {
         double consumption = computeConsumption(t, km, fuels);
-        double expected = t.getExpectedConsumptionL100Km() != null ? t.getExpectedConsumptionL100Km() : 32;
+        double expected = t.referenceConsumption();
         double score = 100.0;
         if (expected > 0) {
             score -= Math.max(0, (consumption - expected) / expected) * 100.0;
@@ -420,7 +425,7 @@ public class KpiService {
 
     private double computeConsumption(Truck t, double km, List<FuelRecord> fuels) {
         double liters = fuels.stream().mapToDouble(FuelRecord::getLiters).sum();
-        double expected = t.getExpectedConsumptionL100Km() != null ? t.getExpectedConsumptionL100Km() : 32;
+        double expected = t.referenceConsumption();
         if (km > 0) {
             return round(liters / km * 100);
         }

@@ -3,6 +3,7 @@ package com.fleethub.config;
 import com.fleethub.model.*;
 import com.fleethub.repository.*;
 import com.fleethub.service.TachographService;
+import com.fleethub.service.tour.RouteOptimizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -34,6 +35,7 @@ public class DataSeeder {
 
     private final PasswordEncoder passwordEncoder;
     private final TachographService tachographService;
+    private final RouteOptimizer routeOptimizer;
 
     @Value("${app.security.admin-password}")
     private String adminPassword;
@@ -58,7 +60,9 @@ public class DataSeeder {
                            TachographDayRepository tachoRepository,
                            MaintenanceRepository maintenanceRepository,
                            FuelRecordRepository fuelRepository,
-                           CostRecordRepository costRepository) {
+                           CostRecordRepository costRepository,
+                           SiteRepository siteRepository,
+                           TourRepository tourRepository) {
         return args -> {
             if (userRepository.count() > 0) return;
             Random rnd = new Random(42);
@@ -71,6 +75,8 @@ public class DataSeeder {
             demo.setStatus(Company.CompanyStatus.ACTIVE);
             demo.setCountry("FR");
             demo.setContactEmail("demo@fleethub.fr");
+            // Démo « flotte mixte » : poids lourds + tournées de collecte en camionnette
+            demo.setFleetProfile(Company.FleetProfile.MIXTE);
             demo.setCreatedAt(LocalDateTime.now());
             demo.setAccessCode(Company.generateAccessCode());
             companyRepository.save(demo);
@@ -289,6 +295,10 @@ public class DataSeeder {
                     saveCost(costRepository, demo, trucks[i], drivers[i], ym, CostRecord.CostCategory.PEAGES, peages);
                 }
             }
+
+            // ---- Tournées de collecte (module Tournées) ----
+            TourDemoSeeder.seed(demo, siteRepository, tourRepository, driverRepository, truckRepository,
+                    routeOptimizer, rnd);
         };
     }
 
@@ -297,7 +307,7 @@ public class DataSeeder {
                         double lat, double lon, Truck.VehicleStatus status, double speed, String city) {
         return new Truck(id, company, reg, brand, model, year, type, fuel, capacity,
                 LocalDate.now().minusYears(year > 2020 ? 3 : 4), 95000.0 + year * 0, expected,
-                lat, lon, speed, status, LocalDateTime.now().minusMinutes(15), true);
+                lat, lon, speed, status, LocalDateTime.now().minusMinutes(15), true, null);
     }
 
     private Driver driver(Company company, Long id, String first, String last, String license, String phone,

@@ -10,6 +10,7 @@ import com.fleethub.repository.CostRecordRepository;
 import com.fleethub.repository.DrivingEventRepository;
 import com.fleethub.repository.FuelRecordRepository;
 import com.fleethub.repository.MaintenanceRepository;
+import com.fleethub.repository.TourRepository;
 import com.fleethub.repository.TripRepository;
 import com.fleethub.repository.TruckRepository;
 import com.fleethub.security.TenantContext;
@@ -35,7 +36,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/trucks")
 @RequiredArgsConstructor
-@Tag(name = "Camions", description = "Gestion des camions de la flotte")
+@Tag(name = "Véhicules", description = "Gestion des véhicules de la flotte (poids lourds, VUL, VL)")
 public class TruckController {
 
     private final TruckRepository truckRepository;
@@ -45,6 +46,7 @@ public class TruckController {
     private final FuelRecordRepository fuelRecordRepository;
     private final MaintenanceRepository maintenanceRepository;
     private final CostRecordRepository costRecordRepository;
+    private final TourRepository tourRepository;
 
     @GetMapping
     @Operation(summary = "Lister les camions", description = "Retourne la liste de tous les camions avec leur affectation actuelle")
@@ -116,6 +118,7 @@ public class TruckController {
         fuelRecordRepository.deleteByTruck(t);
         maintenanceRepository.deleteByTruck(t);
         costRecordRepository.deleteByTruck(t);
+        tourRepository.detachTruck(t); // les tournées passées restent, sans véhicule
         truckRepository.delete(t);
     }
 
@@ -129,8 +132,11 @@ public class TruckController {
         t.setCapacityTons(req.capacityTons());
         t.setAcquisitionDate(req.acquisitionDate());
         t.setPurchasePrice(req.purchasePrice());
-        t.setExpectedConsumptionL100Km(req.expectedConsumptionL100Km());
+        t.setExpectedConsumptionL100Km(req.expectedConsumptionL100Km() != null
+                ? req.expectedConsumptionL100Km()
+                : t.getTruckType().getDefaultConsumptionL100Km());
         t.setActive(req.active());
+        t.setTachographEquipped(req.tachographEquipped());
     }
 
     private TruckDto toDto(Truck t, DriverTruckAssignment a) {
@@ -142,6 +148,7 @@ public class TruckController {
                 t.getLastGpsUpdate(), t.isActive(),
                 a != null ? a.getId() : null,
                 a != null ? a.getDriver().getId() : null,
-                a != null ? a.getDriver().getFirstName() + " " + a.getDriver().getLastName() : null);
+                a != null ? a.getDriver().getFirstName() + " " + a.getDriver().getLastName() : null,
+                t.getTachographEquipped(), t.requiresTachograph(), t.getTruckType().isHeavy());
     }
 }
