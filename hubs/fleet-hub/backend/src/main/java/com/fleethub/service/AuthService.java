@@ -10,6 +10,7 @@ import com.fleethub.model.Company;
 import com.fleethub.repository.AppUserRepository;
 import com.fleethub.repository.CompanyRepository;
 import com.fleethub.security.JwtService;
+import com.fleethub.security.LoginAttemptService;
 import com.fleethub.security.TwoFactorService;
 import com.fleethub.service.email.EmailNotifier;
 import com.fleethub.service.email.MailProperties;
@@ -18,7 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -45,14 +46,20 @@ public class AuthService {
     private final MailProperties mailProperties;
     private final AuditService auditService;
     private final TwoFactorService twoFactorService;
+    private final LoginAttemptService loginAttemptService;
 
     @Value("${app.registration.trial-days}")
     private int trialDays;
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        } catch (BadCredentialsException e) {
+            loginAttemptService.onFailure(request.username());
+            throw e;
+        }
         AppUser user = userRepository.findByUsername(request.username())
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable"));
 
@@ -63,10 +70,12 @@ public class AuthService {
                 return toAuthResponsePending2FA(user);
             }
             if (!twoFactorService.verifyCode(user.getTotpSecret(), request.totpCode())) {
-                throw new org.springframework.security.authentication.BadCredentialsException("Code TOTP invalide");
+                loginAttemptService.onFailure(request.username());
+                throw new BadCredentialsException("Code TOTP invalide");
             }
         }
 
+        loginAttemptService.onSuccess(user.getUsername());
         AuthResponse response = toAuthResponse(user);
         Long companyId = user.getCompany() != null ? user.getCompany().getId() : null;
         auditService.logForUsername(companyId, user.getUsername(), "CONNEXION", "Connexion réussie", null);

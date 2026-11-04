@@ -316,11 +316,11 @@ function CrudTab({ tab, options, onChanged }) {
 
   const setDriverPin = (item) => {
     const pin = window.prompt(
-      `Nouveau code à 4 chiffres pour ${item.firstName} ${item.lastName} (portail chauffeur) :`
+      `Nouveau code à 6 chiffres pour ${item.firstName} ${item.lastName} (portail chauffeur) :`
     )
     if (pin === null) return
-    if (!/^\d{4}$/.test(pin)) {
-      setError('Le code doit contenir exactement 4 chiffres')
+    if (!/^\d{6}$/.test(pin)) {
+      setError('Le code doit contenir exactement 6 chiffres')
       return
     }
     api

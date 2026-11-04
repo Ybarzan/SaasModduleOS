@@ -83,17 +83,24 @@ export default function PointagePortal() {
     return () => clearInterval(id)
   }, [])
 
+  // 6 chiffres pour les codes récents, 4 pour ceux créés avant (voir PointageRosterDto).
+  const pinLength = selectedDriver?.pinLength || 4
+
   const pressDigit = async (digit) => {
     if (verifying) return
-    const next = pin.length < 4 ? pin + digit : pin
+    const next = pin.length < pinLength ? pin + digit : pin
     setPin(next)
     setPinError('')
-    if (next.length === 4) {
+    if (next.length === pinLength) {
       setVerifying(true)
       try {
         await login(selectedDriver.loginUsername, next)
-      } catch {
-        setPinError('Code incorrect. Réessayez.')
+      } catch (err) {
+        setPinError(
+          err.response?.status === 429
+            ? err.response.data?.message || 'Trop de tentatives. Réessayez dans quelques minutes.'
+            : 'Code incorrect. Réessayez.'
+        )
         setPin('')
       } finally {
         setVerifying(false)
@@ -363,14 +370,16 @@ export default function PointagePortal() {
             <div style={{ fontWeight: 700, fontSize: 15, marginTop: 10 }}>
               {selectedDriver.firstName} {selectedDriver.lastName}
             </div>
-            <div className="ptg-hint">{verifying ? 'Vérification…' : 'Code à 4 chiffres'}</div>
+            <div className="ptg-hint">
+              {verifying ? 'Vérification…' : `Code à ${pinLength} chiffres`}
+            </div>
             {pinError && (
               <div className="alert alert-error" style={{ marginTop: 10 }}>
                 {pinError}
               </div>
             )}
             <div className="ptg-pin-dots">
-              {[0, 1, 2, 3].map((i) => (
+              {Array.from({ length: pinLength }, (_, i) => (
                 <span key={i} className={`ptg-pin-dot ${i < pin.length ? 'filled' : ''}`} />
               ))}
             </div>

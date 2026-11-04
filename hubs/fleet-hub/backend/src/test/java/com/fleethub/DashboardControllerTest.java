@@ -93,11 +93,11 @@ class DashboardControllerTest {
         mvc.perform(post("/api/drivers/" + driverId + "/pin")
                         .header("Authorization", "Bearer " + adminToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"pin\":\"1234\"}"))
+                        .content("{\"pin\":\"123458\"}"))
                 .andExpect(status().isNoContent());
         MvcResult loginRes = mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"chauffeur-" + driverId + "@pointage.internal\",\"password\":\"1234\"}"))
+                        .content("{\"username\":\"chauffeur-" + driverId + "@pointage.internal\",\"password\":\"123458\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
         String chauffeurToken = objectMapper.readTree(loginRes.getResponse().getContentAsString()).get("token").asText();

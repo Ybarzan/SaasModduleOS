@@ -89,7 +89,7 @@ class PointageControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.hasPin").value(false));
 
-        setPin("1111");
+        setPin("111158");
 
         mvc.perform(get("/api/drivers/" + driverId).header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
@@ -98,7 +98,7 @@ class PointageControllerTest {
 
     @Test
     void roster_returnsCompanyNameAndActiveDriverOnly() throws Exception {
-        setPin("1111");
+        setPin("111158");
         mvc.perform(get("/api/pointage/roster/" + accessCode))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.companyName").value("Pointage Test"))
@@ -133,10 +133,10 @@ class PointageControllerTest {
 
     @Test
     void setPin_thenLogin_grantsChauffeurRoleScopedToken() throws Exception {
-        setPin("2222");
+        setPin("222258");
         MvcResult res = mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"chauffeur-" + driverId + "@pointage.internal\",\"password\":\"2222\"}"))
+                        .content("{\"username\":\"chauffeur-" + driverId + "@pointage.internal\",\"password\":\"222258\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
         JsonNode body = objectMapper.readTree(res.getResponse().getContentAsString());
@@ -145,17 +145,17 @@ class PointageControllerTest {
 
     @Test
     void wrongPin_isRejected() throws Exception {
-        setPin("3333");
+        setPin("333358");
         mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"chauffeur-" + driverId + "@pointage.internal\",\"password\":\"0000\"}"))
+                        .content("{\"username\":\"chauffeur-" + driverId + "@pointage.internal\",\"password\":\"000058\"}"))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void fullShift_startPauseResumeEnd_returnsCompliantSummary() throws Exception {
-        setPin("4444");
-        String chauffeurToken = chauffeurLogin("4444");
+        setPin("444458");
+        String chauffeurToken = chauffeurLogin("444458");
 
         mvc.perform(get("/api/pointage/status").header("Authorization", "Bearer " + chauffeurToken))
                 .andExpect(status().isOk())
@@ -185,8 +185,8 @@ class PointageControllerTest {
 
     @Test
     void start_whenAlreadyStarted_returns409() throws Exception {
-        setPin("5555");
-        String chauffeurToken = chauffeurLogin("5555");
+        setPin("555558");
+        String chauffeurToken = chauffeurLogin("555558");
         mvc.perform(post("/api/pointage/start").header("Authorization", "Bearer " + chauffeurToken))
                 .andExpect(status().isOk());
         mvc.perform(post("/api/pointage/start").header("Authorization", "Bearer " + chauffeurToken))
@@ -195,16 +195,16 @@ class PointageControllerTest {
 
     @Test
     void pause_withoutActiveService_returns409() throws Exception {
-        setPin("6666");
-        String chauffeurToken = chauffeurLogin("6666");
+        setPin("666658");
+        String chauffeurToken = chauffeurLogin("666658");
         mvc.perform(post("/api/pointage/pause").header("Authorization", "Bearer " + chauffeurToken))
                 .andExpect(status().isConflict());
     }
 
     @Test
     void resume_withoutPause_returns409() throws Exception {
-        setPin("7777");
-        String chauffeurToken = chauffeurLogin("7777");
+        setPin("777758");
+        String chauffeurToken = chauffeurLogin("777758");
         mvc.perform(post("/api/pointage/start").header("Authorization", "Bearer " + chauffeurToken))
                 .andExpect(status().isOk());
         mvc.perform(post("/api/pointage/resume").header("Authorization", "Bearer " + chauffeurToken))
@@ -213,32 +213,32 @@ class PointageControllerTest {
 
     @Test
     void end_withoutActiveService_returns409() throws Exception {
-        setPin("8888");
-        String chauffeurToken = chauffeurLogin("8888");
+        setPin("888858");
+        String chauffeurToken = chauffeurLogin("888858");
         mvc.perform(post("/api/pointage/end").header("Authorization", "Bearer " + chauffeurToken))
                 .andExpect(status().isConflict());
     }
 
     @Test
     void chauffeurToken_cannotAccessBackOfficeEndpoints() throws Exception {
-        setPin("9990");
-        String chauffeurToken = chauffeurLogin("9990");
+        setPin("999058");
+        String chauffeurToken = chauffeurLogin("999058");
         mvc.perform(get("/api/drivers").header("Authorization", "Bearer " + chauffeurToken))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void adminStatus_chauffeurToken_isForbidden() throws Exception {
-        setPin("4441");
-        String chauffeurToken = chauffeurLogin("4441");
+        setPin("444158");
+        String chauffeurToken = chauffeurLogin("444158");
         mvc.perform(get("/api/pointage/admin/status").header("Authorization", "Bearer " + chauffeurToken))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void adminStatus_returnsCurrentStateForActiveDrivers() throws Exception {
-        setPin("4442");
-        String chauffeurToken = chauffeurLogin("4442");
+        setPin("444258");
+        String chauffeurToken = chauffeurLogin("444258");
         mvc.perform(post("/api/pointage/start").header("Authorization", "Bearer " + chauffeurToken))
                 .andExpect(status().isOk());
 
@@ -250,8 +250,8 @@ class PointageControllerTest {
 
     @Test
     void adminToday_listsEventsAcrossDrivers() throws Exception {
-        setPin("4443");
-        String chauffeurToken = chauffeurLogin("4443");
+        setPin("444358");
+        String chauffeurToken = chauffeurLogin("444358");
         mvc.perform(post("/api/pointage/start").header("Authorization", "Bearer " + chauffeurToken))
                 .andExpect(status().isOk());
 
@@ -265,7 +265,7 @@ class PointageControllerTest {
     void deletingDriverWithPin_succeeds() throws Exception {
         // Régression : avant e8100f0, supprimer un chauffeur ayant un PIN de
         // pointage configuré échouait en 500 (FK app_user.driver_id orpheline).
-        setPin("1230");
+        setPin("123058");
         mvc.perform(delete("/api/drivers/" + driverId).header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk());
 

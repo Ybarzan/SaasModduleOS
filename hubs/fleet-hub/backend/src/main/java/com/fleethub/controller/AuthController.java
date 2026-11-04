@@ -7,10 +7,12 @@ import com.fleethub.dto.LoginRequest;
 import com.fleethub.dto.RegisterRequest;
 import com.fleethub.dto.ResetPasswordRequest;
 import com.fleethub.dto.SessionFromTokenRequest;
+import com.fleethub.security.AppUserPrincipal;
 import com.fleethub.security.JwtService;
 import com.fleethub.security.TokenRevocationService;
 import com.fleethub.service.AuthService;
 import com.fleethub.service.UserService;
+import io.jsonwebtoken.Claims;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +35,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private static final String TOKEN_COOKIE = "fh_token";
+    /** Un jeton expiré depuis moins de 5 min reste échangeable (horloges décalées, onglet en veille). */
+    private static final long REFRESH_GRACE_MS = 300_000;
 
     private final AuthService authService;
     private final UserService userService;
@@ -91,20 +95,20 @@ public class AuthController {
     @ApiResponse(responseCode = "401", description = "Jeton invalide ou expiré")
     public ResponseEntity<Void> refresh(HttpServletRequest request, HttpServletResponse response) {
         String token = extractCookie(request);
-        if (token == null || !jwtService.isRefreshable(token, 300_000)) {
+        if (token == null || !jwtService.isRefreshable(token, REFRESH_GRACE_MS)) {
             clearTokenCookie(response);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String tokenId = jwtService.extractTokenId(token);
-        if (tokenId != null && tokenRevocationService.isRevoked(tokenId)) {
+        Claims claims = jwtService.extractClaimsAllowingExpired(token);
+        UserDetails userDetails;
+        try {
+            userDetails = userDetailsService.loadUserByUsername(claims.getSubject());
+        } catch (UsernameNotFoundException e) {
             clearTokenCookie(response);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
-        String username = jwtService.extractUsername(token);
-        var userDetails = userDetailsService.loadUserByUsername(username);
-        if (userDetails == null || !userDetails.isEnabled()) {
+        if (!userDetails.isEnabled() || isSessionRevoked(claims, userDetails)) {
             clearTokenCookie(response);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
@@ -112,9 +116,11 @@ public class AuthController {
         // Révoquer l'ancien token avant d'en émettre un nouveau
         tokenRevocationService.revoke(token);
 
-        String role = jwtService.extractRole(token);
-        Long companyId = jwtService.extractCompanyId(token);
-        String newToken = jwtService.generateToken(username, role, companyId);
+        // Rôle et société relus en base (principal) plutôt que recopiés de l'ancien jeton :
+        // un changement de rôle s'applique donc au plus tard au refresh suivant.
+        AppUserPrincipal principal = (AppUserPrincipal) userDetails;
+        String newToken = jwtService.generateToken(principal.getUsername(), principal.getRole(),
+                principal.getCompanyId());
         addTokenCookie(response, newToken);
         return ResponseEntity.ok().build();
     }
@@ -130,23 +136,20 @@ public class AuthController {
     public ResponseEntity<Void> sessionFromToken(@Valid @RequestBody SessionFromTokenRequest request,
                                                  HttpServletResponse response) {
         String token = request.token();
-        String username;
+        Claims claims;
         try {
-            username = jwtService.extractUsername(token);
+            claims = jwtService.extractAllClaims(token);
         } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        String tokenId = jwtService.extractTokenId(token);
-        if (tokenId != null && tokenRevocationService.isRevoked(tokenId)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         UserDetails userDetails;
         try {
-            userDetails = userDetailsService.loadUserByUsername(username);
+            userDetails = userDetailsService.loadUserByUsername(claims.getSubject());
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        if (!userDetails.isEnabled() || !jwtService.isTokenValid(token, userDetails)) {
+        if (!userDetails.isEnabled() || !jwtService.isTokenValid(token, userDetails)
+                || isSessionRevoked(claims, userDetails)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         addTokenCookie(response, token);
@@ -177,6 +180,20 @@ public class AuthController {
     public ResponseEntity<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request);
         return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Mêmes règles que {@link com.fleethub.security.JwtAuthFilter} : jeton révoqué
+     * individuellement (logout, refresh) ou émis avant une révocation globale de
+     * l'utilisateur (« révoquer toutes les sessions »). Sans ce second contrôle, un
+     * jeton coupé par la révocation globale pouvait être échangé contre un neuf.
+     */
+    private boolean isSessionRevoked(Claims claims, UserDetails userDetails) {
+        if (claims.getId() == null || tokenRevocationService.isRevoked(claims.getId())) {
+            return true;
+        }
+        return userDetails instanceof AppUserPrincipal principal
+                && tokenRevocationService.isRevokedByCutoff(principal.getId(), claims.getIssuedAt());
     }
 
     private void addTokenCookie(HttpServletResponse response, String token) {

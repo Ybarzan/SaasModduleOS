@@ -1,6 +1,7 @@
 package com.fleethub.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -68,7 +69,7 @@ public class JwtService {
      */
     public boolean isRefreshable(String token, long graceMs) {
         try {
-            Date expiration = extractClaim(token, Claims::getExpiration);
+            Date expiration = extractClaimsAllowingExpired(token).getExpiration();
             return expiration.getTime() + graceMs > System.currentTimeMillis();
         } catch (JwtException | IllegalArgumentException e) {
             return false;
@@ -81,6 +82,20 @@ public class JwtService {
 
     public Date extractIssuedAt(String token) {
         return extractClaim(token, Claims::getIssuedAt);
+    }
+
+    /**
+     * Claims d'un jeton dont la signature est valide, même s'il est expiré : jjwt
+     * vérifie la signature avant l'expiration, donc les claims portés par
+     * {@link ExpiredJwtException} sont authentiques. Réservé au refresh (délai de
+     * grâce) et à la révocation ; ne jamais s'en servir pour authentifier une requête.
+     */
+    public Claims extractClaimsAllowingExpired(String token) {
+        try {
+            return extractAllClaims(token);
+        } catch (ExpiredJwtException e) {
+            return e.getClaims();
+        }
     }
 
     public Claims extractAllClaims(String token) {
