@@ -12,8 +12,9 @@ test('le menu hamburger ouvre la navigation et permet de naviguer', async ({ pag
   await page.getByRole('button', { name: 'Ouvrir le menu' }).click()
   await expect(page.locator('.sidebar')).toHaveClass(/open/)
 
-  await page.getByRole('link', { name: /Camions/ }).click()
-  await expect(page.getByRole('heading', { name: 'Camions' })).toBeVisible()
+  // Société de démo en profil « flotte mixte » : le menu dit « Véhicules » (voir fleet.js).
+  await page.getByRole('link', { name: /Véhicules/ }).click()
+  await expect(page.getByRole('heading', { name: 'Véhicules' })).toBeVisible()
   await expect(page.locator('.sidebar')).not.toHaveClass(/open/)
 })
 

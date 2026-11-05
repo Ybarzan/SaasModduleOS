@@ -24,7 +24,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Pointage chauffeur : début / pause / reprise / fin de service, déclarés par
@@ -45,6 +47,10 @@ public class PointageService {
     private final AppUserRepository appUserRepository;
     private final PasswordEncoder passwordEncoder;
 
+    /** Longueur des nouveaux codes ; les codes créés avant V23 font 4 chiffres. */
+    private static final int PIN_LENGTH = 6;
+    private static final int LEGACY_PIN_LENGTH = 4;
+
     private static String loginUsername(Long driverId) {
         return "chauffeur-" + driverId + "@pointage.internal";
     }
@@ -57,10 +63,17 @@ public class PointageService {
     /** Crée ou réinitialise le code d'accès du portail de pointage pour ce chauffeur. */
     @Transactional
     public void setPin(Long companyId, Long driverId, String pin) {
+        if (isTrivialPin(pin)) {
+            throw new IllegalArgumentException("Code trop facile à deviner (chiffres identiques ou suite) : choisissez-en un autre");
+        }
         Driver driver = requireDriver(companyId, driverId);
         AppUser account = appUserRepository.findByDriverId(driverId).orElseGet(AppUser::new);
         account.setUsername(loginUsername(driverId));
         account.setPassword(passwordEncoder.encode(pin));
+        account.setPinLength(pin.length());
+        // Nouveau code fixé par un gestionnaire : lève un éventuel verrouillage en cours.
+        account.setFailedLoginAttempts(0);
+        account.setLockedUntil(null);
         account.setRole("CHAUFFEUR");
         account.setDisplayName(driver.getFirstName() + " " + driver.getLastName());
         account.setEnabled(true);
@@ -68,6 +81,18 @@ public class PointageService {
         account.setCompany(driver.getCompany());
         account.setDriver(driver);
         appUserRepository.save(account);
+    }
+
+    /** Chiffres tous identiques (000000) ou suite croissante / décroissante (123456, 987654). */
+    static boolean isTrivialPin(String pin) {
+        boolean same = true, up = true, down = true;
+        for (int i = 1; i < pin.length(); i++) {
+            int d = pin.charAt(i) - pin.charAt(i - 1);
+            same &= d == 0;
+            up &= d == 1;
+            down &= d == -1;
+        }
+        return same || up || down;
     }
 
     /** Supprime le compte du portail lié à ce chauffeur, s'il existe (avant suppression du chauffeur). */
@@ -80,9 +105,17 @@ public class PointageService {
     public PointageRosterDto roster(String accessCode) {
         Company company = companyRepository.findByAccessCode(accessCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Portail introuvable"));
+        Map<Long, Integer> pinLengths = new HashMap<>();
+        for (AppUser account : appUserRepository.findByCompanyIdAndRole(company.getId(), "CHAUFFEUR")) {
+            if (account.getDriver() != null) {
+                pinLengths.put(account.getDriver().getId(),
+                        account.getPinLength() != null ? account.getPinLength() : LEGACY_PIN_LENGTH);
+            }
+        }
         List<PointageRosterDto.Driver> drivers = driverRepository.findByCompanyId(company.getId()).stream()
                 .filter(Driver::isActive)
-                .map(d -> new PointageRosterDto.Driver(d.getId(), d.getFirstName(), d.getLastName(), loginUsername(d.getId())))
+                .map(d -> new PointageRosterDto.Driver(d.getId(), d.getFirstName(), d.getLastName(),
+                        loginUsername(d.getId()), pinLengths.getOrDefault(d.getId(), PIN_LENGTH)))
                 .toList();
         return new PointageRosterDto(company.getName(), drivers);
     }

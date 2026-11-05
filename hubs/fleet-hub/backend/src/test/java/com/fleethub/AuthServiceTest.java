@@ -8,6 +8,7 @@ import com.fleethub.model.Company;
 import com.fleethub.repository.AppUserRepository;
 import com.fleethub.repository.CompanyRepository;
 import com.fleethub.security.JwtService;
+import com.fleethub.security.LoginAttemptService;
 import com.fleethub.security.TwoFactorService;
 import com.fleethub.service.AuthService;
 import com.fleethub.service.AuditService;
@@ -54,13 +55,16 @@ class AuthServiceTest {
     private AuditService auditService;
     @Mock
     private TwoFactorService twoFactorService;
+    @Mock
+    private LoginAttemptService loginAttemptService;
 
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
         authService = new AuthService(authenticationManager, jwtService, userRepository,
-                companyRepository, passwordEncoder, emailNotifier, mailProperties, auditService, twoFactorService);
+                companyRepository, passwordEncoder, emailNotifier, mailProperties, auditService, twoFactorService,
+                loginAttemptService);
         ReflectionTestUtils.setField(authService, "trialDays", 14);
     }
 

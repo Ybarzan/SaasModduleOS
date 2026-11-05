@@ -1,9 +1,13 @@
 package com.fleethub.service;
 
 import com.fleethub.dto.ExternalShipmentCreationSettingsDto;
+import com.fleethub.dto.GeneratedIntegrationKeyDto;
 import com.fleethub.dto.InternalIntegrationSettingsDto;
 import com.fleethub.model.Company;
+import com.fleethub.model.IntegrationApiKey;
+import com.fleethub.model.IntegrationConsumer;
 import com.fleethub.repository.CompanyRepository;
+import com.fleethub.repository.IntegrationApiKeyRepository;
 import com.fleethub.security.ApiKeyHasher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -11,88 +15,136 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 /**
- * Lecture opt-in d'expéditions par compliance-engine ou Logistix (dérivation
- * de documents douaniers / lignes de réception). Jamais d'accès direct entre
- * les bases : ces hubs appellent GET /api/internal/shipments/** avec la clé
- * machine-à-machine de la société qui a activé le partage -- même principe
- * que {@link MarketplaceService} vers FleetMarket.
+ * Partage opt-in des données d'une société avec les autres hubs de la plateforme
+ * (compliance-engine, Logistix, Finance, portail Praxio). Jamais d'accès direct
+ * entre les bases : ces hubs appellent {@code /api/internal/**} avec la clé qui
+ * leur est propre (voir {@link IntegrationConsumer} pour les droits de chacune),
+ * authentifiée par {@link com.fleethub.security.InternalApiKeyFilter}.
  */
 @Service
 @RequiredArgsConstructor
 public class InternalIntegrationService {
 
+    /** lastUsedAt n'est réécrit qu'au-delà de cet écart, pas à chaque appel. */
+    private static final Duration LAST_USED_RESOLUTION = Duration.ofMinutes(5);
+
     private final CompanyRepository companyRepository;
+    private final IntegrationApiKeyRepository keyRepository;
 
     @Transactional(readOnly = true)
     public InternalIntegrationSettingsDto settings(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow();
-        return new InternalIntegrationSettingsDto(company.isInternalIntegrationEnabled(), null);
+        Map<IntegrationConsumer, IntegrationApiKey> existing = keyRepository.findByCompanyIdOrderByConsumerAsc(companyId)
+                .stream().collect(Collectors.toMap(IntegrationApiKey::getConsumer, Function.identity()));
+        List<InternalIntegrationSettingsDto.Key> keys = new ArrayList<>();
+        for (IntegrationConsumer consumer : IntegrationConsumer.values()) {
+            IntegrationApiKey key = existing.get(consumer);
+            if (consumer == IntegrationConsumer.LEGACY && key == null) {
+                continue; // la clé historique n'apparaît que tant qu'elle existe
+            }
+            keys.add(new InternalIntegrationSettingsDto.Key(
+                    consumer.name(), consumer.getLabel(),
+                    consumer.getScopes().stream().map(Enum::name).sorted().toList(),
+                    key != null,
+                    key != null ? key.getKeyHint() : null,
+                    key != null ? key.getCreatedAt() : null,
+                    key != null ? key.getLastUsedAt() : null));
+        }
+        return new InternalIntegrationSettingsDto(company.isInternalIntegrationEnabled(), keys);
     }
 
+    /** Interrupteur général : les clés existantes redeviennent valides. */
     @Transactional
-    public InternalIntegrationSettingsDto enable(Long companyId) {
+    public void enable(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow();
-        // internalIntegrationApiKey ne contient qu'un hash (voir ApiKeyHasher) : la
-        // clé en clair n'est jamais récupérable une fois générée. Si une clé existe
-        // déjà, on ne peut donc plus la renvoyer -- comme settings(), qui ne la
-        // renvoie jamais non plus. Seule une activation initiale (première
-        // génération) retourne la clé en clair, une seule fois.
-        String plainKeyToReturn = null;
-        if (company.getInternalIntegrationApiKey() == null) {
-            String generated = Company.generateInternalIntegrationApiKey();
-            company.setInternalIntegrationApiKey(ApiKeyHasher.hash(generated));
-            plainKeyToReturn = generated;
-        }
         company.setInternalIntegrationEnabled(true);
         companyRepository.save(company);
-        return new InternalIntegrationSettingsDto(true, plainKeyToReturn);
     }
 
-    /**
-     * La clé stockée n'étant qu'un hash (voir enable()), elle ne peut plus être
-     * réaffichée après coup -- on l'efface donc à la désactivation : une
-     * réactivation ultérieure en génère une nouvelle plutôt que de laisser une
-     * clé orpheline, invisible mais toujours présente en base, sans utilité.
-     */
+    /** Interrupteur général : toutes les clés sont rejetées, mais conservées pour une réactivation. */
     @Transactional
     public void disable(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow();
         company.setInternalIntegrationEnabled(false);
-        company.setInternalIntegrationApiKey(null);
         companyRepository.save(company);
     }
 
     /**
-     * Résout la société propriétaire de la clé présentée -- jamais depuis un
-     * identifiant fourni par l'appelant. Rejette une clé absente, invalide,
-     * ou dont le partage a été désactivé depuis.
+     * Génère la clé d'un hub consommateur, ou la remplace si elle existe (rotation) :
+     * l'ancienne est invalide immédiatement. La clé en clair n'est renvoyée qu'ici.
      */
-    @Transactional(readOnly = true)
-    public Long resolveCompanyId(String apiKey) {
-        if (apiKey == null || apiKey.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé X-Internal-Integration-Key manquante");
+    @Transactional
+    public GeneratedIntegrationKeyDto generateKey(Long companyId, String consumerName) {
+        IntegrationConsumer consumer = parseConsumer(consumerName);
+        if (consumer == IntegrationConsumer.LEGACY) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La clé historique ne peut plus être générée : créez une clé par hub");
         }
-        return companyRepository.findByInternalIntegrationApiKeyAndInternalIntegrationEnabledTrue(ApiKeyHasher.hash(apiKey))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Clé invalide ou intégration désactivée"))
-                .getId();
+        Company company = companyRepository.findById(companyId).orElseThrow();
+        keyRepository.findByCompanyIdAndConsumer(companyId, consumer).ifPresent(old -> {
+            keyRepository.delete(old);
+            keyRepository.flush(); // libère la contrainte (company_id, consumer) avant l'insertion
+        });
+        String plain = Company.generateInternalIntegrationApiKey();
+        IntegrationApiKey key = new IntegrationApiKey();
+        key.setCompany(company);
+        key.setConsumer(consumer);
+        key.setKeyHash(ApiKeyHasher.hash(plain));
+        key.setKeyHint(plain.substring(plain.length() - 4));
+        key.setCreatedAt(LocalDateTime.now());
+        keyRepository.save(key);
+        return new GeneratedIntegrationKeyDto(consumer.name(), plain);
+    }
+
+    @Transactional
+    public void revokeKey(Long companyId, String consumerName) {
+        IntegrationConsumer consumer = parseConsumer(consumerName);
+        keyRepository.findByCompanyIdAndConsumer(companyId, consumer).ifPresent(keyRepository::delete);
     }
 
     /**
-     * Même résolution que {@link #resolveCompanyId}, plus l'opt-in SÉPARÉ
-     * {@code allowExternalShipmentCreation} (ADR-0002) -- une clé valide avec
-     * le partage en lecture activé ne suffit pas à elle seule à autoriser la
-     * création d'expéditions.
+     * Clé présentée par un hub -> clé enregistrée, si elle existe et que le partage
+     * de sa société est activé. La société vient toujours de la clé, jamais d'un
+     * identifiant fourni par l'appelant.
+     */
+    @Transactional
+    public Optional<IntegrationApiKey> authenticate(String apiKey) {
+        if (apiKey == null || apiKey.isBlank()) {
+            return Optional.empty();
+        }
+        Optional<IntegrationApiKey> key = keyRepository.findByKeyHash(ApiKeyHasher.hash(apiKey))
+                .filter(k -> k.getCompany().isInternalIntegrationEnabled());
+        key.ifPresent(k -> {
+            LocalDateTime now = LocalDateTime.now();
+            if (k.getLastUsedAt() == null || k.getLastUsedAt().isBefore(now.minus(LAST_USED_RESOLUTION))) {
+                keyRepository.touch(k.getId(), now);
+            }
+        });
+        return key;
+    }
+
+    /**
+     * Opt-in SÉPARÉ (ADR-0002) : une clé ayant le droit SHIPMENTS_CREATE ne suffit
+     * pas, la société doit aussi avoir autorisé la création d'expéditions externes.
      */
     @Transactional(readOnly = true)
-    public Long resolveCompanyIdForShipmentCreation(String apiKey) {
-        Long companyId = resolveCompanyId(apiKey);
+    public void requireShipmentCreationAllowed(Long companyId) {
         Company company = companyRepository.findById(companyId).orElseThrow();
         if (!company.isAllowExternalShipmentCreation()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "Création d'expédition externe non activée pour cette société (voir Paramètres > Intégrations)");
         }
-        return companyId;
     }
 
     @Transactional(readOnly = true)
@@ -107,5 +159,12 @@ public class InternalIntegrationService {
         company.setAllowExternalShipmentCreation(enabled);
         companyRepository.save(company);
         return new ExternalShipmentCreationSettingsDto(enabled);
+    }
+
+    private static IntegrationConsumer parseConsumer(String name) {
+        return Arrays.stream(IntegrationConsumer.values())
+                .filter(c -> c.name().equalsIgnoreCase(name))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Hub consommateur inconnu : " + name));
     }
 }

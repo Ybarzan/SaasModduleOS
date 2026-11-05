@@ -16,5 +16,13 @@ public record FleetHubShipmentEventRequest(
         @NotBlank String orderNumber,
         String oldStatus,
         String newStatus,
-        String dataSource
-) {}
+        String dataSource,
+        /** Identifiant unique de l'événement côté fleet-hub (absent des anciennes versions) :
+         *  un renvoi du même événement est ignoré, voir FleetHubWebhookService.recordEvent. */
+        UUID eventId
+) {
+    public FleetHubShipmentEventRequest withEventId(UUID id) {
+        return new FleetHubShipmentEventRequest(eventType, shipmentId, orderNumber, oldStatus, newStatus,
+                dataSource, id);
+    }
+}

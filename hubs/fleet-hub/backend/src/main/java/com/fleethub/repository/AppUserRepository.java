@@ -21,6 +21,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 
     Optional<AppUser> findByDriverId(Long driverId);
 
+    List<AppUser> findByCompanyIdAndRole(Long companyId, String role);
+
     long countByCompanyId(Long companyId);
 
     long countByCompanyIdAndRoleAndEnabled(Long companyId, String role, boolean enabled);

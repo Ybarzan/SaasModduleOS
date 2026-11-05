@@ -14,6 +14,7 @@ import {
   CartesianGrid
 } from 'recharts'
 import api from '../services/api'
+import { fuelLabel, vehicleTypeLabel } from '../fleet'
 import PeriodSelector from '../components/PeriodSelector'
 import StatCard from '../components/StatCard'
 import StatusBadge from '../components/StatusBadge'
@@ -106,8 +107,7 @@ export default function TruckDetail() {
             🚛 {k.brand} {k.model}
           </h2>
           <p className="muted">
-            {k.registration} · {k.truckType.toLowerCase()} ·{' '}
-            {k.fuelType === 'DIESEL' ? 'Diesel' : 'Électrique'}
+            {k.registration} · {vehicleTypeLabel(k.truckType)} · {fuelLabel(k.fuelType)}
             {k.modelYear ? ` · ${k.modelYear}` : ''}
           </p>
         </div>

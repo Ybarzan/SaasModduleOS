@@ -2,10 +2,12 @@ package com.fleethub.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -31,6 +33,25 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleDisabled(DisabledException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("message", "Ce compte a été désactivé. Contactez l'administrateur de votre société."));
+    }
+
+    /** Compte verrouillé après trop d'échecs (voir LoginAttemptService) : 429, comme la limite par IP. */
+    @ExceptionHandler(LockedException.class)
+    public ResponseEntity<Map<String, String>> handleLocked(LockedException e) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Map.of("message", "Trop de tentatives de connexion : compte temporairement verrouillé. "
+                        + "Réessayez dans quelques minutes."));
+    }
+
+    /**
+     * Contrainte de base violée (ex. immatriculation ou permis déjà utilisé, créé en
+     * parallèle d'une autre requête qui a passé la vérification applicative) : 409.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleIntegrity(DataIntegrityViolationException e) {
+        log.warn("Contrainte d'intégrité violée : {}", e.getMostSpecificCause().getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", "Cette donnée existe déjà ou est encore utilisée ailleurs."));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

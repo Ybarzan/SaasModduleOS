@@ -102,7 +102,8 @@ class MarketplaceVehiclePositionTest {
 
     @Test
     void truckWithAKnownPosition_returnsItsRealCoordinates() throws Exception {
-        Truck truck = truckRepository.findByRegistration(registration).orElseThrow();
+        Truck truck = truckRepository.findAll().stream()
+                .filter(t -> registration.equals(t.getRegistration())).findFirst().orElseThrow();
         truck.setCurrentLatitude(45.75);
         truck.setCurrentLongitude(4.85);
         truck.setCurrentSpeedKph(87.0);

@@ -54,52 +54,64 @@ class InternalIntegrationControllerTest {
     }
 
     @Test
-    void settings_defaultsToDisabled() throws Exception {
+    void settings_defaultsToDisabled_withOneUnconfiguredLinePerHub() throws Exception {
         mvc.perform(get("/api/internal-integrations/settings").header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.internalIntegrationEnabled").value(false))
-                .andExpect(jsonPath("$.internalIntegrationApiKey").doesNotExist());
+                .andExpect(jsonPath("$.keys.length()").value(4))
+                .andExpect(jsonPath("$.keys[?(@.consumer == 'LEGACY')]").isEmpty())
+                .andExpect(jsonPath("$.keys[?(@.configured == true)]").isEmpty());
+    }
+
+    private String generateKey(String consumer) throws Exception {
+        MvcResult res = mvc.perform(post("/api/internal-integrations/keys/" + consumer)
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andReturn();
+        return objectMapper.readTree(res.getResponse().getContentAsString()).get("apiKey").asText();
     }
 
     @Test
-    void enable_generatesKey_settingsNeverExposesItAfterward() throws Exception {
-        MvcResult enableRes = mvc.perform(post("/api/internal-integrations/enable").header("Authorization", "Bearer " + adminToken))
+    void generateKey_isShownOnce_andOnlyItsHashIsStored() throws Exception {
+        mvc.perform(post("/api/internal-integrations/enable").header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.internalIntegrationEnabled").value(true))
-                .andReturn();
-        JsonNode body = objectMapper.readTree(enableRes.getResponse().getContentAsString());
-        String key = body.get("internalIntegrationApiKey").asText();
+                .andExpect(jsonPath("$.internalIntegrationEnabled").value(true));
+        String key = generateKey("LOGISTIX");
         assertNotNull(key);
         assertTrue(key.length() >= 32, "La clé doit être suffisamment longue pour ne pas être devinable");
 
         // En base, seul le hash de la clé est stocké (voir ApiKeyHasher), jamais la clé en clair.
         Integer hashedCount = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM company WHERE internal_integration_api_key = ?", Integer.class, ApiKeyHasher.hash(key));
+                "SELECT COUNT(*) FROM integration_api_key WHERE key_hash = ?", Integer.class, ApiKeyHasher.hash(key));
         assertThat(hashedCount).isEqualTo(1);
         Integer plaintextCount = jdbcTemplate.queryForObject(
-                "SELECT COUNT(*) FROM company WHERE internal_integration_api_key = ?", Integer.class, key);
+                "SELECT COUNT(*) FROM integration_api_key WHERE key_hash = ?", Integer.class, key);
         assertThat(plaintextCount).isEqualTo(0);
 
-        mvc.perform(get("/api/internal-integrations/settings").header("Authorization", "Bearer " + adminToken))
+        MvcResult settings = mvc.perform(get("/api/internal-integrations/settings").header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.internalIntegrationEnabled").value(true))
-                .andExpect(jsonPath("$.internalIntegrationApiKey").doesNotExist());
+                .andExpect(jsonPath("$.keys[?(@.consumer == 'LOGISTIX')].configured").value(true))
+                .andExpect(jsonPath("$.keys[?(@.consumer == 'LOGISTIX')].keyHint").value(key.substring(key.length() - 4)))
+                .andReturn();
+        assertTrue(!settings.getResponse().getContentAsString().contains(key), "les réglages ne renvoient jamais la clé");
     }
 
     @Test
-    void disable_thenKeyIsRejected() throws Exception {
-        MvcResult enableRes = mvc.perform(post("/api/internal-integrations/enable").header("Authorization", "Bearer " + adminToken))
-                .andExpect(status().isOk())
-                .andReturn();
-        String key = objectMapper.readTree(enableRes.getResponse().getContentAsString()).get("internalIntegrationApiKey").asText();
+    void disable_thenKeyIsRejected_enable_thenAcceptedAgain() throws Exception {
+        mvc.perform(post("/api/internal-integrations/enable").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+        String key = generateKey("COMPLIANCE_ENGINE");
 
         mvc.perform(post("/api/internal-integrations/disable").header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.internalIntegrationEnabled").value(false));
-
-        mvc.perform(get("/api/internal/shipments/" + java.util.UUID.randomUUID())
-                        .header("X-Internal-Integration-Key", key))
+        mvc.perform(get("/api/internal/shipments").header("X-Internal-Integration-Key", key))
                 .andExpect(status().isUnauthorized());
+
+        mvc.perform(post("/api/internal-integrations/enable").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/internal/shipments").header("X-Internal-Integration-Key", key))
+                .andExpect(status().isOk());
     }
 
     @Test

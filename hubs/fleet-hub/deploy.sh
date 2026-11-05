@@ -77,7 +77,7 @@ if [ ! -f "$ENV_FILE" ]; then
   DB_PASSWORD="$(openssl rand -base64 24 | tr -d '/+=')"
   JWT_SECRET="$(openssl rand -hex 64)"
   INTEGRATION_SECRET_KEY="$(openssl rand -base64 32 | tr -d '/+=')"
-  INTEGRATION_WEBHOOK_API_KEY="$(openssl rand -hex 24)"
+  GRAFANA_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=')"
   # Démo activée seulement pour un déploiement local sans domaine public : un
   # vrai domaine client ne doit jamais recevoir de données de démo par défaut.
   if [ "$DOMAIN" = "localhost" ]; then
@@ -101,7 +101,10 @@ APP_LOGIN_RATE_LIMIT=10
 # public réel — éditer manuellement si un vrai déploiement a besoin de données de démo.
 APP_SEED_ENABLED=$APP_SEED_ENABLED
 INTEGRATION_SECRET_KEY=$INTEGRATION_SECRET_KEY
-INTEGRATION_WEBHOOK_API_KEY=$INTEGRATION_WEBHOOK_API_KEY
+# Grafana (supervision) publié sur https://$DOMAIN/grafana, utilisateur admin.
+GRAFANA_PASSWORD=$GRAFANA_PASSWORD
+# Fuseau des dates métier (KPI du jour, tachygraphe, tournées).
+APP_TIMEZONE=Europe/Paris
 # --- À compléter vous-même selon vos besoins (voir .env.example) ---
 #SENTRY_DSN=https://xxxxxxx@o000000.ingest.sentry.io/0000000
 #MAIL_ENABLED=true
@@ -122,12 +125,28 @@ INTEGRATION_WEBHOOK_API_KEY=$INTEGRATION_WEBHOOK_API_KEY
 #PING_URL=https://hc-ping.com/votre-uuid-heroku
 EOF
   chmod 600 "$ENV_FILE"
-  log "Identifiants de démo générés :"
-  log "   saasadmin / $ADMIN_PASSWORD  (opérateur plateforme)"
-  log "   admin     / $ADMIN_PASSWORD  (société démo)"
-  log "   gestionnaire / $GESTIONNAIRE_PASSWORD"
+  log "Identifiants générés (aussi dans $ENV_FILE) :"
+  log "   saasadmin / $ADMIN_PASSWORD  (opérateur plateforme, back-office /admin)"
+  if [ "$APP_SEED_ENABLED" = "true" ]; then
+    log "   admin     / $ADMIN_PASSWORD  (société démo)"
+    log "   gestionnaire / $GESTIONNAIRE_PASSWORD  (société démo)"
+  else
+    log "   Pas de données de démo : les sociétés clientes s'inscrivent sur https://$DOMAIN/register"
+  fi
+  log "   Grafana (https://$DOMAIN/grafana) : admin / $GRAFANA_PASSWORD"
 else
-  warn ".env existant conservé (pas de modification)."
+  warn ".env existant conservé."
+  # Variables devenues obligatoires depuis la création de ce .env : ajoutées sans
+  # toucher au reste du fichier.
+  if ! grep -q '^GRAFANA_PASSWORD=' "$ENV_FILE"; then
+    GRAFANA_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=')"
+    printf '\n# Grafana (supervision) publié sur /grafana, utilisateur admin.\nGRAFANA_PASSWORD=%s\n' "$GRAFANA_PASSWORD" >> "$ENV_FILE"
+    warn "GRAFANA_PASSWORD ajouté à .env (Grafana n'a plus de mot de passe par défaut) : admin / $GRAFANA_PASSWORD"
+  fi
+  if grep -q '^INTEGRATION_WEBHOOK_API_KEY=' "$ENV_FILE"; then
+    warn "INTEGRATION_WEBHOOK_API_KEY n'est plus utilisée : le push d'intégration passe par la clé"
+    warn "   de webhook de chaque société (page Intégrations). Vous pouvez retirer la ligne de .env."
+  fi
 fi
 
 # --- 4. Build + démarrage --------------------------------------------------
@@ -153,11 +172,12 @@ else
   warn "   docker exec fleethub-db psql -U fleethub -d fleethub -c 'select * from flyway_schema_history'"
 fi
 
-HEALTH="$(curl -fsS -m 10 http://localhost:8090/actuator/health 2>/dev/null || true)"
+# Le port 8090 n'est pas publié sur l'hôte : on interroge le backend depuis son conteneur.
+HEALTH="$(docker exec fleethub-backend curl -fsS -m 10 http://localhost:8090/actuator/health 2>/dev/null || true)"
 if [ -n "$HEALTH" ]; then
   log "Santé backend : $HEALTH"
 else
-  warn "L'endpoint /actuator/health ne répond pas encore localement (attendre quelques secondes puis : curl localhost:8090/actuator/health)."
+  warn "Le backend ne répond pas encore (attendre quelques secondes puis : docker exec fleethub-backend curl -fsS localhost:8090/actuator/health, ou docker compose logs backend)."
 fi
 
 # Ping de supervision (uptime) si PING_URL est présent dans .env
@@ -168,9 +188,14 @@ if [ -n "$PING_URL" ]; then
     warn "Ping de supervision échoué : $PING_URL"
 fi
 
+# Contrôle de bout en bout, comme un visiteur (santé à travers les proxys, en-têtes de
+# sécurité, rien d'interne exposé) — voir scripts/smoke.sh.
+log "Contrôle du site public..."
 if [ "$DOMAIN" = "localhost" ]; then
-  warn "Démo locale (pas de certificat public) : http://localhost"
+  INSECURE=1 ./scripts/smoke.sh "https://localhost" || warn "Contrôle du site en échec (voir ci-dessus)."
+  warn "Démo locale (certificat interne, non reconnu par les navigateurs) : https://localhost"
 else
+  ./scripts/smoke.sh "https://$DOMAIN" || warn "Contrôle du site en échec (voir ci-dessus) : DNS, certificat ou backend."
   log "Démo en ligne : https://$DOMAIN"
 fi
 log "Terminé. Voir DEPLOY.md pour la suite (vérifs, sauvegardes, mise à jour)."

@@ -4,6 +4,7 @@ import com.fleethub.config.ApiKeyCrypto;
 import com.fleethub.dto.ComplianceEngineWebhookSettingsDto;
 import com.fleethub.model.Company;
 import com.fleethub.repository.CompanyRepository;
+import com.fleethub.repository.OutboundEventRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,8 @@ class ComplianceEngineWebhookServiceTest {
         // utilisant une dérivation AES-GCM (ex. CredentialEncryptionServiceTest
         // côté compliance-engine).
         apiKeyCrypto = new ApiKeyCrypto("test-secret-not-for-production-use");
-        service = new ComplianceEngineWebhookService(companyRepository, apiKeyCrypto);
+        service = new ComplianceEngineWebhookService(companyRepository, apiKeyCrypto,
+                mock(OutboundEventRepository.class));
     }
 
     private Company company() {

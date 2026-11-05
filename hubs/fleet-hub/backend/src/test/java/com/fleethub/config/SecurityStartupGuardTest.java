@@ -51,6 +51,13 @@ class SecurityStartupGuardTest {
     }
 
     @Test
+    void prodProfile_defaultGestionnairePassword_throws() {
+        when(environment.acceptsProfiles("prod")).thenReturn(true);
+        ReflectionTestUtils.setField(guard, "gestPassword", "gestion");
+        assertThrows(IllegalStateException.class, () -> guard.verify());
+    }
+
+    @Test
     void prodProfile_wildcardCors_throwsInsteadOfWarning() {
         when(environment.acceptsProfiles("prod")).thenReturn(true);
         ReflectionTestUtils.setField(guard, "corsOrigins", "*");

@@ -1,5 +1,6 @@
 package com.fleethub.model;
 
+import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -61,20 +62,20 @@ public class ShippingRate {
     @Column(name = "max_weight_kg")
     private Double maxWeightKg;
 
-    @Column(name = "base_rate", nullable = false)
-    private double baseRate;
+    @Column(name = "base_rate", nullable = false, precision = 15, scale = 4)
+    private BigDecimal baseRate;
 
     @Column(length = 3)
     @Builder.Default
     private String currency = "EUR";
 
-    @Column(name = "rate_per_kg")
+    @Column(name = "rate_per_kg", precision = 15, scale = 4)
     @Builder.Default
-    private double ratePerKg = 0;
+    private BigDecimal ratePerKg = BigDecimal.ZERO;
 
-    @Column(name = "rate_per_cbm")
+    @Column(name = "rate_per_cbm", precision = 15, scale = 4)
     @Builder.Default
-    private double ratePerCbm = 0;
+    private BigDecimal ratePerCbm = BigDecimal.ZERO;
 
     @Column(name = "transit_days_min")
     private Integer transitDaysMin;

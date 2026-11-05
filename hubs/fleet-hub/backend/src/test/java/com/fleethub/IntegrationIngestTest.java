@@ -15,7 +15,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -36,7 +35,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-@TestPropertySource(properties = "integration.webhook-api-key=test-secret")
 class IntegrationIngestTest {
 
     @Autowired
@@ -90,6 +88,18 @@ class IntegrationIngestTest {
                 .andExpect(status().isOk());
     }
 
+    /** Clé de webhook d'une société : créée avec sa configuration d'intégration (page « Intégrations »). */
+    private String webhookKey(String token) throws Exception {
+        MvcResult res = mvc.perform(post("/api/integrations")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"provider\":\"GPS_WEBFLEET\",\"baseUrl\":\"http://127.0.0.1:1\","
+                                + "\"apiKey\":\"cle-fournisseur\",\"enabled\":true}"))
+                .andExpect(status().isCreated())
+                .andReturn();
+        return objectMapper.readTree(res.getResponse().getContentAsString()).get("webhookKey").asText();
+    }
+
     private String payload(String registration, String license, String date) {
         return "{\"positions\":[{\"registration\":\"" + registration
                 + "\",\"latitude\":48.8566,\"longitude\":2.3522,\"speedKph\":72.5,"
@@ -109,6 +119,7 @@ class IntegrationIngestTest {
         long companyId = companyId(registration);
         createTruck(token, "AA-999-ZZ");
         createDriver(token, "L-INGEST-1");
+        String key = webhookKey(token);
         String date = LocalDate.now().toString();
 
         // Clé API invalide → 401.
@@ -120,7 +131,7 @@ class IntegrationIngestTest {
 
         // Push valide → tout est persisté.
         mvc.perform(post("/api/webhooks/ingest")
-                        .header("X-API-Key", "test-secret")
+                        .header("X-API-Key", key)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload("AA-999-ZZ", "L-INGEST-1", date)))
                 .andExpect(status().isOk())
@@ -128,11 +139,11 @@ class IntegrationIngestTest {
                 .andExpect(jsonPath("$.tachographDaysSaved").value(1))
                 .andExpect(jsonPath("$.fuelTransactionsSaved").value(1));
 
-        Truck truck = truckRepository.findByRegistration("AA-999-ZZ").orElseThrow();
+        Truck truck = truckRepository.findByRegistrationAndCompanyId("AA-999-ZZ", companyId).orElseThrow();
         assertEquals(48.8566, truck.getCurrentLatitude(), 0.0001);
         assertEquals(Truck.VehicleStatus.ROULAGE, truck.getCurrentStatus());
 
-        Driver driver = driverRepository.findByLicenseNumber("L-INGEST-1").orElseThrow();
+        Driver driver = driverRepository.findByLicenseNumberAndCompanyId("L-INGEST-1", companyId).orElseThrow();
         TachographDay day = tachographDayRepository.findByDriverIdAndDate(driver.getId(), LocalDate.now()).orElseThrow();
         assertEquals(companyId, day.getCompany().getId(),
                 "Le jour tachygraphe doit être rattaché à la société de la clé métier");
@@ -145,7 +156,7 @@ class IntegrationIngestTest {
         // Idempotence : rejouer le push ne duplique pas (upsert tachygraphe,
         // anti-doublon carburant, mise à jour en place GPS).
         mvc.perform(post("/api/webhooks/ingest")
-                        .header("X-API-Key", "test-secret")
+                        .header("X-API-Key", key)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload("AA-999-ZZ", "L-INGEST-1", date)))
                 .andExpect(status().isOk())
@@ -159,15 +170,44 @@ class IntegrationIngestTest {
     }
 
     @Test
-    void unknownKeysAreIgnored() throws Exception {
-        register("admin2@ingest.fr");
+    void unknownBusinessKeysAreIgnored() throws Exception {
+        Map<String, Object> registration = register("admin2@ingest.fr");
+        String key = webhookKey(token(registration));
         mvc.perform(post("/api/webhooks/ingest")
-                        .header("X-API-Key", "test-secret")
+                        .header("X-API-Key", key)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(payload("ZZ-000-XX", "NO-SUCH-LICENSE", LocalDate.now().toString())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.positionsUpdated").value(0))
                 .andExpect(jsonPath("$.tachographDaysSaved").value(0))
                 .andExpect(jsonPath("$.fuelTransactionsSaved").value(0));
+    }
+
+    @Test
+    void missingKey_isRejected() throws Exception {
+        mvc.perform(post("/api/webhooks/ingest")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload("AA-000-AA", "L-0", LocalDate.now().toString())))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void sameRegistrationInTwoCompanies_onlyTheKeysCompanyIsUpdated() throws Exception {
+        Map<String, Object> a = register("a@ingest.fr");
+        Map<String, Object> b = register("b@ingest.fr");
+        createTruck(token(a), "SH-123-ED");
+        createTruck(token(b), "SH-123-ED");
+
+        mvc.perform(post("/api/webhooks/ingest")
+                        .header("X-API-Key", webhookKey(token(b)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(payload("SH-123-ED", "L-NONE", LocalDate.now().toString())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.positionsUpdated").value(1));
+
+        Truck truckA = truckRepository.findByRegistrationAndCompanyId("SH-123-ED", companyId(a)).orElseThrow();
+        Truck truckB = truckRepository.findByRegistrationAndCompanyId("SH-123-ED", companyId(b)).orElseThrow();
+        assertEquals(null, truckA.getCurrentLatitude(), "le camion homonyme de l'autre société ne doit pas bouger");
+        assertEquals(48.8566, truckB.getCurrentLatitude(), 0.0001);
     }
 }

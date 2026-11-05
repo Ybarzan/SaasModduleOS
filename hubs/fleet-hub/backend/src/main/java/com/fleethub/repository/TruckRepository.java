@@ -18,8 +18,6 @@ public interface TruckRepository extends JpaRepository<Truck, Long> {
 
     long countByCompanyIdAndActiveTrue(Long companyId);
 
-    /** Non scopé — réservé à la couche d'intégration externe (voir INTEGRATION.md). */
-    Optional<Truck> findByRegistration(String registration);
 
     void deleteByCompany_Id(Long companyId);
 }

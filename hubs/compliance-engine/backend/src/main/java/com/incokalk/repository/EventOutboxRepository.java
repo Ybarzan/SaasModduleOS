@@ -11,4 +11,6 @@ import java.util.List;
 public interface EventOutboxRepository extends JpaRepository<EventOutbox, java.util.UUID> {
 
     List<EventOutbox> findByStatusOrderByCreatedAtAsc(EventOutbox.Status status, Pageable pageable);
+
+    boolean existsByCompanyIdAndSourceEventId(java.util.UUID companyId, java.util.UUID sourceEventId);
 }

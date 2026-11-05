@@ -1,5 +1,6 @@
 package com.fleethub.model;
 
+import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
@@ -70,6 +71,7 @@ public class ShipmentOrder {
      * vivent dans la même application (voir LiveTrackingService). */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "truck_id")
+    @JsonIgnore // exposé via truckId / truckRegistration ; l'objet complet embarquait l'entité Company
     private Truck truck;
 
     @com.fasterxml.jackson.annotation.JsonProperty("carrierId")
@@ -138,8 +140,8 @@ public class ShipmentOrder {
     @Column(name = "goods_description", columnDefinition = "TEXT")
     private String goodsDescription;
 
-    @Column(name = "goods_value")
-    private Double goodsValue;
+    @Column(name = "goods_value", precision = 15, scale = 2)
+    private BigDecimal goodsValue;
 
     @Column(length = 3)
     @Builder.Default
@@ -214,21 +216,21 @@ public class ShipmentOrder {
     @Builder.Default
     private String customsStatus = "NONE";
 
-    @Column(name = "duty_amount")
-    private Double dutyAmount;
+    @Column(name = "duty_amount", precision = 15, scale = 2)
+    private BigDecimal dutyAmount;
 
-    @Column(name = "vat_amount")
-    private Double vatAmount;
+    @Column(name = "vat_amount", precision = 15, scale = 2)
+    private BigDecimal vatAmount;
 
-    @Column(name = "landed_cost")
-    private Double landedCost;
+    @Column(name = "landed_cost", precision = 15, scale = 2)
+    private BigDecimal landedCost;
 
     // Cost
-    @Column(name = "quoted_cost")
-    private Double quotedCost;
+    @Column(name = "quoted_cost", precision = 15, scale = 2)
+    private BigDecimal quotedCost;
 
-    @Column(name = "final_cost")
-    private Double finalCost;
+    @Column(name = "final_cost", precision = 15, scale = 2)
+    private BigDecimal finalCost;
 
     @Column(name = "cost_currency", length = 3)
     @Builder.Default

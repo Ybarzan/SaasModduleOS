@@ -12,6 +12,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -31,6 +32,10 @@ public class KpiService {
     private final FuelRecordRepository fuelRepository;
     private final CostRecordRepository costRepository;
     private final TruckRepository truckRepository;
+
+    /** Somme exacte des montants (centimes), convertie en double seulement pour l'affichage des KPI. */
+    private static final java.util.stream.Collector<CostRecord, ?, BigDecimal> SUM_AMOUNTS =
+            Collectors.reducing(BigDecimal.ZERO, CostRecord::getAmount, BigDecimal::add);
 
     public static final String PERIOD_DAY = "DAY";
     public static final String PERIOD_WEEK = "WEEK";
@@ -105,7 +110,7 @@ public class KpiService {
                 .toList();
 
         double drivingHours = trips.stream().mapToDouble(Trip::durationHours).sum();
-        double totalCost = costs.stream().mapToDouble(CostRecord::getAmount).sum();
+        double totalCost = costs.stream().map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue();
         double costPerKm = km > 0 ? round(totalCost / km) : 0;
 
         double availableHours = range.days() * 14.0;
@@ -128,7 +133,7 @@ public class KpiService {
         double truckUptimeRate = round(Math.max(0, 100 - unplannedDowntimeRate));
 
         double consumptionPer100 = computeConsumption(t, km, fuels);
-        double expected = t.getExpectedConsumptionL100Km() != null ? t.getExpectedConsumptionL100Km() : 32;
+        double expected = t.referenceConsumption();
         double consumptionDeltaPct = consumptionPer100 > 0 ? round((consumptionPer100 - expected) / expected * 100) : 0;
 
         double loadedKm = trips.stream().filter(Trip::isLoaded).mapToDouble(Trip::getDistanceKm).sum();
@@ -180,7 +185,7 @@ public class KpiService {
                     .mapToDouble(FuelRecord::getLiters).sum();
             double cost = costs.stream().filter(c -> c.getBillingMonth().atDay(1).getMonth() == cur.getMonth()
                             && c.getBillingMonth().atDay(1).getYear() == cur.getYear())
-                    .mapToDouble(CostRecord::getAmount).sum() / Math.max(1, (double) cur.lengthOfMonth());
+                    .map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue() / Math.max(1, (double) cur.lengthOfMonth());
             result.add(new TruckDetailDto.DailyPointDto(cur.toString(), round(km), round(liters), round(cost)));
             day = day.plusDays(1);
         }
@@ -188,12 +193,11 @@ public class KpiService {
     }
 
     private List<CoupleDetailDto.CostBreakdownDto> costBreakdownForTruck(Truck t, PeriodRange range) {
-        Map<String, Double> byCategory = costRepository.findByTruck(t).stream()
+        Map<String, BigDecimal> byCategory = costRepository.findByTruck(t).stream()
                 .filter(c -> !c.getBillingMonth().atDay(1).isBefore(range.fromDate().withDayOfMonth(1)))
-                .collect(Collectors.groupingBy(
-                        c -> c.getCategory().name(), Collectors.summingDouble(CostRecord::getAmount)));
+                .collect(Collectors.groupingBy(c -> c.getCategory().name(), SUM_AMOUNTS));
         return byCategory.entrySet().stream()
-                .map(e -> new CoupleDetailDto.CostBreakdownDto(e.getKey(), round(e.getValue())))
+                .map(e -> new CoupleDetailDto.CostBreakdownDto(e.getKey(), round(e.getValue().doubleValue())))
                 .sorted(Comparator.comparingDouble(CoupleDetailDto.CostBreakdownDto::amount).reversed())
                 .toList();
     }
@@ -244,9 +248,8 @@ public class KpiService {
 
         List<List<Double>> series = new ArrayList<>();
         for (int k = 0; k < 4; k++) series.add(new ArrayList<>());
-        LocalDate today = LocalDate.now();
-        for (int i = 13; i >= 0; i--) {
-            double[] vals = dailyNorthStars(couples, today.minusDays(i));
+        double[][] daily = dailyNorthStars(couples, LocalDate.now(), SPARK_DAYS);
+        for (double[] vals : daily) {
             for (int k = 0; k < 4; k++) series.get(k).add(vals[k]);
         }
 
@@ -271,37 +274,67 @@ public class KpiService {
         return new double[]{cost / n, util / n, maint / n, down / n};
     }
 
-    private double[] dailyNorthStars(List<DriverTruckAssignment> couples, LocalDate day) {
-        LocalDateTime from = day.atStartOfDay();
-        LocalDateTime to = day.plusDays(1).atStartOfDay().minusSeconds(1);
-        double cost = 0, util = 0, maint = 0, down = 0;
+    /** Profondeur des mini-courbes des indicateurs North Star (jours, aujourd'hui inclus). */
+    private static final int SPARK_DAYS = 14;
+
+    /**
+     * Valeurs quotidiennes des 4 indicateurs North Star (moyenne sur les couples) pour les
+     * {@code days} derniers jours, du plus ancien au plus récent. Les données de toute la
+     * fenêtre sont lues une fois par couple puis réparties par jour : l'ancienne version
+     * relançait ces requêtes pour chaque jour et chaque couple (~1 400 requêtes SQL pour
+     * 6 couples sur la démo).
+     */
+    private double[][] dailyNorthStars(List<DriverTruckAssignment> couples, LocalDate today, int days) {
+        LocalDate first = today.minusDays(days - 1L);
+        LocalDateTime from = first.atStartOfDay();
+        LocalDateTime to = today.plusDays(1).atStartOfDay();
+        double[][] sums = new double[days][4];
         for (DriverTruckAssignment a : couples) {
             Driver d = a.getDriver();
             Truck t = a.getTruck();
-            double km = Math.max(
-                    tripRepository.sumDistanceByDriverBetween(d, from, to),
-                    tripRepository.sumDistanceByTruckBetween(t, from, to));
-            double dayCost = costRepository.findByTruckAndDriver(t, d).stream()
-                    .filter(c -> c.getBillingMonth().atDay(1).getYear() == day.getYear()
-                            && c.getBillingMonth().atDay(1).getMonth() == day.getMonth())
-                    .mapToDouble(CostRecord::getAmount).sum() / Math.max(1, (double) day.lengthOfMonth());
-            cost += km > 0 ? dayCost / km : 0;
+            Map<LocalDate, List<Trip>> driverTrips = byDay(tripRepository.findByDriverAndStartTimeBetween(d, from, to));
+            Map<LocalDate, List<Trip>> truckTrips = byDay(tripRepository.findByTruckAndStartTimeBetween(t, from, to));
+            List<CostRecord> costs = costRepository.findByTruckAndDriver(t, d);
+            List<MaintenanceRecord> maintenance = maintenanceRepository.findByTruckAndScheduledDateBetween(t, first, today);
+            double maintenanceCompliance = fallbackMaintenanceCompliance(t);
 
-            double drivingHours = tripRepository.findByDriverAndStartTimeBetween(d, from, to)
-                    .stream().mapToDouble(Trip::durationHours).sum();
-            util += Math.min(100, drivingHours / 14.0 * 100);
+            for (int i = 0; i < days; i++) {
+                LocalDate day = first.plusDays(i);
+                List<Trip> dTrips = driverTrips.getOrDefault(day, List.of());
+                double km = Math.max(distance(dTrips), distance(truckTrips.getOrDefault(day, List.of())));
+                double dayCost = costs.stream()
+                        .filter(c -> c.getBillingMonth().getYear() == day.getYear()
+                                && c.getBillingMonth().getMonth() == day.getMonth())
+                        .map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue()
+                        / Math.max(1, (double) day.lengthOfMonth());
+                sums[i][0] += km > 0 ? dayCost / km : 0;
 
-            maint += fallbackMaintenanceCompliance(t);
+                double drivingHours = dTrips.stream().mapToDouble(Trip::durationHours).sum();
+                sums[i][1] += Math.min(100, drivingHours / 14.0 * 100);
 
-            double downHours = maintenanceRepository.findByTruckAndScheduledDateBetween(t, day, day).stream()
-                    .filter(m -> !m.isPlanned() && m.getDoneDate() != null)
-                    .mapToDouble(m -> Math.max(1, ChronoUnit.HOURS.between(
-                            m.getScheduledDate().atStartOfDay(), m.getDoneDate().atStartOfDay())))
-                    .sum();
-            down += Math.min(100, downHours / 24.0 * 100);
+                sums[i][2] += maintenanceCompliance;
+
+                double downHours = maintenance.stream()
+                        .filter(m -> day.equals(m.getScheduledDate()) && !m.isPlanned() && m.getDoneDate() != null)
+                        .mapToDouble(m -> Math.max(1, ChronoUnit.HOURS.between(
+                                m.getScheduledDate().atStartOfDay(), m.getDoneDate().atStartOfDay())))
+                        .sum();
+                sums[i][3] += Math.min(100, downHours / 24.0 * 100);
+            }
         }
         int n = couples.size();
-        return new double[]{cost / n, util / n, maint / n, down / n};
+        for (double[] row : sums) {
+            for (int k = 0; k < 4; k++) row[k] /= n;
+        }
+        return sums;
+    }
+
+    private static Map<LocalDate, List<Trip>> byDay(List<Trip> trips) {
+        return trips.stream().collect(Collectors.groupingBy(tr -> tr.getStartTime().toLocalDate()));
+    }
+
+    private static double distance(List<Trip> trips) {
+        return trips.stream().mapToDouble(tr -> tr.getDistanceKm() != null ? tr.getDistanceKm() : 0).sum();
     }
 
     private double sparkDelta(List<Double> series) {
@@ -324,7 +357,11 @@ public class KpiService {
         List<DrivingEvent> events = eventRepository.findByDriverAndTimestampBetween(d, range.from(), range.to());
         List<DrivingEvent> riskEvents = events.stream()
                 .filter(e -> e.getType() != DrivingEvent.EventType.RALENTI).toList();
-        List<TachographDay> tachoDays = tachoRepository.findByDriverAndDateBetween(d, range.fromDate(), range.toDate());
+        // Le 561/2006 ne s'applique qu'aux véhicules équipés d'un tachygraphe (PL, VUL international)
+        boolean tachographApplicable = t.requiresTachograph();
+        List<TachographDay> tachoDays = tachographApplicable
+                ? tachoRepository.findByDriverAndDateBetween(d, range.fromDate(), range.toDate())
+                : List.of();
         List<MaintenanceRecord> maintenance = maintenanceRepository.findByTruckAndScheduledDateBetween(t, range.fromDate(), range.toDate());
         List<FuelRecord> fuels = fuelRepository.findByTruckAndDateBetween(t, range.fromDate(), range.toDate());
         List<CostRecord> costs = costRepository.findByTruckAndDriver(t, d).stream()
@@ -334,7 +371,7 @@ public class KpiService {
         double drivingHours = trips.stream().mapToDouble(Trip::durationHours).sum();
 
         // ---- North Star ----
-        double totalCost = costs.stream().mapToDouble(CostRecord::getAmount).sum();
+        double totalCost = costs.stream().map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue();
         double costPerKm = kmMax > 0 ? round(totalCost / kmMax) : 0;
 
         double availableHours = range.days() * 14.0;
@@ -374,7 +411,7 @@ public class KpiService {
 
         // ---- Camion ----
         double consumptionPer100 = computeConsumption(t, kmTruck, fuels);
-        double expected = t.getExpectedConsumptionL100Km() != null ? t.getExpectedConsumptionL100Km() : 32;
+        double expected = t.referenceConsumption();
         double consumptionDeltaPct = consumptionPer100 > 0
                 ? round((consumptionPer100 - expected) / expected * 100)
                 : 0;
@@ -385,12 +422,13 @@ public class KpiService {
         double loadedKm = trips.stream().filter(Trip::isLoaded).mapToDouble(Trip::getDistanceKm).sum();
         double loadedRunRate = kmMax > 0 ? round(loadedKm / kmMax * 100) : 0;
 
-        double performanceScore = round(Math.max(0, Math.min(100,
-                ecoScore * 0.30 +
-                drivingCompliance * 0.25 +
-                onTimeRate * 0.15 +
-                maintenanceCompliance * 0.20 +
-                loadedRunRate * 0.10)));
+        // Sans tachygraphe, le poids de la conformité 561/2006 est redistribué
+        // sur l'éco-conduite et la ponctualité (critère clé des tournées).
+        double performanceScore = round(Math.max(0, Math.min(100, tachographApplicable
+                ? ecoScore * 0.30 + drivingCompliance * 0.25 + onTimeRate * 0.15
+                        + maintenanceCompliance * 0.20 + loadedRunRate * 0.10
+                : ecoScore * 0.35 + onTimeRate * 0.35
+                        + maintenanceCompliance * 0.20 + loadedRunRate * 0.10)));
 
         List<String> alerts = buildAlerts(d, t, drivingCompliance, unplannedDowntimeRate, maintenanceCompliance, tachoDays);
 
@@ -404,12 +442,12 @@ public class KpiService {
                 onTimeRate, drivingCompliance,
                 consumptionPer100, consumptionDeltaPct, truckUptimeRate, round(unplannedDowntimeHours),
                 round(kmMax), round(drivingHours), round(totalCost), loadedRunRate,
-                performanceScore, alerts);
+                performanceScore, alerts, tachographApplicable);
     }
 
     private double computeEcoScore(Truck t, double km, List<FuelRecord> fuels, int riskCount) {
         double consumption = computeConsumption(t, km, fuels);
-        double expected = t.getExpectedConsumptionL100Km() != null ? t.getExpectedConsumptionL100Km() : 32;
+        double expected = t.referenceConsumption();
         double score = 100.0;
         if (expected > 0) {
             score -= Math.max(0, (consumption - expected) / expected) * 100.0;
@@ -420,7 +458,7 @@ public class KpiService {
 
     private double computeConsumption(Truck t, double km, List<FuelRecord> fuels) {
         double liters = fuels.stream().mapToDouble(FuelRecord::getLiters).sum();
-        double expected = t.getExpectedConsumptionL100Km() != null ? t.getExpectedConsumptionL100Km() : 32;
+        double expected = t.referenceConsumption();
         if (km > 0) {
             return round(liters / km * 100);
         }
@@ -473,7 +511,7 @@ public class KpiService {
                     .filter(e -> e.getType() != DrivingEvent.EventType.RALENTI).count();
             double cost = costs.stream().filter(c -> c.getBillingMonth().atDay(1).getMonth() == d.getMonth()
                             && c.getBillingMonth().atDay(1).getYear() == d.getYear())
-                    .mapToDouble(CostRecord::getAmount).sum() / Math.max(1, (double) d.lengthOfMonth());
+                    .map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue() / Math.max(1, (double) d.lengthOfMonth());
             double liters = fuels.stream().filter(f -> f.getDate().equals(d))
                     .mapToDouble(FuelRecord::getLiters).sum();
             result.add(new CoupleDetailDto.DailyPointDto(d.toString(), round(km), round(cost), ev, round(liters)));
@@ -494,10 +532,10 @@ public class KpiService {
         List<CostRecord> costs = costRepository.findByTruckAndDriver(a.getTruck(), a.getDriver()).stream()
                 .filter(c -> !c.getBillingMonth().atDay(1).isBefore(range.fromDate().withDayOfMonth(1)))
                 .toList();
-        Map<String, Double> byCategory = costs.stream().collect(Collectors.groupingBy(
-                c -> c.getCategory().name(), Collectors.summingDouble(CostRecord::getAmount)));
+        Map<String, BigDecimal> byCategory = costs.stream().collect(Collectors.groupingBy(
+                c -> c.getCategory().name(), SUM_AMOUNTS));
         return byCategory.entrySet().stream()
-                .map(e -> new CoupleDetailDto.CostBreakdownDto(e.getKey(), round(e.getValue())))
+                .map(e -> new CoupleDetailDto.CostBreakdownDto(e.getKey(), round(e.getValue().doubleValue())))
                 .sorted(Comparator.comparingDouble(CoupleDetailDto.CostBreakdownDto::amount).reversed())
                 .toList();
     }

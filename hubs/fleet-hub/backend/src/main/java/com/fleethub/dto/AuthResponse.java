@@ -13,5 +13,7 @@ public record AuthResponse(
         String companyStatus,
         boolean subscriptionActive,
         boolean totpRequired,
-        boolean totpEnabled
+        boolean totpEnabled,
+        /** Profil métier de la flotte (null pour un opérateur plateforme). */
+        String fleetProfile
 ) {}

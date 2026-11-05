@@ -143,5 +143,9 @@ public class SharedLinkController {
         return (AppUserPrincipal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 
-    record CreateLinkReq(@jakarta.validation.constraints.NotNull UUID shipmentId, String label, Integer expiresHours) {}
+    /** {@code expiresHours} absent : durée par défaut de {@link SharedLinkService#DEFAULT_EXPIRY_HOURS}. */
+    record CreateLinkReq(@jakarta.validation.constraints.NotNull UUID shipmentId, String label,
+                         @jakarta.validation.constraints.Positive
+                         @jakarta.validation.constraints.Max(SharedLinkService.MAX_EXPIRY_HOURS)
+                         Integer expiresHours) {}
 }

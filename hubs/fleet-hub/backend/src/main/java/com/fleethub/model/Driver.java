@@ -9,7 +9,8 @@ import lombok.Setter;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "driver")
+@Table(name = "driver", uniqueConstraints = @UniqueConstraint(
+        name = "uk_driver_company_license", columnNames = {"company_id", "license_number"}))
 @Getter
 @Setter
 @NoArgsConstructor

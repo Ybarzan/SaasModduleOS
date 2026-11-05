@@ -92,18 +92,32 @@ public class FleetHubWebhookService {
      * cette requête -- livraison garantie par EventOutboxProcessor (relecture
      * périodique des lignes PENDING), pas par la disponibilité immédiate du
      * moteur de notification au moment de l'appel.
+     * <p>
+     * Idempotent : fleet-hub livre « au moins une fois » (renvoi si la réponse
+     * s'est perdue). Un événement dont l'{@code eventId} a déjà été reçu pour
+     * cette société est ignoré ; l'index unique de V82 couvre en plus le cas de
+     * deux livraisons simultanées.
+     *
+     * @return false si l'événement était un doublon déjà enregistré
      */
     @Transactional
-    public void recordEvent(UUID companyId, FleetHubShipmentEventRequest request) {
+    public boolean recordEvent(UUID companyId, FleetHubShipmentEventRequest request) {
+        if (request.eventId() != null
+                && eventOutboxRepository.existsByCompanyIdAndSourceEventId(companyId, request.eventId())) {
+            return false;
+        }
+        String payload;
         try {
-            String payload = objectMapper.writeValueAsString(request);
-            eventOutboxRepository.save(EventOutbox.builder()
-                    .eventType("FLEETHUB_" + request.eventType())
-                    .companyId(companyId)
-                    .payload(payload)
-                    .build());
+            payload = objectMapper.writeValueAsString(request);
         } catch (Exception e) {
             throw new IllegalStateException("Échec de sérialisation de l'événement fleet-hub", e);
         }
+        eventOutboxRepository.save(EventOutbox.builder()
+                .eventType("FLEETHUB_" + request.eventType())
+                .companyId(companyId)
+                .sourceEventId(request.eventId())
+                .payload(payload)
+                .build());
+        return true;
     }
 }

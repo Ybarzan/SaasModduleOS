@@ -1,5 +1,6 @@
 package com.fleethub.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record FuelRecordDto(
@@ -8,6 +9,6 @@ public record FuelRecordDto(
         String truckRegistration,
         LocalDate date,
         double liters,
-        double amount,
+        BigDecimal amount,
         double odometerKm
 ) {}

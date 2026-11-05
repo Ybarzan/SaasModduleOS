@@ -40,4 +40,16 @@ describe('Login page', () => {
 
     expect(await screen.findByText('Identifiants invalides')).toBeInTheDocument()
   })
+
+  it('shows the server message when the account is temporarily locked', async () => {
+    mockLogin.mockRejectedValue({
+      response: { status: 429, data: { message: 'Compte temporairement verrouillé' } }
+    })
+    const user = userEvent.setup()
+    render(<Login />)
+
+    await user.click(screen.getByRole('button', { name: /se connecter/i }))
+
+    expect(await screen.findByText('Compte temporairement verrouillé')).toBeInTheDocument()
+  })
 })

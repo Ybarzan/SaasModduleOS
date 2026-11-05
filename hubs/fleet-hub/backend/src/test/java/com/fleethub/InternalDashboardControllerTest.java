@@ -46,10 +46,12 @@ class InternalDashboardControllerTest {
     }
 
     private String enableIntegrationAndGetKey(String token) throws Exception {
-        MvcResult res = mvc.perform(post("/api/internal-integrations/enable").header("Authorization", "Bearer " + token))
+        mvc.perform(post("/api/internal-integrations/enable").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        MvcResult res = mvc.perform(post("/api/internal-integrations/keys/PORTAL").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andReturn();
-        return objectMapper.readTree(res.getResponse().getContentAsString()).get("internalIntegrationApiKey").asText();
+        return objectMapper.readTree(res.getResponse().getContentAsString()).get("apiKey").asText();
     }
 
     @Test

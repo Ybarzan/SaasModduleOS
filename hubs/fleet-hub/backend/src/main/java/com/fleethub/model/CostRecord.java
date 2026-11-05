@@ -1,5 +1,6 @@
 package com.fleethub.model;
 
+import java.math.BigDecimal;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,8 +40,8 @@ public class CostRecord {
     @Column(nullable = false)
     private CostCategory category;
 
-    @Column(nullable = false)
-    private double amount;
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal amount;
 
     public enum CostCategory {
         SALAIRE, CARBURANT, MAINTENANCE, ASSURANCE, AMORTISSEMENT, PEAGES, AUTRE

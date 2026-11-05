@@ -1,5 +1,6 @@
 package com.fleethub.model;
 
+import java.math.BigDecimal;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -34,8 +35,8 @@ public class FuelRecord {
     @Column(nullable = false)
     private double liters;
 
-    @Column(nullable = false)
-    private double amount;
+    @Column(nullable = false, precision = 15, scale = 2)
+    private BigDecimal amount;
 
     private double odometerKm;
 }

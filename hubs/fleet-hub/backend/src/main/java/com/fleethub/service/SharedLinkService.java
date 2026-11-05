@@ -10,8 +10,10 @@ import com.fleethub.repository.SharedLinkRepository;
 import com.fleethub.repository.ShipmentOrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -21,6 +23,10 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class SharedLinkService {
+
+    /** Un lien public n'est jamais permanent : 30 jours par défaut, 1 an au plus. */
+    public static final int DEFAULT_EXPIRY_HOURS = 30 * 24;
+    public static final int MAX_EXPIRY_HOURS = 365 * 24;
 
     private final SharedLinkRepository sharedLinkRepo;
     private final ShipmentOrderRepository shipmentRepo;
@@ -42,7 +48,7 @@ public class SharedLinkService {
             .token(UUID.randomUUID().toString())
             .createdBy(user)
             .label(label != null ? label : "Lien de suivi - " + shipment.getOrderNumber())
-            .expiresAt(expiresHours != null ? LocalDateTime.now().plusHours(expiresHours) : null)
+            .expiresAt(LocalDateTime.now().plusHours(expiresHours != null ? expiresHours : DEFAULT_EXPIRY_HOURS))
             .active(true)
             .build();
         return sharedLinkRepo.save(link);
@@ -59,12 +65,12 @@ public class SharedLinkService {
     @Transactional
     public SharedLink accessLink(String token) {
         SharedLink link = sharedLinkRepo.findByToken(token)
-            .orElseThrow(() -> new RuntimeException("Lien introuvable ou invalide"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lien introuvable ou invalide"));
         if (!link.isActive()) {
-            throw new RuntimeException("Ce lien a été révoqué");
+            throw new ResponseStatusException(HttpStatus.GONE, "Ce lien a été révoqué");
         }
         if (link.getExpiresAt() != null && link.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Ce lien a expiré");
+            throw new ResponseStatusException(HttpStatus.GONE, "Ce lien a expiré");
         }
         link.setAccessCount(link.getAccessCount() + 1);
         link.setLastAccessedAt(LocalDateTime.now());

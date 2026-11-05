@@ -48,7 +48,7 @@ public class ShipmentOrderDTO {
     // Cargo
     private String goodsDescription;
     @DecimalMin(value = "0.0", message = "La valeur des marchandises ne peut pas être négative")
-    private Double goodsValue;
+    private BigDecimal goodsValue;
     private String currency;
     @DecimalMin(value = "0.0", message = "Le poids ne peut pas être négatif")
     private Double weightKg;
@@ -64,7 +64,7 @@ public class ShipmentOrderDTO {
     private List<ShipmentOrderItemDTO> items;
 
     // Cost
-    private Double quotedCost;
+    private BigDecimal quotedCost;
 
     // Dates
     private LocalDateTime requestedPickupDate;
