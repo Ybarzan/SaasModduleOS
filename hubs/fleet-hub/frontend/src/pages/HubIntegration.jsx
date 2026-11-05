@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
+import ComplianceEngineEvents from '../components/ComplianceEngineEvents'
 
 /** Ce que chaque droit permet, en clair pour l'admin. */
 const SCOPE_LABELS = {
@@ -276,6 +277,8 @@ export default function HubIntegration() {
           </div>
         </div>
       )}
+
+      {!loading && <ComplianceEngineEvents />}
     </div>
   )
 }
