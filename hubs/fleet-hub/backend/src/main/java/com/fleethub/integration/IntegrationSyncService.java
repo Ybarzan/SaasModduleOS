@@ -1,5 +1,6 @@
 package com.fleethub.integration;
 
+import com.fleethub.config.TenantCacheEvictor;
 import com.fleethub.integration.dto.FuelTransactionDto;
 import com.fleethub.integration.dto.GpsPositionDto;
 import com.fleethub.integration.dto.TachographDayDto;
@@ -43,6 +44,8 @@ public class IntegrationSyncService {
     private final TachographDayRepository tachographRepository;
     private final FuelRecordRepository fuelRecordRepository;
     private final TachographService tachographService;
+    /** L'ingestion n'a pas de session utilisateur : le filtre d'invalidation ne la voit pas. */
+    private final TenantCacheEvictor cacheEvictor;
 
     // ---- Tâches planifiées (polling) ----
 
@@ -130,6 +133,7 @@ public class IntegrationSyncService {
             saved++;
         }
         log.info("Tachograph: {} enregistrement(s) synchronisés, {} ignoré(s)", saved, skipped);
+        if (saved > 0) cacheEvictor.evictCompany(companyId);
         return saved;
     }
 
@@ -160,6 +164,7 @@ public class IntegrationSyncService {
             updated++;
         }
         log.info("GPS: {} véhicule(s) mis à jour", updated);
+        if (updated > 0) cacheEvictor.evictCompany(companyId);
         return updated;
     }
 
@@ -186,6 +191,7 @@ public class IntegrationSyncService {
             saved++;
         }
         log.info("Carburant: {} transaction(s) synchronisée(s)", saved);
+        if (saved > 0) cacheEvictor.evictCompany(companyId);
         return saved;
     }
 }

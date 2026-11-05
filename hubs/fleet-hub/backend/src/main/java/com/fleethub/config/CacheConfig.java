@@ -1,60 +1,51 @@
 package com.fleethub.config;
 
 import com.fleethub.security.TenantContext;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.cache.RedisCacheConfiguration;
-import org.springframework.data.redis.cache.RedisCacheManager;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializationContext;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.lang.reflect.Method;
 import java.time.Clock;
-import java.time.Duration;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
+/**
+ * Cache applicatif en mémoire (KPI, tableau de bord, taux de change).
+ * <p>
+ * Un cache Redis était configuré pour la production, mais n'a jamais été actif :
+ * sa condition {@code @ConditionalOnBean(RedisConnectionFactory)} était évaluée avant
+ * l'auto-configuration Redis, et c'est ce cache mémoire — sans aucune expiration —
+ * qui servait. Pour un déploiement sur une seule instance, il suffit, à condition :
+ * <ul>
+ *   <li>d'être invalidé après chaque écriture de la société concernée
+ *       (TenantCacheEvictor / KpiCacheInvalidationFilter) ;</li>
+ *   <li>d'expirer régulièrement ({@link #EXPIRY_MS}) : les indicateurs dépendent aussi
+ *       de la date du jour (fenêtres jour / semaine / mois), et les taux de change de
+ *       leur source.</li>
+ * </ul>
+ * Passer à plusieurs instances demandera un cache partagé (Redis), avec un
+ * sérialiseur qui gère les records Java et les types java.time.
+ */
 @Configuration
 @EnableCaching
 public class CacheConfig {
+
+    static final long EXPIRY_MS = 5 * 60 * 1000;
 
     @Bean
     public Clock clock() {
         return Clock.systemDefaultZone();
     }
 
+    /** Caches créés à la demande (KPI, dashboard.summary, exchange-rates…). */
     @Bean
-    @ConditionalOnBean(RedisConnectionFactory.class)
-    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(5))
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
-                .disableCachingNullValues();
-
-        Set<String> cacheNames = Set.of("kpi.couples", "kpi.detail", "kpi.truck", "kpi.northstar", "dashboard.summary",
-                "exchange-rates");
-
-        return RedisCacheManager.builder(connectionFactory)
-                .cacheDefaults(config)
-                .initialCacheNames(cacheNames)
-                .build();
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(CacheManager.class)
-    public CacheManager fallbackCacheManager() {
-        return new ConcurrentMapCacheManager("kpi.couples", "kpi.detail", "kpi.truck", "kpi.northstar", "dashboard.summary",
-                "exchange-rates");
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager();
     }
 
     @Bean("tenantKeyGenerator")
@@ -67,5 +58,15 @@ public class CacheConfig {
                     .collect(Collectors.joining(":"));
             return companyId + ":" + methodName + ":" + paramKey;
         };
+    }
+
+    /** Expiration globale : borne l'ancienneté des données servies et la mémoire occupée. */
+    @Scheduled(fixedRate = EXPIRY_MS, initialDelay = EXPIRY_MS)
+    public void expireCaches() {
+        CacheManager manager = cacheManager();
+        manager.getCacheNames().forEach(name -> {
+            var cache = manager.getCache(name);
+            if (cache != null) cache.clear();
+        });
     }
 }

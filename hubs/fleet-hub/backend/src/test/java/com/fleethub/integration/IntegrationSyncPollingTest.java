@@ -1,5 +1,6 @@
 package com.fleethub.integration;
 
+import com.fleethub.config.TenantCacheEvictor;
 import com.fleethub.integration.dto.GpsPositionDto;
 import com.fleethub.model.Truck;
 import com.fleethub.repository.DriverRepository;
@@ -45,7 +46,7 @@ class IntegrationSyncPollingTest {
         truckRepository = mock(TruckRepository.class);
         service = new IntegrationSyncService(props, mock(ObjectProvider.class), gpsProvider, mock(ObjectProvider.class),
                 mock(DriverRepository.class), truckRepository, mock(TachographDayRepository.class),
-                mock(FuelRecordRepository.class), mock(TachographService.class));
+                mock(FuelRecordRepository.class), mock(TachographService.class), mock(TenantCacheEvictor.class));
     }
 
     @Test

@@ -174,12 +174,8 @@ spring:
   h2:
     console:
       enabled: false
-  cache:
-    type: redis
-    redis:
-      time-to-live: 300000
-      use-key-prefix: true
-      key-prefix: "fleethub:"
+  # Cache applicatif en mémoire (voir CacheConfig) ; Redis sert aux verrous de tâches
+  # planifiées (DistributedJobLock).
   data:
     redis:
       host: "${REDIS_HOST:localhost}"

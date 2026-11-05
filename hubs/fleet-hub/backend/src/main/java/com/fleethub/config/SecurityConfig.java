@@ -4,6 +4,7 @@ import com.fleethub.security.AdminIpFilter;
 import com.fleethub.security.ClientAuthFilter;
 import com.fleethub.security.InternalApiKeyFilter;
 import com.fleethub.security.JwtAuthFilter;
+import com.fleethub.security.KpiCacheInvalidationFilter;
 import com.fleethub.security.LoginRateLimitFilter;
 import com.fleethub.security.SubscriptionGuardFilter;
 import com.fleethub.security.TenantFilter;
@@ -39,6 +40,7 @@ public class SecurityConfig {
     private final SubscriptionGuardFilter subscriptionGuardFilter;
     private final AdminIpFilter adminIpFilter;
     private final InternalApiKeyFilter internalApiKeyFilter;
+    private final KpiCacheInvalidationFilter kpiCacheInvalidationFilter;
 
     @Value("${app.cors.allowed-origins}")
     private String allowedOrigins;
@@ -129,7 +131,9 @@ public class SecurityConfig {
             // Après TenantFilter (qui nettoie TenantContext en fin de requête) et avant le
             // gel d'abonnement, qui s'applique donc aussi aux appels des autres hubs.
             .addFilterAfter(internalApiKeyFilter, TenantFilter.class)
-            .addFilterAfter(subscriptionGuardFilter, InternalApiKeyFilter.class);
+            .addFilterAfter(subscriptionGuardFilter, InternalApiKeyFilter.class)
+            // Après une écriture réussie : caches KPI / tableau de bord de la société invalidés.
+            .addFilterAfter(kpiCacheInvalidationFilter, SubscriptionGuardFilter.class);
         return http.build();
     }
 
