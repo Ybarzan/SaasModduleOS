@@ -5,6 +5,7 @@ import com.fleethub.integration.dto.GpsPositionDto;
 import com.fleethub.integration.dto.TachographDayDto;
 import com.fleethub.model.Driver;
 import com.fleethub.model.FuelRecord;
+import com.fleethub.model.Money;
 import com.fleethub.model.TachographDay;
 import com.fleethub.model.Truck;
 import com.fleethub.repository.DriverRepository;
@@ -20,6 +21,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -168,16 +170,17 @@ public class IntegrationSyncService {
         for (FuelTransactionDto tx : transactions) {
             Optional<Truck> truck = truckRepository.findByRegistrationAndCompanyId(tx.registration(), companyId);
             if (truck.isEmpty()) continue;
+            BigDecimal amount = Money.of(tx.amount());
             boolean exists = fuelRecordRepository.findByTruckIdAndDate(truck.get().getId(), tx.date()).stream()
                     .anyMatch(r -> Math.abs(r.getLiters() - tx.liters()) < 0.001
-                            && Math.abs(r.getAmount() - tx.amount()) < 0.01);
+                            && r.getAmount().compareTo(amount) == 0);
             if (exists) continue;
             FuelRecord record = new FuelRecord();
             record.setCompany(truck.get().getCompany());
             record.setTruck(truck.get());
             record.setDate(tx.date());
             record.setLiters(tx.liters());
-            record.setAmount(tx.amount());
+            record.setAmount(amount);
             record.setOdometerKm(tx.odometerKm());
             fuelRecordRepository.save(record);
             saved++;

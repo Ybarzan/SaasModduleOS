@@ -1,5 +1,6 @@
 package com.fleethub.model;
 
+import java.math.BigDecimal;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,7 +49,8 @@ public class Truck {
 
     private LocalDate acquisitionDate;
 
-    private Double purchasePrice;
+    @Column(precision = 15, scale = 2)
+    private BigDecimal purchasePrice;
 
     private Double expectedConsumptionL100Km;
 

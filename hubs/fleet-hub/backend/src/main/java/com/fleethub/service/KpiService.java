@@ -12,6 +12,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -31,6 +32,10 @@ public class KpiService {
     private final FuelRecordRepository fuelRepository;
     private final CostRecordRepository costRepository;
     private final TruckRepository truckRepository;
+
+    /** Somme exacte des montants (centimes), convertie en double seulement pour l'affichage des KPI. */
+    private static final java.util.stream.Collector<CostRecord, ?, BigDecimal> SUM_AMOUNTS =
+            Collectors.reducing(BigDecimal.ZERO, CostRecord::getAmount, BigDecimal::add);
 
     public static final String PERIOD_DAY = "DAY";
     public static final String PERIOD_WEEK = "WEEK";
@@ -105,7 +110,7 @@ public class KpiService {
                 .toList();
 
         double drivingHours = trips.stream().mapToDouble(Trip::durationHours).sum();
-        double totalCost = costs.stream().mapToDouble(CostRecord::getAmount).sum();
+        double totalCost = costs.stream().map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue();
         double costPerKm = km > 0 ? round(totalCost / km) : 0;
 
         double availableHours = range.days() * 14.0;
@@ -180,7 +185,7 @@ public class KpiService {
                     .mapToDouble(FuelRecord::getLiters).sum();
             double cost = costs.stream().filter(c -> c.getBillingMonth().atDay(1).getMonth() == cur.getMonth()
                             && c.getBillingMonth().atDay(1).getYear() == cur.getYear())
-                    .mapToDouble(CostRecord::getAmount).sum() / Math.max(1, (double) cur.lengthOfMonth());
+                    .map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue() / Math.max(1, (double) cur.lengthOfMonth());
             result.add(new TruckDetailDto.DailyPointDto(cur.toString(), round(km), round(liters), round(cost)));
             day = day.plusDays(1);
         }
@@ -188,12 +193,11 @@ public class KpiService {
     }
 
     private List<CoupleDetailDto.CostBreakdownDto> costBreakdownForTruck(Truck t, PeriodRange range) {
-        Map<String, Double> byCategory = costRepository.findByTruck(t).stream()
+        Map<String, BigDecimal> byCategory = costRepository.findByTruck(t).stream()
                 .filter(c -> !c.getBillingMonth().atDay(1).isBefore(range.fromDate().withDayOfMonth(1)))
-                .collect(Collectors.groupingBy(
-                        c -> c.getCategory().name(), Collectors.summingDouble(CostRecord::getAmount)));
+                .collect(Collectors.groupingBy(c -> c.getCategory().name(), SUM_AMOUNTS));
         return byCategory.entrySet().stream()
-                .map(e -> new CoupleDetailDto.CostBreakdownDto(e.getKey(), round(e.getValue())))
+                .map(e -> new CoupleDetailDto.CostBreakdownDto(e.getKey(), round(e.getValue().doubleValue())))
                 .sorted(Comparator.comparingDouble(CoupleDetailDto.CostBreakdownDto::amount).reversed())
                 .toList();
     }
@@ -284,7 +288,7 @@ public class KpiService {
             double dayCost = costRepository.findByTruckAndDriver(t, d).stream()
                     .filter(c -> c.getBillingMonth().atDay(1).getYear() == day.getYear()
                             && c.getBillingMonth().atDay(1).getMonth() == day.getMonth())
-                    .mapToDouble(CostRecord::getAmount).sum() / Math.max(1, (double) day.lengthOfMonth());
+                    .map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue() / Math.max(1, (double) day.lengthOfMonth());
             cost += km > 0 ? dayCost / km : 0;
 
             double drivingHours = tripRepository.findByDriverAndStartTimeBetween(d, from, to)
@@ -338,7 +342,7 @@ public class KpiService {
         double drivingHours = trips.stream().mapToDouble(Trip::durationHours).sum();
 
         // ---- North Star ----
-        double totalCost = costs.stream().mapToDouble(CostRecord::getAmount).sum();
+        double totalCost = costs.stream().map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue();
         double costPerKm = kmMax > 0 ? round(totalCost / kmMax) : 0;
 
         double availableHours = range.days() * 14.0;
@@ -478,7 +482,7 @@ public class KpiService {
                     .filter(e -> e.getType() != DrivingEvent.EventType.RALENTI).count();
             double cost = costs.stream().filter(c -> c.getBillingMonth().atDay(1).getMonth() == d.getMonth()
                             && c.getBillingMonth().atDay(1).getYear() == d.getYear())
-                    .mapToDouble(CostRecord::getAmount).sum() / Math.max(1, (double) d.lengthOfMonth());
+                    .map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue() / Math.max(1, (double) d.lengthOfMonth());
             double liters = fuels.stream().filter(f -> f.getDate().equals(d))
                     .mapToDouble(FuelRecord::getLiters).sum();
             result.add(new CoupleDetailDto.DailyPointDto(d.toString(), round(km), round(cost), ev, round(liters)));
@@ -499,10 +503,10 @@ public class KpiService {
         List<CostRecord> costs = costRepository.findByTruckAndDriver(a.getTruck(), a.getDriver()).stream()
                 .filter(c -> !c.getBillingMonth().atDay(1).isBefore(range.fromDate().withDayOfMonth(1)))
                 .toList();
-        Map<String, Double> byCategory = costs.stream().collect(Collectors.groupingBy(
-                c -> c.getCategory().name(), Collectors.summingDouble(CostRecord::getAmount)));
+        Map<String, BigDecimal> byCategory = costs.stream().collect(Collectors.groupingBy(
+                c -> c.getCategory().name(), SUM_AMOUNTS));
         return byCategory.entrySet().stream()
-                .map(e -> new CoupleDetailDto.CostBreakdownDto(e.getKey(), round(e.getValue())))
+                .map(e -> new CoupleDetailDto.CostBreakdownDto(e.getKey(), round(e.getValue().doubleValue())))
                 .sorted(Comparator.comparingDouble(CoupleDetailDto.CostBreakdownDto::amount).reversed())
                 .toList();
     }

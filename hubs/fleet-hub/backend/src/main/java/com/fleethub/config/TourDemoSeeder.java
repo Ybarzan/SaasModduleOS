@@ -1,5 +1,6 @@
 package com.fleethub.config;
 
+import com.fleethub.model.Money;
 import com.fleethub.model.Company;
 import com.fleethub.model.Driver;
 import com.fleethub.model.Site;
@@ -219,7 +220,7 @@ final class TourDemoSeeder {
         t.setFuelType(fuel);
         t.setCapacityTons(0.6);
         t.setAcquisitionDate(LocalDate.now().minusYears(1));
-        t.setPurchasePrice(32000.0);
+        t.setPurchasePrice(Money.of(32000.0));
         t.setExpectedConsumptionL100Km(Truck.TruckType.VUL.getDefaultConsumptionL100Km());
         t.setCurrentLatitude(lat);
         t.setCurrentLongitude(lon);

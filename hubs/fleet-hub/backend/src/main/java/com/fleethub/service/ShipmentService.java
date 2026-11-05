@@ -90,13 +90,13 @@ public class ShipmentService {
 
         String orderNumber = generateOrderNumber();
 
-        Double quotedCost = dto.getQuotedCost();
+        BigDecimal quotedCost = Money.cents(dto.getQuotedCost());
         if (quotedCost == null && shippingRate != null) {
-            double weight = dto.getWeightKg() != null ? dto.getWeightKg() : 0;
-            double volume = dto.getVolumeM3() != null ? dto.getVolumeM3() : 0;
-            quotedCost = shippingRate.getBaseRate()
-                    + (shippingRate.getRatePerKg() * weight)
-                    + (shippingRate.getRatePerCbm() * volume);
+            BigDecimal weight = BigDecimal.valueOf(dto.getWeightKg() != null ? dto.getWeightKg() : 0);
+            BigDecimal volume = BigDecimal.valueOf(dto.getVolumeM3() != null ? dto.getVolumeM3() : 0);
+            quotedCost = Money.cents(Money.orZero(shippingRate.getBaseRate())
+                    .add(Money.orZero(shippingRate.getRatePerKg()).multiply(weight))
+                    .add(Money.orZero(shippingRate.getRatePerCbm()).multiply(volume)));
         }
 
         ShipmentOrder shipment = ShipmentOrder.builder()
@@ -119,7 +119,7 @@ public class ShipmentService {
                 .consigneeCountry(dto.getConsigneeCountry())
                 .consigneePostalCode(dto.getConsigneePostalCode())
                 .goodsDescription(dto.getGoodsDescription())
-                .goodsValue(dto.getGoodsValue())
+                .goodsValue(Money.cents(dto.getGoodsValue()))
                 .currency(dto.getCurrency() != null ? dto.getCurrency() : "EUR")
                 .weightKg(dto.getWeightKg())
                 .volumeM3(dto.getVolumeM3())

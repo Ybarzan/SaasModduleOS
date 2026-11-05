@@ -2,6 +2,7 @@ package com.fleethub.dto.internal;
 
 import com.fleethub.model.ShipmentOrder;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,7 @@ public record InternalShipmentDto(
         String consigneeCountry,
         String consigneePostalCode,
         String goodsDescription,
-        Double goodsValue,
+        BigDecimal goodsValue,
         String currency,
         Double weightKg,
         Double volumeM3,
@@ -49,11 +50,11 @@ public record InternalShipmentDto(
         String truckRegistration,
         String customsStatus,
         String customsDeclarationNumber,
-        Double dutyAmount,
-        Double vatAmount,
-        Double landedCost,
-        Double quotedCost,
-        Double finalCost,
+        BigDecimal dutyAmount,
+        BigDecimal vatAmount,
+        BigDecimal landedCost,
+        BigDecimal quotedCost,
+        BigDecimal finalCost,
         String costCurrency,
         LocalDateTime requestedPickupDate,
         LocalDateTime estimatedDeliveryDate,

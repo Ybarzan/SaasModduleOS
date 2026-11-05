@@ -1,5 +1,6 @@
 package com.fleethub.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -13,7 +14,7 @@ public record TruckDto(
         String fuelType,
         Double capacityTons,
         LocalDate acquisitionDate,
-        Double purchasePrice,
+        BigDecimal purchasePrice,
         Double expectedConsumptionL100Km,
         String currentStatus,
         LocalDateTime lastGpsUpdate,

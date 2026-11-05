@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -60,8 +61,8 @@ public class ShippingRateService {
                 .maxWeightKg(dto.getMaxWeightKg())
                 .baseRate(dto.getBaseRate())
                 .currency(dto.getCurrency() != null ? dto.getCurrency() : "EUR")
-                .ratePerKg(dto.getRatePerKg() != null ? dto.getRatePerKg() : 0)
-                .ratePerCbm(dto.getRatePerCbm() != null ? dto.getRatePerCbm() : 0)
+                .ratePerKg(dto.getRatePerKg() != null ? dto.getRatePerKg() : BigDecimal.ZERO)
+                .ratePerCbm(dto.getRatePerCbm() != null ? dto.getRatePerCbm() : BigDecimal.ZERO)
                 .transitDaysMin(dto.getTransitDaysMin())
                 .transitDaysMax(dto.getTransitDaysMax())
                 .co2EstimateKg(dto.getCo2EstimateKg())
@@ -85,7 +86,7 @@ public class ShippingRateService {
         if (dto.getTransportMode() != null) rate.setTransportMode(dto.getTransportMode());
         if (dto.getMinWeightKg() != null) rate.setMinWeightKg(dto.getMinWeightKg());
         if (dto.getMaxWeightKg() != null) rate.setMaxWeightKg(dto.getMaxWeightKg());
-        if (dto.getBaseRate() != 0) rate.setBaseRate(dto.getBaseRate());
+        if (dto.getBaseRate() != null && dto.getBaseRate().signum() != 0) rate.setBaseRate(dto.getBaseRate());
         if (dto.getCurrency() != null) rate.setCurrency(dto.getCurrency());
         if (dto.getRatePerKg() != null) rate.setRatePerKg(dto.getRatePerKg());
         if (dto.getRatePerCbm() != null) rate.setRatePerCbm(dto.getRatePerCbm());

@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -93,7 +94,7 @@ public class InternalShipmentController {
                 .consigneeCountry(request.getConsigneeCountry())
                 .consigneePostalCode(request.getConsigneePostalCode())
                 .goodsDescription(request.getGoodsDescription())
-                .goodsValue(request.getGoodsValue())
+                .goodsValue(request.getGoodsValue() != null ? BigDecimal.valueOf(request.getGoodsValue()) : null)
                 .currency(request.getCurrency())
                 .weightKg(request.getWeightKg())
                 .volumeM3(request.getVolumeM3())

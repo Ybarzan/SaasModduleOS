@@ -1,5 +1,6 @@
 package com.fleethub.dto;
 
+import java.math.BigDecimal;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,14 +43,14 @@ public class ShippingRateDTO {
 
     @NotNull(message = "Le tarif de base est obligatoire")
     @DecimalMin(value = "0", inclusive = false, message = "Le tarif de base doit être supérieur à 0")
-    private double baseRate;
+    private BigDecimal baseRate;
 
     @Size(min = 3, max = 3, message = "Code devise ISO 3 caractères")
     @Builder.Default
     private String currency = "EUR";
 
-    private Double ratePerKg;
-    private Double ratePerCbm;
+    private BigDecimal ratePerKg;
+    private BigDecimal ratePerCbm;
 
     @Min(value = 1, message = "Transit minimum 1 jour")
     private Integer transitDaysMin;

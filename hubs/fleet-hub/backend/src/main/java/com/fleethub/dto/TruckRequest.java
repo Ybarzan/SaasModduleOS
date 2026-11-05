@@ -1,5 +1,6 @@
 package com.fleethub.dto;
 
+import java.math.BigDecimal;
 import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDate;
@@ -13,7 +14,7 @@ public record TruckRequest(
         @NotBlank(message = "L'énergie est obligatoire") String fuelType,
         Double capacityTons,
         LocalDate acquisitionDate,
-        Double purchasePrice,
+        BigDecimal purchasePrice,
         /** Facultatif : à défaut, valeur type de la catégorie de véhicule. */
         Double expectedConsumptionL100Km,
         boolean active,
