@@ -188,9 +188,14 @@ if [ -n "$PING_URL" ]; then
     warn "Ping de supervision échoué : $PING_URL"
 fi
 
+# Contrôle de bout en bout, comme un visiteur (santé à travers les proxys, en-têtes de
+# sécurité, rien d'interne exposé) — voir scripts/smoke.sh.
+log "Contrôle du site public..."
 if [ "$DOMAIN" = "localhost" ]; then
-  warn "Démo locale (pas de certificat public) : http://localhost"
+  INSECURE=1 ./scripts/smoke.sh "https://localhost" || warn "Contrôle du site en échec (voir ci-dessus)."
+  warn "Démo locale (certificat interne, non reconnu par les navigateurs) : https://localhost"
 else
+  ./scripts/smoke.sh "https://$DOMAIN" || warn "Contrôle du site en échec (voir ci-dessus) : DNS, certificat ou backend."
   log "Démo en ligne : https://$DOMAIN"
 fi
 log "Terminé. Voir DEPLOY.md pour la suite (vérifs, sauvegardes, mise à jour)."

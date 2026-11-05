@@ -85,10 +85,19 @@ Let's Encrypt automatique via Caddy).
 
 ### Contrôles d'état
 
+`deploy.sh` finit par un contrôle de bout en bout, à relancer à tout moment depuis
+n'importe quelle machine :
+
+```bash
+./scripts/smoke.sh https://fleethub-demo.fr   # santé, en-têtes de sécurité, rien d'interne exposé
+```
+
+Sur le serveur :
+
 ```bash
 docker compose ps              # tous les services "Up"
 docker compose logs -f backend # logs applicatifs (JSON en prod)
-curl -fsS https://DOMAIN/actuator/health
+curl -fsS https://DOMAIN/actuator/health   # {"status":"UP"} : backend et base OK
 ls backups/                    # sauvegardes PostgreSQL quotidiennes
 ```
 
