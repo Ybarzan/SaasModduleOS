@@ -49,6 +49,9 @@ services:
     build: ./backend
     container_name: fleethub-backend
     restart: unless-stopped
+    # Le tas Java suit cette limite (-XX:MaxRAMPercentage=75, voir backend/Dockerfile) :
+    # sans elle, il se dimensionnerait sur la RAM de tout le serveur.
+    mem_limit: ${BACKEND_MEMORY_LIMIT:-1g}
     environment:
       SPRING_PROFILES_ACTIVE: prod
       DB_HOST: db

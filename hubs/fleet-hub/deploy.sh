@@ -125,10 +125,14 @@ APP_TIMEZONE=Europe/Paris
 #PING_URL=https://hc-ping.com/votre-uuid-heroku
 EOF
   chmod 600 "$ENV_FILE"
-  log "Identifiants de démo générés :"
-  log "   saasadmin / $ADMIN_PASSWORD  (opérateur plateforme)"
-  log "   admin     / $ADMIN_PASSWORD  (société démo)"
-  log "   gestionnaire / $GESTIONNAIRE_PASSWORD"
+  log "Identifiants générés (aussi dans $ENV_FILE) :"
+  log "   saasadmin / $ADMIN_PASSWORD  (opérateur plateforme, back-office /admin)"
+  if [ "$APP_SEED_ENABLED" = "true" ]; then
+    log "   admin     / $ADMIN_PASSWORD  (société démo)"
+    log "   gestionnaire / $GESTIONNAIRE_PASSWORD  (société démo)"
+  else
+    log "   Pas de données de démo : les sociétés clientes s'inscrivent sur https://$DOMAIN/register"
+  fi
   log "   Grafana (https://$DOMAIN/grafana) : admin / $GRAFANA_PASSWORD"
 else
   warn ".env existant conservé."

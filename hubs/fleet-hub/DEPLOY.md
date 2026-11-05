@@ -6,8 +6,11 @@ achats (VPS + domaine) et le paramétrage (Stripe/email éventuels).
 
 ## Étape 1 — Acheter un serveur (VPS)
 
-Le besoin est léger : 1 vCPU / 1–2 Go RAM / 20 Go SSD suffisent pour la démo
-(Java + nginx + PostgreSQL). Options fiables et économiques :
+Prévoir au moins **2 vCPU / 4 Go de RAM / 40 Go SSD** : la pile compte une dizaine
+de conteneurs (backend Java limité à 1 Go — `BACKEND_MEMORY_LIMIT` —, PostgreSQL,
+Redis, Caddy, nginx, sauvegarde, et la supervision Prometheus / Loki / Grafana), et
+les images sont construites sur le serveur (Maven + npm). Options fiables et
+économiques :
 
 | Fournisseur | Offre entrée | Prix indicatif | Notes |
 |---|---|---|---|
