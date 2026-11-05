@@ -248,9 +248,8 @@ public class KpiService {
 
         List<List<Double>> series = new ArrayList<>();
         for (int k = 0; k < 4; k++) series.add(new ArrayList<>());
-        LocalDate today = LocalDate.now();
-        for (int i = 13; i >= 0; i--) {
-            double[] vals = dailyNorthStars(couples, today.minusDays(i));
+        double[][] daily = dailyNorthStars(couples, LocalDate.now(), SPARK_DAYS);
+        for (double[] vals : daily) {
             for (int k = 0; k < 4; k++) series.get(k).add(vals[k]);
         }
 
@@ -275,37 +274,67 @@ public class KpiService {
         return new double[]{cost / n, util / n, maint / n, down / n};
     }
 
-    private double[] dailyNorthStars(List<DriverTruckAssignment> couples, LocalDate day) {
-        LocalDateTime from = day.atStartOfDay();
-        LocalDateTime to = day.plusDays(1).atStartOfDay().minusSeconds(1);
-        double cost = 0, util = 0, maint = 0, down = 0;
+    /** Profondeur des mini-courbes des indicateurs North Star (jours, aujourd'hui inclus). */
+    private static final int SPARK_DAYS = 14;
+
+    /**
+     * Valeurs quotidiennes des 4 indicateurs North Star (moyenne sur les couples) pour les
+     * {@code days} derniers jours, du plus ancien au plus récent. Les données de toute la
+     * fenêtre sont lues une fois par couple puis réparties par jour : l'ancienne version
+     * relançait ces requêtes pour chaque jour et chaque couple (~1 400 requêtes SQL pour
+     * 6 couples sur la démo).
+     */
+    private double[][] dailyNorthStars(List<DriverTruckAssignment> couples, LocalDate today, int days) {
+        LocalDate first = today.minusDays(days - 1L);
+        LocalDateTime from = first.atStartOfDay();
+        LocalDateTime to = today.plusDays(1).atStartOfDay();
+        double[][] sums = new double[days][4];
         for (DriverTruckAssignment a : couples) {
             Driver d = a.getDriver();
             Truck t = a.getTruck();
-            double km = Math.max(
-                    tripRepository.sumDistanceByDriverBetween(d, from, to),
-                    tripRepository.sumDistanceByTruckBetween(t, from, to));
-            double dayCost = costRepository.findByTruckAndDriver(t, d).stream()
-                    .filter(c -> c.getBillingMonth().atDay(1).getYear() == day.getYear()
-                            && c.getBillingMonth().atDay(1).getMonth() == day.getMonth())
-                    .map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue() / Math.max(1, (double) day.lengthOfMonth());
-            cost += km > 0 ? dayCost / km : 0;
+            Map<LocalDate, List<Trip>> driverTrips = byDay(tripRepository.findByDriverAndStartTimeBetween(d, from, to));
+            Map<LocalDate, List<Trip>> truckTrips = byDay(tripRepository.findByTruckAndStartTimeBetween(t, from, to));
+            List<CostRecord> costs = costRepository.findByTruckAndDriver(t, d);
+            List<MaintenanceRecord> maintenance = maintenanceRepository.findByTruckAndScheduledDateBetween(t, first, today);
+            double maintenanceCompliance = fallbackMaintenanceCompliance(t);
 
-            double drivingHours = tripRepository.findByDriverAndStartTimeBetween(d, from, to)
-                    .stream().mapToDouble(Trip::durationHours).sum();
-            util += Math.min(100, drivingHours / 14.0 * 100);
+            for (int i = 0; i < days; i++) {
+                LocalDate day = first.plusDays(i);
+                List<Trip> dTrips = driverTrips.getOrDefault(day, List.of());
+                double km = Math.max(distance(dTrips), distance(truckTrips.getOrDefault(day, List.of())));
+                double dayCost = costs.stream()
+                        .filter(c -> c.getBillingMonth().getYear() == day.getYear()
+                                && c.getBillingMonth().getMonth() == day.getMonth())
+                        .map(CostRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add).doubleValue()
+                        / Math.max(1, (double) day.lengthOfMonth());
+                sums[i][0] += km > 0 ? dayCost / km : 0;
 
-            maint += fallbackMaintenanceCompliance(t);
+                double drivingHours = dTrips.stream().mapToDouble(Trip::durationHours).sum();
+                sums[i][1] += Math.min(100, drivingHours / 14.0 * 100);
 
-            double downHours = maintenanceRepository.findByTruckAndScheduledDateBetween(t, day, day).stream()
-                    .filter(m -> !m.isPlanned() && m.getDoneDate() != null)
-                    .mapToDouble(m -> Math.max(1, ChronoUnit.HOURS.between(
-                            m.getScheduledDate().atStartOfDay(), m.getDoneDate().atStartOfDay())))
-                    .sum();
-            down += Math.min(100, downHours / 24.0 * 100);
+                sums[i][2] += maintenanceCompliance;
+
+                double downHours = maintenance.stream()
+                        .filter(m -> day.equals(m.getScheduledDate()) && !m.isPlanned() && m.getDoneDate() != null)
+                        .mapToDouble(m -> Math.max(1, ChronoUnit.HOURS.between(
+                                m.getScheduledDate().atStartOfDay(), m.getDoneDate().atStartOfDay())))
+                        .sum();
+                sums[i][3] += Math.min(100, downHours / 24.0 * 100);
+            }
         }
         int n = couples.size();
-        return new double[]{cost / n, util / n, maint / n, down / n};
+        for (double[] row : sums) {
+            for (int k = 0; k < 4; k++) row[k] /= n;
+        }
+        return sums;
+    }
+
+    private static Map<LocalDate, List<Trip>> byDay(List<Trip> trips) {
+        return trips.stream().collect(Collectors.groupingBy(tr -> tr.getStartTime().toLocalDate()));
+    }
+
+    private static double distance(List<Trip> trips) {
+        return trips.stream().mapToDouble(tr -> tr.getDistanceKm() != null ? tr.getDistanceKm() : 0).sum();
     }
 
     private double sparkDelta(List<Double> series) {
