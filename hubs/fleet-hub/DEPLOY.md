@@ -165,6 +165,23 @@ PostgreSQL `pgdata`) sont conservées, ainsi que le `.env` ; le script y ajoute
 seulement les variables devenues obligatoires (ex. `GRAFANA_PASSWORD`) et affiche
 leur valeur.
 
+## Avant le premier client réel
+
+Le script installe une plateforme qui fonctionne ; ces points restent à faire à la main :
+
+- [ ] **Emails** (`MAIL_*`) : sans eux, invitations d'utilisateurs et réinitialisation de
+      mot de passe ne partent pas (les liens sont seulement écrits dans les logs).
+- [ ] **Sauvegarde hors site** (`RCLONE_REMOTE`, `RCLONE_CONFIG_BASE64`) et alerte
+      d'échec (`BACKUP_PING_URL`) ; puis **une restauration d'essai** (`backup/restore.sh`).
+- [ ] **Supervision** : `SENTRY_DSN`, ping d'uptime (`PING_URL`), accès Grafana testé.
+- [ ] **Données de démo** absentes (`APP_SEED_ENABLED=false`, défaut pour un vrai domaine).
+- [ ] **Fuseau** (`APP_TIMEZONE`) conforme au pays des clients.
+- [ ] **Stripe** en mode live si la facturation est activée, webhook
+      `https://DOMAIN/api/webhooks/stripe` configuré.
+- [ ] **Intégrations entre hubs** (si utilisées) : une clé par hub dans « Intégration des
+      hubs », et pas de clé historique partagée.
+- [ ] Mentions légales / CGU relues pour votre société (pages `/legal`).
+
 ## Étape 9 — Préparer la vente
 
 Une démo en ligne, c'est la vitrine. Le reste du package :
