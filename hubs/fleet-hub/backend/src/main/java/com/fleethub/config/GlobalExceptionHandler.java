@@ -2,6 +2,7 @@ package com.fleethub.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,6 +41,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                 .body(Map.of("message", "Trop de tentatives de connexion : compte temporairement verrouillé. "
                         + "Réessayez dans quelques minutes."));
+    }
+
+    /**
+     * Contrainte de base violée (ex. immatriculation ou permis déjà utilisé, créé en
+     * parallèle d'une autre requête qui a passé la vérification applicative) : 409.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleIntegrity(DataIntegrityViolationException e) {
+        log.warn("Contrainte d'intégrité violée : {}", e.getMostSpecificCause().getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("message", "Cette donnée existe déjà ou est encore utilisée ailleurs."));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

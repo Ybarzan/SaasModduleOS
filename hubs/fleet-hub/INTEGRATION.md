@@ -129,21 +129,30 @@ Lecture du schéma, de gauche à droite :
 Tout est désactivé par défaut. Pour activer une source, éditez `application.yml`
 (ou une variable d'environnement en production) :
 
+Le polling est configuré pour toute l'instance : il faut donc nommer la société qui
+reçoit les données (`company-id`, identifiant de la société dans fleet-hub). Sans elle,
+la synchronisation est ignorée et une erreur est journalisée — sinon les données seraient
+rattachées à n'importe quelle société ayant la même immatriculation ou le même permis.
+Pour plusieurs sociétés, utilisez plutôt le canal push par société (ci-dessous).
+
 ```yaml
 integration:
   tacho:
     enabled: true
+    company-id: 42             # société destinataire (obligatoire)
     provider: "tachogram"      # tachogram | as24-files | webfleet | ...
     base-url: "https://..."
     api-key: "${TACHO_API_KEY}"
     sync-days-back: 7          # profondeur de re-synchronisation (jours)
   gps:
     enabled: true
+    company-id: 42
     provider: "webfleet"       # webfleet | wialon | geotab | balise-gps
     base-url: "https://..."
     api-key: "${GPS_API_KEY}"
   cost:
     enabled: true
+    company-id: 42
     provider: "as24-infoservice"
     base-url: "https://..."
     api-key: "${AS24_API_KEY}"
@@ -211,10 +220,11 @@ enregistrer ses propres fournisseurs sans intervention de la plateforme :
 Chaque configuration génère une **clé de webhook** (`webhookKey`) que le client transmet
 au fournisseur. Le fournisseur envoie ses données en `POST /api/webhooks/ingest` avec le
 header `X-API-Key` ; les données sont alors rattachées à la **société de la clé**
-(jointure scopée `company_id`, tenant-isolée). La clé partagée globale
-`integration.webhook-api-key` reste supportée comme mode historique.
+(jointure scopée `company_id`, tenant-isolée). L'ancienne clé partagée globale
+`integration.webhook-api-key` a été retirée (2026-11-05) : elle rattachait les données à
+n'importe quelle société ayant la même immatriculation ou le même permis.
 
-Payload accepté (identique au mode global) : `positions[]`, `tachographDays[]`,
+Payload accepté : `positions[]`, `tachographDays[]`,
 `fuelTransactions[]` — voir `IngestPayload` et `IntegrationConfigTest`.
 
 ## Règles de robustesse déjà intégrées

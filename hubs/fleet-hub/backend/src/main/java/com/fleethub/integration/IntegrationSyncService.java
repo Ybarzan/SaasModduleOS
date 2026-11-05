@@ -52,8 +52,10 @@ public class IntegrationSyncService {
             log.warn("Aucun fournisseur tachygraphe trouvé pour provider '{}'", props.getTacho().getProvider());
             return;
         }
+        Long companyId = requireCompany("tacho", props.getTacho().getCompanyId());
+        if (companyId == null) return;
         LocalDate since = LocalDate.now().minusDays(props.getTacho().getSyncDaysBack());
-        ingestTachographDays(source.fetchDrivingDays(since));
+        ingestTachographDays(source.fetchDrivingDays(since), companyId);
     }
 
     @Scheduled(fixedDelay = 60_000)
@@ -64,7 +66,9 @@ public class IntegrationSyncService {
             log.warn("Aucun fournisseur GPS trouvé pour provider '{}'", props.getGps().getProvider());
             return;
         }
-        ingestGpsPositions(source.fetchPositions());
+        Long companyId = requireCompany("gps", props.getGps().getCompanyId());
+        if (companyId == null) return;
+        ingestGpsPositions(source.fetchPositions(), companyId);
     }
 
     @Scheduled(cron = "0 30 3 * * *")
@@ -75,30 +79,37 @@ public class IntegrationSyncService {
             log.warn("Aucun fournisseur carburant trouvé pour provider '{}'", props.getCost().getProvider());
             return;
         }
+        Long companyId = requireCompany("cost", props.getCost().getCompanyId());
+        if (companyId == null) return;
         LocalDate since = LocalDate.now().minusDays(props.getCost().getSyncDaysBack());
-        ingestFuelTransactions(source.fetchTransactions(since));
-    }
-
-    // ---- Ingestion (push webhook ou polling) ----
-
-    /** Enregistre les jours tachygraphe par clé métier {@code licenseNumber}. */
-    @Transactional
-    public int ingestTachographDays(List<TachographDayDto> data) {
-        return ingestTachographDays(data, null);
+        ingestFuelTransactions(source.fetchTransactions(since), companyId);
     }
 
     /**
-     * Variante tenant-scopée (webhook par société) : la jointure est limitée à
-     * la société {@code companyId} pour éviter tout mélange inter-sociétés.
+     * Le polling est configuré pour toute la plateforme ({@code integration.*}) : sans
+     * société explicite, les données seraient rattachées à n'importe quelle société
+     * ayant la même immatriculation ou le même permis. On refuse donc de tourner.
+     */
+    private Long requireCompany(String source, Long companyId) {
+        if (companyId == null) {
+            log.error("Polling {} activé sans integration.{}.company-id : synchronisation ignorée "
+                    + "(les données ne peuvent pas être rattachées à une société)", source, source);
+        }
+        return companyId;
+    }
+
+    // ---- Ingestion (push webhook ou polling), toujours limitée à une société ----
+
+    /**
+     * Jointure limitée à la société {@code companyId} (clé métier : permis du
+     * chauffeur) : jamais de mélange inter-sociétés.
      */
     @Transactional
     public int ingestTachographDays(List<TachographDayDto> data, Long companyId) {
         int saved = 0;
         int skipped = 0;
         for (TachographDayDto dto : data) {
-            Optional<Driver> driver = companyId != null
-                    ? driverRepository.findByLicenseNumberAndCompanyId(dto.licenseNumber(), companyId)
-                    : driverRepository.findByLicenseNumber(dto.licenseNumber());
+            Optional<Driver> driver = driverRepository.findByLicenseNumberAndCompanyId(dto.licenseNumber(), companyId);
             if (driver.isEmpty()) {
                 skipped++;
                 continue;
@@ -130,20 +141,12 @@ public class IntegrationSyncService {
         return tachographService.assess(day, history);
     }
 
-    /** Met à jour les positions GPS par clé métier {@code registration} (idempotent, update en place). */
-    @Transactional
-    public int ingestGpsPositions(List<GpsPositionDto> positions) {
-        return ingestGpsPositions(positions, null);
-    }
-
-    /** Variante tenant-scopée (voir {@link #ingestTachographDays(List, Long)}). */
+    /** Met à jour les positions GPS par immatriculation, dans la société {@code companyId} (update en place). */
     @Transactional
     public int ingestGpsPositions(List<GpsPositionDto> positions, Long companyId) {
         int updated = 0;
         for (GpsPositionDto pos : positions) {
-            Optional<Truck> truck = companyId != null
-                    ? truckRepository.findByRegistrationAndCompanyId(pos.registration(), companyId)
-                    : truckRepository.findByRegistration(pos.registration());
+            Optional<Truck> truck = truckRepository.findByRegistrationAndCompanyId(pos.registration(), companyId);
             if (truck.isEmpty()) continue;
             Truck t = truck.get();
             t.setCurrentLatitude(pos.latitude());
@@ -158,20 +161,12 @@ public class IntegrationSyncService {
         return updated;
     }
 
-    /** Enregistre les transactions carburant par clé métier {@code registration} (anti-doublon). */
-    @Transactional
-    public int ingestFuelTransactions(List<FuelTransactionDto> transactions) {
-        return ingestFuelTransactions(transactions, null);
-    }
-
-    /** Variante tenant-scopée (voir {@link #ingestTachographDays(List, Long)}). */
+    /** Enregistre les pleins par immatriculation, dans la société {@code companyId} (anti-doublon). */
     @Transactional
     public int ingestFuelTransactions(List<FuelTransactionDto> transactions, Long companyId) {
         int saved = 0;
         for (FuelTransactionDto tx : transactions) {
-            Optional<Truck> truck = companyId != null
-                    ? truckRepository.findByRegistrationAndCompanyId(tx.registration(), companyId)
-                    : truckRepository.findByRegistration(tx.registration());
+            Optional<Truck> truck = truckRepository.findByRegistrationAndCompanyId(tx.registration(), companyId);
             if (truck.isEmpty()) continue;
             boolean exists = fuelRecordRepository.findByTruckIdAndDate(truck.get().getId(), tx.date()).stream()
                     .anyMatch(r -> Math.abs(r.getLiters() - tx.liters()) < 0.001

@@ -16,8 +16,5 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
 
     long countByCompanyId(Long companyId);
 
-    /** Non scopé — réservé à la couche d'intégration externe (voir INTEGRATION.md). */
-    Optional<Driver> findByLicenseNumber(String licenseNumber);
-
     void deleteByCompany_Id(Long companyId);
 }
