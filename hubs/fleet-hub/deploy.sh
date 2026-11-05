@@ -172,11 +172,12 @@ else
   warn "   docker exec fleethub-db psql -U fleethub -d fleethub -c 'select * from flyway_schema_history'"
 fi
 
-HEALTH="$(curl -fsS -m 10 http://localhost:8090/actuator/health 2>/dev/null || true)"
+# Le port 8090 n'est pas publié sur l'hôte : on interroge le backend depuis son conteneur.
+HEALTH="$(docker exec fleethub-backend curl -fsS -m 10 http://localhost:8090/actuator/health 2>/dev/null || true)"
 if [ -n "$HEALTH" ]; then
   log "Santé backend : $HEALTH"
 else
-  warn "L'endpoint /actuator/health ne répond pas encore localement (attendre quelques secondes puis : curl localhost:8090/actuator/health)."
+  warn "Le backend ne répond pas encore (attendre quelques secondes puis : docker exec fleethub-backend curl -fsS localhost:8090/actuator/health, ou docker compose logs backend)."
 fi
 
 # Ping de supervision (uptime) si PING_URL est présent dans .env

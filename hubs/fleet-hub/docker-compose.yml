@@ -113,7 +113,9 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_SENTRY_DSN: ${SENTRY_DSN_FRONTEND:-}
+        # Même DSN que le backend par défaut (DEPLOY.md) ; SENTRY_DSN_FRONTEND pour un
+        # projet Sentry distinct.
+        VITE_SENTRY_DSN: ${SENTRY_DSN_FRONTEND:-${SENTRY_DSN:-}}
     container_name: fleethub-frontend
     restart: unless-stopped
     healthcheck:

@@ -151,8 +151,12 @@ Pour les **emails** (invitations, rappels d'essai) : renseignez `MAIL_*` dans `.
 
 Pour la **supervision** : créez un projet Sentry (gratuit), collez le DSN dans
 `SENTRY_DSN` du `.env` (il sert au backend ET au frontend — le DSN n'est pas
-secret), et ajoutez un ping d'uptime (`PING_URL`, ex. healthchecks.io) alerté si
-le site répond plus.
+secret ; `SENTRY_DSN_FRONTEND` pour un projet distinct), puis relancez
+`docker compose up -d --build`. Pour être alerté si le site tombe, configurez une
+**sonde HTTP externe** (UptimeRobot, Better Stack, healthchecks.io en mode HTTP…)
+sur `https://DOMAIN/actuator/health` : elle répond `{"status":"UP"}` (200) et 503 si
+le backend ou sa base ne vont pas. `PING_URL` n'est envoyé qu'une fois, en fin de
+déploiement.
 
 ## Étape 8 — Mettre à jour la démo
 
@@ -173,7 +177,8 @@ Le script installe une plateforme qui fonctionne ; ces points restent à faire �
       mot de passe ne partent pas (les liens sont seulement écrits dans les logs).
 - [ ] **Sauvegarde hors site** (`RCLONE_REMOTE`, `RCLONE_CONFIG_BASE64`) et alerte
       d'échec (`BACKUP_PING_URL`) ; puis **une restauration d'essai** (`backup/restore.sh`).
-- [ ] **Supervision** : `SENTRY_DSN`, ping d'uptime (`PING_URL`), accès Grafana testé.
+- [ ] **Supervision** : `SENTRY_DSN`, sonde HTTP externe sur `https://DOMAIN/actuator/health`,
+      accès Grafana testé.
 - [ ] **Données de démo** absentes (`APP_SEED_ENABLED=false`, défaut pour un vrai domaine).
 - [ ] **Fuseau** (`APP_TIMEZONE`) conforme au pays des clients.
 - [ ] **Stripe** en mode live si la facturation est activée, webhook
