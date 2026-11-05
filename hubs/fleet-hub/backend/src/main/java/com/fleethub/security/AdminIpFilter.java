@@ -45,8 +45,9 @@ public class AdminIpFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        if (envAllowedIps.isEmpty() && ipAllowlistRepository.count() == 0) return true;
-        return !request.getRequestURI().startsWith("/api/admin/");
+        // La route d'abord : sinon chaque requête de l'API payait un count() en base.
+        if (!request.getRequestURI().startsWith("/api/admin/")) return true;
+        return envAllowedIps.isEmpty() && ipAllowlistRepository.count() == 0;
     }
 
     @Override
