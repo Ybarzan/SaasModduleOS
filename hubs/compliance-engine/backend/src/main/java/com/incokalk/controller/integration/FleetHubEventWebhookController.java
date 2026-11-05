@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -38,9 +39,19 @@ public class FleetHubEventWebhookController {
     @ApiResponse(responseCode = "401", description = "Clé manquante, invalide, ou réception désactivée")
     public ResponseEntity<Void> handleShipmentEvent(
             @RequestHeader(value = "X-FleetHub-Webhook-Key", required = false) String apiKey,
+            @RequestHeader(value = "X-FleetHub-Event-Id", required = false) UUID headerEventId,
             @Valid @RequestBody FleetHubShipmentEventRequest request) {
         UUID companyId = fleetHubWebhookService.resolveCompanyId(apiKey);
-        fleetHubWebhookService.recordEvent(companyId, request);
+        FleetHubShipmentEventRequest event = request.eventId() == null && headerEventId != null
+                ? request.withEventId(headerEventId)
+                : request;
+        try {
+            fleetHubWebhookService.recordEvent(companyId, event);
+        } catch (DataIntegrityViolationException duplicate) {
+            // Deux livraisons simultanées du même événement : l'index unique (V82) a
+            // retenu la première ; celle-ci est un doublon, acquitté comme tel.
+        }
+        // 202 aussi pour un doublon : l'événement est bien reçu, fleet-hub doit arrêter de le renvoyer.
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
 }

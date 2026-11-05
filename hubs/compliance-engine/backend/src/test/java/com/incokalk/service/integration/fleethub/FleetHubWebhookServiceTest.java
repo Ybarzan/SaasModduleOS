@@ -122,7 +122,7 @@ class FleetHubWebhookServiceTest {
     @DisplayName("recordEvent → écrit une ligne event_outbox préfixée FLEETHUB_, PENDING, avec le payload sérialisé")
     void recordEvent_writesOutboxRow() {
         FleetHubShipmentEventRequest request = new FleetHubShipmentEventRequest(
-                "SHIPMENT_STATUS_CHANGE", UUID.randomUUID(), "FH-1", "EN_TRANSIT", "DELIVERED", "LIVE");
+                "SHIPMENT_STATUS_CHANGE", UUID.randomUUID(), "FH-1", "EN_TRANSIT", "DELIVERED", "LIVE", null);
 
         service.recordEvent(companyId, request);
 
@@ -133,5 +133,33 @@ class FleetHubWebhookServiceTest {
         assertThat(saved.getCompanyId()).isEqualTo(companyId);
         assertThat(saved.getStatus()).isEqualTo(EventOutbox.Status.PENDING);
         assertThat(saved.getPayload()).contains("FH-1").contains("DELIVERED");
+    }
+
+    @Test
+    @DisplayName("recordEvent avec eventId → enregistre l'identifiant source (déduplication)")
+    void recordEvent_withEventId_storesSourceEventId() {
+        UUID eventId = UUID.randomUUID();
+        FleetHubShipmentEventRequest request = new FleetHubShipmentEventRequest(
+                "SHIPMENT_CREATED", UUID.randomUUID(), "FH-2", null, null, null, eventId);
+        when(eventOutboxRepo.existsByCompanyIdAndSourceEventId(companyId, eventId)).thenReturn(false);
+
+        assertThat(service.recordEvent(companyId, request)).isTrue();
+
+        ArgumentCaptor<EventOutbox> captor = ArgumentCaptor.forClass(EventOutbox.class);
+        verify(eventOutboxRepo).save(captor.capture());
+        assertThat(captor.getValue().getSourceEventId()).isEqualTo(eventId);
+    }
+
+    @Test
+    @DisplayName("recordEvent d'un événement déjà reçu → ignoré, aucune nouvelle ligne")
+    void recordEvent_duplicateEventId_isIgnored() {
+        UUID eventId = UUID.randomUUID();
+        FleetHubShipmentEventRequest request = new FleetHubShipmentEventRequest(
+                "SHIPMENT_CREATED", UUID.randomUUID(), "FH-3", null, null, null, eventId);
+        when(eventOutboxRepo.existsByCompanyIdAndSourceEventId(companyId, eventId)).thenReturn(true);
+
+        assertThat(service.recordEvent(companyId, request)).isFalse();
+
+        verify(eventOutboxRepo, org.mockito.Mockito.never()).save(org.mockito.ArgumentMatchers.any());
     }
 }

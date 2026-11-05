@@ -91,4 +91,34 @@ class FleetHubEventWebhookControllerTest extends ControllerTestBase {
                         .content(BODY))
                 .andExpect(status().isAccepted());
     }
+    @Test
+    @DisplayName("X-FleetHub-Event-Id sans eventId dans le corps → identifiant repris de l'en-tête")
+    void handleShipmentEvent_eventIdFromHeader() throws Exception {
+        when(fleetHubWebhookService.resolveCompanyId("clef-valide")).thenReturn(companyId);
+        UUID eventId = UUID.randomUUID();
+
+        mockMvc.perform(post("/v1/webhooks/fleethub/shipment-events")
+                        .header("X-FleetHub-Webhook-Key", "clef-valide")
+                        .header("X-FleetHub-Event-Id", eventId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(BODY))
+                .andExpect(status().isAccepted());
+
+        verify(fleetHubWebhookService).recordEvent(eq(companyId),
+                org.mockito.ArgumentMatchers.argThat(r -> eventId.equals(r.eventId())));
+    }
+
+    @Test
+    @DisplayName("doublon simultané (index unique) → 202 quand même : fleet-hub doit cesser de renvoyer")
+    void handleShipmentEvent_concurrentDuplicate_stillAccepted() throws Exception {
+        when(fleetHubWebhookService.resolveCompanyId("clef-valide")).thenReturn(companyId);
+        when(fleetHubWebhookService.recordEvent(eq(companyId), any()))
+                .thenThrow(new org.springframework.dao.DataIntegrityViolationException("uk_event_outbox_source_event"));
+
+        mockMvc.perform(post("/v1/webhooks/fleethub/shipment-events")
+                        .header("X-FleetHub-Webhook-Key", "clef-valide")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(BODY))
+                .andExpect(status().isAccepted());
+    }
 }
