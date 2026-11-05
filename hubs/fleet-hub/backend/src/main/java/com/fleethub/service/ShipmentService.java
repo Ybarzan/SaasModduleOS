@@ -152,11 +152,37 @@ public class ShipmentService {
         eventPublisher.shipmentCreated(saved.getId(), orderNumber, companyId);
         eventRecorder.record(saved, ShipmentEvent.EventType.SHIPMENT_CREATED,
                 Map.of("orderNumber", orderNumber));
-        return saved;
+        return withRelations(saved);
     }
 
+    /** Vue liste (sans pagination) : même préparation que la version paginée ci-dessous. */
+    @Transactional(readOnly = true)
     public List<ShipmentOrder> listShipments(Long companyId) {
-        return shipmentRepo.findByCompanyIdOrderByCreatedAtDesc(companyId);
+        List<ShipmentOrder> shipments = shipmentRepo.findByCompanyIdOrderByCreatedAtDesc(companyId);
+        shipments.forEach(this::forList);
+        return shipments;
+    }
+
+    /**
+     * Les réponses JSON lisent transporteur, tarif et camion (carrierName, transportMode,
+     * truckRegistration) et l'historique de suivi, relations paresseuses. La sérialisation a lieu après la
+     * transaction (open-in-view désactivé) : on les charge ici, sinon 500
+     * (LazyInitializationException) — par exemple dès qu'une expédition est créée à
+     * partir d'un tarif, dont le transporteur n'était qu'un proxy.
+     */
+    private ShipmentOrder withRelations(ShipmentOrder shipment) {
+        Hibernate.initialize(shipment.getCarrier());
+        Hibernate.initialize(shipment.getShippingRate());
+        Hibernate.initialize(shipment.getTruck());
+        // Historique de suivi : chargé pour une réponse unitaire (déjà vidé pour une liste).
+        Hibernate.initialize(shipment.getTrackingEvents());
+        return shipment;
+    }
+
+    /** Vue liste : relations chargées, jamais l'historique de suivi (voir ci-dessous). */
+    private void forList(ShipmentOrder shipment) {
+        shipment.setTrackingEvents(List.of());
+        withRelations(shipment);
     }
 
     /**
@@ -169,7 +195,7 @@ public class ShipmentService {
     @Transactional(readOnly = true)
     public Page<ShipmentOrder> listShipments(Long companyId, Pageable pageable) {
         Page<ShipmentOrder> page = shipmentRepo.findByCompanyIdOrderByCreatedAtDesc(companyId, pageable);
-        page.getContent().forEach(s -> s.setTrackingEvents(List.of()));
+        page.getContent().forEach(this::forList);
         return page;
     }
 
@@ -178,12 +204,15 @@ public class ShipmentService {
     @Transactional(readOnly = true)
     public Page<ShipmentOrder> searchShipments(Long companyId, String query, Pageable pageable) {
         Page<ShipmentOrder> page = shipmentRepo.searchByCompanyIdAndQuery(companyId, query, pageable);
-        page.getContent().forEach(s -> s.setTrackingEvents(List.of()));
+        page.getContent().forEach(this::forList);
         return page;
     }
 
+    @Transactional(readOnly = true)
     public List<ShipmentOrder> listUserShipments(Long userId) {
-        return shipmentRepo.findByUserIdOrderByCreatedAtDesc(userId);
+        List<ShipmentOrder> shipments = shipmentRepo.findByUserIdOrderByCreatedAtDesc(userId);
+        shipments.forEach(this::forList);
+        return shipments;
     }
 
     @Transactional
@@ -233,7 +262,7 @@ public class ShipmentService {
         eventRecorder.record(shipment, ShipmentEvent.EventType.STATUS_CHANGED,
                 Map.of("oldStatus", oldStatus, "newStatus", dto.getStatus(), "dataSource", "MANUAL"));
 
-        return shipment;
+        return withRelations(shipment);
     }
 
     /**
@@ -253,7 +282,7 @@ public class ShipmentService {
         }
 
         shipment.setClientId(clientId);
-        return shipmentRepo.save(shipment);
+        return withRelations(shipmentRepo.save(shipment));
     }
 
     /** Lie (ou délie si mmsi est null/vide) cette expédition à un navire suivi
@@ -268,7 +297,7 @@ public class ShipmentService {
             shipment.setTrackedVesselMmsi(null);
             ShipmentOrder saved = shipmentRepo.save(shipment);
             eventRecorder.record(saved, ShipmentEvent.EventType.VESSEL_ASSIGNED, Map.of("cleared", true));
-            return saved;
+            return withRelations(saved);
         }
 
         String trimmed = mmsi.trim();
@@ -278,7 +307,7 @@ public class ShipmentService {
         shipment.setTrackedVesselMmsi(trimmed);
         ShipmentOrder saved = shipmentRepo.save(shipment);
         eventRecorder.record(saved, ShipmentEvent.EventType.VESSEL_ASSIGNED, Map.of("mmsi", trimmed));
-        return saved;
+        return withRelations(saved);
     }
 
     private static final java.util.Map<ShipmentOrder.Status, java.util.Set<ShipmentOrder.Status>> ALLOWED_TRANSITIONS =
@@ -310,7 +339,7 @@ public class ShipmentService {
         Hibernate.initialize(shipment.getTrackingEvents());
         shipment.setTrackingEvents(events);
 
-        return shipment;
+        return withRelations(shipment);
     }
 
     @Transactional
