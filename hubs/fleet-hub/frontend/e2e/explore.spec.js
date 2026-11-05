@@ -8,8 +8,9 @@ test.beforeEach(desktopOnly)
 
 test('ouvre la fiche camion depuis la liste des camions', async ({ page }) => {
   await loginAsAdmin(page)
-  await page.getByRole('link', { name: /Camions/ }).click()
-  await expect(page.getByRole('heading', { name: 'Camions' })).toBeVisible()
+  // Société de démo en profil « flotte mixte » : le menu dit « Véhicules » (voir fleet.js).
+  await page.getByRole('link', { name: /Véhicules/ }).click()
+  await expect(page.getByRole('heading', { name: 'Véhicules' })).toBeVisible()
 
   await page.locator('tbody tr').first().locator('a.cell-link').click()
   await expect(page).toHaveURL(/\/trucks\/\d+/)
