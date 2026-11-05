@@ -57,8 +57,15 @@ sudo DOMAIN=fleethub-demo.fr bash -c "$(curl -fsSL https://raw.githubusercontent
 > Si vous préférez exécuter le script local : clonez le dépôt et faites
 > `sudo DOMAIN=... ./deploy.sh`.
 
-À la fin, le script affiche les **identifiants de démo générés**
-(`saasadmin`, `admin`, `gestionnaire`). Conservez-les précieusement.
+À la fin, le script affiche les **identifiants générés** (`saasadmin`, `admin`,
+`gestionnaire`, et le mot de passe Grafana de `https://DOMAIN/grafana`).
+Conservez-les précieusement : ils sont aussi dans `/opt/fleethub/hubs/fleet-hub/.env`.
+
+> **Données de démo** : uniquement si `DOMAIN=localhost`. Pour une démo publique,
+> ajoutez `APP_SEED_ENABLED=true` à la commande ; ne le faites jamais pour un client réel.
+>
+> **Fuseau horaire** : les dates métier (KPI du jour, tachygraphe, tournées) suivent
+> `APP_TIMEZONE` (`Europe/Paris` par défaut dans `.env`).
 
 L'application est alors disponible sur **https://fleethub-demo.fr** (certificat
 Let's Encrypt automatique via Caddy).
@@ -92,7 +99,9 @@ docker exec fleethub-db psql -U fleethub -d fleethub \
   -c "SELECT installed_rank, version, description, success FROM flyway_schema_history ORDER BY installed_rank;"
 ```
 
-- `success = t` sur chaque ligne : OK. Vous devez voir `1 | 1 | << Flyway Baseline >> | t` puis `V1__baseline`.
+- `success = t` sur chaque ligne : OK. Sur une base neuve, vous voyez `V1__baseline` puis
+  chaque migration jusqu'à la dernière (`V27__money_as_decimal` à ce jour). Une ligne
+  `<< Flyway Baseline >>` n'apparaît que sur une base créée avant l'introduction de Flyway.
 - `success = f` : une migration a échoué — consultez `docker compose logs backend`, corrigez,
   et rejouez uniquement la migration fautive (jamais `flyway repair` sans comprendre pourquoi).
 - Le backend part en `ddl-auto: validate` : tout écart entre le schéma et les entités JPA
@@ -101,7 +110,7 @@ docker exec fleethub-db psql -U fleethub -d fleethub \
 Petit contrôle de contenu :
 
 ```bash
-docker exec fleethub-db psql -U fleethub -d fleethub -c "SELECT count(*) FROM users;"
+docker exec fleethub-db psql -U fleethub -d fleethub -c "SELECT count(*) FROM app_user;"
 docker exec fleethub-db psql -U fleethub -d fleethub -c "SELECT name FROM company;"
 ```
 
@@ -110,7 +119,22 @@ docker exec fleethub-db psql -U fleethub -d fleethub -c "SELECT name FROM compan
 Le conteneur `backup` fait un `pg_dump` compressé toutes les 24 h dans
 `./backups/` (rétention 7 jours par défaut). Pour une démo, c'est suffisant.
 Pour de la production, pointez ces dumps vers un stockage externe
-(rclone/S3/rsync hors du serveur).
+(`RCLONE_REMOTE` + `RCLONE_CONFIG_BASE64`, voir `.env.example`) et activez
+`BACKUP_PING_URL` pour être alerté si une sauvegarde échoue.
+
+### Restaurer une sauvegarde
+
+```bash
+cd /opt/fleethub/hubs/fleet-hub
+ls backups/                                   # choisir le dump
+./backup/restore.sh backups/fleethub-AAAAMMJJ-HHMMSS.sql.gz
+```
+
+Le script arrête le backend, fait d'abord une **sauvegarde de sécurité** de la base
+actuelle (`backups/avant-restauration-*.sql.gz`), remplace la base par le dump,
+puis redémarre le backend et attend qu'il soit sain. Il demande de taper
+`RESTAURER` avant toute modification. Testez-le une fois sur un serveur de recette :
+une sauvegarde qu'on n'a jamais restaurée n'est pas une sauvegarde.
 
 ## Étape 7 — Activer Stripe et les emails (facultatif, plus tard)
 
@@ -130,11 +154,13 @@ le site répond plus.
 ## Étape 8 — Mettre à jour la démo
 
 ```bash
-sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/Ybarzan/fleet-hub/master/deploy.sh)"
+sudo DOMAIN=fleethub-demo.fr bash -c "$(curl -fsSL https://raw.githubusercontent.com/Ybarzan/SaasModduleOS/main/hubs/fleet-hub/deploy.sh)"
 ```
 
 Le script met à jour le dépôt puis relance le build. Les données (volume
-PostgreSQL `pgdata`) sont conservées.
+PostgreSQL `pgdata`) sont conservées, ainsi que le `.env` ; le script y ajoute
+seulement les variables devenues obligatoires (ex. `GRAFANA_PASSWORD`) et affiche
+leur valeur.
 
 ## Étape 9 — Préparer la vente
 

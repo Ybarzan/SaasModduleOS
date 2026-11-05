@@ -87,6 +87,10 @@ services:
       COMPLIANCE_ENGINE_URL: ${COMPLIANCE_ENGINE_URL:-http://host.docker.internal:8081}
       SENTRY_DSN: ${SENTRY_DSN:-}
       APP_ENV: ${APP_ENV:-production}
+      # Fuseau des dates métier (« aujourd'hui » des KPI, jours tachygraphe, tournées) :
+      # sans lui, le conteneur tourne en UTC et la journée bascule à 1 h / 2 h du matin
+      # heure de Paris.
+      TZ: ${APP_TIMEZONE:-Europe/Paris}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
@@ -189,7 +193,9 @@ services:
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      # Grafana est publié sur https://DOMAIN/grafana (caddy/Caddyfile) : jamais de
+      # mot de passe par défaut. deploy.sh en génère un.
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?Set GRAFANA_PASSWORD (voir .env.example)}
       GF_USERS_ALLOW_SIGN_UP: "false"
       # Servi derrière Caddy sous /grafana (voir caddy/Caddyfile) : sans ces deux
       # variables, Grafana ignore qu'il est monté sous un sous-chemin et redirige

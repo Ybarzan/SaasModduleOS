@@ -77,7 +77,7 @@ if [ ! -f "$ENV_FILE" ]; then
   DB_PASSWORD="$(openssl rand -base64 24 | tr -d '/+=')"
   JWT_SECRET="$(openssl rand -hex 64)"
   INTEGRATION_SECRET_KEY="$(openssl rand -base64 32 | tr -d '/+=')"
-  INTEGRATION_WEBHOOK_API_KEY="$(openssl rand -hex 24)"
+  GRAFANA_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=')"
   # Démo activée seulement pour un déploiement local sans domaine public : un
   # vrai domaine client ne doit jamais recevoir de données de démo par défaut.
   if [ "$DOMAIN" = "localhost" ]; then
@@ -101,7 +101,10 @@ APP_LOGIN_RATE_LIMIT=10
 # public réel — éditer manuellement si un vrai déploiement a besoin de données de démo.
 APP_SEED_ENABLED=$APP_SEED_ENABLED
 INTEGRATION_SECRET_KEY=$INTEGRATION_SECRET_KEY
-INTEGRATION_WEBHOOK_API_KEY=$INTEGRATION_WEBHOOK_API_KEY
+# Grafana (supervision) publié sur https://$DOMAIN/grafana, utilisateur admin.
+GRAFANA_PASSWORD=$GRAFANA_PASSWORD
+# Fuseau des dates métier (KPI du jour, tachygraphe, tournées).
+APP_TIMEZONE=Europe/Paris
 # --- À compléter vous-même selon vos besoins (voir .env.example) ---
 #SENTRY_DSN=https://xxxxxxx@o000000.ingest.sentry.io/0000000
 #MAIL_ENABLED=true
@@ -126,8 +129,20 @@ EOF
   log "   saasadmin / $ADMIN_PASSWORD  (opérateur plateforme)"
   log "   admin     / $ADMIN_PASSWORD  (société démo)"
   log "   gestionnaire / $GESTIONNAIRE_PASSWORD"
+  log "   Grafana (https://$DOMAIN/grafana) : admin / $GRAFANA_PASSWORD"
 else
-  warn ".env existant conservé (pas de modification)."
+  warn ".env existant conservé."
+  # Variables devenues obligatoires depuis la création de ce .env : ajoutées sans
+  # toucher au reste du fichier.
+  if ! grep -q '^GRAFANA_PASSWORD=' "$ENV_FILE"; then
+    GRAFANA_PASSWORD="$(openssl rand -base64 18 | tr -d '/+=')"
+    printf '\n# Grafana (supervision) publié sur /grafana, utilisateur admin.\nGRAFANA_PASSWORD=%s\n' "$GRAFANA_PASSWORD" >> "$ENV_FILE"
+    warn "GRAFANA_PASSWORD ajouté à .env (Grafana n'a plus de mot de passe par défaut) : admin / $GRAFANA_PASSWORD"
+  fi
+  if grep -q '^INTEGRATION_WEBHOOK_API_KEY=' "$ENV_FILE"; then
+    warn "INTEGRATION_WEBHOOK_API_KEY n'est plus utilisée : le push d'intégration passe par la clé"
+    warn "   de webhook de chaque société (page Intégrations). Vous pouvez retirer la ligne de .env."
+  fi
 fi
 
 # --- 4. Build + démarrage --------------------------------------------------
