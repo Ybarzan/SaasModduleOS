@@ -14,9 +14,11 @@ import {
   CartesianGrid
 } from 'recharts'
 import api from '../services/api'
+import { fuelLabel, vehicleTypeLabel, energyUnit } from '../fleet'
 import PeriodSelector from '../components/PeriodSelector'
 import StatCard from '../components/StatCard'
 import StatusBadge from '../components/StatusBadge'
+import { fmtNum } from '../format'
 
 const EVENT_LABELS = {
   FREINAGE_BRUSQUE: 'Freinage brusque',
@@ -106,8 +108,7 @@ export default function TruckDetail() {
             🚛 {k.brand} {k.model}
           </h2>
           <p className="muted">
-            {k.registration} · {k.truckType.toLowerCase()} ·{' '}
-            {k.fuelType === 'DIESEL' ? 'Diesel' : 'Électrique'}
+            {k.registration} · {vehicleTypeLabel(k.truckType)} · {fuelLabel(k.fuelType)}
             {k.modelYear ? ` · ${k.modelYear}` : ''}
           </p>
         </div>
@@ -135,28 +136,28 @@ export default function TruckDetail() {
         <div className="detail-northstar">
           <StatCard
             label="Consommation"
-            value={k.consumptionPer100Km.toFixed(1)}
-            unit="L/100"
+            value={fmtNum(k.consumptionPer100Km, 1)}
+            unit={`${energyUnit(k.fuelType)}/100`}
             icon="⛽"
             tone="blue"
           />
           <StatCard
             label="Maintenance"
-            value={k.maintenanceComplianceRate.toFixed(0)}
+            value={fmtNum(k.maintenanceComplianceRate, 0)}
             unit="%"
             icon="🔧"
             tone="purple"
           />
           <StatCard
             label="Disponibilité"
-            value={k.truckUptimeRate.toFixed(0)}
+            value={fmtNum(k.truckUptimeRate, 0)}
             unit="%"
             icon="🟢"
             tone="green"
           />
           <StatCard
             label="Coût au km"
-            value={k.costPerKm.toFixed(2)}
+            value={fmtNum(k.costPerKm, 2)}
             unit="€"
             icon="💰"
             tone="red"
@@ -170,20 +171,22 @@ export default function TruckDetail() {
           <div className="kpi-grid">
             <div className="kpi-item">
               <span>Consommation</span>
-              <b>{k.consumptionPer100Km.toFixed(1)} L</b>
+              <b>
+                {fmtNum(k.consumptionPer100Km, 1)} {energyUnit(k.fuelType)}
+              </b>
               <small>/100km</small>
             </div>
             <div className="kpi-item">
               <span>Dérive conso</span>
               <b className={k.consumptionDeltaPct > 10 ? 'text-danger' : ''}>
                 {k.consumptionDeltaPct > 0 ? '+' : ''}
-                {k.consumptionDeltaPct.toFixed(0)}%
+                {fmtNum(k.consumptionDeltaPct, 0)}%
               </b>
               <small>vs référence</small>
             </div>
             <div className="kpi-item">
               <span>Disponibilité</span>
-              <b>{k.truckUptimeRate.toFixed(0)}%</b>
+              <b>{fmtNum(k.truckUptimeRate, 0)}%</b>
               <small>uptime</small>
             </div>
             <div className="kpi-item">
@@ -192,12 +195,12 @@ export default function TruckDetail() {
             </div>
             <div className="kpi-item">
               <span>Utilisation</span>
-              <b>{k.utilizationRate.toFixed(0)}%</b>
+              <b>{fmtNum(k.utilizationRate, 0)}%</b>
               <small>temps en service</small>
             </div>
             <div className="kpi-item">
               <span>Km en charge</span>
-              <b>{k.loadedRunRate.toFixed(0)}%</b>
+              <b>{fmtNum(k.loadedRunRate, 0)}%</b>
               <small>chargé</small>
             </div>
           </div>
@@ -213,7 +216,7 @@ export default function TruckDetail() {
             </div>
             <div className="kpi-item">
               <span>Heures de roulage</span>
-              <b>{k.totalDrivingHours.toFixed(0)} h</b>
+              <b>{fmtNum(k.totalDrivingHours, 0)} h</b>
             </div>
             <div className="kpi-item">
               <span>Trajets</span>
@@ -292,7 +295,7 @@ export default function TruckDetail() {
                   yAxisId="fuel"
                   type="monotone"
                   dataKey="liters"
-                  name="Litres"
+                  name={energyUnit(k.fuelType) === 'kWh' ? 'kWh' : 'Litres'}
                   stroke="var(--orange)"
                   strokeWidth={2.5}
                   dot={false}
@@ -419,31 +422,33 @@ export default function TruckDetail() {
               <thead>
                 <tr>
                   <th>Date</th>
-                  <th>Litres</th>
+                  <th>{energyUnit(k.fuelType) === 'kWh' ? 'kWh' : 'Litres'}</th>
                   <th>Montant (€)</th>
                   <th>Kilométrage</th>
-                  <th>Prix / L</th>
+                  <th>Prix / {energyUnit(k.fuelType)}</th>
                 </tr>
               </thead>
               <tbody>
                 {detail.fuels.length === 0 && (
                   <tr>
                     <td colSpan={5} className="table-empty">
-                      Aucun relevé de carburant sur la période
+                      Aucun plein ni recharge sur la période
                     </td>
                   </tr>
                 )}
                 {detail.fuels.map((f) => (
                   <tr key={f.id}>
                     <td className="cell-strong">{new Date(f.date).toLocaleDateString('fr-FR')}</td>
-                    <td>{f.liters.toLocaleString('fr-FR')} L</td>
+                    <td>
+                      {f.liters.toLocaleString('fr-FR')} {energyUnit(k.fuelType)}
+                    </td>
                     <td>{f.amount.toLocaleString('fr-FR')} €</td>
                     <td>
                       {f.odometerKm
                         ? `${Math.round(f.odometerKm).toLocaleString('fr-FR')} km`
                         : '—'}
                     </td>
-                    <td>{f.liters > 0 ? `${(f.amount / f.liters).toFixed(3)} €` : '—'}</td>
+                    <td>{f.liters > 0 ? `${fmtNum(f.amount / f.liters, 3)} €` : '—'}</td>
                   </tr>
                 ))}
               </tbody>

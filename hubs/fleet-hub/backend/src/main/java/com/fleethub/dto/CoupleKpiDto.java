@@ -43,5 +43,7 @@ public record CoupleKpiDto(
         double totalCost,
         double loadedRunRate,
         double performanceScore,
-        List<String> alerts
+        List<String> alerts,
+        /** false pour un VUL/VL sans tachygraphe : la conformité 561/2006 est sans objet. */
+        boolean tachographApplicable
 ) {}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import { fleetTerms, usesTachograph, usesTours } from '../fleet'
 
 /** @type {{fill: string, stroke: string, strokeWidth: number, strokeLinecap: 'round', strokeLinejoin: 'round'}} */
 const stroke = {
@@ -294,15 +295,38 @@ const icons = {
         </>
       }
     />
+  ),
+  tours: (
+    <Icon
+      d={
+        <>
+          <circle cx="6" cy="18" r="2.2" />
+          <circle cx="18" cy="6" r="2.2" />
+          <path d="M8.2 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.8" />
+        </>
+      }
+    />
+  ),
+  sites: (
+    <Icon
+      d={
+        <>
+          <path d="M4 21V9l8-5 8 5v12" />
+          <path d="M9 21v-6h6v6" />
+        </>
+      }
+    />
   )
 }
 
 const navItems = [
   { to: '/', label: 'Tableau de bord', icon: 'dashboard', end: true },
+  { to: '/tours', label: 'Tournées', icon: 'tours', end: false, show: usesTours },
+  { to: '/sites', label: 'Sites', icon: 'sites', end: false, show: usesTours },
   { to: '/drivers', label: 'Chauffeurs', icon: 'drivers', end: false },
-  { to: '/tachographie', label: 'Tachographie', icon: 'tacho', end: false },
+  { to: '/tachographie', label: 'Tachographie', icon: 'tacho', end: false, show: usesTachograph },
   { to: '/pointage-suivi', label: 'Pointage', icon: 'pointage', end: false },
-  { to: '/trucks', label: 'Camions', icon: 'trucks', end: false },
+  { to: '/trucks', label: (user) => fleetTerms(user).vehicles, icon: 'trucks', end: false },
   { to: '/data', label: 'Saisie', icon: 'data', end: false },
   { to: '/import', label: 'Import fichiers', icon: 'import', end: false },
   { to: '/map', label: 'Carte temps réel', icon: 'map', end: false },
@@ -319,8 +343,6 @@ const navItems = [
   { to: '/providers', label: 'Fournisseurs', icon: 'integrations', end: false },
   { to: '/providers/health', label: 'Santé fournisseurs', icon: 'integrations', end: false },
   { to: '/tracking', label: 'Suivi colis', icon: 'satellite', end: false },
-  { to: '/ship-tracker', label: 'Ship Tracker', icon: 'satellite', end: false },
-  { to: '/flight-radar', label: 'Flight Radar', icon: 'satellite', end: false },
   { to: '/logistics', label: 'Logistique', icon: 'import', end: false },
   { to: '/route-optimizer', label: 'Itinéraire', icon: 'route', end: false },
   { to: '/optimization', label: 'Optimisation tarifs', icon: 'route', end: false },
@@ -335,7 +357,7 @@ const navItems = [
   { to: '/marketplace', label: 'Marketplace', icon: 'marketplace', end: false, adminOnly: true },
   {
     to: '/hub-integration',
-    label: 'Logistix & Compliance',
+    label: 'Hubs Praxio',
     icon: 'hubIntegration',
     end: false,
     adminOnly: true
@@ -348,8 +370,12 @@ const navItems = [
 const visibleNav = (user) =>
   navItems.filter(
     (item) =>
-      (!item.saasOnly || user?.role === 'SAAS_ADMIN') && (!item.adminOnly || user?.role === 'ADMIN')
+      (!item.saasOnly || user?.role === 'SAAS_ADMIN') &&
+      (!item.adminOnly || user?.role === 'ADMIN') &&
+      (!item.show || item.show(user))
   )
+
+const labelFor = (item, user) => (typeof item.label === 'function' ? item.label(user) : item.label)
 
 const roleLabel = (role) =>
   role === 'SAAS_ADMIN'
@@ -399,7 +425,7 @@ export default function Layout() {
           </svg>
         </button>
         <div className="mobile-brand">
-          <span>🚛</span> Fleet Hub
+          <span>{fleetTerms(user).brandIcon}</span> Fleet Hub
         </div>
         <button
           className="theme-toggle theme-toggle-mobile"
@@ -440,7 +466,7 @@ export default function Layout() {
 
       <aside className={'sidebar' + (menuOpen ? ' open' : '')}>
         <div className="logo">
-          <span className="logo-icon">🚛</span>
+          <span className="logo-icon">{fleetTerms(user).brandIcon}</span>
           <div>
             <h1>Fleet Hub</h1>
             <p>{user?.companyName || 'SYSTÈME / GESTION FLOTTE'}</p>
@@ -474,7 +500,7 @@ export default function Layout() {
                 onClick={closeMenu}
                 className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
               >
-                <span>{icons[item.icon]}</span> {item.label}
+                <span>{icons[item.icon]}</span> {labelFor(item, user)}
               </NavLink>
             )
           )}

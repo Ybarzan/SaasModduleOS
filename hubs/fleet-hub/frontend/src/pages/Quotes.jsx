@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import api from '../services/api'
+import { fmtNum } from '../format'
 
 const TRANSPORT_MODES = [
   { value: '', label: 'Tous' },
@@ -261,7 +262,7 @@ export default function Quotes() {
                 <div className="stat-icon">🏆</div>
                 <div className="stat-body">
                   <div className="stat-label">Meilleur tarif</div>
-                  <div className="stat-value">{cheapest.totalCost.toFixed(2)} €</div>
+                  <div className="stat-value">{fmtNum(cheapest.totalCost, 2)} €</div>
                   <div className="stat-sub">{cheapest.carrierName}</div>
                 </div>
               </div>
@@ -283,7 +284,7 @@ export default function Quotes() {
                 <div className="stat-icon">🌿</div>
                 <div className="stat-body">
                   <div className="stat-label">Le plus éco</div>
-                  <div className="stat-value">{greenest.co2EstimateKg?.toFixed(1)} kg CO₂</div>
+                  <div className="stat-value">{fmtNum(greenest.co2EstimateKg, 1)} kg CO₂</div>
                   <div className="stat-sub">{greenest.carrierName}</div>
                 </div>
               </div>
@@ -318,14 +319,14 @@ export default function Quotes() {
                       <div className="couple-stat">
                         <span>Coût total</span>
                         <b>
-                          {quote.totalCost.toFixed(2)} {quote.currency}
+                          {fmtNum(quote.totalCost, 2)} {quote.currency}
                         </b>
                       </div>
                       {quote.totalCostConverted != null && quote.displayCurrency && (
                         <div className="couple-stat">
                           <span>≈ Converti</span>
                           <b>
-                            {quote.totalCostConverted.toFixed(2)} {quote.displayCurrency}
+                            {fmtNum(quote.totalCostConverted, 2)} {quote.displayCurrency}
                           </b>
                         </div>
                       )}
@@ -340,13 +341,13 @@ export default function Quotes() {
                       {quote.co2EstimateKg != null && (
                         <div className="couple-stat">
                           <span>CO₂</span>
-                          <b>{quote.co2EstimateKg.toFixed(1)} kg</b>
+                          <b>{fmtNum(quote.co2EstimateKg, 1)} kg</b>
                         </div>
                       )}
                       <div className="couple-stat">
                         <span>Tarif de base</span>
                         <b>
-                          {quote.baseRate.toFixed(2)} {quote.currency}
+                          {fmtNum(quote.baseRate, 2)} {quote.currency}
                         </b>
                       </div>
                     </div>

@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../services/api'
 import PeriodSelector from '../components/PeriodSelector'
+import { fmtNum } from '../format'
+import { energyUnit } from '../fleet'
 
 const scoreClass = (s) => (s >= 75 ? 'good' : s >= 50 ? 'mid' : 'bad')
 
@@ -14,6 +16,12 @@ const KPI_META = {
 
 const SORTABLE = [
   { key: 'driverName', label: 'Chauffeur', accessor: (c) => c.driverName, dir: 'asc' },
+  {
+    key: 'truck',
+    label: 'Véhicule',
+    accessor: (c) => `${c.brand} ${c.model}`.toLowerCase(),
+    dir: 'asc'
+  },
   { key: 'score', label: 'Score', accessor: (c) => c.performanceScore, dir: 'desc' },
   { key: 'km', label: 'Km', accessor: (c) => c.totalKm, dir: 'desc' },
   { key: 'costPerKm', label: 'Coût/km', accessor: (c) => c.costPerKm, dir: 'asc' },
@@ -138,7 +146,7 @@ export default function Drivers() {
                 </div>
               </div>
               <span className={`score-pill ${scoreClass(c.performanceScore)}`}>
-                {c.performanceScore.toFixed(1)}
+                {fmtNum(c.performanceScore, 1)}
               </span>
             </div>
             <div className="couple-truck muted">
@@ -151,19 +159,21 @@ export default function Drivers() {
               </div>
               <div className="couple-stat">
                 <span>Coût/km</span>
-                <b>{c.costPerKm.toFixed(2)} €</b>
+                <b>{fmtNum(c.costPerKm, 2)} €</b>
               </div>
               <div className="couple-stat">
                 <span>Utilisation</span>
-                <b>{c.utilizationRate.toFixed(0)}%</b>
+                <b>{fmtNum(c.utilizationRate, 0)}%</b>
               </div>
               <div className="couple-stat">
                 <span>Conso</span>
-                <b>{c.consumptionPer100Km.toFixed(1)} L</b>
+                <b>
+                  {fmtNum(c.consumptionPer100Km, 1)} {energyUnit(c.fuelType)}
+                </b>
               </div>
               <div className="couple-stat">
                 <span>Éco</span>
-                <b>{c.ecoScore.toFixed(0)}</b>
+                <b>{fmtNum(c.ecoScore, 0)}</b>
               </div>
               <div className="couple-stat">
                 <span>Événements</span>
@@ -235,15 +245,23 @@ export default function Drivers() {
                   </td>
                   <td>
                     <span className={`score-pill ${scoreClass(c.performanceScore)}`}>
-                      {c.performanceScore.toFixed(1)}
+                      {fmtNum(c.performanceScore, 1)}
                     </span>
                   </td>
                   <td>{Math.round(c.totalKm).toLocaleString('fr-FR')}</td>
-                  <td>{c.costPerKm.toFixed(2)} €</td>
-                  <td>{c.utilizationRate.toFixed(0)}%</td>
-                  <td>{c.ecoScore.toFixed(0)}</td>
-                  <td>{c.drivingTimeComplianceRate.toFixed(0)}%</td>
-                  <td>{c.consumptionPer100Km.toFixed(1)} L</td>
+                  <td>{fmtNum(c.costPerKm, 2)} €</td>
+                  <td>{fmtNum(c.utilizationRate, 0)}%</td>
+                  <td>{fmtNum(c.ecoScore, 0)}</td>
+                  <td>
+                    {c.tachographApplicable === false ? (
+                      <span className="muted">N/A</span>
+                    ) : (
+                      `${fmtNum(c.drivingTimeComplianceRate, 0)}%`
+                    )}
+                  </td>
+                  <td>
+                    {fmtNum(c.consumptionPer100Km, 1)} {energyUnit(c.fuelType)}
+                  </td>
                   <td>{c.riskEventsTotal}</td>
                 </tr>
               ))}

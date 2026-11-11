@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import api from '../services/api'
+import { fmtNum } from '../format'
 
 const ORIGIN_COUNTRIES = [
   { value: 'CN', label: 'Chine' },
@@ -132,11 +133,11 @@ export default function Logistics() {
               </div>
               <div className="couple-stat">
                 <span>Poids</span>
-                <b>{totalWeight.toFixed(1)} kg</b>
+                <b>{fmtNum(totalWeight, 1)} kg</b>
               </div>
               <div className="couple-stat">
                 <span>Volume</span>
-                <b>{totalVolume.toFixed(3)} m³</b>
+                <b>{fmtNum(totalVolume, 3)} m³</b>
               </div>
             </div>
           </div>
@@ -256,7 +257,7 @@ export default function Logistics() {
                 </div>
                 <div className="couple-card-footer">
                   <span className="muted">{box.totalWeightKg} kg</span>
-                  <span className="muted">{box.utilizationPercent.toFixed(1)}% rempli</span>
+                  <span className="muted">{fmtNum(box.utilizationPercent, 1)}% rempli</span>
                 </div>
                 <div className="progress-track" style={{ marginTop: 6 }}>
                   <div

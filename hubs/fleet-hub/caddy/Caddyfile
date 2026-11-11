@@ -6,9 +6,16 @@
         X-Frame-Options "SAMEORIGIN"
         Referrer-Policy "strict-origin-when-cross-origin"
         Permissions-Policy "camera=(), microphone=(), geolocation=()"
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' https://{s}.basemaps.cartocdn.com data:; connect-src 'self'; font-src 'self'"
         -Server
     }
+
+    # CSP de l'application : aucun script en ligne ni eval (le build Vite n'en contient
+    # pas — vérifié par un parcours de toutes les pages, zéro violation). Styles en ligne
+    # autorisés (attributs style de React), polices data: (petites polices intégrées par
+    # Vite), envoi des erreurs à Sentry. Grafana (/grafana) a besoin de 'unsafe-eval' :
+    # il garde sa propre politique.
+    @app not path /grafana /grafana/*
+    header @app Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org https://*.basemaps.cartocdn.com; connect-src 'self' https://*.ingest.sentry.io https://*.ingest.de.sentry.io; font-src 'self' data:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'"
 
     @static path_regexp \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$
     header @static Cache-Control "public, max-age=31536000, immutable"

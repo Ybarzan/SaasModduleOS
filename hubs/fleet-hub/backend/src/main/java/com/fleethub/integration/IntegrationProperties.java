@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 @Setter
 public class IntegrationProperties {
 
-    /** Clé API partagée pour le webhook de push {@code POST /api/webhooks/ingest}. */
-    private String webhookApiKey = "";
+    // Plus de clé webhook partagée : le push passe par la clé de chaque société
+    // (page « Intégrations », voir IntegrationIngestController).
 
     private Tacho tacho = new Tacho();
     private Gps gps = new Gps();
@@ -22,6 +22,8 @@ public class IntegrationProperties {
     @Setter
     public static class Tacho {
         private boolean enabled = false;
+        /** Société destinataire des données de ce fournisseur (obligatoire si enabled). */
+        private Long companyId;
         private String provider = "";
         private String baseUrl = "";
         private String apiKey = "";
@@ -32,6 +34,8 @@ public class IntegrationProperties {
     @Setter
     public static class Gps {
         private boolean enabled = false;
+        /** Société destinataire des données de ce fournisseur (obligatoire si enabled). */
+        private Long companyId;
         private String provider = "";
         private String baseUrl = "";
         private String apiKey = "";
@@ -41,6 +45,8 @@ public class IntegrationProperties {
     @Setter
     public static class Cost {
         private boolean enabled = false;
+        /** Société destinataire des données de ce fournisseur (obligatoire si enabled). */
+        private Long companyId;
         private String provider = "";
         private String baseUrl = "";
         private String apiKey = "";

@@ -1,5 +1,6 @@
 package com.fleethub.model;
 
+import java.math.BigDecimal;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -40,7 +41,8 @@ public class MaintenanceRecord {
     @Column(nullable = false)
     private boolean planned;
 
-    private Double cost;
+    @Column(precision = 15, scale = 2)
+    private BigDecimal cost;
 
     private boolean doneOnTime;
 

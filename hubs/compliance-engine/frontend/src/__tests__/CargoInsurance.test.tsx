@@ -78,7 +78,9 @@ describe("CargoInsurance page", () => {
         expect.objectContaining({ goodsValue: 50000, transportMode: "SEA", goodsCategory: "STANDARD" })
       );
     });
-    expect(screen.getByText("0.30%")).toBeInTheDocument();
+    // Le résultat s'affiche au rendu qui suit la résolution de l'appel : l'attendre,
+    // pas le lire juste après l'appel (échouait sur un runner CI chargé).
+    expect(await screen.findByText("0.30%")).toBeInTheDocument();
   });
 
   it("saves a quote once authenticated and a result exists", async () => {

@@ -110,20 +110,24 @@ management:
         http.server.requests: 2s
 
 integration:
-  webhook-api-key: "${INTEGRATION_WEBHOOK_API_KEY:}"
+  # Polling planifié (squelette, voir INTEGRATION.md) : company-id est obligatoire
+  # quand une source est activée — les données vont à cette société uniquement.
   tacho:
     enabled: false
+    company-id:
     provider: ""                 # tachogram | as24-files | webfleet
     base-url: ""
     api-key: ""
     sync-days-back: 7
   gps:
     enabled: false
+    company-id:
     provider: ""                 # webfleet | wialon | geotab | balise-gps
     base-url: ""
     api-key: ""
   cost:
     enabled: false
+    company-id:
     provider: ""                 # as24-infoservice | csv-import
     base-url: ""
     api-key: ""
@@ -170,12 +174,8 @@ spring:
   h2:
     console:
       enabled: false
-  cache:
-    type: redis
-    redis:
-      time-to-live: 300000
-      use-key-prefix: true
-      key-prefix: "fleethub:"
+  # Cache applicatif en mémoire (voir CacheConfig) ; Redis sert aux verrous de tâches
+  # planifiées (DistributedJobLock).
   data:
     redis:
       host: "${REDIS_HOST:localhost}"

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
+import { fmtNum } from '../format'
 
 const RULES = [
   {
@@ -136,7 +137,7 @@ export default function Tachographie() {
           <div>
             <div className="stat-label">Conduite 7 j</div>
             <div className="stat-value">
-              {totals.week7.toFixed(1)}
+              {fmtNum(totals.week7, 1)}
               <span className="stat-unit">h</span>
             </div>
             <div className="stat-sub">cumul flotte (max 56 h/chauffeur)</div>
@@ -147,7 +148,7 @@ export default function Tachographie() {
           <div>
             <div className="stat-label">Conduite 14 j</div>
             <div className="stat-value">
-              {totals.week14.toFixed(1)}
+              {fmtNum(totals.week14, 1)}
               <span className="stat-unit">h</span>
             </div>
             <div className="stat-sub">cumul flotte (max 90 h/chauffeur)</div>
@@ -193,8 +194,8 @@ export default function Tachographie() {
                       {Math.round(s.complianceRate)}%
                     </span>
                   </td>
-                  <td>{s.totalDrivingLast7d.toFixed(1)} h</td>
-                  <td>{s.totalDrivingLast14d.toFixed(1)} h</td>
+                  <td>{fmtNum(s.totalDrivingLast7d, 1)} h</td>
+                  <td>{fmtNum(s.totalDrivingLast14d, 1)} h</td>
                   <td>
                     {s.lastNonCompliantDate
                       ? new Date(s.lastNonCompliantDate).toLocaleDateString('fr-FR')

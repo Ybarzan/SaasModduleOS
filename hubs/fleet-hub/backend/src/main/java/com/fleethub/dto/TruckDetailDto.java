@@ -1,5 +1,6 @@
 package com.fleethub.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -51,12 +52,12 @@ public record TruckDetailDto(
             LocalDate doneDate,
             String type,
             boolean planned,
-            Double cost,
+            BigDecimal cost,
             boolean doneOnTime,
             String status
     ) {}
 
-    public record FuelDto(Long id, LocalDate date, double liters, double amount, double odometerKm) {}
+    public record FuelDto(Long id, LocalDate date, double liters, BigDecimal amount, double odometerKm) {}
 
     public record EventDto(Long id, LocalDateTime timestamp, String type, int severity, Double speedKph, Double durationSec) {}
 }

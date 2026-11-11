@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
 import StatCard from '../components/StatCard'
+import { fmtNum } from '../format'
 
 const STATUS_LABELS = {
   DRAFT: 'Brouillon',
@@ -495,7 +496,7 @@ export default function CarrierInvoicing() {
               <span>Écart</span>
               <b className={selected.variance > 0 ? 'text-danger' : ''}>
                 {selected.variance != null
-                  ? `${selected.variance > 0 ? '+' : ''}${fmtMoney(selected.variance, selected.currency)} (${selected.variancePercent > 0 ? '+' : ''}${selected.variancePercent.toFixed(1)}%)`
+                  ? `${selected.variance > 0 ? '+' : ''}${fmtMoney(selected.variance, selected.currency)} (${selected.variancePercent > 0 ? '+' : ''}${fmtNum(selected.variancePercent, 1)}%)`
                   : '—'}
               </b>
             </div>
@@ -551,7 +552,7 @@ export default function CarrierInvoicing() {
                   </td>
                   <td>
                     {inv.variance != null
-                      ? `${inv.variancePercent > 0 ? '+' : ''}${inv.variancePercent.toFixed(1)}%`
+                      ? `${inv.variancePercent > 0 ? '+' : ''}${fmtNum(inv.variancePercent, 1)}%`
                       : '—'}
                   </td>
                   <td onClick={(e) => e.stopPropagation()}>

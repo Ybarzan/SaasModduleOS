@@ -1,4 +1,5 @@
 import { Area, AreaChart, ResponsiveContainer } from 'recharts'
+import { fmtNum } from '../format'
 
 const CONFIG = {
   costPerKm: {
@@ -57,7 +58,7 @@ export default function KpiWidget({ widget, onClick }) {
   const goodMove = cfg.goodDown ? delta < 0 : delta > 0
   const arrow = flat ? '→' : delta > 0 ? '▲' : '▼'
   const trendClass = flat ? 'flat' : goodMove ? 'up' : 'down'
-  const value = widget.key === 'costPerKm' ? widget.value.toFixed(2) : widget.value.toFixed(1)
+  const value = widget.key === 'costPerKm' ? fmtNum(widget.value, 2) : fmtNum(widget.value, 1)
   const data = widget.sparkline.map((v, i) => ({ i, v }))
 
   const inner = (
@@ -73,7 +74,7 @@ export default function KpiWidget({ widget, onClick }) {
       </div>
       <div className="kpi-widget-meta">
         <span className={`trend ${trendClass}`}>
-          {arrow} {Math.abs(delta).toFixed(1)}%
+          {arrow} {fmtNum(Math.abs(delta), 1)}%
         </span>
         <span className="kpi-widget-status">{st.label}</span>
       </div>

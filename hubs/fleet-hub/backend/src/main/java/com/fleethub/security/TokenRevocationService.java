@@ -29,11 +29,13 @@ public class TokenRevocationService {
     @Transactional
     public void revoke(String token) {
         try {
-            String tokenId = jwtService.extractTokenId(token);
+            // Un jeton expiré mais encore dans le délai de grâce du refresh doit aussi
+            // pouvoir être révoqué, sinon il resterait réutilisable pour un second refresh.
+            var claims = jwtService.extractClaimsAllowingExpired(token);
+            String tokenId = claims.getId();
             if (tokenId == null || revokedTokenRepository.existsByTokenId(tokenId)) {
                 return;
             }
-            var claims = jwtService.extractAllClaims(token);
             var expiresAt = claims.getExpiration().toInstant()
                     .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
 

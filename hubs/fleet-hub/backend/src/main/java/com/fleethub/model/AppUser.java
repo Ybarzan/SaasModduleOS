@@ -64,9 +64,20 @@ public class AppUser {
     @Column(nullable = false)
     private boolean totpEnabled = false;
 
+    /** Échecs de connexion consécutifs depuis la dernière connexion réussie (voir LoginAttemptService). */
+    @Column(nullable = false)
+    private int failedLoginAttempts = 0;
+
+    /** Connexion refusée jusqu'à cette date après trop d'échecs. Null = compte non verrouillé. */
+    private LocalDateTime lockedUntil;
+
+    /** Comptes CHAUFFEUR uniquement : nombre de chiffres du PIN (null = ancien code à 4 chiffres). */
+    private Integer pinLength;
+
     /** Renseigné uniquement pour les comptes de rôle CHAUFFEUR (portail de pointage) :
      *  lie le compte au chauffeur qu'il représente. Le "mot de passe" de ces
-     *  comptes est un code PIN à 4 chiffres, pas un mot de passe classique. */
+     *  comptes est un code PIN (6 chiffres, 4 pour les codes antérieurs), pas un
+     *  mot de passe classique. */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "driver_id")
     private Driver driver;

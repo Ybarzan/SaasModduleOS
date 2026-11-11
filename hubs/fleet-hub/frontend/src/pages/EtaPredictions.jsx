@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react'
 import api from '../services/api'
 import StatCard from '../components/StatCard'
 import PredictionAccuracyChart from '../components/PredictionAccuracyChart'
+import { fmtNum } from '../format'
 
 const COUNTRIES = [
   { code: 'FR', name: 'France' },
@@ -198,7 +199,7 @@ export default function EtaPredictions() {
         />
         <StatCard
           label="Jours moyens"
-          value={stats?.avgDays != null ? stats.avgDays.toFixed(1) : '—'}
+          value={stats?.avgDays != null ? fmtNum(stats.avgDays, 1) : '—'}
           icon="⏱"
           tone="purple"
         />

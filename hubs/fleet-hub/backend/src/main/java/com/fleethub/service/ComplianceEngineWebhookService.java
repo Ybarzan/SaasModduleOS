@@ -3,10 +3,14 @@ package com.fleethub.service;
 import com.fleethub.config.ApiKeyCrypto;
 import com.fleethub.dto.ComplianceEngineWebhookSettingsDto;
 import com.fleethub.model.Company;
+import com.fleethub.model.OutboundEvent;
 import com.fleethub.repository.CompanyRepository;
+import com.fleethub.repository.OutboundEventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 /**
  * Collage, côté fleet-hub, de la clé webhook générée par compliance-engine
@@ -24,6 +28,7 @@ public class ComplianceEngineWebhookService {
 
     private final CompanyRepository companyRepository;
     private final ApiKeyCrypto apiKeyCrypto;
+    private final OutboundEventRepository outboundEventRepository;
 
     @Transactional(readOnly = true)
     public ComplianceEngineWebhookSettingsDto settings(Long companyId) {
@@ -47,8 +52,32 @@ public class ComplianceEngineWebhookService {
         return toDto(company);
     }
 
+    /** Remet en file les événements abandonnés (ex. après correction de la clé côté compliance-engine). */
+    @Transactional
+    public ComplianceEngineWebhookSettingsDto retryFailed(Long companyId) {
+        Company company = companyRepository.findById(companyId).orElseThrow();
+        LocalDateTime now = LocalDateTime.now();
+        for (OutboundEvent event : outboundEventRepository.findByCompanyIdAndStatus(companyId, OutboundEvent.Status.FAILED)) {
+            event.setStatus(OutboundEvent.Status.PENDING);
+            event.setAttempts(0);
+            event.setNextAttemptAt(now);
+            outboundEventRepository.save(event);
+        }
+        return toDto(company);
+    }
+
     private ComplianceEngineWebhookSettingsDto toDto(Company company) {
         String key = company.getComplianceEngineWebhookKey();
-        return new ComplianceEngineWebhookSettingsDto(key != null && !key.isBlank());
+        Long id = company.getId();
+        String lastError = outboundEventRepository
+                .findFirstByCompanyIdAndStatusOrderByIdDesc(id, OutboundEvent.Status.FAILED)
+                .or(() -> outboundEventRepository.findFirstByCompanyIdAndStatusOrderByIdAsc(id, OutboundEvent.Status.PENDING))
+                .map(OutboundEvent::getLastError)
+                .orElse(null);
+        return new ComplianceEngineWebhookSettingsDto(
+                key != null && !key.isBlank(),
+                outboundEventRepository.countByCompanyIdAndStatus(id, OutboundEvent.Status.PENDING),
+                outboundEventRepository.countByCompanyIdAndStatus(id, OutboundEvent.Status.FAILED),
+                lastError);
     }
 }

@@ -30,7 +30,12 @@ export default function Login() {
       const fallback = result.role === 'SAAS_ADMIN' ? '/admin' : '/'
       navigate(from && from !== '/' ? from : fallback, { replace: true })
     } catch (err) {
-      if (totpRequired && err.response?.status === 401) {
+      if (err.response?.status === 429) {
+        // Limite par IP ou compte verrouillé après trop d'échecs : message du serveur.
+        setError(
+          err.response.data?.message || 'Trop de tentatives. Réessayez dans quelques minutes.'
+        )
+      } else if (totpRequired && err.response?.status === 401) {
         setError('Code TOTP invalide')
       } else {
         setError(

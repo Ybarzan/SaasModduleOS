@@ -14,7 +14,8 @@ import java.util.UUID;
  * dans la meme transaction que le changement qui l'a declenche.
  */
 @Entity
-@Table(name = "event_outbox")
+@Table(name = "event_outbox", uniqueConstraints = @UniqueConstraint(
+        name = "uk_event_outbox_source_event", columnNames = {"company_id", "source_event_id"}))
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class EventOutbox {
 
@@ -27,6 +28,11 @@ public class EventOutbox {
 
     @Column(name = "company_id", nullable = false)
     private UUID companyId;
+
+    /** Identifiant d'événement fourni par le producteur (ex. eventId de fleet-hub),
+     *  unique par société : un renvoi du même événement est ignoré (voir V82). */
+    @Column(name = "source_event_id")
+    private UUID sourceEventId;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String payload;

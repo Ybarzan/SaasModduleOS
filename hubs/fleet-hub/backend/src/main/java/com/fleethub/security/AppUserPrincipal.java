@@ -20,14 +20,21 @@ public class AppUserPrincipal implements UserDetails {
     private final String role;
     private final Long companyId;
     private final boolean enabled;
+    private final boolean accountNonLocked;
 
     public AppUserPrincipal(Long id, String username, String password, String role, Long companyId, boolean enabled) {
+        this(id, username, password, role, companyId, enabled, true);
+    }
+
+    public AppUserPrincipal(Long id, String username, String password, String role, Long companyId,
+                            boolean enabled, boolean accountNonLocked) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.role = role;
         this.companyId = companyId;
         this.enabled = enabled;
+        this.accountNonLocked = accountNonLocked;
     }
 
     @Override
@@ -42,7 +49,7 @@ public class AppUserPrincipal implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return accountNonLocked;
     }
 
     @Override

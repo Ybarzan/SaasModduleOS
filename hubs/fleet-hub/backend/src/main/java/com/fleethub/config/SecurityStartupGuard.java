@@ -41,6 +41,11 @@ public class SecurityStartupGuard {
         this.environment = environment;
     }
 
+    /** Vide ou égal à l'un des mots de passe par défaut de développement (admin / gestion). */
+    private static boolean isDefaultPassword(String password) {
+        return password == null || password.isBlank() || "admin".equals(password) || "gestion".equals(password);
+    }
+
     @PostConstruct
     public void verify() {
         if (!environment.acceptsProfiles("prod")) {
@@ -54,8 +59,7 @@ public class SecurityStartupGuard {
                             + "non identique au secret par défaut).");
         }
 
-        if (adminPassword == null || adminPassword.isBlank()
-                || "admin".equals(adminPassword) || "gestion".equals(adminPassword)) {
+        if (isDefaultPassword(adminPassword) || isDefaultPassword(gestPassword)) {
             throw new IllegalStateException(
                     "Configuration de production invalide : ADMIN_PASSWORD / GESTIONNAIRE_PASSWORD "
                             + "doivent être définis et différents des mots de passe par défaut.");

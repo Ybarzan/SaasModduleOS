@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import api from '../services/api'
+import { fmtNum } from '../format'
 
 const TRANSPORT_MODES = [
   { value: 'SEA', label: 'Maritime' },
@@ -415,8 +416,8 @@ export default function ShippingRates() {
                           r.transportMode}
                       </span>
                     </td>
-                    <td>{r.baseRate.toFixed(2)} €</td>
-                    <td>{r.ratePerKg > 0 ? `${r.ratePerKg.toFixed(2)} €` : '—'}</td>
+                    <td>{fmtNum(r.baseRate, 2)} €</td>
+                    <td>{r.ratePerKg > 0 ? `${fmtNum(r.ratePerKg, 2)} €` : '—'}</td>
                     <td>
                       {r.transitDaysMin && r.transitDaysMax
                         ? `${r.transitDaysMin}-${r.transitDaysMax}j`
@@ -461,7 +462,7 @@ export default function ShippingRates() {
                           </div>
                           <div className="couple-stat">
                             <span>Prix au m³</span>
-                            <b>{r.ratePerCbm > 0 ? `${r.ratePerCbm.toFixed(2)} €` : '—'}</b>
+                            <b>{r.ratePerCbm > 0 ? `${fmtNum(r.ratePerCbm, 2)} €` : '—'}</b>
                           </div>
                           <div className="couple-stat">
                             <span>CO₂ estimé</span>
@@ -515,7 +516,7 @@ export default function ShippingRates() {
               </div>
               <div className="record-card-row">
                 <span>Tarif</span>
-                <span>{r.baseRate.toFixed(2)} €</span>
+                <span>{fmtNum(r.baseRate, 2)} €</span>
               </div>
               <div className="record-card-actions">
                 <button className="btn btn-outline btn-sm" onClick={() => openEdit(r)}>

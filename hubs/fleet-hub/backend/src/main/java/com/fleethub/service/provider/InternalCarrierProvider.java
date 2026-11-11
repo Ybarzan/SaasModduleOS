@@ -3,6 +3,7 @@ package com.fleethub.service.provider;
 import com.fleethub.dto.ProviderHealthDTO;
 import com.fleethub.dto.QuoteRequestDTO;
 import com.fleethub.dto.QuoteResponseDTO;
+import com.fleethub.model.Money;
 import com.fleethub.model.Carrier;
 import com.fleethub.model.ShippingRate;
 import com.fleethub.repository.CarrierRepository;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -67,9 +69,10 @@ public class InternalCarrierProvider implements CarrierProvider {
                 })
                 .map(rate -> {
                     Carrier carrier = carrierMap.get(rate.getCarrier().getId());
-                    double totalCost = rate.getBaseRate()
-                            + (request.getWeightKg() * rate.getRatePerKg())
-                            + (request.getVolumeM3() * rate.getRatePerCbm());
+                    BigDecimal totalCost = Money.cents(Money.orZero(rate.getBaseRate())
+                            .add(BigDecimal.valueOf(request.getWeightKg()).multiply(Money.orZero(rate.getRatePerKg())))
+                            .add(BigDecimal.valueOf(request.getVolumeM3() != null ? request.getVolumeM3() : 0)
+                                    .multiply(Money.orZero(rate.getRatePerCbm()))));
 
                     return QuoteResponseDTO.builder()
                             .rateId(rate.getId())
@@ -78,8 +81,8 @@ public class InternalCarrierProvider implements CarrierProvider {
                             .carrierLogo(carrier.getLogoUrl())
                             .rateName(rate.getName())
                             .transportMode(rate.getTransportMode())
-                            .baseRate(rate.getBaseRate())
-                            .totalCost(Math.round(totalCost * 100.0) / 100.0)
+                            .baseRate(Money.toDouble(rate.getBaseRate()))
+                            .totalCost(totalCost.doubleValue())
                             .currency(rate.getCurrency())
                             .transitDaysMin(rate.getTransitDaysMin())
                             .transitDaysMax(rate.getTransitDaysMax())

@@ -49,6 +49,9 @@ services:
     build: ./backend
     container_name: fleethub-backend
     restart: unless-stopped
+    # Le tas Java suit cette limite (-XX:MaxRAMPercentage=75, voir backend/Dockerfile) :
+    # sans elle, il se dimensionnerait sur la RAM de tout le serveur.
+    mem_limit: ${BACKEND_MEMORY_LIMIT:-1g}
     environment:
       SPRING_PROFILES_ACTIVE: prod
       DB_HOST: db
@@ -83,11 +86,14 @@ services:
       STRIPE_SUCCESS_URL: ${STRIPE_SUCCESS_URL:-https://localhost/billing}
       STRIPE_CANCEL_URL: ${STRIPE_CANCEL_URL:-https://localhost/billing}
       STRIPE_PORTAL_RETURN_URL: ${STRIPE_PORTAL_RETURN_URL:-https://localhost/billing}
-      INTEGRATION_WEBHOOK_API_KEY: ${INTEGRATION_WEBHOOK_API_KEY:-}
       INTEGRATION_SECRET_KEY: ${INTEGRATION_SECRET_KEY:?Set INTEGRATION_SECRET_KEY (voir .env.example)}
       COMPLIANCE_ENGINE_URL: ${COMPLIANCE_ENGINE_URL:-http://host.docker.internal:8081}
       SENTRY_DSN: ${SENTRY_DSN:-}
       APP_ENV: ${APP_ENV:-production}
+      # Fuseau des dates métier (« aujourd'hui » des KPI, jours tachygraphe, tournées) :
+      # sans lui, le conteneur tourne en UTC et la journée bascule à 1 h / 2 h du matin
+      # heure de Paris.
+      TZ: ${APP_TIMEZONE:-Europe/Paris}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
@@ -107,7 +113,9 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_SENTRY_DSN: ${SENTRY_DSN_FRONTEND:-}
+        # Même DSN que le backend par défaut (DEPLOY.md) ; SENTRY_DSN_FRONTEND pour un
+        # projet Sentry distinct.
+        VITE_SENTRY_DSN: ${SENTRY_DSN_FRONTEND:-${SENTRY_DSN:-}}
     container_name: fleethub-frontend
     restart: unless-stopped
     healthcheck:
@@ -190,7 +198,9 @@ services:
     restart: unless-stopped
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      # Grafana est publié sur https://DOMAIN/grafana (caddy/Caddyfile) : jamais de
+      # mot de passe par défaut. deploy.sh en génère un.
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?Set GRAFANA_PASSWORD (voir .env.example)}
       GF_USERS_ALLOW_SIGN_UP: "false"
       # Servi derrière Caddy sous /grafana (voir caddy/Caddyfile) : sans ces deux
       # variables, Grafana ignore qu'il est monté sous un sous-chemin et redirige

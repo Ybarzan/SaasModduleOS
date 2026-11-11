@@ -19,9 +19,9 @@ public class AppUserDetailsService implements UserDetailsService {
         AppUser appUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Utilisateur introuvable: " + username));
         Long companyId = appUser.getCompany() != null ? appUser.getCompany().getId() : null;
-        // Le flag enabled est porté par le principal : DaoAuthenticationProvider
-        // lève DisabledException (403) lors de la connexion d'un compte désactivé.
+        // Les flags enabled / non verrouillé sont portés par le principal : DaoAuthenticationProvider
+        // lève DisabledException (403) ou LockedException (429) lors de la connexion.
         return new AppUserPrincipal(appUser.getId(), appUser.getUsername(), appUser.getPassword(),
-                appUser.getRole(), companyId, appUser.isEnabled());
+                appUser.getRole(), companyId, appUser.isEnabled(), !LoginAttemptService.isLocked(appUser));
     }
 }

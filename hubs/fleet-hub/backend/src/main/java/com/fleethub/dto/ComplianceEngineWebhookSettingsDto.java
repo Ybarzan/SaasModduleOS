@@ -6,6 +6,15 @@ package com.fleethub.dto;
  * chiffrée de façon réversible (voir EncryptedApiKeyConverter), la convention
  * de ce dépôt pour un secret saisi par un admin est de ne plus jamais
  * l'afficher ensuite (même principe que fleetHubApiKey, marketplaceApiKey…).
+ * <p>
+ * {@code pendingEvents} / {@code failedEvents} / {@code lastError} : état de
+ * l'outbox (voir OutboundEventDispatcher) — événements en attente d'envoi,
+ * abandonnés après tous les essais (relançables), et dernière erreur d'envoi.
  */
-public record ComplianceEngineWebhookSettingsDto(boolean configured) {
+public record ComplianceEngineWebhookSettingsDto(
+        boolean configured,
+        long pendingEvents,
+        long failedEvents,
+        String lastError
+) {
 }

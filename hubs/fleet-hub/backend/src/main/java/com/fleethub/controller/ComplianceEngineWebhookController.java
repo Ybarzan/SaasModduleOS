@@ -36,6 +36,13 @@ public class ComplianceEngineWebhookController {
         return complianceEngineWebhookService.update(TenantContext.companyId(), request.webhookKey());
     }
 
+    @PostMapping("/retry-failed")
+    @Operation(summary = "Relancer les événements abandonnés",
+            description = "Remet en file d'envoi les événements que compliance-engine n'a pas acceptés après tous les essais")
+    public ComplianceEngineWebhookSettingsDto retryFailed() {
+        return complianceEngineWebhookService.retryFailed(TenantContext.companyId());
+    }
+
     @DeleteMapping("/settings")
     @Operation(summary = "Effacer la clé webhook compliance-engine")
     public ComplianceEngineWebhookSettingsDto clear() {

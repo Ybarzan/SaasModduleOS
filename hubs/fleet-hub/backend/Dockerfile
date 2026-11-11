@@ -12,5 +12,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
+# Pas de root dans le conteneur : l'application n'écrit rien sur disque (logs sur stdout).
+RUN useradd --system --no-create-home --uid 10001 fleethub
+USER fleethub
 EXPOSE 8090
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Le tas suit la mémoire allouée au conteneur plutôt que celle de la machine.
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]
