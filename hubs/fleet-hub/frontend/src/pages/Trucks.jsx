@@ -37,7 +37,7 @@ export default function Trucks() {
     return trucks.filter(
       (t) =>
         (statusFilter === '' || t.currentStatus === statusFilter) &&
-        `${t.brand} ${t.model} ${t.registration} ${t.driverName || ''} ${t.truckType}`
+        `${t.brand} ${t.model} ${t.registration} ${t.driverName || t.tourDriverName || ''} ${t.truckType}`
           .toLowerCase()
           .includes(q)
     )
@@ -118,7 +118,7 @@ export default function Trucks() {
               </div>
               <div className="couple-stat">
                 <span>Chauffeur</span>
-                <b>{t.driverName || '—'}</b>
+                <b>{t.driverName || (t.tourDriverName ? `${t.tourDriverName} (tournée)` : '—')}</b>
               </div>
             </div>
             <div className="couple-card-footer">
@@ -177,6 +177,10 @@ export default function Trucks() {
                       <Link to={`/drivers/${t.assignmentId}`} className="link">
                         {t.driverName}
                       </Link>
+                    ) : t.tourDriverName ? (
+                      <>
+                        {t.tourDriverName} <span className="muted">· tournée du jour</span>
+                      </>
                     ) : (
                       <span className="muted">Non affecté</span>
                     )}

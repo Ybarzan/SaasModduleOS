@@ -22,6 +22,8 @@ public record TruckDto(
         Long assignmentId,
         Long driverId,
         String driverName,
+        /** Chauffeur de la tournée du jour sur ce véhicule, s'il y en a une (null sinon). */
+        String tourDriverName,
         /** Valeur saisie (null = déduite de la catégorie). */
         Boolean tachographEquipped,
         /** Valeur effective : véhicule soumis au 561/2006. */

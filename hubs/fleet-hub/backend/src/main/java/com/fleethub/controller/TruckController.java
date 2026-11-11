@@ -4,6 +4,7 @@ import com.fleethub.config.ResourceNotFoundException;
 import com.fleethub.dto.TruckDto;
 import com.fleethub.dto.TruckRequest;
 import com.fleethub.model.DriverTruckAssignment;
+import com.fleethub.model.Tour;
 import com.fleethub.model.Truck;
 import com.fleethub.repository.AssignmentRepository;
 import com.fleethub.repository.CostRecordRepository;
@@ -31,7 +32,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/trucks")
@@ -51,14 +55,34 @@ public class TruckController {
     @GetMapping
     @Operation(summary = "Lister les camions", description = "Retourne la liste de tous les camions avec leur affectation actuelle")
     @ApiResponse(responseCode = "200", description = "Liste retournée avec succès")
+    @Transactional(readOnly = true)
     public List<TruckDto> allTrucks() {
         Long companyId = TenantContext.companyId();
         List<DriverTruckAssignment> active = assignmentRepository.findByActiveTrue(companyId);
+        Map<Long, String> tourDrivers = todaysTourDrivers(companyId);
         return truckRepository.findByCompanyId(companyId).stream().map(t -> {
             DriverTruckAssignment a = active.stream()
                     .filter(x -> x.getTruck().getId().equals(t.getId())).findFirst().orElse(null);
-            return toDto(t, a);
+            return toDto(t, a, tourDrivers.get(t.getId()));
         }).toList();
+    }
+
+    /**
+     * Chauffeur de la tournée du jour, par véhicule. Un véhicule de tournée n'a souvent pas
+     * de chauffeur attitré (affectation permanente) : sans cela il s'affichait « Non
+     * affecté » alors qu'il roulait.
+     */
+    private Map<Long, String> todaysTourDrivers(Long companyId) {
+        LocalDate today = LocalDate.now();
+        Map<Long, String> byTruck = new HashMap<>();
+        for (Tour tour : tourRepository.findByCompanyIdAndDateBetweenOrderByDateAscPlannedStartAsc(companyId, today, today)) {
+            if (tour.getStatus() == Tour.TourStatus.ANNULEE || tour.getTruck() == null || tour.getDriver() == null) {
+                continue;
+            }
+            byTruck.putIfAbsent(tour.getTruck().getId(),
+                    tour.getDriver().getFirstName() + " " + tour.getDriver().getLastName());
+        }
+        return byTruck;
     }
 
     @PostMapping
@@ -81,7 +105,7 @@ public class TruckController {
         Truck t = new Truck();
         t.setCompany(TenantContext.require());
         apply(t, req);
-        return toDto(truckRepository.save(t), null);
+        return toDto(truckRepository.save(t), null, null);
     }
 
     @PutMapping("/{id}")
@@ -100,7 +124,7 @@ public class TruckController {
                     throw new IllegalArgumentException("Cette immatriculation est déjà utilisée");
                 });
         apply(t, req);
-        return toDto(truckRepository.save(t), null);
+        return toDto(truckRepository.save(t), null, null);
     }
 
     @DeleteMapping("/{id}")
@@ -139,7 +163,7 @@ public class TruckController {
         t.setTachographEquipped(req.tachographEquipped());
     }
 
-    private TruckDto toDto(Truck t, DriverTruckAssignment a) {
+    private TruckDto toDto(Truck t, DriverTruckAssignment a, String tourDriverName) {
         return new TruckDto(
                 t.getId(), t.getRegistration(), t.getBrand(), t.getModel(), t.getModelYear(),
                 t.getTruckType().name(), t.getFuelType().name(), t.getCapacityTons(),
@@ -149,6 +173,7 @@ public class TruckController {
                 a != null ? a.getId() : null,
                 a != null ? a.getDriver().getId() : null,
                 a != null ? a.getDriver().getFirstName() + " " + a.getDriver().getLastName() : null,
+                tourDriverName,
                 t.getTachographEquipped(), t.requiresTachograph(), t.getTruckType().isHeavy());
     }
 }
