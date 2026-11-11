@@ -165,7 +165,15 @@ jobs:
           cache-dependency-path: hubs/fleet-hub/frontend/package-lock.json
       - run: npm ci
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        # --with-deps passe par apt : une panne des miroirs Ubuntu (vue le 11/11/2026, DNS
+        # injoignable pendant l'installation de polices) faisait échouer le job avant tout
+        # test. On réessaie une fois, puis on installe le navigateur seul : les
+        # bibliothèques dont Chromium a besoin sont déjà sur l'image ubuntu-latest, et s'il
+        # en manquait une, le lancement du navigateur échouerait avec un message explicite.
+        run: |
+          npx playwright install --with-deps chromium \
+            || { sleep 30; npx playwright install --with-deps chromium; } \
+            || npx playwright install chromium
       - name: Tests E2E
         run: npx playwright test
         env:
