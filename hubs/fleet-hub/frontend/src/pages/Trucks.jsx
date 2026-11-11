@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import api from '../services/api'
 import StatusBadge from '../components/StatusBadge'
 import { useAuth } from '../context/AuthContext'
-import { fleetTerms, fuelLabel, vehicleTypeLabel } from '../fleet'
+import { fleetTerms, fuelLabel, vehicleTypeLabel, energyUnit } from '../fleet'
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Tous les statuts' },
@@ -112,7 +112,9 @@ export default function Trucks() {
               </div>
               <div className="couple-stat">
                 <span>Conso réf.</span>
-                <b>{t.expectedConsumptionL100Km} L/100</b>
+                <b>
+                  {t.expectedConsumptionL100Km} {energyUnit(t.fuelType)}/100
+                </b>
               </div>
               <div className="couple-stat">
                 <span>Chauffeur</span>
@@ -179,7 +181,9 @@ export default function Trucks() {
                       <span className="muted">Non affecté</span>
                     )}
                   </td>
-                  <td>{t.expectedConsumptionL100Km} L/100</td>
+                  <td>
+                    {t.expectedConsumptionL100Km} {energyUnit(t.fuelType)}/100
+                  </td>
                   <td className="muted">
                     {t.lastGpsUpdate ? new Date(t.lastGpsUpdate).toLocaleString('fr-FR') : '—'}
                   </td>

@@ -7,7 +7,8 @@ import {
   fleetTerms,
   fuelLabel,
   usesTachograph,
-  vehicleTypeLabel
+  vehicleTypeLabel,
+  energyUnit
 } from '../fleet'
 
 const TAB_DRIVERS = 'drivers'
@@ -46,7 +47,7 @@ const truckFields = [
   { key: 'capacityTons', label: 'Capacité (t)', type: 'number' },
   {
     key: 'expectedConsumptionL100Km',
-    label: 'Conso réf. (L/100, vide = valeur type)',
+    label: 'Conso réf. aux 100 km (litres, ou kWh pour un électrique ; vide = valeur type)',
     type: 'number'
   },
   {
@@ -93,7 +94,7 @@ const tripFields = [
 const fuelFields = [
   { key: 'truckId', label: 'Camion', type: 'select', required: true, ref: 'trucks' },
   { key: 'date', label: 'Date', type: 'date', required: true },
-  { key: 'liters', label: 'Litres', type: 'number', required: true },
+  { key: 'liters', label: 'Litres (kWh pour un électrique)', type: 'number', required: true },
   { key: 'amount', label: 'Montant (€)', type: 'number', required: true },
   { key: 'odometerKm', label: 'Kilométrage', type: 'number' }
 ]
@@ -156,7 +157,9 @@ const columnsByTab = {
       key: 'expectedConsumptionL100Km',
       label: 'Conso réf.',
       render: (t) =>
-        t.expectedConsumptionL100Km == null ? '—' : `${t.expectedConsumptionL100Km} L`
+        t.expectedConsumptionL100Km == null
+          ? '—'
+          : `${t.expectedConsumptionL100Km} ${energyUnit(t.fuelType)}`
     }
   ],
   [TAB_ASSIGNMENTS]: [

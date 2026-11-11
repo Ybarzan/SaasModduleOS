@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../services/api'
 import PeriodSelector from '../components/PeriodSelector'
 import { fmtNum } from '../format'
+import { energyUnit } from '../fleet'
 
 const scoreClass = (s) => (s >= 75 ? 'good' : s >= 50 ? 'mid' : 'bad')
 
@@ -166,7 +167,9 @@ export default function Drivers() {
               </div>
               <div className="couple-stat">
                 <span>Conso</span>
-                <b>{fmtNum(c.consumptionPer100Km, 1)} L</b>
+                <b>
+                  {fmtNum(c.consumptionPer100Km, 1)} {energyUnit(c.fuelType)}
+                </b>
               </div>
               <div className="couple-stat">
                 <span>Éco</span>
@@ -256,7 +259,9 @@ export default function Drivers() {
                       `${fmtNum(c.drivingTimeComplianceRate, 0)}%`
                     )}
                   </td>
-                  <td>{fmtNum(c.consumptionPer100Km, 1)} L</td>
+                  <td>
+                    {fmtNum(c.consumptionPer100Km, 1)} {energyUnit(c.fuelType)}
+                  </td>
                   <td>{c.riskEventsTotal}</td>
                 </tr>
               ))}

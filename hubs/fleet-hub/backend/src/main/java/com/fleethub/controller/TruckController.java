@@ -134,7 +134,7 @@ public class TruckController {
         t.setPurchasePrice(req.purchasePrice());
         t.setExpectedConsumptionL100Km(req.expectedConsumptionL100Km() != null
                 ? req.expectedConsumptionL100Km()
-                : t.getTruckType().getDefaultConsumptionL100Km());
+                : t.getTruckType().defaultConsumption(t.getFuelType()));
         t.setActive(req.active());
         t.setTachographEquipped(req.tachographEquipped());
     }

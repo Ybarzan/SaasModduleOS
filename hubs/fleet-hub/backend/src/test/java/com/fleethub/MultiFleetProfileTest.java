@@ -87,7 +87,8 @@ class MultiFleetProfileTest {
                                 + "\"truckType\":\"VUL\",\"fuelType\":\"ELECTRIC\",\"active\":true}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.truckType").value("VUL"))
-                .andExpect(jsonPath("$.expectedConsumptionL100Km").value(9.0))
+                // Électrique : la valeur type est en kWh/100 km, pas en litres
+                .andExpect(jsonPath("$.expectedConsumptionL100Km").value(20.0))
                 .andExpect(jsonPath("$.requiresTachograph").value(false))
                 .andExpect(jsonPath("$.heavy").value(false));
 
@@ -98,6 +99,7 @@ class MultiFleetProfileTest {
                         .content("{\"registration\":\"VU-002-BB\",\"brand\":\"Iveco\",\"model\":\"Daily\","
                                 + "\"truckType\":\"VUL\",\"fuelType\":\"DIESEL\",\"active\":true,\"tachographEquipped\":true}"))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expectedConsumptionL100Km").value(9.0)) // diesel : litres
                 .andExpect(jsonPath("$.requiresTachograph").value(true));
     }
 

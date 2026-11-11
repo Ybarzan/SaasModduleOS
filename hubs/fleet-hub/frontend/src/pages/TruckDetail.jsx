@@ -14,7 +14,7 @@ import {
   CartesianGrid
 } from 'recharts'
 import api from '../services/api'
-import { fuelLabel, vehicleTypeLabel } from '../fleet'
+import { fuelLabel, vehicleTypeLabel, energyUnit } from '../fleet'
 import PeriodSelector from '../components/PeriodSelector'
 import StatCard from '../components/StatCard'
 import StatusBadge from '../components/StatusBadge'
@@ -137,7 +137,7 @@ export default function TruckDetail() {
           <StatCard
             label="Consommation"
             value={fmtNum(k.consumptionPer100Km, 1)}
-            unit="L/100"
+            unit={`${energyUnit(k.fuelType)}/100`}
             icon="⛽"
             tone="blue"
           />
@@ -171,7 +171,9 @@ export default function TruckDetail() {
           <div className="kpi-grid">
             <div className="kpi-item">
               <span>Consommation</span>
-              <b>{fmtNum(k.consumptionPer100Km, 1)} L</b>
+              <b>
+                {fmtNum(k.consumptionPer100Km, 1)} {energyUnit(k.fuelType)}
+              </b>
               <small>/100km</small>
             </div>
             <div className="kpi-item">
@@ -293,7 +295,7 @@ export default function TruckDetail() {
                   yAxisId="fuel"
                   type="monotone"
                   dataKey="liters"
-                  name="Litres"
+                  name={energyUnit(k.fuelType) === 'kWh' ? 'kWh' : 'Litres'}
                   stroke="var(--orange)"
                   strokeWidth={2.5}
                   dot={false}
@@ -420,24 +422,26 @@ export default function TruckDetail() {
               <thead>
                 <tr>
                   <th>Date</th>
-                  <th>Litres</th>
+                  <th>{energyUnit(k.fuelType) === 'kWh' ? 'kWh' : 'Litres'}</th>
                   <th>Montant (€)</th>
                   <th>Kilométrage</th>
-                  <th>Prix / L</th>
+                  <th>Prix / {energyUnit(k.fuelType)}</th>
                 </tr>
               </thead>
               <tbody>
                 {detail.fuels.length === 0 && (
                   <tr>
                     <td colSpan={5} className="table-empty">
-                      Aucun relevé de carburant sur la période
+                      Aucun plein ni recharge sur la période
                     </td>
                   </tr>
                 )}
                 {detail.fuels.map((f) => (
                   <tr key={f.id}>
                     <td className="cell-strong">{new Date(f.date).toLocaleDateString('fr-FR')}</td>
-                    <td>{f.liters.toLocaleString('fr-FR')} L</td>
+                    <td>
+                      {f.liters.toLocaleString('fr-FR')} {energyUnit(k.fuelType)}
+                    </td>
                     <td>{f.amount.toLocaleString('fr-FR')} €</td>
                     <td>
                       {f.odometerKm

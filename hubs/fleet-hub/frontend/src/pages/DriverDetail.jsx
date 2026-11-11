@@ -16,7 +16,7 @@ import {
   CartesianGrid
 } from 'recharts'
 import api from '../services/api'
-import { fuelLabel } from '../fleet'
+import { fuelLabel, energyUnit } from '../fleet'
 import PeriodSelector from '../components/PeriodSelector'
 import ScoreGauge from '../components/ScoreGauge'
 import StatCard from '../components/StatCard'
@@ -232,7 +232,9 @@ export default function DriverDetail() {
           <div className="kpi-grid">
             <div className="kpi-item">
               <span>Consommation</span>
-              <b>{fmtNum(k.consumptionPer100Km, 1)} L</b>
+              <b>
+                {fmtNum(k.consumptionPer100Km, 1)} {energyUnit(k.fuelType)}
+              </b>
               <small>/100km</small>
             </div>
             <div className="kpi-item">

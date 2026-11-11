@@ -42,6 +42,9 @@ export const FUEL_TYPES = [
   { value: 'GNV', label: 'GNV / bioGNV' }
 ]
 
+/** Unité d'énergie d'un véhicule : kWh pour un électrique, litres sinon. */
+export const energyUnit = (fuelType) => (fuelType === 'ELECTRIC' ? 'kWh' : 'L')
+
 const labelOf = (list, value) => list.find((x) => x.value === value)?.label || value || '—'
 
 export const vehicleTypeLabel = (value) => labelOf(VEHICLE_TYPES, value)

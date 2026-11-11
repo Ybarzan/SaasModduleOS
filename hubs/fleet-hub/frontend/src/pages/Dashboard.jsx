@@ -6,6 +6,7 @@ import PeriodSelector from '../components/PeriodSelector'
 import ScoreGauge from '../components/ScoreGauge'
 import StatusBadge from '../components/StatusBadge'
 import { fmtNum } from '../format'
+import { energyUnit } from '../fleet'
 
 const STATUS_GROUPS = [
   {
@@ -400,7 +401,9 @@ export default function Dashboard() {
                       </td>
                       <td>{Math.round(c.totalKm).toLocaleString('fr-FR')}</td>
                       <td>{fmtNum(c.costPerKm, 2)} €</td>
-                      <td>{fmtNum(c.consumptionPer100Km, 1)} L/100</td>
+                      <td>
+                        {fmtNum(c.consumptionPer100Km, 1)} {energyUnit(c.fuelType)}/100
+                      </td>
                       <td>{c.riskEventsTotal}</td>
                       <td>{c.alerts?.length || 0}</td>
                     </tr>

@@ -52,6 +52,11 @@ public class Truck {
     @Column(precision = 15, scale = 2)
     private BigDecimal purchasePrice;
 
+    /**
+     * Consommation de référence aux 100 km, dans l'unité d'énergie du véhicule : kWh pour
+     * un électrique, litres sinon (le nom de la colonne date d'avant les électriques). Les
+     * pleins ({@link FuelRecord#getLiters()}) suivent la même unité : une recharge se saisit en kWh.
+     */
     private Double expectedConsumptionL100Km;
 
     private Double currentLatitude;
@@ -79,14 +84,16 @@ public class Truck {
 
     /** Catégorie du véhicule. FOURGON = porteur fourgon PL ; VUL = camionnette ≤ 3,5 t ; VL = véhicule léger. */
     public enum TruckType {
-        TRACTEUR(true, 32), PORTEUR(true, 25), FOURGON(true, 18), VUL(false, 9), VL(false, 6);
+        TRACTEUR(true, 32, 120), PORTEUR(true, 25, 90), FOURGON(true, 18, 60), VUL(false, 9, 20), VL(false, 6, 16);
 
         private final boolean heavy;
         private final double defaultConsumptionL100Km;
+        private final double defaultConsumptionKwh100Km;
 
-        TruckType(boolean heavy, double defaultConsumptionL100Km) {
+        TruckType(boolean heavy, double defaultConsumptionL100Km, double defaultConsumptionKwh100Km) {
             this.heavy = heavy;
             this.defaultConsumptionL100Km = defaultConsumptionL100Km;
+            this.defaultConsumptionKwh100Km = defaultConsumptionKwh100Km;
         }
 
         public boolean isHeavy() {
@@ -95,6 +102,14 @@ public class Truck {
 
         public double getDefaultConsumptionL100Km() {
             return defaultConsumptionL100Km;
+        }
+
+        /**
+         * Consommation type aux 100 km, dans l'unité d'énergie du véhicule : kWh pour un
+         * électrique, litres sinon.
+         */
+        public double defaultConsumption(FuelType fuel) {
+            return fuel == FuelType.ELECTRIC ? defaultConsumptionKwh100Km : defaultConsumptionL100Km;
         }
     }
 
@@ -113,6 +128,6 @@ public class Truck {
         if (expectedConsumptionL100Km != null && expectedConsumptionL100Km > 0) {
             return expectedConsumptionL100Km;
         }
-        return truckType != null ? truckType.getDefaultConsumptionL100Km() : 32;
+        return truckType != null ? truckType.defaultConsumption(fuelType) : 32;
     }
 }

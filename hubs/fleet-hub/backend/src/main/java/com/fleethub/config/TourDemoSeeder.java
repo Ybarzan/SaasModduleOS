@@ -221,7 +221,7 @@ final class TourDemoSeeder {
         t.setCapacityTons(0.6);
         t.setAcquisitionDate(LocalDate.now().minusYears(1));
         t.setPurchasePrice(Money.of(32000.0));
-        t.setExpectedConsumptionL100Km(Truck.TruckType.VUL.getDefaultConsumptionL100Km());
+        t.setExpectedConsumptionL100Km(Truck.TruckType.VUL.defaultConsumption(fuel));
         t.setCurrentLatitude(lat);
         t.setCurrentLongitude(lon);
         t.setCurrentSpeedKph(0.0);
