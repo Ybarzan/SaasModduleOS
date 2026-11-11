@@ -172,14 +172,24 @@ export default function PointagePortal() {
         </header>
 
         {showTours && (
-        <nav className="ptg-tabs" role="tablist">
-          <button role="tab" aria-selected={tab === 'service'} className={tab === 'service' ? 'active' : ''} onClick={() => switchTab('service')}>
-            ⏱ Mon service
-          </button>
-          <button role="tab" aria-selected={tab === 'tours'} className={tab === 'tours' ? 'active' : ''} onClick={() => switchTab('tours')}>
-            🗺 Ma tournée
-          </button>
-        </nav>
+          <nav className="ptg-tabs" role="tablist">
+            <button
+              role="tab"
+              aria-selected={tab === 'service'}
+              className={tab === 'service' ? 'active' : ''}
+              onClick={() => switchTab('service')}
+            >
+              ⏱ Mon service
+            </button>
+            <button
+              role="tab"
+              aria-selected={tab === 'tours'}
+              className={tab === 'tours' ? 'active' : ''}
+              onClick={() => switchTab('tours')}
+            >
+              🗺 Ma tournée
+            </button>
+          </nav>
         )}
 
         {showTours && tab === 'tours' ? (

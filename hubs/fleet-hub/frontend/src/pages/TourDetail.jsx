@@ -28,7 +28,14 @@ const EMPTY_STOP = {
 
 function AddStopForm({ sites, onAdd, medical }) {
   const [form, setForm] = useState(() =>
-    medical ? { ...EMPTY_STOP, type: 'COLLECTE', temperatureMinCelsius: '15', temperatureMaxCelsius: '25' } : EMPTY_STOP
+    medical
+      ? {
+          ...EMPTY_STOP,
+          type: 'COLLECTE',
+          temperatureMinCelsius: '15',
+          temperatureMaxCelsius: '25'
+        }
+      : EMPTY_STOP
   )
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
   const num = (v) => (v === '' ? null : Number(v))

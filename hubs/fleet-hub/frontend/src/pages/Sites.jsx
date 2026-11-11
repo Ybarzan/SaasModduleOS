@@ -368,7 +368,7 @@ export default function Sites() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="table-empty">
+                  <td colSpan={6} className="table-empty">
                     Aucun site. Commencez par votre dépôt puis vos clients.
                   </td>
                 </tr>

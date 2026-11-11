@@ -48,7 +48,11 @@ export default function ProductCounter({ value, onChange, expected, label = 'Pro
                 value={qty}
                 onChange={(e) => set(p.value, Number(e.target.value || 0))}
               />
-              <button type="button" aria-label={`${p.label} plus un`} onClick={() => set(p.value, qty + 1)}>
+              <button
+                type="button"
+                aria-label={`${p.label} plus un`}
+                onClick={() => set(p.value, qty + 1)}
+              >
                 +
               </button>
             </span>
@@ -57,7 +61,8 @@ export default function ProductCounter({ value, onChange, expected, label = 'Pro
       })}
       {mismatch && (
         <div className="pc-warning" role="status">
-          Écart avec les produits pris en charge : une non-conformité sera ouverte à la fin de la tournée.
+          Écart avec les produits pris en charge : une non-conformité sera ouverte à la fin de la
+          tournée.
         </div>
       )}
     </div>

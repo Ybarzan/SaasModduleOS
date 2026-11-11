@@ -72,7 +72,10 @@ export default function Register() {
           <fieldset className="activity-picker">
             <legend>Votre activité</legend>
             {ACTIVITIES.map((a) => (
-              <label key={a.value} className={'activity-choice' + (form.fleetProfile === a.value ? ' active' : '')}>
+              <label
+                key={a.value}
+                className={'activity-choice' + (form.fleetProfile === a.value ? ' active' : '')}
+              >
                 <input
                   type="radio"
                   name="fleetProfile"
@@ -91,7 +94,9 @@ export default function Register() {
               type="text"
               value={form.companyName}
               onChange={set('companyName')}
-              placeholder={medical ? 'Bio Coursiers, Navette Labo Express…' : 'Transports Martin SAS…'}
+              placeholder={
+                medical ? 'Bio Coursiers, Navette Labo Express…' : 'Transports Martin SAS…'
+              }
               autoComplete="organization"
             />
           </label>

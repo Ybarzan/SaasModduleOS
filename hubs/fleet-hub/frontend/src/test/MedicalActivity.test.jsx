@@ -4,7 +4,13 @@ import { useState } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ProductCounter from '../components/ProductCounter'
 import ActivityPortal from '../pages/ActivityPortal'
-import { chosenActivity, isMedical, rememberActivity, usesMarketplace, usesTachograph } from '../fleet'
+import {
+  chosenActivity,
+  isMedical,
+  rememberActivity,
+  usesMarketplace,
+  usesTachograph
+} from '../fleet'
 import { cleanProducts, describeProducts, parseProducts } from '../medical'
 
 const { mockNavigate } = vi.hoisted(() => ({ mockNavigate: vi.fn() }))
@@ -70,7 +76,7 @@ describe('Comptage des produits', () => {
     expect(screen.getByRole('button', { name: 'Urines moins un' })).toBeDisabled()
   })
 
-  it("signale un écart avec les produits attendus à la remise", async () => {
+  it('signale un écart avec les produits attendus à la remise', async () => {
     const user = userEvent.setup()
     render(<Counter initial={{ SANG: 4, PCR: 2 }} expected={{ SANG: 4, PCR: 2 }} />)
     expect(screen.queryByRole('status')).not.toBeInTheDocument()

@@ -53,9 +53,12 @@ export default function Traceability() {
   }, [events, type, query])
 
   const exportCsv = () =>
-    downloadFile(api, '/medical/custody.csv', { from, to }, `journal-garde_${from}_${to}.csv`).catch(() =>
-      setError('Export impossible')
-    )
+    downloadFile(
+      api,
+      '/medical/custody.csv',
+      { from, to },
+      `journal-garde_${from}_${to}.csv`
+    ).catch(() => setError('Export impossible'))
 
   return (
     <div>
@@ -81,14 +84,15 @@ export default function Traceability() {
         <div className={'integrity-banner ' + (integrity.valid ? 'ok' : 'ko')} role="status">
           {integrity.valid ? (
             <>
-              🔒 Chaîne intègre : {integrity.eventsChecked} événement(s) vérifié(s). Dernière empreinte{' '}
-              <code title={integrity.lastHash}>{integrity.lastHash.slice(0, 16)}…</code>
+              🔒 Chaîne intègre : {integrity.eventsChecked} événement(s) vérifié(s). Dernière
+              empreinte <code title={integrity.lastHash}>{integrity.lastHash.slice(0, 16)}…</code>
             </>
           ) : (
             <>
-              ⚠ Chaîne rompue à l'événement n° {integrity.firstInvalidSequence} ({integrity.eventsChecked}{' '}
-              événement(s) valides avant) : une donnée a été modifiée ou supprimée hors de l'application.
-              Conservez l'export et alertez votre responsable qualité.
+              ⚠ Chaîne rompue à l'événement n° {integrity.firstInvalidSequence} (
+              {integrity.eventsChecked} événement(s) valides avant) : une donnée a été modifiée ou
+              supprimée hors de l'application. Conservez l'export et alertez votre responsable
+              qualité.
             </>
           )}
         </div>
@@ -170,7 +174,11 @@ export default function Traceability() {
                         </span>
                       </td>
                       <td>
-                        {e.tourId ? <Link to={`/tours/${e.tourId}`}>{e.tourName}</Link> : e.tourName || '—'}
+                        {e.tourId ? (
+                          <Link to={`/tours/${e.tourId}`}>{e.tourName}</Link>
+                        ) : (
+                          e.tourName || '—'
+                        )}
                         {e.siteName && <small className="muted block">{e.siteName}</small>}
                         {e.latitude != null && (
                           <a
@@ -196,7 +204,9 @@ export default function Traceability() {
           </div>
         )}
         {events && events.length >= 2000 && (
-          <p className="muted">Affichage limité aux 2 000 derniers événements : réduisez la période ou exportez.</p>
+          <p className="muted">
+            Affichage limité aux 2 000 derniers événements : réduisez la période ou exportez.
+          </p>
         )}
       </div>
     </div>

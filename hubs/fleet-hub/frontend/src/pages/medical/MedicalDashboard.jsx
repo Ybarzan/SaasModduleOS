@@ -54,7 +54,10 @@ export default function MedicalDashboard() {
 
   const daily = data.daily.map((d) => ({
     ...d,
-    label: new Date(`${d.date}T12:00:00`).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })
+    label: new Date(`${d.date}T12:00:00`).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit'
+    })
   }))
   const maxCategory = Math.max(1, ...Object.values(data.collectedByCategory))
 
@@ -90,8 +93,8 @@ export default function MedicalDashboard() {
             </>
           ) : (
             <>
-              ⚠ Intégrité du journal rompue à l'événement n° {integrity.firstInvalidSequence} :
-              une donnée a été modifiée hors de l'application.
+              ⚠ Intégrité du journal rompue à l'événement n° {integrity.firstInvalidSequence} : une
+              donnée a été modifiée hors de l'application.
             </>
           )}{' '}
           <Link to="/tracabilite" className="link">
@@ -134,7 +137,9 @@ export default function MedicalDashboard() {
           icon="⏱"
           tone={data.transitsExceeded > 0 ? 'red' : 'purple'}
           label="Délai collecte → labo"
-          value={minutesLabel(data.averageTransitMinutes != null ? Math.round(data.averageTransitMinutes) : null)}
+          value={minutesLabel(
+            data.averageTransitMinutes != null ? Math.round(data.averageTransitMinutes) : null
+          )}
           sub={`max ${minutesLabel(data.maxTransitMinutes)} · limite ${minutesLabel(data.transitLimitMinutes)}`}
         />
         <StatCard
@@ -154,10 +159,18 @@ export default function MedicalDashboard() {
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={daily} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#8884" vertical={false} />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#8a8a8a' }} interval="preserveStartEnd" />
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 11, fill: '#8a8a8a' }}
+                interval="preserveStartEnd"
+              />
               <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#8a8a8a' }} />
               <Tooltip
-                contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8 }}
+                contentStyle={{
+                  background: 'var(--card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 8
+                }}
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               {/* Couleurs en dur : un attribut SVG fill ne résout pas var(--…) */}
@@ -213,11 +226,21 @@ export default function MedicalDashboard() {
           <h3>Accès rapides</h3>
         </div>
         <div className="quick-links">
-          <Link to="/tours" className="btn btn-outline">Tournées du jour</Link>
-          <Link to="/planning" className="btn btn-outline">Planification</Link>
-          <Link to="/sites" className="btn btn-outline">Points de collecte</Link>
-          <Link to="/tracabilite" className="btn btn-outline">Journal de garde</Link>
-          <Link to="/non-conformites" className="btn btn-outline">Non-conformités</Link>
+          <Link to="/tours" className="btn btn-outline">
+            Tournées du jour
+          </Link>
+          <Link to="/planning" className="btn btn-outline">
+            Planification
+          </Link>
+          <Link to="/sites" className="btn btn-outline">
+            Points de collecte
+          </Link>
+          <Link to="/tracabilite" className="btn btn-outline">
+            Journal de garde
+          </Link>
+          <Link to="/non-conformites" className="btn btn-outline">
+            Non-conformités
+          </Link>
         </div>
       </div>
     </div>

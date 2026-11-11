@@ -3,9 +3,21 @@
 /** Catégories de produits comptés à chaque passage (pas de suivi tube par tube). */
 export const MEDICAL_PRODUCTS = [
   { value: 'SANG', label: 'Sang', short: 'Sang', hint: 'tubes de prélèvement sanguin', icon: '🩸' },
-  { value: 'PCR', label: 'PCR / écouvillons', short: 'PCR', hint: 'tests PCR, écouvillons', icon: '🧫' },
+  {
+    value: 'PCR',
+    label: 'PCR / écouvillons',
+    short: 'PCR',
+    hint: 'tests PCR, écouvillons',
+    icon: '🧫'
+  },
   { value: 'URINE', label: 'Urines', short: 'Urines', hint: 'flacons d’urine', icon: '🧴' },
-  { value: 'AUTRE', label: 'Autres', short: 'Autres', hint: 'autres produits biologiques', icon: '📦' }
+  {
+    value: 'AUTRE',
+    label: 'Autres',
+    short: 'Autres',
+    hint: 'autres produits biologiques',
+    icon: '📦'
+  }
 ]
 
 /** Plages de température usuelles du transport d'échantillons. */

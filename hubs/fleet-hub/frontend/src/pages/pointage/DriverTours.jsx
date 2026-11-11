@@ -131,7 +131,9 @@ export default function DriverTours() {
   const lastPos = useRef(null)
   const gps = () => {
     const p = lastPos.current
-    return p && Date.now() - p.at < 15 * 60000 ? { latitude: p.latitude, longitude: p.longitude } : {}
+    return p && Date.now() - p.at < 15 * 60000
+      ? { latitude: p.latitude, longitude: p.longitude }
+      : {}
   }
 
   const load = useCallback(

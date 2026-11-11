@@ -19,7 +19,8 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
     signedBy: correcting ? stop.signedBy || '' : '',
     parcelCount: '',
     sampleCount: '',
-    temperatureCelsius: correcting && stop.temperatureCelsius != null ? String(stop.temperatureCelsius) : '',
+    temperatureCelsius:
+      correcting && stop.temperatureCelsius != null ? String(stop.temperatureCelsius) : '',
     scannedCodes: '',
     failureReason: (correcting && stop.failureReason) || FAILURE_REASONS[0],
     notes: '',
@@ -179,25 +180,31 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
               )}
             </div>
           )}
-          {!stop.medical && <div className="form-field form-field-wide">
-            <label htmlFor={`${uid}-codes`}>
-              Codes scannés / saisis (séparés par des virgules)
-            </label>
-            <div className="geocode-bar">
-              <input
-                id={`${uid}-codes`}
-                value={form.scannedCodes}
-                onChange={set('scannedCodes')}
-                autoComplete="off"
-              />
-              {scanSupported() && !scanning && (
-                <button type="button" className="btn btn-outline" onClick={() => setScanning(true)}>
-                  📷 Scanner
-                </button>
-              )}
+          {!stop.medical && (
+            <div className="form-field form-field-wide">
+              <label htmlFor={`${uid}-codes`}>
+                Codes scannés / saisis (séparés par des virgules)
+              </label>
+              <div className="geocode-bar">
+                <input
+                  id={`${uid}-codes`}
+                  value={form.scannedCodes}
+                  onChange={set('scannedCodes')}
+                  autoComplete="off"
+                />
+                {scanSupported() && !scanning && (
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    onClick={() => setScanning(true)}
+                  >
+                    📷 Scanner
+                  </button>
+                )}
+              </div>
+              {scanning && <BarcodeScanner onCode={addCode} onClose={() => setScanning(false)} />}
             </div>
-            {scanning && <BarcodeScanner onCode={addCode} onClose={() => setScanning(false)} />}
-          </div>}
+          )}
         </div>
       ) : (
         <div className="data-grid">
@@ -221,7 +228,9 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
 
       {correcting && (
         <div className="form-field">
-          <label htmlFor={`${uid}-correction`}>Motif de la correction * (tracé au journal de garde)</label>
+          <label htmlFor={`${uid}-correction`}>
+            Motif de la correction * (tracé au journal de garde)
+          </label>
           <input
             id={`${uid}-correction`}
             value={form.correctionReason}

@@ -107,7 +107,9 @@ export async function flush() {
 
 export function subscribe(listener) {
   listeners.add(listener)
-  return () => listeners.delete(listener)
+  return () => {
+    listeners.delete(listener)
+  }
 }
 
 if (typeof window !== 'undefined') {

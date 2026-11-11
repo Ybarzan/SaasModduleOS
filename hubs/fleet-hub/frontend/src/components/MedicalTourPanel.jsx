@@ -46,9 +46,7 @@ export default function MedicalTourPanel({ tourId, tourStatus, version }) {
               {r.balanced ? '✓ Collecté = remis' : '⚠ Écart collecté / remis'}
             </span>
           ) : (
-            <span className="badge badge-blue">
-              🚐 {Math.max(0, onBoard)} produit(s) à bord
-            </span>
+            <span className="badge badge-blue">🚐 {Math.max(0, onBoard)} produit(s) à bord</span>
           ))}
       </div>
 
@@ -92,7 +90,8 @@ export default function MedicalTourPanel({ tourId, tourStatus, version }) {
       {r.transits.length > 0 && (
         <>
           <h4 className="panel-sub">
-            Délais d'acheminement <span className="muted">(limite {minutesLabel(r.transitLimitMinutes)})</span>
+            Délais d'acheminement{' '}
+            <span className="muted">(limite {minutesLabel(r.transitLimitMinutes)})</span>
           </h4>
           <ul className="transit-list">
             {r.transits.map((t) => (
@@ -134,7 +133,9 @@ export default function MedicalTourPanel({ tourId, tourStatus, version }) {
       )}
 
       <button type="button" className="link-button" onClick={() => setShowJournal((v) => !v)}>
-        {showJournal ? 'Masquer le journal de garde' : `Journal de garde (${data.events.length} événements)`}
+        {showJournal
+          ? 'Masquer le journal de garde'
+          : `Journal de garde (${data.events.length} événements)`}
       </button>
       {showJournal && (
         <ol className="custody-timeline">
@@ -148,7 +149,9 @@ export default function MedicalTourPanel({ tourId, tourStatus, version }) {
                 <span className="ct-body">
                   <b>{meta.label}</b>
                   {e.siteName ? ` · ${e.siteName}` : ''} · {dateTime(e.occurredAt)}
-                  {e.products && <span className="block">{describeProducts(parseProducts(e.products))}</span>}
+                  {e.products && (
+                    <span className="block">{describeProducts(parseProducts(e.products))}</span>
+                  )}
                   <small className="muted block">
                     {e.actor}
                     {e.signedBy ? ` · remis à ${e.signedBy}` : ''}

@@ -23,9 +23,10 @@ const depotIcon = L.divIcon({
 /** Carte d'une tournée : dépôt, arrêts numérotés dans l'ordre de passage, tracé. */
 export default function TourMap({ tour, height = 360 }) {
   const located = tour.stops.filter((s) => s.latitude != null && s.longitude != null)
+  /** @type {[number, number] | null} */
   const depot = tour.depotLatitude != null ? [tour.depotLatitude, tour.depotLongitude] : null
 
-  const pts = located.map((s) => [s.latitude, s.longitude])
+  const pts = located.map((s) => /** @type {[number, number]} */ ([s.latitude, s.longitude]))
   const path = depot ? [depot, ...pts, depot] : pts
 
   const bounds = path.length > 0 ? L.latLngBounds(path).pad(0.15) : null

@@ -73,7 +73,11 @@ export function useGeofence(target, onArrive, { enabled = true, radius = 120 } =
         }
       },
       (err) =>
-        setState({ distance: null, error: err.code === 1 ? 'refusee' : 'indisponible', position: null }),
+        setState({
+          distance: null,
+          error: err.code === 1 ? 'refusee' : 'indisponible',
+          position: null
+        }),
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 }
     )
     return () => window.navigator.geolocation.clearWatch(watchId)

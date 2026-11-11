@@ -186,7 +186,7 @@ export default function Trucks() {
               ))}
               {filtered.length === 0 && !error && (
                 <tr>
-                  <td colSpan="7" className="table-empty">
+                  <td colSpan={7} className="table-empty">
                     Aucun véhicule ne correspond aux filtres
                   </td>
                 </tr>

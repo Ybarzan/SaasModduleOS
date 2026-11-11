@@ -147,7 +147,8 @@ function NcCard({ nc, onUpdated }) {
         ) : (
           'Hors tournée'
         )}
-        {nc.siteName ? ` · ${nc.siteName}` : ''} · détectée le {dateTime(nc.detectedAt)} par {nc.detectedBy}
+        {nc.siteName ? ` · ${nc.siteName}` : ''} · détectée le {dateTime(nc.detectedAt)} par{' '}
+        {nc.detectedBy}
       </p>
       {nc.correctiveAction && (
         <p className="nc-action">
@@ -284,7 +285,9 @@ export default function NonConformities() {
       ) : items.length === 0 ? (
         <div className="card">
           <p className="muted table-empty">
-            {view === 'OUVERTES' ? '✓ Aucune non-conformité à traiter.' : 'Aucune non-conformité sur 90 jours.'}
+            {view === 'OUVERTES'
+              ? '✓ Aucune non-conformité à traiter.'
+              : 'Aucune non-conformité sur 90 jours.'}
           </p>
         </div>
       ) : (

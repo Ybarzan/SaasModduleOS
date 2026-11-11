@@ -108,7 +108,9 @@ export default function Login() {
         </form>
         <p className="login-hint">
           Pas de compte ?{' '}
-          <Link to={activity ? `/register?activite=${activity.slug}` : '/register'}>Créer ma société</Link>
+          <Link to={activity ? `/register?activite=${activity.slug}` : '/register'}>
+            Créer ma société
+          </Link>
         </p>
         <p className="login-hint legal-links">
           <Link to="/legal/terms">CGU</Link>

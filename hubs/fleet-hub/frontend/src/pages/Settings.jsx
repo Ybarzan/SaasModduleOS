@@ -41,7 +41,8 @@ function MedicalSettingsCard() {
       </div>
       <p className="muted" style={{ marginBottom: '1rem' }}>
         Délai maximal entre la prise en charge d'un produit au point de collecte et sa remise au
-        laboratoire. Au-delà, une non-conformité « délai d'acheminement » est ouverte automatiquement.
+        laboratoire. Au-delà, une non-conformité « délai d'acheminement » est ouverte
+        automatiquement.
       </p>
       {error && <div className="alert alert-error">{error}</div>}
       {message && <div className="alert">{message}</div>}
@@ -68,7 +69,9 @@ function MedicalSettingsCard() {
           Enregistrer
         </button>
       ) : (
-        <p className="muted" style={{ marginTop: '1rem' }}>Seul un administrateur peut modifier ce réglage.</p>
+        <p className="muted" style={{ marginTop: '1rem' }}>
+          Seul un administrateur peut modifier ce réglage.
+        </p>
       )}
     </div>
   )
@@ -108,7 +111,10 @@ function FleetProfileCard() {
         {FLEET_PROFILES.filter(
           (p) => ACTIVITIES.some((a) => a.value === p.value) || p.value === profileOf(user)
         ).map((p) => (
-          <label key={p.value} className={'profile-option' + (profile === p.value ? ' active' : '')}>
+          <label
+            key={p.value}
+            className={'profile-option' + (profile === p.value ? ' active' : '')}
+          >
             <input
               type="radio"
               name="fleetProfile"
@@ -134,7 +140,9 @@ function FleetProfileCard() {
           Enregistrer
         </button>
       ) : (
-        <p className="muted" style={{ marginTop: '1rem' }}>Seul un administrateur peut modifier ce réglage.</p>
+        <p className="muted" style={{ marginTop: '1rem' }}>
+          Seul un administrateur peut modifier ce réglage.
+        </p>
       )}
     </div>
   )

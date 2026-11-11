@@ -447,7 +447,7 @@ export default function Planning() {
               ))}
               {orders.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="table-empty">
+                  <td colSpan={7} className="table-empty">
                     Aucune commande pour ce jour : importez un fichier ci-dessus.
                   </td>
                 </tr>
