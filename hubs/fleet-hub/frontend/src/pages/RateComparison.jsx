@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import api from '../services/api'
+import { fmtNum } from '../format'
 
 const TRANSPORT_MODES = [
   { value: 'SEA', label: 'Maritime' },
@@ -226,7 +227,7 @@ export default function RateComparison() {
                       </strong>
                       <span className="muted block">{result.carrierCode}</span>
                     </div>
-                    <span className="score-pill good">{result.estimatedCost.toFixed(2)} €</span>
+                    <span className="score-pill good">{fmtNum(result.estimatedCost, 2)} €</span>
                   </div>
                   <div className="truck-card-grid">
                     <div className="couple-stat">
@@ -249,7 +250,7 @@ export default function RateComparison() {
                     <div className="truck-card-grid" style={{ marginTop: 10 }}>
                       <div className="couple-stat">
                         <span>Tarif de base</span>
-                        <b>{result.rate.baseRate.toFixed(2)} €</b>
+                        <b>{fmtNum(result.rate.baseRate, 2)} €</b>
                       </div>
                       <div className="couple-stat">
                         <span>Devise</span>
@@ -257,11 +258,11 @@ export default function RateComparison() {
                       </div>
                       <div className="couple-stat">
                         <span>Prix au kg</span>
-                        <b>{result.rate.ratePerKg?.toFixed(2) || '—'} €/kg</b>
+                        <b>{fmtNum(result.rate.ratePerKg, 2) || '—'} €/kg</b>
                       </div>
                       <div className="couple-stat">
                         <span>Prix au m³</span>
-                        <b>{result.rate.ratePerCbm?.toFixed(2) || '—'} €/m³</b>
+                        <b>{fmtNum(result.rate.ratePerCbm, 2) || '—'} €/m³</b>
                       </div>
                       <div className="couple-stat">
                         <span>Délai min/max</span>

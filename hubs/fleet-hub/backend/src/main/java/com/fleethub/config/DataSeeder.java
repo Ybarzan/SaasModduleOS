@@ -62,7 +62,8 @@ public class DataSeeder {
                            FuelRecordRepository fuelRepository,
                            CostRecordRepository costRepository,
                            SiteRepository siteRepository,
-                           TourRepository tourRepository) {
+                           TourRepository tourRepository,
+                           ShipmentOrderRepository shipmentRepository) {
         return args -> {
             if (userRepository.count() > 0) return;
             Random rnd = new Random(42);
@@ -299,6 +300,9 @@ public class DataSeeder {
             // ---- Tournées de collecte (module Tournées) ----
             TourDemoSeeder.seed(demo, siteRepository, tourRepository, driverRepository, truckRepository,
                     routeOptimizer, rnd);
+
+            // ---- Expéditions routières (module Transport) ----
+            ShipmentDemoSeeder.seed(demo, admin, trucks, shipmentRepository);
         };
     }
 

@@ -194,7 +194,7 @@ export default function HubIntegration() {
             <span className="muted">Montrée une seule fois — notez-la maintenant</span>
           </div>
           <div className="form-field">
-            <label>Clé d'intégration (X-Internal-Integration-Key)</label>
+            <label>Clé d'intégration</label>
             <div className="copy-row">
               <code>{newKey.apiKey}</code>
               <button className="btn btn-outline btn-sm" onClick={copyKey}>

@@ -20,6 +20,7 @@ import { fuelLabel } from '../fleet'
 import PeriodSelector from '../components/PeriodSelector'
 import ScoreGauge from '../components/ScoreGauge'
 import StatCard from '../components/StatCard'
+import { fmtNum } from '../format'
 
 const eventColors = {
   FREINAGE_BRUSQUE: 'var(--red)',
@@ -156,28 +157,28 @@ export default function DriverDetail() {
         <div className="detail-northstar">
           <StatCard
             label="Coût au km"
-            value={k.costPerKm.toFixed(2)}
+            value={fmtNum(k.costPerKm, 2)}
             unit="€"
             icon="💰"
             tone="blue"
           />
           <StatCard
             label="Utilisation"
-            value={k.utilizationRate.toFixed(0)}
+            value={fmtNum(k.utilizationRate, 0)}
             unit="%"
             icon="⏱️"
             tone="green"
           />
           <StatCard
             label="Maintenance"
-            value={k.maintenanceComplianceRate.toFixed(0)}
+            value={fmtNum(k.maintenanceComplianceRate, 0)}
             unit="%"
             icon="🔧"
             tone="purple"
           />
           <StatCard
             label="Downtime imprévu"
-            value={k.unplannedDowntimeRate.toFixed(1)}
+            value={fmtNum(k.unplannedDowntimeRate, 1)}
             unit="%"
             icon="⚠️"
             tone="red"
@@ -200,27 +201,27 @@ export default function DriverDetail() {
             </div>
             <div className="kpi-item">
               <span>Éco-conduite</span>
-              <b>{k.ecoScore.toFixed(0)}</b>
+              <b>{fmtNum(k.ecoScore, 0)}</b>
               <small>score</small>
             </div>
             <div className="kpi-item">
               <span>Temps de roulage</span>
-              <b>{k.driveTimeShare.toFixed(0)}%</b>
+              <b>{fmtNum(k.driveTimeShare, 0)}%</b>
             </div>
             <div className="kpi-item">
               <span>Ralenti</span>
-              <b>{k.idleShare.toFixed(1)}%</b>
+              <b>{fmtNum(k.idleShare, 1)}%</b>
             </div>
             <div className="kpi-item">
               <span>Ponctualité</span>
-              <b>{k.onTimeRate.toFixed(0)}%</b>
+              <b>{fmtNum(k.onTimeRate, 0)}%</b>
             </div>
             <div className="kpi-item">
               <span>Conformité 561/2006</span>
               <b>
                 {k.tachographApplicable === false
                   ? 'N/A'
-                  : `${k.drivingTimeComplianceRate.toFixed(0)}%`}
+                  : `${fmtNum(k.drivingTimeComplianceRate, 0)}%`}
               </b>
             </div>
           </div>
@@ -231,20 +232,20 @@ export default function DriverDetail() {
           <div className="kpi-grid">
             <div className="kpi-item">
               <span>Consommation</span>
-              <b>{k.consumptionPer100Km.toFixed(1)} L</b>
+              <b>{fmtNum(k.consumptionPer100Km, 1)} L</b>
               <small>/100km</small>
             </div>
             <div className="kpi-item">
               <span>Dérive conso</span>
               <b className={k.consumptionDeltaPct > 10 ? 'text-danger' : ''}>
                 {k.consumptionDeltaPct > 0 ? '+' : ''}
-                {k.consumptionDeltaPct.toFixed(0)}%
+                {fmtNum(k.consumptionDeltaPct, 0)}%
               </b>
               <small>vs référence</small>
             </div>
             <div className="kpi-item">
               <span>Disponibilité</span>
-              <b>{k.truckUptimeRate.toFixed(0)}%</b>
+              <b>{fmtNum(k.truckUptimeRate, 0)}%</b>
               <small>uptime</small>
             </div>
             <div className="kpi-item">
@@ -253,7 +254,7 @@ export default function DriverDetail() {
             </div>
             <div className="kpi-item">
               <span>Km en charge</span>
-              <b>{k.loadedRunRate.toFixed(0)}%</b>
+              <b>{fmtNum(k.loadedRunRate, 0)}%</b>
               <small>chargé</small>
             </div>
             <div className="kpi-item">
@@ -262,7 +263,7 @@ export default function DriverDetail() {
             </div>
             <div className="kpi-item">
               <span>Heures de roulage</span>
-              <b>{k.totalDrivingHours.toFixed(0)} h</b>
+              <b>{fmtNum(k.totalDrivingHours, 0)} h</b>
             </div>
           </div>
         </div>

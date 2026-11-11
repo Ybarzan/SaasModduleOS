@@ -343,8 +343,6 @@ const navItems = [
   { to: '/providers', label: 'Fournisseurs', icon: 'integrations', end: false },
   { to: '/providers/health', label: 'Santé fournisseurs', icon: 'integrations', end: false },
   { to: '/tracking', label: 'Suivi colis', icon: 'satellite', end: false },
-  { to: '/ship-tracker', label: 'Ship Tracker', icon: 'satellite', end: false },
-  { to: '/flight-radar', label: 'Flight Radar', icon: 'satellite', end: false },
   { to: '/logistics', label: 'Logistique', icon: 'import', end: false },
   { to: '/route-optimizer', label: 'Itinéraire', icon: 'route', end: false },
   { to: '/optimization', label: 'Optimisation tarifs', icon: 'route', end: false },
@@ -359,7 +357,7 @@ const navItems = [
   { to: '/marketplace', label: 'Marketplace', icon: 'marketplace', end: false, adminOnly: true },
   {
     to: '/hub-integration',
-    label: 'Logistix & Compliance',
+    label: 'Hubs Praxio',
     icon: 'hubIntegration',
     end: false,
     adminOnly: true

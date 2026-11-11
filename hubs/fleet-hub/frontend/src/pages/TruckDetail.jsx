@@ -18,6 +18,7 @@ import { fuelLabel, vehicleTypeLabel } from '../fleet'
 import PeriodSelector from '../components/PeriodSelector'
 import StatCard from '../components/StatCard'
 import StatusBadge from '../components/StatusBadge'
+import { fmtNum } from '../format'
 
 const EVENT_LABELS = {
   FREINAGE_BRUSQUE: 'Freinage brusque',
@@ -135,28 +136,28 @@ export default function TruckDetail() {
         <div className="detail-northstar">
           <StatCard
             label="Consommation"
-            value={k.consumptionPer100Km.toFixed(1)}
+            value={fmtNum(k.consumptionPer100Km, 1)}
             unit="L/100"
             icon="⛽"
             tone="blue"
           />
           <StatCard
             label="Maintenance"
-            value={k.maintenanceComplianceRate.toFixed(0)}
+            value={fmtNum(k.maintenanceComplianceRate, 0)}
             unit="%"
             icon="🔧"
             tone="purple"
           />
           <StatCard
             label="Disponibilité"
-            value={k.truckUptimeRate.toFixed(0)}
+            value={fmtNum(k.truckUptimeRate, 0)}
             unit="%"
             icon="🟢"
             tone="green"
           />
           <StatCard
             label="Coût au km"
-            value={k.costPerKm.toFixed(2)}
+            value={fmtNum(k.costPerKm, 2)}
             unit="€"
             icon="💰"
             tone="red"
@@ -170,20 +171,20 @@ export default function TruckDetail() {
           <div className="kpi-grid">
             <div className="kpi-item">
               <span>Consommation</span>
-              <b>{k.consumptionPer100Km.toFixed(1)} L</b>
+              <b>{fmtNum(k.consumptionPer100Km, 1)} L</b>
               <small>/100km</small>
             </div>
             <div className="kpi-item">
               <span>Dérive conso</span>
               <b className={k.consumptionDeltaPct > 10 ? 'text-danger' : ''}>
                 {k.consumptionDeltaPct > 0 ? '+' : ''}
-                {k.consumptionDeltaPct.toFixed(0)}%
+                {fmtNum(k.consumptionDeltaPct, 0)}%
               </b>
               <small>vs référence</small>
             </div>
             <div className="kpi-item">
               <span>Disponibilité</span>
-              <b>{k.truckUptimeRate.toFixed(0)}%</b>
+              <b>{fmtNum(k.truckUptimeRate, 0)}%</b>
               <small>uptime</small>
             </div>
             <div className="kpi-item">
@@ -192,12 +193,12 @@ export default function TruckDetail() {
             </div>
             <div className="kpi-item">
               <span>Utilisation</span>
-              <b>{k.utilizationRate.toFixed(0)}%</b>
+              <b>{fmtNum(k.utilizationRate, 0)}%</b>
               <small>temps en service</small>
             </div>
             <div className="kpi-item">
               <span>Km en charge</span>
-              <b>{k.loadedRunRate.toFixed(0)}%</b>
+              <b>{fmtNum(k.loadedRunRate, 0)}%</b>
               <small>chargé</small>
             </div>
           </div>
@@ -213,7 +214,7 @@ export default function TruckDetail() {
             </div>
             <div className="kpi-item">
               <span>Heures de roulage</span>
-              <b>{k.totalDrivingHours.toFixed(0)} h</b>
+              <b>{fmtNum(k.totalDrivingHours, 0)} h</b>
             </div>
             <div className="kpi-item">
               <span>Trajets</span>
@@ -443,7 +444,7 @@ export default function TruckDetail() {
                         ? `${Math.round(f.odometerKm).toLocaleString('fr-FR')} km`
                         : '—'}
                     </td>
-                    <td>{f.liters > 0 ? `${(f.amount / f.liters).toFixed(3)} €` : '—'}</td>
+                    <td>{f.liters > 0 ? `${fmtNum(f.amount / f.liters, 3)} €` : '—'}</td>
                   </tr>
                 ))}
               </tbody>

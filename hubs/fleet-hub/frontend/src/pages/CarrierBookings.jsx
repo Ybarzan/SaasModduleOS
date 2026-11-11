@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
+import { fmtNum } from '../format'
 
 const STATUS_CONFIG = {
   PENDING: { label: 'En attente', color: 'orange' },
@@ -255,7 +256,7 @@ export default function CarrierBookings() {
                     </td>
                     <td>
                       {b.quotedCost != null
-                        ? `${b.quotedCost.toFixed(2)} ${b.quotedCostCurrency || 'EUR'}`
+                        ? `${fmtNum(b.quotedCost, 2)} ${b.quotedCostCurrency || 'EUR'}`
                         : '—'}
                     </td>
                     <td>
@@ -335,7 +336,7 @@ export default function CarrierBookings() {
                     <span>Coût</span>
                     <span>
                       {b.quotedCost != null
-                        ? `${b.quotedCost.toFixed(2)} ${b.quotedCostCurrency || 'EUR'}`
+                        ? `${fmtNum(b.quotedCost, 2)} ${b.quotedCostCurrency || 'EUR'}`
                         : '—'}
                     </span>
                   </div>

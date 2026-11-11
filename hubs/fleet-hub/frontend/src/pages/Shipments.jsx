@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState } from 'react'
 import api from '../services/api'
 import LiveTrackingPanel from '../components/LiveTrackingPanel'
+import { fmtNum } from '../format'
 
 const LOGISTIX_URL = import.meta.env.VITE_LOGISTIX_URL || ''
 
@@ -608,7 +609,7 @@ export default function Shipments() {
                               <div className="couple-card-top">
                                 <strong>{rate.carrierName || rate.name}</strong>
                                 <span className="score-pill good">
-                                  {estimatedCost.toFixed(2)} €
+                                  {fmtNum(estimatedCost, 2)} €
                                 </span>
                               </div>
                               <div className="muted">
@@ -760,12 +761,17 @@ export default function Shipments() {
                           {shipment.shipperCity || '—'} <span className="muted">→</span>{' '}
                           {shipment.consigneeCity || '—'}
                         </td>
-                        <td className="muted">{shipment.carrierName || '—'}</td>
+                        <td className="muted">
+                          {shipment.carrierName ||
+                            (shipment.truckRegistration
+                              ? `Flotte propre · ${shipment.truckRegistration}`
+                              : '—')}
+                        </td>
                         <td>
                           {shipment.finalCost != null
-                            ? `${shipment.finalCost.toFixed(2)} €`
+                            ? `${fmtNum(shipment.finalCost, 2)} €`
                             : shipment.quotedCost != null
-                              ? `${shipment.quotedCost.toFixed(2)} €`
+                              ? `${fmtNum(shipment.quotedCost, 2)} €`
                               : '—'}
                         </td>
                         <td className="muted">

@@ -61,7 +61,8 @@ export default function Trucks() {
         <div className="header-actions">
           <input
             type="search"
-            placeholder="Rechercher (véhicule, chauffeur)…"
+            placeholder="Véhicule, chauffeur…"
+            aria-label="Rechercher un véhicule ou un chauffeur"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="search-input"

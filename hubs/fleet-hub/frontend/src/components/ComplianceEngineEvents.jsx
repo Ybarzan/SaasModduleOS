@@ -94,7 +94,7 @@ export default function ComplianceEngineEvents() {
                 autoComplete="off"
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
-                placeholder="générée côté Compliance Engine (POST /v1/fleethub-webhook/enable)"
+                placeholder="Collez la clé générée dans Compliance Engine"
               />
             </div>
             <div className="form-actions">

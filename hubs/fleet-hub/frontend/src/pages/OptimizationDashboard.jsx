@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../services/api'
 import StatCard from '../components/StatCard'
+import { fmtNum } from '../format'
 
 const FLAG_MAP = {
   FR: '🇫🇷',
@@ -392,7 +393,7 @@ export default function OptimizationDashboard() {
                   <b>{fmtEur(rec.predictedCost)}</b>
                 </div>
                 <div className="muted">
-                  -{rec.savingsPercent.toFixed(0)}% ({fmtEur(rec.savingsEstimate)})
+                  -{fmtNum(rec.savingsPercent, 0)}% ({fmtEur(rec.savingsEstimate)})
                 </div>
                 {rec.status === 'PENDING' && (
                   <button
@@ -459,7 +460,7 @@ export default function OptimizationDashboard() {
                   {fmtEur(c.combinedCost)}
                 </div>
                 <div className="muted">
-                  -{c.savingsPercent.toFixed(0)}% ({fmtEur(c.estimatedSavings)})
+                  -{fmtNum(c.savingsPercent, 0)}% ({fmtEur(c.estimatedSavings)})
                 </div>
                 {c.status === 'PENDING' && (
                   <button

@@ -5,6 +5,7 @@ import KpiWidget from '../components/KpiWidget'
 import PeriodSelector from '../components/PeriodSelector'
 import ScoreGauge from '../components/ScoreGauge'
 import StatusBadge from '../components/StatusBadge'
+import { fmtNum } from '../format'
 
 const STATUS_GROUPS = [
   {
@@ -221,9 +222,9 @@ export default function Dashboard() {
               <LiveTile
                 tone={summary.nonCompliantDrivingDays > 0 ? 'red' : 'default'}
                 icon="⏰"
-                label="Conduite non conforme"
-                value={`${summary.nonCompliantDrivingDays} j`}
-                sub="règlement 561/2006"
+                label="Jours non conformes"
+                value={`${summary.nonCompliantDrivingDays}`}
+                sub="jours-chauffeur · règl. 561/2006"
                 onClick={() => navigate('/drivers')}
               />
             </div>
@@ -394,12 +395,12 @@ export default function Dashboard() {
                         <span
                           className={`score-pill ${c.performanceScore >= 75 ? 'good' : c.performanceScore >= 50 ? 'mid' : 'bad'}`}
                         >
-                          {c.performanceScore.toFixed(1)}
+                          {fmtNum(c.performanceScore, 1)}
                         </span>
                       </td>
                       <td>{Math.round(c.totalKm).toLocaleString('fr-FR')}</td>
-                      <td>{c.costPerKm.toFixed(2)} €</td>
-                      <td>{c.consumptionPer100Km.toFixed(1)} L/100</td>
+                      <td>{fmtNum(c.costPerKm, 2)} €</td>
+                      <td>{fmtNum(c.consumptionPer100Km, 1)} L/100</td>
                       <td>{c.riskEventsTotal}</td>
                       <td>{c.alerts?.length || 0}</td>
                     </tr>
