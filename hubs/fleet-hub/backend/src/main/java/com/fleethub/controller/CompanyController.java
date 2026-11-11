@@ -30,6 +30,7 @@ public class CompanyController {
 
     private final CompanyRepository companyRepository;
     private final AuditService auditService;
+    private final com.fleethub.repository.CustodyEventRepository custodyEventRepository;
 
     @GetMapping
     @Operation(summary = "Profil de la société", description = "Nom, plan et profil de flotte de la société courante")
@@ -44,6 +45,11 @@ public class CompanyController {
     public CompanyProfileDto updateFleetProfile(@Valid @RequestBody FleetProfileRequest req) {
         Company company = load();
         Company.FleetProfile profile = Company.FleetProfile.valueOf(req.fleetProfile());
+        if (company.isMedical() && !profile.isMedical() && custodyEventRepository.countByCompanyId(company.getId()) > 0) {
+            // L'espace médical est cloisonné : on ne le quitte pas en laissant un journal de garde orphelin
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,
+                    "Société de transport médical avec un historique de traçabilité : changement d'activité impossible");
+        }
         company.setFleetProfile(profile);
         companyRepository.save(company);
         auditService.log("PROFIL_FLOTTE", "Profil de flotte : " + profile.name());

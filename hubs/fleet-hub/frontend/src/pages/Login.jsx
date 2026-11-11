@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { activityOf, chosenActivity, rememberActivity } from '../fleet'
 
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const activity = chosenActivity(location?.search)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [totpCode, setTotpCode] = useState('')
@@ -27,6 +29,8 @@ export default function Login() {
         setLoading(false)
         return
       }
+      // L'espace ouvert est celui de l'activité de la société (mémorisé pour le prochain passage)
+      if (result.fleetProfile) rememberActivity(activityOf(result.fleetProfile).slug)
       const fallback = result.role === 'SAAS_ADMIN' ? '/admin' : '/'
       navigate(from && from !== '/' ? from : fallback, { replace: true })
     } catch (err) {
@@ -45,11 +49,15 @@ export default function Login() {
   }
 
   return (
-    <div className="login-page">
+    <div className={'login-page' + (activity ? ` activity-${activity.slug}` : '')}>
       <div className="login-card">
-        <div className="login-logo">🚛</div>
+        <div className="login-logo">{activity?.icon || '🚛'}</div>
         <h1>Fleet Hub</h1>
-        <p className="login-sub">Gestion de flotte - KPIs Chauffeur x Camion</p>
+        <p className="login-sub">{activity ? activity.label : 'Gestion de flotte'}</p>
+        <p className="login-activity">
+          {activity ? activity.tagline : 'Choisissez votre activité pour un espace adapté.'}{' '}
+          <Link to="/portail">{activity ? "Changer d'activité" : 'Choisir mon activité'}</Link>
+        </p>
         <form onSubmit={handleSubmit}>
           {!totpRequired ? (
             <>
@@ -99,7 +107,8 @@ export default function Login() {
           </button>
         </form>
         <p className="login-hint">
-          Pas de compte ? <Link to="/register">Créer ma société</Link>
+          Pas de compte ?{' '}
+          <Link to={activity ? `/register?activite=${activity.slug}` : '/register'}>Créer ma société</Link>
         </p>
         <p className="login-hint legal-links">
           <Link to="/legal/terms">CGU</Link>

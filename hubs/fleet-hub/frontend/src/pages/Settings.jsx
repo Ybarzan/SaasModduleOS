@@ -1,7 +1,78 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import api from '../services/api'
-import { FLEET_PROFILES, profileOf } from '../fleet'
+import { ACTIVITIES, FLEET_PROFILES, isMedical, profileOf } from '../fleet'
+
+/** Transport médical : délai maximal entre prise en charge et remise au laboratoire. */
+function MedicalSettingsCard() {
+  const { user } = useAuth()
+  const [minutes, setMinutes] = useState('')
+  const [saved, setSaved] = useState(null)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const isAdmin = user?.role === 'ADMIN'
+
+  useEffect(() => {
+    api
+      .get('/medical/settings')
+      .then((res) => {
+        setMinutes(String(res.data.maxTransitMinutes))
+        setSaved(res.data.maxTransitMinutes)
+      })
+      .catch(() => setError('Réglages indisponibles'))
+  }, [])
+
+  const save = async () => {
+    setMessage('')
+    setError('')
+    try {
+      const res = await api.put('/medical/settings', { maxTransitMinutes: Number(minutes) })
+      setSaved(res.data.maxTransitMinutes)
+      setMessage('Délai enregistré')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Valeur refusée (15 à 1440 minutes)')
+    }
+  }
+
+  return (
+    <div className="card" style={{ marginTop: '1.5rem' }}>
+      <div className="card-title">
+        <h3>Transport médical</h3>
+      </div>
+      <p className="muted" style={{ marginBottom: '1rem' }}>
+        Délai maximal entre la prise en charge d'un produit au point de collecte et sa remise au
+        laboratoire. Au-delà, une non-conformité « délai d'acheminement » est ouverte automatiquement.
+      </p>
+      {error && <div className="alert alert-error">{error}</div>}
+      {message && <div className="alert">{message}</div>}
+      <div className="form-field" style={{ maxWidth: 280 }}>
+        <label htmlFor="max-transit">Délai maximal (minutes)</label>
+        <input
+          id="max-transit"
+          type="number"
+          min="15"
+          max="1440"
+          step="5"
+          value={minutes}
+          disabled={!isAdmin}
+          onChange={(e) => setMinutes(e.target.value)}
+        />
+      </div>
+      {isAdmin ? (
+        <button
+          className="btn btn-primary"
+          style={{ marginTop: '1rem' }}
+          onClick={save}
+          disabled={minutes === '' || Number(minutes) === saved}
+        >
+          Enregistrer
+        </button>
+      ) : (
+        <p className="muted" style={{ marginTop: '1rem' }}>Seul un administrateur peut modifier ce réglage.</p>
+      )}
+    </div>
+  )
+}
 
 function FleetProfileCard() {
   const { user, updateUser } = useAuth()
@@ -16,7 +87,7 @@ function FleetProfileCard() {
     try {
       const res = await api.put('/company/fleet-profile', { fleetProfile: profile })
       updateUser({ fleetProfile: res.data.fleetProfile })
-      setMessage('Profil de flotte mis à jour')
+      setMessage('Activité mise à jour')
     } catch (err) {
       setError(err.response?.data?.message || 'Mise à jour impossible')
     }
@@ -28,12 +99,15 @@ function FleetProfileCard() {
         <h3>Activité de la flotte</h3>
       </div>
       <p className="muted" style={{ marginBottom: '1rem' }}>
-        Adapte les modules mis en avant (tachygraphe, tournées, collecte) et le vocabulaire de l'application.
+        Chaque activité a son propre espace : modules, indicateurs et vocabulaire. Une société de
+        transport médical ayant déjà un historique de traçabilité ne peut pas changer d'activité.
       </p>
       {error && <div className="alert alert-error">{error}</div>}
       {message && <div className="alert">{message}</div>}
       <div className="profile-options">
-        {FLEET_PROFILES.map((p) => (
+        {FLEET_PROFILES.filter(
+          (p) => ACTIVITIES.some((a) => a.value === p.value) || p.value === profileOf(user)
+        ).map((p) => (
           <label key={p.value} className={'profile-option' + (profile === p.value ? ' active' : '')}>
             <input
               type="radio"
@@ -347,6 +421,7 @@ export default function Settings() {
       </div>
 
       {user?.companyId && <FleetProfileCard />}
+      {user?.companyId && isMedical(user) && <MedicalSettingsCard />}
 
       <div className="card" style={{ marginTop: '1.5rem' }}>
         <div className="card-title">

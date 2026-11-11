@@ -42,7 +42,7 @@ export function distanceMeters(lat1, lon1, lat2, lon2) {
  * La position n'est suivie que tant que `target` est défini (tournée en cours).
  */
 export function useGeofence(target, onArrive, { enabled = true, radius = 120 } = {}) {
-  const [state, setState] = useState({ distance: null, error: null })
+  const [state, setState] = useState({ distance: null, error: null, position: null })
   const firedFor = useRef(null)
   const callback = useRef(onArrive)
   useEffect(() => {
@@ -61,19 +61,25 @@ export function useGeofence(target, onArrive, { enabled = true, radius = 120 } =
     const watchId = window.navigator.geolocation.watchPosition(
       (pos) => {
         const d = distanceMeters(pos.coords.latitude, pos.coords.longitude, lat, lon)
-        setState({ distance: Math.round(d), error: null })
+        // Dernière position connue : jointe aux actions du chauffeur (journal de garde médical)
+        const position =
+          pos.coords.accuracy <= 500
+            ? { latitude: pos.coords.latitude, longitude: pos.coords.longitude, at: Date.now() }
+            : null
+        setState({ distance: Math.round(d), error: null, position })
         if (d <= radius && pos.coords.accuracy <= 150 && firedFor.current !== key) {
           firedFor.current = key
           callback.current()
         }
       },
-      (err) => setState({ distance: null, error: err.code === 1 ? 'refusee' : 'indisponible' }),
+      (err) =>
+        setState({ distance: null, error: err.code === 1 ? 'refusee' : 'indisponible', position: null }),
       { enableHighAccuracy: true, maximumAge: 10000, timeout: 30000 }
     )
     return () => window.navigator.geolocation.clearWatch(watchId)
   }, [active, key, lat, lon, radius])
 
-  return active ? state : { distance: null, error: null }
+  return active ? state : { distance: null, error: null, position: null }
 }
 
 /** Préférence persistée (stockage local, avec repli silencieux). */

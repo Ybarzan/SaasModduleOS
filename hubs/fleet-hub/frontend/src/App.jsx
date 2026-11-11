@@ -3,7 +3,12 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
 import Login from './pages/Login'
+import { isMedical, rememberedActivity } from './fleet'
 
+const ActivityPortal = lazy(() => import('./pages/ActivityPortal'))
+const MedicalDashboard = lazy(() => import('./pages/medical/MedicalDashboard'))
+const Traceability = lazy(() => import('./pages/medical/Traceability'))
+const NonConformities = lazy(() => import('./pages/medical/NonConformities'))
 const Register = lazy(() => import('./pages/Register'))
 const AcceptInvitation = lazy(() => import('./pages/AcceptInvitation'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'))
@@ -75,10 +80,33 @@ function PageFallback() {
 function RequireAuth({ children }) {
   const { user } = useAuth()
   const location = useLocation()
-  if (!user) return <Navigate to="/login" state={{ from: location }} replace />
+  if (!user) {
+    // Première visite : choix de l'activité ; ensuite, connexion directe dans l'espace habituel
+    const known = rememberedActivity()
+    return (
+      <Navigate
+        to={known ? `/login?activite=${known.slug}` : '/portail'}
+        state={{ from: location }}
+        replace
+      />
+    )
+  }
   // Le portail chauffeur est un espace à part : jamais le back-office.
   if (user.role === 'CHAUFFEUR') return <Navigate to="/pointage" replace />
   return children
+}
+
+/** Pages de l'espace Transport médical : invisibles pour les autres activités. */
+function RequireMedical({ children }) {
+  const { user } = useAuth()
+  if (!isMedical(user)) return <Navigate to="/" replace />
+  return children
+}
+
+/** Tableau de bord propre à l'activité. */
+function Home() {
+  const { user } = useAuth()
+  return isMedical(user) ? <MedicalDashboard /> : <Dashboard />
 }
 
 function RequireRole({ role, children }) {
@@ -122,6 +150,7 @@ export default function App() {
   return (
     <Suspense fallback={<PageFallback />}>
       <Routes>
+        <Route path="/portail" element={<ActivityPortal />} />
         <Route path="/login" element={<Login />} />
         <Route path="/sso-entry" element={<SsoEntry />} />
         <Route path="/register" element={<Register />} />
@@ -161,7 +190,23 @@ export default function App() {
             </RequireAuth>
           }
         >
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Home />} />
+          <Route
+            path="/tracabilite"
+            element={
+              <RequireMedical>
+                <Traceability />
+              </RequireMedical>
+            }
+          />
+          <Route
+            path="/non-conformites"
+            element={
+              <RequireMedical>
+                <NonConformities />
+              </RequireMedical>
+            }
+          />
           <Route path="/drivers" element={<Drivers />} />
           <Route path="/drivers/:assignmentId" element={<DriverDetail />} />
           <Route path="/trucks" element={<Trucks />} />

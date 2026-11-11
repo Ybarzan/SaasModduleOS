@@ -62,7 +62,9 @@ public class DataSeeder {
                            FuelRecordRepository fuelRepository,
                            CostRecordRepository costRepository,
                            SiteRepository siteRepository,
-                           TourRepository tourRepository) {
+                           TourRepository tourRepository,
+                           CustodyEventRepository custodyEventRepository,
+                           NonConformityRepository nonConformityRepository) {
         return args -> {
             if (userRepository.count() > 0) return;
             Random rnd = new Random(42);
@@ -75,8 +77,8 @@ public class DataSeeder {
             demo.setStatus(Company.CompanyStatus.ACTIVE);
             demo.setCountry("FR");
             demo.setContactEmail("demo@fleethub.fr");
-            // Démo « flotte mixte » : poids lourds + tournées de collecte en camionnette
-            demo.setFleetProfile(Company.FleetProfile.MIXTE);
+            // Démo « transport poids lourds » ; le transport médical a sa propre société de démo
+            demo.setFleetProfile(Company.FleetProfile.POIDS_LOURD);
             demo.setCreatedAt(LocalDateTime.now());
             demo.setAccessCode(Company.generateAccessCode());
             companyRepository.save(demo);
@@ -296,9 +298,31 @@ public class DataSeeder {
                 }
             }
 
-            // ---- Tournées de collecte (module Tournées) ----
-            TourDemoSeeder.seed(demo, siteRepository, tourRepository, driverRepository, truckRepository,
-                    routeOptimizer, rnd);
+            // ---- Société de démonstration « Transport médical » (activité cloisonnée) ----
+            Company medical = new Company();
+            medical.setName("BioNavette Lyon (démo)");
+            medical.setPlan(Company.SubscriptionPlan.PRO);
+            medical.setStatus(Company.CompanyStatus.ACTIVE);
+            medical.setCountry("FR");
+            medical.setContactEmail("demo-medical@fleethub.fr");
+            medical.setFleetProfile(Company.FleetProfile.COLLECTE_SANTE);
+            medical.setCreatedAt(LocalDateTime.now());
+            medical.setAccessCode(Company.generateAccessCode());
+            companyRepository.save(medical);
+            AppUser medicalAdmin = new AppUser();
+            medicalAdmin.setUsername("medical");
+            medicalAdmin.setPassword(passwordEncoder.encode(adminPassword));
+            medicalAdmin.setRole("ADMIN");
+            medicalAdmin.setDisplayName("Responsable Qualité");
+            medicalAdmin.setEmail("qualite@bionavette.fr");
+            medicalAdmin.setEnabled(true);
+            medicalAdmin.setCreatedAt(LocalDateTime.now());
+            medicalAdmin.setCompany(medical);
+            userRepository.save(medicalAdmin);
+
+            // ---- Tournées de collecte médicale tracées (journal de garde, non-conformités) ----
+            TourDemoSeeder.seed(medical, siteRepository, tourRepository, driverRepository, truckRepository,
+                    routeOptimizer, rnd, new TourDemoSeeder.Ledger(custodyEventRepository, nonConformityRepository));
         };
     }
 

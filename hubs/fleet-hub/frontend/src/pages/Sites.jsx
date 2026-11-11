@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import api from '../services/api'
+import { useAuth } from '../context/AuthContext'
+import { fleetTerms, isMedical } from '../fleet'
 import { SITE_KINDS, siteKindLabel } from '../tours'
 
 const EMPTY = {
@@ -108,6 +110,7 @@ function GeocodeSearch({ onPick }) {
 }
 
 export default function Sites() {
+  const { user } = useAuth()
   const [sites, setSites] = useState([])
   const [form, setForm] = useState(EMPTY)
   const [editingId, setEditingId] = useState(null)
@@ -175,8 +178,12 @@ export default function Sites() {
     <div>
       <div className="page-header">
         <div>
-          <h2>Sites</h2>
-          <p>Clients, pharmacies, laboratoires et dépôts desservis par vos tournées</p>
+          <h2>{fleetTerms(user).sites}</h2>
+          <p>
+            {isMedical(user)
+              ? 'Pharmacies, établissements de santé, laboratoires et dépôts desservis par vos tournées'
+              : 'Clients, pharmacies, laboratoires et dépôts desservis par vos tournées'}
+          </p>
         </div>
         <div className="header-actions">
           <input

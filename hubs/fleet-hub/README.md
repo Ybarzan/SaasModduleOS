@@ -27,6 +27,27 @@ de transport, avec des KPIs centrés sur le **couple Chauffeur × Camion**.
 
 ## 2. Fonctionnalités
 
+- **Trois activités cloisonnées** : un portail d'entrée (`/portail`) fait choisir
+  **Transport poids lourds**, **Transport messagerie** ou **Transport médical** avant la
+  connexion ou l'inscription. L'activité est fixée par société (`fleetProfile`) et pilote
+  le menu, le tableau de bord et le vocabulaire. Le profil historique `MIXTE` reste accepté
+  mais n'est plus proposé.
+- **Transport médical** (activité `COLLECTE_SANTE`, prélèvements sanguins, PCR, urines…) :
+  - comptage des produits **par catégorie** à chaque passage (pas de suivi tube par tube,
+    aucune donnée patient) ; à la remise au laboratoire, les produits à bord sont proposés ;
+  - **rapprochement collecté / remis** par tournée et **délai d'acheminement** de chaque
+    collecte (limite réglable dans Paramètres, 4 h par défaut) ;
+  - **journal de garde** en ajout seul (`/tracabilite`) : chaque démarrage, arrivée, prise en
+    charge, remise, échec, correction et non-conformité est horodaté (terrain + serveur),
+    géolocalisé si le téléphone le permet, signé, et **chaîné par empreinte SHA-256**. Une
+    vérification d'intégrité détecte toute modification ou suppression faite hors de
+    l'application ; export CSV avec empreintes ;
+  - **non-conformités** (`/non-conformites`) ouvertes automatiquement (écart de quantité,
+    rupture du froid, délai dépassé, collecte non réalisée) ou déclarées ; la clôture exige
+    une action corrective ;
+  - un passage clôturé ne se corrige qu'avec un motif (événement `CORRECTION`). Une tournée
+    exécutée ne peut pas être supprimée, et une société ayant un historique ne peut pas
+    quitter l'activité médicale.
 - **SaaS multi-tenant** : inscription autonome des sociétés (`/register`), données isolées par
   société (`company_id` sur toutes les entités), essai gratuit 14 jours puis plans
   **TRIAL (10 véh / 5 chauf), STARTER (25/10), PRO (100/50), ENTERPRISE (illimité)**
@@ -91,8 +112,9 @@ Puis ouvrir **http://localhost:5199**
 | Utilisateur | Mot de passe | Rôle |
 |-------------|--------------|------|
 | `saasadmin` | `admin`      | SAAS_ADMIN (opérateur plateforme) |
-| `admin`     | `admin`      | ADMIN (société démo « Fleet Hub Démo ») |
+| `admin`     | `admin`      | ADMIN (société démo « Fleet Hub Démo », transport poids lourds) |
 | `gestionnaire` | `gestion` | GESTIONNAIRE |
+| `medical`   | `admin`      | ADMIN (société démo « BioNavette Lyon », transport médical : 3 semaines de tournées tracées) |
 
 > En prod, `ADMIN_PASSWORD` et `GESTIONNAIRE_PASSWORD` surchargent les mots de passe
 > (`saasadmin` utilise `ADMIN_PASSWORD`).

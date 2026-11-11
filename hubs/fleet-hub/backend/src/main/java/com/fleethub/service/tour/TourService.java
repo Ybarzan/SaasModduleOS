@@ -7,9 +7,11 @@ import com.fleethub.dto.tour.TourDto;
 import com.fleethub.dto.tour.TourRequest;
 import com.fleethub.dto.tour.TourStatsDto;
 import com.fleethub.dto.tour.TourStopRequest;
+import com.fleethub.model.MedicalProduct;
 import com.fleethub.model.Site;
 import com.fleethub.model.Tour;
 import com.fleethub.model.TourStop;
+import com.fleethub.service.medical.MedicalTraceability;
 import com.fleethub.repository.DeliveryOrderRepository;
 import com.fleethub.repository.DriverRepository;
 import com.fleethub.repository.SiteRepository;
@@ -57,6 +59,7 @@ public class TourService {
     private final TruckRepository truckRepository;
     private final RouteOptimizer optimizer;
     private final DeliveryOrderRepository orderRepository;
+    private final MedicalTraceability medical;
 
     // ------------------------------------------------------------------ lecture
 
@@ -105,7 +108,7 @@ public class TourService {
         StringBuilder csv = new StringBuilder("﻿");
         csv.append("date;tournee;chauffeur;vehicule;ordre;site;type_site;reference_site;type_arret;creneau_debut;creneau_fin;")
                 .append("arrivee;cloture;statut;dans_creneau;signataire;colis;echantillons;codes_scannes;")
-                .append("temperature_c;plage_min_c;plage_max_c;rupture_froid;motif_echec\n");
+                .append("temperature_c;plage_min_c;plage_max_c;rupture_froid;motif_echec;produits\n");
         List<Tour> tours = tourRepository.findByCompanyIdAndDateBetweenOrderByDateAscPlannedStartAsc(
                 TenantContext.companyId(), from, to);
         for (Tour tour : tours) {
@@ -122,7 +125,8 @@ public class TourService {
                         s.getStatus().name(), onTime == null ? "" : onTime ? "oui" : "non",
                         cell(s.getSignedBy()), opt(s.getParcelCount()), opt(s.getSampleCount()), cell(s.getScannedCodes()),
                         opt(s.getTemperatureCelsius()), opt(s.getTemperatureMinCelsius()), opt(s.getTemperatureMaxCelsius()),
-                        s.isTemperatureExcursion() ? "oui" : "non", cell(s.getFailureReason())
+                        s.isTemperatureExcursion() ? "oui" : "non", cell(s.getFailureReason()),
+                        MedicalProduct.format(s.getProducts())
                 };
                 csv.append(String.join(";", row)).append('\n');
             }
@@ -168,6 +172,10 @@ public class TourService {
         Tour tour = load(id);
         if (tour.getStatus() == Tour.TourStatus.EN_COURS) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Tournée en cours : terminez-la ou annulez-la d'abord");
+        }
+        if (tour.getCompany().isMedical() && tour.getStartedAt() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Tournée médicale exécutée : elle est conservée pour la traçabilité et ne peut pas être supprimée");
         }
         orderRepository.releaseByTour(tour); // les commandes redeviennent « à planifier »
         tourRepository.delete(tour);
@@ -312,6 +320,7 @@ public class TourService {
         }
         tour.setStatus(Tour.TourStatus.EN_COURS);
         tour.setStartedAt(LocalDateTime.now());
+        medical.onTourStarted(tour, tour.getStartedAt());
         return TourDto.of(tourRepository.save(tour), true);
     }
 
@@ -323,6 +332,7 @@ public class TourService {
         }
         tour.setStatus(Tour.TourStatus.TERMINEE);
         tour.setCompletedAt(LocalDateTime.now());
+        medical.onTourEnded(tour, false);
         return TourDto.of(tourRepository.save(tour), true);
     }
 
@@ -333,29 +343,42 @@ public class TourService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Une tournée terminée ne peut pas être annulée");
         }
         orderRepository.releaseByTour(tour); // commandes à replanifier
+        boolean wasRunning = tour.getStatus() == Tour.TourStatus.EN_COURS;
         tour.setStatus(Tour.TourStatus.ANNULEE);
+        if (wasRunning) {
+            // Des produits ont pu être pris en charge : le rapprochement signale ceux non remis
+            medical.onTourEnded(tour, true);
+        }
         return TourDto.of(tourRepository.save(tour), true);
     }
 
     /** Signale l'arrivée sur site (horodatage réel). */
     @Transactional
     public TourDto arrive(Long tourId, Long stopId) {
-        return arrive(tourId, stopId, null);
+        return arrive(tourId, stopId, null, null, null);
     }
 
     /** Arrivée sur site, éventuellement horodatée par le téléphone (action faite hors connexion). */
     @Transactional
     public TourDto arrive(Long tourId, Long stopId, LocalDateTime occurredAt) {
+        return arrive(tourId, stopId, occurredAt, null, null);
+    }
+
+    /** Arrivée sur site avec la position du téléphone (journal de garde du transport médical). */
+    @Transactional
+    public TourDto arrive(Long tourId, Long stopId, LocalDateTime occurredAt, Double latitude, Double longitude) {
         Tour tour = load(tourId);
         if (tour.getStatus() == Tour.TourStatus.PLANIFIEE) {
             // Arriver au premier arrêt démarre la tournée : une action de moins pour le chauffeur
             tour.setStatus(Tour.TourStatus.EN_COURS);
             tour.setStartedAt(effectiveTime(occurredAt));
+            medical.onTourStarted(tour, tour.getStartedAt());
         }
         requireRunning(tour);
         TourStop stop = findStop(tour, stopId);
         if (stop.getArrivedAt() == null) {
             stop.setArrivedAt(effectiveTime(occurredAt));
+            medical.onArrived(tour, stop, stop.getArrivedAt(), latitude, longitude);
         }
         return TourDto.of(tourRepository.save(tour), true);
     }
@@ -367,12 +390,28 @@ public class TourService {
         if (tour.getStatus() == Tour.TourStatus.PLANIFIEE) {
             tour.setStatus(Tour.TourStatus.EN_COURS);
             tour.setStartedAt(LocalDateTime.now());
+            medical.onTourStarted(tour, tour.getStartedAt());
         }
         requireRunning(tour);
         TourStop stop = findStop(tour, stopId);
         TourStop.StopStatus status = TourStop.StopStatus.valueOf(req.status());
         if (status == TourStop.StopStatus.ECHEC && (req.failureReason() == null || req.failureReason().isBlank())) {
             throw new IllegalArgumentException("Le motif d'échec est obligatoire");
+        }
+        boolean medicalTour = tour.getCompany().isMedical();
+        Map<MedicalProduct, Integer> products = medicalTour && status == TourStop.StopStatus.FAIT
+                ? parseProducts(req.products()) : Map.of();
+        Integer sampleCount = medicalTour && !products.isEmpty() ? (Integer) MedicalProduct.total(products) : req.sampleCount();
+        boolean correction = false;
+        if (medicalTour && stop.getStatus() != TourStop.StopStatus.A_FAIRE) {
+            if (sameProof(stop, status, req, products, sampleCount)) {
+                // Renvoi identique (file d'envoi hors ligne) : rien à tracer de plus
+                return TourDto.of(tour, true);
+            }
+            if (req.correctionReason() == null || req.correctionReason().isBlank()) {
+                throw new IllegalArgumentException("Passage déjà clôturé : un motif de correction est obligatoire");
+            }
+            correction = true;
         }
         LocalDateTime now = effectiveTime(req.occurredAt());
         if (stop.getArrivedAt() == null || stop.getArrivedAt().isAfter(now)) {
@@ -382,22 +421,61 @@ public class TourService {
         stop.setStatus(status);
         stop.setSignedBy(req.signedBy());
         stop.setParcelCount(req.parcelCount());
-        stop.setSampleCount(req.sampleCount());
+        stop.setSampleCount(sampleCount);
         stop.setTemperatureCelsius(req.temperatureCelsius());
         stop.setScannedCodes(req.scannedCodes());
         stop.setFailureReason(status == TourStop.StopStatus.ECHEC ? req.failureReason() : null);
+        if (medicalTour) {
+            stop.getProducts().clear();
+            stop.getProducts().putAll(products);
+        }
         if (req.notes() != null && !req.notes().isBlank()) {
             // On conserve les consignes de l'exploitant : la remarque du chauffeur s'ajoute
             String driverNote = "Chauffeur : " + req.notes().trim();
             String merged = stop.getNotes() == null || stop.getNotes().isBlank() ? driverNote : stop.getNotes() + " · " + driverNote;
             stop.setNotes(merged.length() > 1000 ? merged.substring(0, 1000) : merged);
         }
+        medical.onStopCompleted(tour, stop, correction,
+                new MedicalTraceability.FieldData(req.latitude(), req.longitude(), req.notes(), req.correctionReason()));
         boolean allClosed = tour.getStops().stream().allMatch(s -> s.getStatus() != TourStop.StopStatus.A_FAIRE);
         if (allClosed) {
             tour.setStatus(Tour.TourStatus.TERMINEE);
             tour.setCompletedAt(now);
+            medical.onTourEnded(tour, false);
         }
         return TourDto.of(tourRepository.save(tour), true);
+    }
+
+    /** Quantités par catégorie de la requête (catégories inconnues refusées, quantités nulles ignorées). */
+    private static Map<MedicalProduct, Integer> parseProducts(Map<String, Integer> raw) {
+        Map<MedicalProduct, Integer> products = new java.util.EnumMap<>(MedicalProduct.class);
+        if (raw == null) {
+            return products;
+        }
+        raw.forEach((key, qty) -> {
+            MedicalProduct category;
+            try {
+                category = MedicalProduct.valueOf(key);
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("Catégorie de produit inconnue : " + key);
+            }
+            if (qty != null && qty > 0) {
+                products.put(category, qty);
+            }
+        });
+        return products;
+    }
+
+    /** La preuve envoyée est-elle identique à celle déjà enregistrée ? */
+    private static boolean sameProof(TourStop stop, TourStop.StopStatus status, StopCompletionRequest req,
+                                     Map<MedicalProduct, Integer> products, Integer sampleCount) {
+        return stop.getStatus() == status
+                && Objects.equals(stop.getSignedBy(), req.signedBy())
+                && Objects.equals(stop.getParcelCount(), req.parcelCount())
+                && Objects.equals(stop.getSampleCount(), sampleCount)
+                && Objects.equals(stop.getTemperatureCelsius(), req.temperatureCelsius())
+                && Objects.equals(stop.getFailureReason(), status == TourStop.StopStatus.ECHEC ? req.failureReason() : null)
+                && new java.util.HashMap<>(stop.getProducts()).equals(new java.util.HashMap<>(products));
     }
 
     // ------------------------------------------------------------- indicateurs

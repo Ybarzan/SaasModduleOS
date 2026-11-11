@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react'
 import BarcodeScanner, { scanSupported } from '../../components/BarcodeScanner'
+import ProductCounter from '../../components/ProductCounter'
 import { FAILURE_REASONS } from '../../tours'
+import { cleanProducts } from '../../medical'
 
 const isCollect = (stop) =>
   stop.type === 'COLLECTE' || stop.siteKind === 'PHARMACIE' || stop.siteKind === 'LABORATOIRE'
@@ -9,7 +11,8 @@ const hasTempRange = (stop) =>
   stop.temperatureMinCelsius != null || stop.temperatureMaxCelsius != null
 
 /** Un arrêt peut-il être validé en un seul geste (rien à confirmer) ? */
-export const canValidateDirectly = (stop) => !hasTempRange(stop) && stop.expectedQuantity == null
+export const canValidateDirectly = (stop) =>
+  !stop.medical && !hasTempRange(stop) && stop.expectedQuantity == null
 
 function Stepper({ label, value, onChange, hint }) {
   return (
@@ -88,6 +91,8 @@ export function OkSheet({ stop, onSubmit, onClose }) {
   const collect = isCollect(stop)
   const needsTemp = hasTempRange(stop)
   const [qty, setQty] = useState(stop.expectedQuantity ?? 1)
+  // Transport médical : comptage par catégorie (pré-rempli à la remise avec les produits à bord)
+  const [products, setProducts] = useState(() => stop.expectedProducts || {})
   const [temp, setTemp] = useState('')
   const [codes, setCodes] = useState([])
   const [scanning, setScanning] = useState(false)
@@ -118,14 +123,23 @@ export function OkSheet({ stop, onSubmit, onClose }) {
   const ready = !needsTemp || tempValue != null
 
   const submit = () =>
-    onSubmit({
-      status: 'FAIT',
-      signedBy: signer || null,
-      sampleCount: collect ? qty : null,
-      parcelCount: collect ? null : qty,
-      temperatureCelsius: tempValue,
-      scannedCodes: codes.length ? codes.join(',') : null
-    })
+    onSubmit(
+      stop.medical
+        ? {
+            status: 'FAIT',
+            signedBy: signer || null,
+            products: cleanProducts(products),
+            temperatureCelsius: tempValue
+          }
+        : {
+            status: 'FAIT',
+            signedBy: signer || null,
+            sampleCount: collect ? qty : null,
+            parcelCount: collect ? null : qty,
+            temperatureCelsius: tempValue,
+            scannedCodes: codes.length ? codes.join(',') : null
+          }
+    )
 
   return (
     <div className="qp-sheet" role="dialog" aria-label="Valider le passage">
@@ -136,14 +150,24 @@ export function OkSheet({ stop, onSubmit, onClose }) {
         </button>
       </div>
 
-      <Stepper
-        label={collect ? 'Échantillons' : 'Colis'}
-        value={qty}
-        onChange={setQty}
-        hint={stop.expectedQuantity != null ? `attendu ${stop.expectedQuantity}` : null}
-      />
+      {stop.medical ? (
+        <ProductCounter
+          label={stop.type === 'LIVRAISON' ? 'Produits remis' : 'Produits pris en charge'}
+          value={products}
+          onChange={setProducts}
+          expected={stop.type === 'LIVRAISON' ? stop.expectedProducts : null}
+        />
+      ) : (
+        <Stepper
+          label={collect ? 'Échantillons' : 'Colis'}
+          value={qty}
+          onChange={setQty}
+          hint={stop.expectedQuantity != null ? `attendu ${stop.expectedQuantity}` : null}
+        />
+      )}
 
-      {scanSupported() &&
+      {!stop.medical &&
+        scanSupported() &&
         (scanning ? (
           <BarcodeScanner onCode={addCode} onClose={() => setScanning(false)} />
         ) : (

@@ -1,24 +1,33 @@
 import { useCallback, useId, useState } from 'react'
 import { FAILURE_REASONS } from '../tours'
+import { cleanProducts } from '../medical'
 import BarcodeScanner, { scanSupported } from './BarcodeScanner'
+import ProductCounter from './ProductCounter'
 
 /**
  * Clôture d'un arrêt : preuve de passage (signataire, colis, échantillons,
  * codes scannés, température) ou motif d'échec. Partagé entre l'écran
- * d'exploitation et l'application chauffeur.
+ * d'exploitation et l'application chauffeur. En transport médical, les
+ * produits sont comptés par catégorie, et un passage déjà clôturé peut être
+ * corrigé avec un motif (tracé au journal de garde).
  */
 export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
   const uid = useId()
-  const [status, setStatus] = useState('FAIT')
+  const correcting = stop.status !== 'A_FAIRE'
+  const [status, setStatus] = useState(stop.status === 'ECHEC' ? 'ECHEC' : 'FAIT')
   const [form, setForm] = useState({
-    signedBy: '',
+    signedBy: correcting ? stop.signedBy || '' : '',
     parcelCount: '',
     sampleCount: '',
-    temperatureCelsius: '',
+    temperatureCelsius: correcting && stop.temperatureCelsius != null ? String(stop.temperatureCelsius) : '',
     scannedCodes: '',
-    failureReason: FAILURE_REASONS[0],
-    notes: ''
+    failureReason: (correcting && stop.failureReason) || FAILURE_REASONS[0],
+    notes: '',
+    correctionReason: ''
   })
+  const [products, setProducts] = useState(
+    () => (correcting ? stop.products : stop.expectedProducts) || {}
+  )
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
   const [scanning, setScanning] = useState(false)
   const needsTemperature = stop.temperatureMinCelsius != null || stop.temperatureMaxCelsius != null
@@ -52,6 +61,18 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
   const submit = (e) => {
     e.preventDefault()
     const num = (v) => (v === '' ? null : Number(v))
+    if (stop.medical) {
+      onSubmit({
+        status,
+        signedBy: form.signedBy || null,
+        temperatureCelsius: num(form.temperatureCelsius),
+        products: status === 'FAIT' ? cleanProducts(products) : null,
+        failureReason: status === 'ECHEC' ? form.failureReason : null,
+        notes: form.notes || null,
+        correctionReason: correcting ? form.correctionReason.trim() : null
+      })
+      return
+    }
     onSubmit({
       status,
       signedBy: form.signedBy || null,
@@ -87,6 +108,15 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
         </button>
       </div>
 
+      {status === 'FAIT' && stop.medical && (
+        <ProductCounter
+          label={stop.type === 'LIVRAISON' ? 'Produits remis' : 'Produits pris en charge'}
+          value={products}
+          onChange={setProducts}
+          expected={stop.type === 'LIVRAISON' ? stop.expectedProducts : null}
+        />
+      )}
+
       {status === 'FAIT' ? (
         <div className="data-grid">
           <div className="form-field">
@@ -98,7 +128,7 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
               autoComplete="off"
             />
           </div>
-          {isCollect ? (
+          {stop.medical ? null : isCollect ? (
             <div className="form-field">
               <label htmlFor={`${uid}-samples`}>Échantillons / sachets</label>
               <input
@@ -149,7 +179,7 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
               )}
             </div>
           )}
-          <div className="form-field form-field-wide">
+          {!stop.medical && <div className="form-field form-field-wide">
             <label htmlFor={`${uid}-codes`}>
               Codes scannés / saisis (séparés par des virgules)
             </label>
@@ -167,7 +197,7 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
               )}
             </div>
             {scanning && <BarcodeScanner onCode={addCode} onClose={() => setScanning(false)} />}
-          </div>
+          </div>}
         </div>
       ) : (
         <div className="data-grid">
@@ -189,6 +219,20 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
         <input id={`${uid}-notes`} value={form.notes} onChange={set('notes')} />
       </div>
 
+      {correcting && (
+        <div className="form-field">
+          <label htmlFor={`${uid}-correction`}>Motif de la correction * (tracé au journal de garde)</label>
+          <input
+            id={`${uid}-correction`}
+            value={form.correctionReason}
+            onChange={set('correctionReason')}
+            required
+            minLength={3}
+            placeholder="Ex. un tube oublié dans le sachet"
+          />
+        </div>
+      )}
+
       <div className="form-actions">
         {onCancel && (
           <button type="button" className="btn btn-outline" onClick={onCancel}>
@@ -200,7 +244,13 @@ export default function StopCompletionForm({ stop, onSubmit, onCancel, busy }) {
           className={'btn ' + (status === 'FAIT' ? 'btn-primary' : 'btn-danger')}
           disabled={busy}
         >
-          {busy ? 'Envoi…' : status === 'FAIT' ? 'Valider le passage' : "Déclarer l'échec"}
+          {busy
+            ? 'Envoi…'
+            : correcting
+              ? 'Enregistrer la correction'
+              : status === 'FAIT'
+                ? 'Valider le passage'
+                : "Déclarer l'échec"}
         </button>
       </div>
     </form>

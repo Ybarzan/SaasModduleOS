@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import api from '../../services/api'
 import { hhmm, siteKindLabel, stopTypeLabel } from '../../tours'
+import { describeProducts } from '../../medical'
 import {
   cancel,
   enqueue,
@@ -76,10 +77,16 @@ function FocusCard({ stop, index, total }) {
             <b>{win}</b>
           </div>
         )}
-        {stop.expectedQuantity != null && (
+        {stop.expectedQuantity != null && !stop.medical && (
           <div>
             <span>{stop.type === 'COLLECTE' ? 'À collecter' : 'À livrer'}</span>
             <b>{stop.expectedQuantity}</b>
+          </div>
+        )}
+        {stop.medical && stop.type === 'LIVRAISON' && stop.expectedProducts && (
+          <div>
+            <span>À remettre</span>
+            <b>{describeProducts(stop.expectedProducts)}</b>
           </div>
         )}
         {(stop.temperatureMinCelsius != null || stop.temperatureMaxCelsius != null) && (
@@ -120,6 +127,12 @@ export default function DriverTours() {
   const [autoArrive, setAutoArrive] = usePref('fh_driver_auto_arrive', true)
   const [navApp, setNavApp] = usePref('fh_driver_nav_app', 'maps')
   const toastTimer = useRef(null)
+  // Dernière position GPS connue (≤ 15 min), jointe aux actions pour le journal de garde
+  const lastPos = useRef(null)
+  const gps = () => {
+    const p = lastPos.current
+    return p && Date.now() - p.at < 15 * 60000 ? { latitude: p.latitude, longitude: p.longitude } : {}
+  }
 
   const load = useCallback(
     () =>
@@ -212,7 +225,7 @@ export default function DriverTours() {
       setOverrides((o) => ({ ...o, [stop.id]: { ...o[stop.id], arrivedAt: localNow() } }))
       enqueue({
         url: `/me/tours/${activeTour.id}/stops/${stop.id}/arrive`,
-        body: {},
+        body: gps(),
         stopId: stop.id,
         kind: 'arrive',
         undoable: false
@@ -228,6 +241,9 @@ export default function DriverTours() {
     () => markArrived(current, true),
     { enabled: autoArrive }
   )
+  useEffect(() => {
+    if (geo.position) lastPos.current = geo.position
+  }, [geo.position])
 
   const complete = (stop, payload) => {
     const previous = overrides[stop.id]
@@ -244,7 +260,7 @@ export default function DriverTours() {
     }))
     const id = enqueue({
       url: `/me/tours/${activeTour.id}/stops/${stop.id}/complete`,
-      body: payload,
+      body: { ...payload, ...gps() },
       stopId: stop.id,
       kind: 'complete'
     })

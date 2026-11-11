@@ -54,9 +54,10 @@ public class DriverTourController {
     @PostMapping("/{id}/stops/{stopId}/arrive")
     @Operation(summary = "Je suis arrivé sur le site")
     public TourDto arrive(@PathVariable Long id, @PathVariable Long stopId,
-                          @RequestBody(required = false) ArriveRequest req) {
+                          @Valid @RequestBody(required = false) ArriveRequest req) {
         tourService.requireAssignedTo(id, currentDriverId());
-        return tourService.arrive(id, stopId, req != null ? req.occurredAt() : null);
+        return req == null ? tourService.arrive(id, stopId)
+                : tourService.arrive(id, stopId, req.occurredAt(), req.latitude(), req.longitude());
     }
 
     @PostMapping("/{id}/stops/{stopId}/complete")

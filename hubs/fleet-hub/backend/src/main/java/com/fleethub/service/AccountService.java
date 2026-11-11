@@ -49,6 +49,8 @@ public class AccountService {
     private final SiteRepository siteRepository;
     private final TourRepository tourRepository;
     private final DeliveryOrderRepository deliveryOrderRepository;
+    private final com.fleethub.repository.CustodyEventRepository custodyEventRepository;
+    private final com.fleethub.repository.NonConformityRepository nonConformityRepository;
     private final PasswordEncoder passwordEncoder;
     private final StripeService stripeService;
 
@@ -83,6 +85,13 @@ public class AccountService {
         data.put("tours", tourRepository.findByCompanyIdAndDateBetweenOrderByDateAscPlannedStartAsc(
                         companyId, java.time.LocalDate.of(2000, 1, 1), java.time.LocalDate.of(2999, 12, 31)).stream()
                 .map(t -> com.fleethub.dto.tour.TourDto.of(t, true)).toList());
+        if (company.isMedical()) {
+            data.put("custodyEvents", custodyEventRepository.findByCompanyIdOrderBySequenceNoAsc(companyId).stream()
+                    .map(com.fleethub.dto.medical.CustodyEventDto::of).toList());
+            data.put("nonConformities", nonConformityRepository.findInPeriod(companyId,
+                            java.time.LocalDateTime.of(2000, 1, 1, 0, 0), java.time.LocalDateTime.of(2999, 12, 31, 0, 0)).stream()
+                    .map(com.fleethub.dto.medical.NonConformityDto::of).toList());
+        }
         return data;
     }
 
@@ -121,6 +130,8 @@ public class AccountService {
         }
 
         deliveryOrderRepository.deleteByCompany_Id(companyId); // avant les arrêts qu'elles référencent
+        nonConformityRepository.deleteByCompanyId(companyId); // transport médical, avant les tournées
+        custodyEventRepository.deleteByCompanyId(companyId);
         tourRepository.deleteByCompany_Id(companyId); // arrêts supprimés en cascade
         siteRepository.deleteByCompany_Id(companyId);
         drivingEventRepository.deleteByCompany_Id(companyId);

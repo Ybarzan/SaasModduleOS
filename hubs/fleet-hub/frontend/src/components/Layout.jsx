@@ -2,7 +2,14 @@ import { useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
-import { fleetTerms, usesTachograph, usesTours } from '../fleet'
+import {
+  fleetTerms,
+  isMedical,
+  usesFreight,
+  usesMarketplace,
+  usesTachograph,
+  usesTours
+} from '../fleet'
 
 /** @type {{fill: string, stroke: string, strokeWidth: number, strokeLinecap: 'round', strokeLinejoin: 'round'}} */
 const stroke = {
@@ -222,6 +229,27 @@ const icons = {
       }
     />
   ),
+  trace: (
+    <Icon
+      d={
+        <>
+          <path d="M9 4h6l1 3H8z" />
+          <rect x="5" y="7" width="14" height="14" rx="2" />
+          <path d="M9 12h6M9 16h4" />
+        </>
+      }
+    />
+  ),
+  nc: (
+    <Icon
+      d={
+        <>
+          <path d="M12 3.5l9 16H3z" />
+          <path d="M12 10v4.5M12 17.2v.1" />
+        </>
+      }
+    />
+  ),
   settings: (
     <Icon
       d={
@@ -334,7 +362,15 @@ const navItems = [
   { to: '/', label: 'Tableau de bord', icon: 'dashboard', end: true },
   { to: '/planning', label: 'Planification', icon: 'planning', end: false, show: usesTours },
   { to: '/tours', label: 'Tournées', icon: 'tours', end: false, show: usesTours },
-  { to: '/sites', label: 'Sites', icon: 'sites', end: false, show: usesTours },
+  {
+    to: '/sites',
+    label: (user) => fleetTerms(user).sites,
+    icon: 'sites',
+    end: false,
+    show: usesTours
+  },
+  { to: '/tracabilite', label: 'Traçabilité', icon: 'trace', end: false, show: isMedical },
+  { to: '/non-conformites', label: 'Non-conformités', icon: 'nc', end: false, show: isMedical },
   { to: '/drivers', label: 'Chauffeurs', icon: 'drivers', end: false },
   { to: '/tachographie', label: 'Tachographie', icon: 'tacho', end: false, show: usesTachograph },
   { to: '/pointage-suivi', label: 'Pointage', icon: 'pointage', end: false },
@@ -368,7 +404,14 @@ const navItems = [
   { section: 'Administration' },
   { to: '/users', label: 'Utilisateurs', icon: 'users', end: false, adminOnly: true },
   { to: '/integrations', label: 'Intégrations', icon: 'integrations', end: false, adminOnly: true },
-  { to: '/marketplace', label: 'Marketplace', icon: 'marketplace', end: false, adminOnly: true },
+  {
+    to: '/marketplace',
+    label: 'Marketplace',
+    icon: 'marketplace',
+    end: false,
+    adminOnly: true,
+    show: usesMarketplace
+  },
   {
     to: '/hub-integration',
     label: 'Logistix & Compliance',
@@ -381,13 +424,21 @@ const navItems = [
   { to: '/settings', label: 'Paramètres', icon: 'settings', end: false }
 ]
 
-const visibleNav = (user) =>
-  navItems.filter(
-    (item) =>
+/** Sections masquées selon l'activité (le fret ne concerne pas le transport médical). */
+const sectionVisible = (section, user) => section !== 'Transport' || usesFreight(user)
+
+const visibleNav = (user) => {
+  let section = null
+  return navItems.filter((item) => {
+    if (item.section) section = item.section
+    return (
+      sectionVisible(section, user) &&
       (!item.saasOnly || user?.role === 'SAAS_ADMIN') &&
       (!item.adminOnly || user?.role === 'ADMIN') &&
       (!item.show || item.show(user))
-  )
+    )
+  })
+}
 
 const labelFor = (item, user) => (typeof item.label === 'function' ? item.label(user) : item.label)
 
@@ -418,7 +469,11 @@ export default function Layout() {
   const closeMenu = () => setMenuOpen(false)
 
   return (
-    <div className={'layout' + (menuOpen ? ' menu-open' : '')}>
+    <div
+      className={
+        'layout' + (menuOpen ? ' menu-open' : '') + (isMedical(user) ? ' activity-medical' : '')
+      }
+    >
       <header className="mobile-topbar">
         <button
           className="hamburger"
@@ -484,6 +539,7 @@ export default function Layout() {
           <div>
             <h1>Fleet Hub</h1>
             <p>{user?.companyName || 'SYSTÈME / GESTION FLOTTE'}</p>
+            {user?.companyId && <p className="logo-activity">{fleetTerms(user).brandSub}</p>}
           </div>
           <button className="sidebar-close" onClick={closeMenu} aria-label="Fermer le menu">
             <svg

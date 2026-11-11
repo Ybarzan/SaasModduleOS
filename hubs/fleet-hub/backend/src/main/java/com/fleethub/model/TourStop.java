@@ -7,6 +7,8 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Arrêt d'une tournée sur un site, avec son créneau horaire, son heure
@@ -83,7 +85,37 @@ public class TourStop {
     @Column(length = 1000)
     private String notes;
 
-    public enum StopType { LIVRAISON, ENLEVEMENT, COLLECTE }
+    /** Transport médical : quantités collectées / remises par catégorie de produit. */
+    @ElementCollection
+    @CollectionTable(name = "tour_stop_product", joinColumns = @JoinColumn(name = "tour_stop_id"))
+    @MapKeyEnumerated(EnumType.STRING)
+    @MapKeyColumn(name = "category", length = 32)
+    @Column(name = "quantity", nullable = false)
+    @org.hibernate.annotations.BatchSize(size = 100)
+    private Map<MedicalProduct, Integer> products = new EnumMap<>(MedicalProduct.class);
+
+    public enum StopType {
+        LIVRAISON, ENLEVEMENT, COLLECTE;
+
+        /** Le véhicule prend des produits en charge (collecte ou enlèvement). */
+        public boolean isPickup() {
+            return this != LIVRAISON;
+        }
+    }
+
+    /**
+     * Quantités par catégorie de ce passage ; un comptage global sans détail
+     * (saisie antérieure au module médical) est rangé dans « Autres ».
+     */
+    public Map<MedicalProduct, Integer> productCounts() {
+        Map<MedicalProduct, Integer> counts = new EnumMap<>(MedicalProduct.class);
+        if (products != null && !products.isEmpty()) {
+            counts.putAll(products);
+        } else if (sampleCount != null && sampleCount > 0) {
+            counts.put(MedicalProduct.AUTRE, sampleCount);
+        }
+        return counts;
+    }
 
     public enum StopStatus { A_FAIRE, FAIT, ECHEC }
 

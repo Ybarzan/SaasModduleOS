@@ -76,6 +76,11 @@ public class Company {
     @Builder.Default
     private FleetProfile fleetProfile = FleetProfile.POIDS_LOURD;
 
+    /** Transport médical : délai maximal (minutes) entre prise en charge et remise au laboratoire. */
+    @Column(nullable = false)
+    @Builder.Default
+    private int medicalMaxTransitMinutes = 240;
+
     // ---- Marketplace FleetMarket (opt-in) ----
     /** Publie la disponibilité camions + un score de conformité agrégé sur
      *  GET /api/marketplace/availability. Désactivé par défaut : aucune donnée
@@ -166,14 +171,25 @@ public class Company {
         POIDS_LOURD,
         /** Messagerie / distribution : tournées multi-arrêts. */
         MESSAGERIE,
-        /** Collecte santé (pharmacies ↔ laboratoires) : tournées + traçabilité + froid. */
+        /** Transport médical (pharmacies, établissements ↔ laboratoires) : tournées,
+         *  comptage des produits, journal de garde, non-conformités, chaîne du froid. */
         COLLECTE_SANTE,
-        /** Flotte mixte : tous les modules visibles. */
+        /** Flotte mixte (comptes historiques) : modules poids lourds et messagerie.
+         *  N'est plus proposé à l'inscription ; n'ouvre pas le module médical. */
         MIXTE;
 
         public boolean usesTours() {
             return this != POIDS_LOURD;
         }
+
+        /** Activité cloisonnée « Transport médical ». */
+        public boolean isMedical() {
+            return this == COLLECTE_SANTE;
+        }
+    }
+
+    public boolean isMedical() {
+        return fleetProfile != null && fleetProfile.isMedical();
     }
 
     /** Peut se connecter : les comptes résiliés sont exclus, les essais expirés

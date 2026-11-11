@@ -75,7 +75,7 @@ public class SecurityConfig {
                 // appelé par un admin fleet-hub, jamais par compliance-engine lui-même.
                 .requestMatchers("/api/compliance-engine-webhook/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("SAAS_ADMIN")
-                .requestMatchers(HttpMethod.PUT, "/api/company/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/company/**", "/api/medical/settings").hasRole("ADMIN")
                 .requestMatchers("/api/users/**", "/api/integrations/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/kpis/**", "/api/drivers/**", "/api/trucks/**", "/api/dashboard/**", "/api/map/**").hasAnyRole("ADMIN", "GESTIONNAIRE")
                 // ---- Domaine Transport (carrier/shipment/tracking), fusionné depuis

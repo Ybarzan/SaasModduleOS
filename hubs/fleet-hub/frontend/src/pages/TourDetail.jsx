@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import api from '../services/api'
 import TourMap from '../components/TourMap'
 import StopCompletionForm from '../components/StopCompletionForm'
+import MedicalTourPanel from '../components/MedicalTourPanel'
+import { TEMPERATURE_PRESETS, describeProducts } from '../medical'
 import {
   STOP_STATUS,
   STOP_TYPES,
@@ -24,8 +26,10 @@ const EMPTY_STOP = {
   temperatureMaxCelsius: ''
 }
 
-function AddStopForm({ sites, onAdd }) {
-  const [form, setForm] = useState(EMPTY_STOP)
+function AddStopForm({ sites, onAdd, medical }) {
+  const [form, setForm] = useState(() =>
+    medical ? { ...EMPTY_STOP, type: 'COLLECTE', temperatureMinCelsius: '15', temperatureMaxCelsius: '25' } : EMPTY_STOP
+  )
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
   const num = (v) => (v === '' ? null : Number(v))
 
@@ -40,7 +44,13 @@ function AddStopForm({ sites, onAdd }) {
       temperatureMinCelsius: num(form.temperatureMinCelsius),
       temperatureMaxCelsius: num(form.temperatureMaxCelsius)
     })
-    if (ok) setForm({ ...EMPTY_STOP, type: form.type })
+    if (ok)
+      setForm({
+        ...EMPTY_STOP,
+        type: form.type,
+        temperatureMinCelsius: form.temperatureMinCelsius,
+        temperatureMaxCelsius: form.temperatureMaxCelsius
+      })
   }
 
   return (
@@ -86,6 +96,35 @@ function AddStopForm({ sites, onAdd }) {
             onChange={set('serviceMinutes')}
           />
         </div>
+        {medical && (
+          <div className="form-field form-field-wide">
+            <label>Conditions de transport</label>
+            <div className="chip-row">
+              {TEMPERATURE_PRESETS.map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  className={
+                    'chip' +
+                    (Number(form.temperatureMinCelsius) === p.min &&
+                    Number(form.temperatureMaxCelsius) === p.max
+                      ? ' on'
+                      : '')
+                  }
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      temperatureMinCelsius: String(p.min),
+                      temperatureMaxCelsius: String(p.max)
+                    })
+                  }
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="form-field">
           <label>Température min (°C)</label>
           <input
@@ -117,8 +156,12 @@ function AddStopForm({ sites, onAdd }) {
 function ProofSummary({ s }) {
   const parts = []
   if (s.signedBy) parts.push(`Signé : ${s.signedBy}`)
-  if (s.parcelCount != null) parts.push(`${s.parcelCount} colis`)
-  if (s.sampleCount != null) parts.push(`${s.sampleCount} échantillon(s)`)
+  if (s.medical) {
+    if (s.status === 'FAIT') parts.push(describeProducts(s.products))
+  } else {
+    if (s.parcelCount != null) parts.push(`${s.parcelCount} colis`)
+    if (s.sampleCount != null) parts.push(`${s.sampleCount} échantillon(s)`)
+  }
   if (s.temperatureCelsius != null) parts.push(`${s.temperatureCelsius} °C`)
   if (s.failureReason) parts.push(`Motif : ${s.failureReason}`)
   if (s.completedAt)
@@ -287,7 +330,7 @@ export default function TourDetail() {
               Annuler
             </button>
           )}
-          {tour.status !== 'EN_COURS' && (
+          {tour.status !== 'EN_COURS' && !(tour.medical && tour.startedAt) && (
             <button className="btn btn-danger" onClick={remove} disabled={busy}>
               Supprimer
             </button>
@@ -319,6 +362,14 @@ export default function TourDetail() {
           <b>{tour.stopsLate}</b>
         </div>
       </div>
+
+      {tour.medical && (
+        <MedicalTourPanel
+          tourId={tour.id}
+          tourStatus={tour.status}
+          version={`${tour.status}-${tour.stopsDone}-${tour.stopsFailed}-${tour.stops.map((s) => s.completedAt).join()}`}
+        />
+      )}
 
       <div className="card">
         <TourMap tour={tour} />
@@ -390,6 +441,18 @@ export default function TourDetail() {
                           Clôturer
                         </button>
                       )}
+                      {s.status !== 'A_FAIRE' &&
+                        tour.medical &&
+                        tour.status === 'EN_COURS' &&
+                        closingStop !== s.id && (
+                          <button
+                            className="btn btn-outline btn-sm"
+                            onClick={() => setClosingStop(s.id)}
+                            title="Correction tracée au journal de garde"
+                          >
+                            Corriger
+                          </button>
+                        )}
                       <button
                         className="btn btn-outline btn-sm"
                         onClick={() => move(i, -1)}
@@ -435,6 +498,7 @@ export default function TourDetail() {
           </div>
           <AddStopForm
             sites={sites}
+            medical={tour.medical}
             onAdd={(payload) =>
               act(() => api.post(`/tours/${tour.id}/stops`, payload), 'Arrêt ajouté')
             }

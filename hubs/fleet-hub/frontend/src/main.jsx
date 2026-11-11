@@ -14,6 +14,7 @@ import '@fontsource-variable/inter'
 import './styles.css'
 import './premium.css'
 import './theme.css'
+import './activity.css'
 
 const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN
 if (SENTRY_DSN) {

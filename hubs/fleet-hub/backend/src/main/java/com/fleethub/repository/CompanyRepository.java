@@ -19,4 +19,9 @@ public interface CompanyRepository extends JpaRepository<Company, Long> {
     Optional<Company> findBySubscriptionId(String subscriptionId);
 
     List<Company> findAllByOrderByCreatedAtDesc();
+
+    /** Verrou d'écriture sur la société : sérialise l'ajout au journal de garde (chaînage). */
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select c from Company c where c.id = :id")
+    Optional<Company> lockById(@org.springframework.data.repository.query.Param("id") Long id);
 }
