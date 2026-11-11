@@ -127,9 +127,11 @@ export default function SharedLinks() {
                 <label>Expiration en heures (optionnel)</label>
                 <input
                   type="number"
+                  min="1"
+                  max="8760"
                   value={form.expiresHours}
                   onChange={(e) => setForm({ ...form, expiresHours: e.target.value })}
-                  placeholder="vide = pas d'expiration"
+                  placeholder="vide = 30 jours (max. 8760 h)"
                 />
               </div>
             </div>

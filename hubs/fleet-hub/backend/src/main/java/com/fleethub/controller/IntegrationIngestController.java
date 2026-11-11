@@ -46,7 +46,11 @@ public class IntegrationIngestController {
                                       @RequestBody(required = false) IngestPayload payload) {
         String configured = props.getWebhookApiKey();
         IngestPayload data = payload == null ? IngestPayload.empty() : payload;
-        boolean globalMatch = configured != null && configured.equals(apiKey);
+        // Comparaison en temps constant : la durée de réponse ne doit rien révéler de la clé
+        boolean globalMatch = configured != null && apiKey != null
+                && java.security.MessageDigest.isEqual(
+                        configured.getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                        apiKey.getBytes(java.nio.charset.StandardCharsets.UTF_8));
 
         // 1. Clé de webhook par société (self-service).
         if (apiKey != null && !apiKey.isBlank() && !globalMatch) {

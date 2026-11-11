@@ -1,5 +1,8 @@
 package com.fleethub.service;
 
+import com.fleethub.config.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import com.fleethub.model.ClientUser;
 import com.fleethub.model.Company;
 import com.fleethub.model.ShipmentOrder;
@@ -55,7 +58,7 @@ public class ClientAuthService {
     @Transactional(readOnly = true)
     public Map<String, Object> getProfile(UUID clientId) {
         ClientUser client = clientUserRepo.findById(clientId)
-            .orElseThrow(() -> new RuntimeException("Client introuvable"));
+            .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
         Map<String, Object> profile = new LinkedHashMap<>();
         profile.put("id", client.getId());
         profile.put("email", client.getEmail());
@@ -88,10 +91,10 @@ public class ClientAuthService {
 
     public ClientUser createClient(Long companyId, String email, String password, String fullName, String phone) {
         if (clientUserRepo.findByEmailAndCompanyId(email, companyId).isPresent()) {
-            throw new RuntimeException("Un client avec cet email existe déjà pour cette entreprise");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Un client avec cet email existe déjà pour cette entreprise");
         }
         Company company = companyRepo.findById(companyId)
-            .orElseThrow(() -> new RuntimeException("Entreprise introuvable"));
+            .orElseThrow(() -> new ResourceNotFoundException("Entreprise introuvable"));
         ClientUser client = ClientUser.builder()
             .company(company)
             .email(email)
@@ -107,7 +110,7 @@ public class ClientAuthService {
     public ClientUser updateClient(UUID clientId, Long companyId, String fullName, String phone, Boolean active) {
         ClientUser client = clientUserRepo.findById(clientId)
             .filter(c -> c.getCompany().getId().equals(companyId))
-            .orElseThrow(() -> new RuntimeException("Client introuvable"));
+            .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
         if (fullName != null) client.setFullName(fullName);
         if (phone != null) client.setPhone(phone);
         if (active != null) client.setActive(active);
@@ -118,7 +121,7 @@ public class ClientAuthService {
     public void resetClientPassword(UUID clientId, Long companyId, String newPassword) {
         ClientUser client = clientUserRepo.findById(clientId)
             .filter(c -> c.getCompany().getId().equals(companyId))
-            .orElseThrow(() -> new RuntimeException("Client introuvable"));
+            .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
         client.setPassword(passwordEncoder.encode(newPassword));
         clientUserRepo.save(client);
     }
@@ -127,7 +130,7 @@ public class ClientAuthService {
     public void deleteClient(UUID clientId, Long companyId) {
         ClientUser client = clientUserRepo.findById(clientId)
             .filter(c -> c.getCompany().getId().equals(companyId))
-            .orElseThrow(() -> new RuntimeException("Client introuvable"));
+            .orElseThrow(() -> new ResourceNotFoundException("Client introuvable"));
         clientUserRepo.delete(client);
     }
 

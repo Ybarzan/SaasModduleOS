@@ -1,5 +1,8 @@
 package com.fleethub.service;
 
+import com.fleethub.config.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import com.fleethub.model.AppUser;
 import com.fleethub.model.Company;
 import com.fleethub.model.SharedLink;
@@ -27,13 +30,28 @@ public class SharedLinkService {
     private final CompanyRepository companyRepo;
     private final AppUserRepository userRepo;
 
+    /** Durée de vie par défaut d'un lien public : un lien sans échéance resterait valable indéfiniment. */
+    static final int DEFAULT_EXPIRES_HOURS = 30 * 24;
+    /** Durée de vie maximale : un an. */
+    static final int MAX_EXPIRES_HOURS = 365 * 24;
+
+    static int effectiveExpiresHours(Integer requested) {
+        if (requested == null) {
+            return DEFAULT_EXPIRES_HOURS;
+        }
+        if (requested < 1 || requested > MAX_EXPIRES_HOURS) {
+            throw new IllegalArgumentException("Durée de validité comprise entre 1 heure et 1 an (" + MAX_EXPIRES_HOURS + " h)");
+        }
+        return requested;
+    }
+
     @Transactional
     public SharedLink createLink(Long companyId, UUID shipmentId, Long userId, String label, Integer expiresHours) {
         ShipmentOrder shipment = shipmentRepo.findById(shipmentId)
             .filter(s -> s.getCompany().getId().equals(companyId))
-            .orElseThrow(() -> new RuntimeException("Expédition introuvable"));
+            .orElseThrow(() -> new ResourceNotFoundException("Expédition introuvable"));
         Company company = companyRepo.findById(companyId)
-            .orElseThrow(() -> new RuntimeException("Entreprise introuvable"));
+            .orElseThrow(() -> new ResourceNotFoundException("Entreprise introuvable"));
         AppUser user = userId != null ? userRepo.findById(userId).orElse(null) : null;
 
         SharedLink link = SharedLink.builder()
@@ -42,7 +60,7 @@ public class SharedLinkService {
             .token(UUID.randomUUID().toString())
             .createdBy(user)
             .label(label != null ? label : "Lien de suivi - " + shipment.getOrderNumber())
-            .expiresAt(expiresHours != null ? LocalDateTime.now().plusHours(expiresHours) : null)
+            .expiresAt(LocalDateTime.now().plusHours(effectiveExpiresHours(expiresHours)))
             .active(true)
             .build();
         return sharedLinkRepo.save(link);
@@ -59,12 +77,12 @@ public class SharedLinkService {
     @Transactional
     public SharedLink accessLink(String token) {
         SharedLink link = sharedLinkRepo.findByToken(token)
-            .orElseThrow(() -> new RuntimeException("Lien introuvable ou invalide"));
+            .orElseThrow(() -> new ResourceNotFoundException("Lien introuvable ou invalide"));
         if (!link.isActive()) {
-            throw new RuntimeException("Ce lien a été révoqué");
+            throw new ResponseStatusException(HttpStatus.GONE, "Ce lien a été révoqué");
         }
         if (link.getExpiresAt() != null && link.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Ce lien a expiré");
+            throw new ResponseStatusException(HttpStatus.GONE, "Ce lien a expiré");
         }
         link.setAccessCount(link.getAccessCount() + 1);
         link.setLastAccessedAt(LocalDateTime.now());
@@ -76,7 +94,7 @@ public class SharedLinkService {
     public void revokeLink(UUID linkId, Long companyId) {
         SharedLink link = sharedLinkRepo.findById(linkId)
             .filter(l -> l.getCompany().getId().equals(companyId))
-            .orElseThrow(() -> new RuntimeException("Lien introuvable"));
+            .orElseThrow(() -> new ResourceNotFoundException("Lien introuvable"));
         link.setActive(false);
         sharedLinkRepo.save(link);
     }
@@ -85,7 +103,7 @@ public class SharedLinkService {
     public void deleteLink(UUID linkId, Long companyId) {
         SharedLink link = sharedLinkRepo.findById(linkId)
             .filter(l -> l.getCompany().getId().equals(companyId))
-            .orElseThrow(() -> new RuntimeException("Lien introuvable"));
+            .orElseThrow(() -> new ResourceNotFoundException("Lien introuvable"));
         sharedLinkRepo.delete(link);
     }
 
